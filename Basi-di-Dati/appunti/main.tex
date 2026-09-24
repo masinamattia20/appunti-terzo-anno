@@ -608,4 +608,736 @@ END;
     \item \textbf{Struttura Impegnativa (\textit{Overhead})}: le funzioni di controllo transazionale, sicurezza e logging sono sempre attive e consumano risorse. Per compiti minuscoli o file di log elementari, un semplice file di testo gestito dal sistema operativo può risultare più veloce ed economico rispetto a un intero DBMS.
 \end{itemize}
 
+\newpage
+
+\section{Il Modello Relazionale dei Dati}
+
+\subsection{Origine, Modelli Logici e Paradigma Basato su Valori}
+\noindent \textbf{Evoluzione dei Modelli Logici Tradizionali.} Prima dell'avvento del modello relazionale, la gestione dei dati nelle applicazioni aziendali si basava su due grandi modelli logici:
+\begin{itemize}
+    \item \textbf{Modello Gerarchico}: organizza i record secondo strutture ad albero piramidali; ogni record figlio possiede un unico record genitore, replicando fedelmente le gerarchie rigide ma rendendo complessa la gestione di relazioni molti-a-molti.
+    \item \textbf{Modello Reticolare}: generalizza il modello gerarchico consentendo strutture a grafo; un record può avere più record proprietari (\textit{owner}) e record membri (\textit{member}).
+\end{itemize}
+Entrambi questi modelli presentano un limite strutturale insidioso: le associazioni tra i dati sono espresse mediante \textbf{riferimenti espliciti} (puntatori di memoria fisici o logici gestiti a basso livello). Chi programma deve conoscere nel dettaglio la topologia dei collegamenti per navigare l'archivio record per record.
+
+\medskip
+\noindent \textbf{Modelli Alternativi e Successivi.} Negli anni successivi sono emerse ulteriori proposte:
+\begin{itemize}
+    \item \textbf{Modello a Oggetti (\textit{Object-Oriented})}: estende ai database i concetti della programmazione a oggetti (incapsulamento, metodi, ereditarietà, identità tramite OID). Sebbene potente, ha trovato diffusione solo in nicchie specifiche e complesse (es. CAD/CAM, sistemi geografici).
+    \item \textbf{Modello Documentale e Semistrutturato (XML / JSON)}: nato per gestire dati privi di uno schema rigido a priori o fortemente gerarchici, oggi ampiamente adottato nei sistemi NoSQL ed è da considerarsi complementare al modello relazionale.
+\end{itemize}
+
+\medskip
+\noindent \textbf{La Rivoluzione di Edgar F. Codd (1970).} Il modello relazionale fu proposto formalmente da \textbf{Edgar F. Codd} nel celebre articolo del 1970 con un obiettivo primario: raggiungere la piena \textbf{indipendenza logica e fisica dei dati}. Nei modelli basati su puntatori, ogni modifica alla struttura interna dei file su disco obbligava a riscrivere il software applicativo. Codd propose di rappresentare l'intera base di dati mediante una struttura concettuale pulita e matematica: la \textbf{relazione}.
+
+\medskip
+\noindent L'adozione commerciale effettiva arrivò circa un decennio dopo, nel \textbf{1981}, poiché garantire l'indipendenza dei dati senza sacrificare le prestazioni computazionali e l'affidabilità su memorie di massa richiese anni di ricerca algoritmica (in particolare per lo sviluppo di optimizer di query e indici su albero).
+
+\begin{cbox}{Puntatori Espliciti vs Paradigma Basato su Valori (\textit{Value-Based})}
+\noindent La distinzione cruciale tra i sistemi pre-relazionali e il modello relazionale risiede nel meccanismo con cui si stabiliscono i legami tra le entità:
+\begin{itemize}
+    \item \textbf{Sistemi basati su puntatori (Gerarchico/Reticolare)}: i collegamenti tra record diversi sono rappresentati da indirizzi o identificatori fisici gestiti dal motore di sistema. Il legame è intrinsecamente \textbf{direzionale} (un puntatore va da un record $A$ a un record $B$, ma per risalire da $B$ ad $A$ occorrono strutture aggiuntive).
+    \item \textbf{Modello relazionale (Basato su Valori)}: le correlazioni tra i dati memorizzati in relazioni diverse sono espresse \textbf{esclusivamente attraverso i valori} contenuti nelle tuple stesse.
+\end{itemize}
+\medskip
+\noindent \textit{Esempio concreto}: se una tabella \textbf{Esami} deve indicare quale studente ha sostenuto la prova, essa non conterrà l'indirizzo su disco del record dello studente, bensì il valore della sua matricola (es. \texttt{3456}). Tale valore coincide con la chiave memorizzata nella tabella \textbf{Studenti}.
+\end{cbox}
+
+\medskip
+\noindent \textbf{I Vantaggi Chiave della Struttura Basata su Valori.} L'adozione del paradigma \textit{value-based} porta benefici sostanziali:
+\begin{itemize}
+    \item \textbf{Indipendenza dalla struttura fisica}: i puntatori fisici cambiano quando i dati vengono riallocati o deframmentati su disco; i valori informativi rimangono inalterati indipendentemente dal supporto hardware.
+    \item \textbf{Pertinenza applicativa}: nel database si salvano esclusivamente i dati che hanno un chiaro significato informativo per il dominio applicativo, scartando metadati di navigazione fittizi.
+    \item \textbf{Visione uniforme per utente e sviluppatore}: chi interroga la base di dati osserva le medesime strutture tabellari su cui ragiona il programmatore, senza dettagli nascosti.
+    \item \textbf{Interoperabilità e portabilità}: dati basati su valori possono essere esportati, serializzati e scambiati con facilità tra piattaforme e DBMS eterogenei.
+    \item \textbf{Simmetria e navigazione bidirezionale}: mentre un puntatore impone una traiettoria prefissata, l'uguaglianza sui valori consente di navigare la correlazione con pari facilità in entrambi i versi (trovare tutti gli esami sostenuti dallo studente $X$ oppure risalire all'anagrafica dello studente che ha superato l'esame $Y$).
+\end{itemize}
+
+\subsection{Dalla Relazione Matematica alla Relazione Tabellare}
+\noindent \textbf{Chiarimento Terminologico Fondamentale.} L'uso del termine ``relazione'' genera spesso equivoci tra mondi contigui:
+\begin{itemize}
+    \item \textbf{Relazione logico-matematica (Teoria degli Insiemi)}: sottoinsieme del prodotto cartesiano tra insiemi di elementi.
+    \item \textbf{Relazione nel Modello Relazionale}: costrutto logico rappresentabile come una tabella bidimensionale con intestazioni dotate di significato.
+    \item \textbf{Relationship (Associazione o Correlazione)}: concetto del \textbf{Modello Entità-Relazione (E-R)}, che descrive una classe di fatti o un legame concettuale tra due o più entità del mondo reale.
+\end{itemize}
+
+\medskip
+\noindent \textbf{La Relazione Matematica Insiemistica.} Siano $D_1, D_2, \dots, D_n$ insiemi detti \textbf{domini} (non necessariamente distinti tra loro).
+\begin{itemize}
+    \item Il \textbf{prodotto cartesiano} $D_1 \times D_2 \times \dots \times D_n$ è l'insieme di tutte le $n$-uple ordinate $(d_1, d_2, \dots, d_n)$ tali per cui:
+    $$d_1 \in D_1, \quad d_2 \in D_2, \quad \dots, \quad d_n \in D_n$$
+    \item Una \textbf{relazione matematica} $r$ sui domini $D_1, \dots, D_n$ è un qualsiasi sottoinsieme del loro prodotto cartesiano:
+    $$r \subseteq D_1 \times D_2 \times \dots \times D_n$$
+    I domini $D_1, \dots, D_n$ prendono il nome di \textbf{domini della relazione}, mentre il numero $n$ rappresenta il \textbf{grado} della relazione.
+\end{itemize}
+
+\begin{cbox}{Proprietà della Relazione Insiemistica: Notazione Posizionale}
+\noindent In base alla rigorosa definizione della teoria degli insiemi:
+\begin{enumerate}
+    \item \textbf{Una relazione è un insieme}: ne discende che tra le ennuple non esiste alcun ordinamento intrinseco e che non possono esistere due ennuple identiche (le tuple sono tutte distinte).
+    \item \textbf{Ogni ennupla è una sequenza ordinata}: la posizione dell'$i$-esimo elemento determina in modo rigido da quale dominio esso provenga. L'accesso ai valori si basa sulla loro \textbf{posizione ordinale} ($1^\circ, 2^\circ, \dots, n^\circ$).
+\end{enumerate}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Il Limite della Posizionalità: L'Esempio del Calendario Partite.} Si consideri una relazione $Partite \subseteq \text{String} \times \text{String} \times \text{Int} \times \text{Int}$ che descrive i risultati di un girone calcistico:
+\begin{center}
+\small
+\begin{tabular}{cccc}
+    \toprule
+    \textbf{1$^\circ$ Componente} & \textbf{2$^\circ$ Componente} & \textbf{3$^\circ$ Componente} & \textbf{4$^\circ$ Componente} \\
+    \midrule
+    Barcellona & Bayern & 3 & 1 \\
+    Real Madrid & Bayern & 2 & 0 \\
+    Barcellona & Juventus & 0 & 2 \\
+    Juventus & Real Madrid & 0 & 1 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+In questo schema insiemistico, il dominio $\text{String}$ appare due volte e il dominio $\text{Int}$ compare due volte. Il loro ruolo semantico è affidato unicamente alla posizione:
+\begin{itemize}
+    \item Posizione 1: squadra ospitante (\textit{Home}).
+    \item Posizione 2: squadra ospitata (\textit{Away}).
+    \item Posizione 3: reti realizzate dalla squadra di casa (\textit{GoalsH}).
+    \item Posizione 4: reti realizzate dalla squadra ospite (\textit{GoalsA}).
+\end{itemize}
+Se scambiassimo di posto le prime due colonne senza mutare i dati, il significato del record risulterebbe stravolto.
+
+\medskip
+\noindent \textbf{Dalla Struttura Posizionale alla Struttura Non Posizionale.} Nei database reali, affidare il significato alla posizione è rischioso e scomodo. Il modello relazionale supera questo limite introducendo gli \textbf{attributi}: a ciascuna colonna viene assegnato un nome simbolico univoco che ne definisce formalmente il ruolo.
+
+\begin{cbox}{L'Attributo e l'Indipendenza dall'Ordine delle Colonne}
+\noindent Un \textbf{attributo} è un nome unico associato a un dominio per esplicitarne il significato applicativo all'interno della relazione. \\
+Con l'introduzione degli attributi, la tabella precedente viene modellata come:
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \textbf{SquadraCasa} & \textbf{SquadraOspite} & \textbf{GolCasa} & \textbf{GolOspite} \\
+    \midrule
+    Barcellona & Bayern & 3 & 1 \\
+    Bayern & Real Madrid & 2 & 0 \\
+    Barcellona & Juventus & 0 & 2 \\
+    Juventus & Real Madrid & 0 & 1 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Poiché ciascun dato è identificato dal nome dell'attributo e non dal suo indice numerico, \textbf{l'ordine orizzontale delle colonne è del tutto irrilevante}:
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \textbf{SquadraOspite} & \textbf{SquadraCasa} & \textbf{GolOspite} & \textbf{GolCasa} \\
+    \midrule
+    Bayern & Barcellona & 1 & 3 \\
+    Real Madrid & Bayern & 0 & 2 \\
+    Juventus & Barcellona & 2 & 0 \\
+    Real Madrid & Juventus & 1 & 0 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Entrambe le tabelle rappresentano la medesima informazione logica: la struttura dei dati è pienamente \textbf{non posizionale}.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Proprietà di una Tabella come Relazione.} Una tabella su video o su carta rappresenta una valida relazione relazionale se e solo se rispetta le seguenti condizioni:
+\begin{enumerate}
+    \item Tutte le righe sono distinte tra loro (nessuna tupla duplicata).
+    \item L'ordine delle righe è irrilevante.
+    \item Tutte le intestazioni di colonna (attributi) sono distinte all'interno della stessa tabella.
+    \item L'ordine delle colonne è irrilevante.
+    \item I valori all'interno di ciascuna colonna sono omogenei rispetto al dominio dell'attributo.
+\end{enumerate}
+
+\subsection{Formalizzazione: Schemi, Istanze e Tuple}
+\noindent \textbf{Schema di Relazione.} Uno \textbf{schema di relazione} $R(X)$ è costituito da:
+\begin{itemize}
+    \item Un nome simbolico $R$ (es. \texttt{STUDENTI}).
+    \item Un insieme di nomi di attributi $X = \{A_1, A_2, \dots, A_n\}$.
+    \item A ciascun attributo $A_i$ è associato un insieme di valori ammissibili, denominato dominio $\text{dom}(A_i)$.
+\end{itemize}
+Viene compattamente indicato con $R(A_1, A_2, \dots, A_n)$.
+
+\medskip
+\noindent \textbf{Schema di Base di Dati.} Uno \textbf{schema di base di dati relazionale} $\mathcal{R}$ è una collezione finita di schemi di relazione con nomi distinti:
+$$\mathcal{R} = \{ R_1(X_1), R_2(X_2), \dots, R_k(X_k) \}$$
+
+\medskip
+\noindent \textbf{Definizione Formale di Tupla.} Data una relazione con schema $R(X)$, una \textbf{tupla} $t$ su $X$ non è una semplice sequenza ordinata, bensì una \textbf{funzione matematica} che mappa ogni attributo $A \in X$ in un valore del suo rispettivo dominio:
+$$t: X \longrightarrow \bigcup_{A \in X} \text{dom}(A) \quad \text{tale che} \quad t[A] \in \text{dom}(A) \quad \forall A \in X$$
+La notazione $t[A]$ (oppure $t.A$) indica il valore assunto dalla tupla $t$ in corrispondenza dell'attributo $A$.
+
+\begin{cbox}{Esempio Completo: Schemi e Istanze in un Contesto Didattico}
+\noindent Si consideri lo schema di base di dati universitario:
+\begin{align*}
+\mathcal{R} = \{ & \text{STUDENTI}(\text{Matricola}, \text{Cognome}, \text{Nome}, \text{DataNascita}), \\
+                 & \text{CORSI}(\text{Codice}, \text{NomeCorso}, \text{Docente}), \\
+                 & \text{ESAMI}(\text{Candidato}, \text{Voto}, \text{Corso}) \}
+\end{align*}
+\noindent Una possibile \textbf{istanza di relazione} per la tabella \textbf{STUDENTI} è l'insieme di tuple:
+\begin{center}
+\small
+\begin{tabular}{clllc}
+    \toprule
+    \textbf{Tupla} & \textbf{Matricola} & \textbf{Cognome} & \textbf{Nome} & \textbf{DataNascita} \\
+    \midrule
+    $t_1$ & 6554 & Rossi & Mario & 1978/12/05 \\
+    $t_2$ & 8765 & Neri & Paolo & 1976/11/03 \\
+    $t_3$ & 9283 & Verdi & Luisa & 1979/11/12 \\
+    $t_4$ & 3456 & Rossi & Maria & 1978/02/01 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Se consideriamo la prima tupla $t_1$, possiamo estrarre i singoli componenti mediante la notazione funzionale:
+$$t_1[\text{Matricola}] = 6554, \quad t_1[\text{Cognome}] = \text{'Rossi'}, \quad t_1[\text{DataNascita}] = \text{'1978/12/05'}$$
+\end{cbox}
+
+\medskip
+\noindent \textbf{Istanza di Relazione e di Base di Dati.}
+\begin{itemize}
+    \item Un'\textbf{istanza di relazione} $r$ su uno schema $R(X)$ è un insieme finito di tuple definite su $X$.
+    \item Un'\textbf{istanza di base di dati} su uno schema $\mathcal{R} = \{R_1(X_1), \dots, R_k(X_k)\}$ è l'insieme delle rispettive istanze di relazione:
+    $$r = \{ r_1, r_2, \dots, r_k \}$$
+    dove ogni $r_i$ è un'istanza conforme allo schema $R_i(X_i)$.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Relazioni con un Solo Attributo (Unarie).} Una relazione può essere definita su un unico attributo ($n=1$). Tali relazioni sono molto utili per rappresentare sottoinsiemi, stati o proprietà del dominio senza dover introdurre colonne booleane ridondanti.
+\begin{center}
+\small
+\begin{tabular}{c}
+    \toprule
+    \textbf{STUDENTI\_LAVORATORI} \\
+    \midrule
+    \textbf{Matricola} \\
+    \midrule
+    6554 \\
+    3456 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+La presenza del valore indica l'appartenenza dello studente alla categoria dei lavoratori.
+
+\subsection{Strutture Dati Annidate e Appiattimento (\textit{Unnesting})}
+\noindent \textbf{La Complessità dei Dati del Mondo Reale.} Nei documenti cartacei e nelle ricevute contabili i dati si presentano spesso in forma gerarchica e ricorsiva. Si pensi a uno scontrino rilasciato da un ristorante:
+\begin{itemize}
+    \item Informazioni di testata generali: nome del locale, indirizzo, data, numero scontrino fiscale e conto totale.
+    \item Corpo dello scontrino: una lista variabile di consumazioni (ciascuna con quantità, descrizione della portata e prezzo unitario o complessivo).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il Vincolo della Prima Forma Normale (1NF).} Nel modello relazionale canonico vige il vincolo di \textbf{atomicità dei domini}: i valori contenuti all'incrocio tra una riga e una colonna devono essere indivisibili. Non è consentito inserire come valore di un attributo una lista, un vettore o una sotto-tabella (strutture non in \textit{First Normal Form} o $\neg\text{1NF}$).
+
+\begin{cbox}{Il Processo di Decomposizione e Appiattimento (\textit{Unnesting})}
+\noindent Per rappresentare fedelmente uno scontrino nel modello relazionale, la struttura annidata deve essere scomposta (\textit{unnested}) in due relazioni distinte ma correlate per valore:
+\begin{center}
+\small
+\textbf{Relazione RICEVUTE} \\[1ex]
+\begin{tabular}{ccc}
+    \toprule
+    \textbf{Numero} & \textbf{Data} & \textbf{Totale} \\
+    \midrule
+    1235 & 12/10/2002 & 39,20 \\
+    1240 & 13/10/2002 & 39,00 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{center}
+\small
+\textbf{Relazione PORTATE (Dettaglio Scontrino)} \\[1ex]
+\begin{tabular}{cclc}
+    \toprule
+    \textbf{Ricevuta} & \textbf{Riga} & \textbf{Descrizione} & \textbf{Prezzo} \\
+    \midrule
+    1235 & 1 & 3 Coperti & 3,00 \\
+    1235 & 2 & 2 Antipasti & 6,20 \\
+    1235 & 3 & 3 Primi & 12,00 \\
+    1235 & 4 & 2 Bistecche & 18,00 \\
+    1240 & 1 & 2 Coperti & 2,00 \\
+    1240 & 2 & 2 Antipasti & 7,00 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent \textbf{Analisi delle Scelte Progettuali}:
+\begin{itemize}
+    \item Il campo \textbf{Ricevuta} nella tabella \textbf{PORTATE} funge da connettore logico verso la tabella \textbf{RICEVUTE}.
+    \item È stato introdotto l'attributo esplicito \textbf{Riga} per preservare l'ordinamento originario con cui i piatti sono stati battuti alla cassa. Poiché il modello relazionale non assegna alcun significato all'ordine di memorizzazione delle righe, l'unico modo per tracciare una sequenza è renderla un dato informativo esplicito.
+    \item L'introduzione della riga d'ordine consente inoltre di ammettere portate duplicate consumate in momenti diversi dello stesso pasto (es. due ordinazioni successive della stessa bevanda).
+\end{itemize}
+\end{cbox}
+
+\subsection{Informazione Parziale e Gestione del Valore NULL}
+\noindent \textbf{La Rigidità dello Schema e il Problema dei Valori Mancanti.} Il modello relazionale impone una struttura stretta: ogni tupla conforme a uno schema $R(A_1, \dots, A_n)$ deve possedere un valore per ciascuno degli attributi previsti. Nella realtà dei fatti, tuttavia, le informazioni raccolte possono essere incomplete o temporaneamente non disponibili.
+
+\medskip
+\noindent Si consideri l'anagrafica di quattro personaggi storici memorizzata in uno schema composto da \texttt{Nome}, \texttt{SecondoNome} (\textit{Middle Name}) e \texttt{Cognome}:
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Nome} & \textbf{SecondoNome} & \textbf{Cognome} \\
+    \midrule
+    Franklin & Delano & Roosevelt \\
+    Winston & \textit{?} & Churchill \\
+    Charles & \textit{?} & De Gaulle \\
+    Josip & \textit{?} & Stalin \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Franklin D. Roosevelt possiede effettivamente un secondo nome, mentre gli altri statisti ne sono sprovvisti o non è registrato. Come gestire la casella vuota?
+
+\medskip
+\noindent \textbf{Perché Non Usare Valori Sentinella del Dominio.} Un approccio ingenuo consiste nell'adottare valori speciali appartenenti al dominio (es. stringa vuota \texttt{""}, numeri convenzionali come \texttt{0}, \texttt{-1} o \texttt{9999}). Questa tecnica presenta gravi difetti:
+\begin{itemize}
+    \item \textbf{Mancanza di valori disponibili}: in molti domini continui o aperti non esistono valori non validi o inutilizzati a priori.
+    \item \textbf{Collisioni future}: valori scelti come sentinella potrebbero acquisire un significato reale nel tempo (es. uno zero per la temperatura o per un saldo bancario non significa assenza di dato).
+    \item \textbf{Onere applicativo ed errori di calcolo}: i programmatori devono ricordare a memoria le sentinelle e gestirle manualmente nel codice con condizioni \texttt{IF}. Se la sentinella non viene filtrata, altera funzioni aggregate come medie e conteggi.
+\end{itemize}
+
+\begin{cbox}{La Soluzione Relazionale: Il Marcatore Speciale NULL}
+\noindent Per superare i limiti delle sentinelle, il modello relazionale introduce un costrutto universale dedicato: il valore \textbf{NULL}.
+\begin{itemize}
+    \item NULL denota in modo formale l'\textbf{assenza di un valore informativo valido}.
+    \item NULL \textbf{non appartiene ad alcun dominio di tipo}: si estende la definizione formale di tupla ammettendo che:
+    $$t[A] \in \text{dom}(A) \cup \{ \text{NULL} \}$$
+    \item Nei database moderni, l'ammissibilità dei valori NULL può essere inibita specificando nello schema vincoli dedicati (es. la clausola \texttt{NOT NULL} del linguaggio SQL).
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Le Tre Sfumature Semantiche del Valore Mancante.} Dal punto di vista concettuale, l'assenza di un dato può manifestarsi sotto tre forme profondamente differenti:
+\begin{enumerate}
+    \item \textbf{Valore Sconosciuto (\textit{Unknown})}: il valore esiste realmente nel mondo reale, ma al momento della registrazione non è noto al sistema. \\
+    \textit{Esempio}: la data di nascita o l'indirizzo di residenza di una persona che non ha ancora compilato il modulo anagrafico.
+    \item \textbf{Valore Inesistente o Non Applicabile (\textit{Inexistent / Not Applicable})}: l'attributo non ha alcuna ragione logica di esistere per quella specifica entità. \\
+    \textit{Esempio}: il numero di patente di guida per un individuo che non ha mai conseguito la licenza, o il cognome da nubile per un soggetto di sesso maschile.
+    \item \textbf{Valore Non Informativo o Riservato (\textit{No Information})}: non è possibile determinare se il dato esista o meno, oppure la legislazione sulla privacy ne preclude l'archiviazione.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Trattamento nei DBMS e il Rischio di Proliferazione (\textit{Too Many NULLs}).} Sebbene la teoria riconosca la triplice sfumatura di significato, i DBMS commerciali non distinguono internamente tra valore sconosciuto e valore inesistente: entrambi sono registrati indistintamente tramite il bit di marcatura NULL.
+
+\medskip
+\noindent L'abuso dei valori NULL introduce severe complicazioni:
+\begin{itemize}
+    \item Richiede l'adozione di una logica a tre valori di verità (\textit{True}, \textit{False}, \textit{Unknown}) nell'elaborazione dei predicati delle query SQL.
+    \item Rende ambigue le operazioni di correlazione e join tra tabelle diverse.
+    \item Se una tupla accumula troppi valori NULL (come illustrato nella tabella sottostante), perde la sua identità informativa e cessa di essere utile all'applicazione.
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{ccllc}
+    \toprule
+    \multicolumn{5}{c}{\textbf{Tabella STUDENTI con Eccessiva Presenza di Valori NULL}} \\
+    \textbf{Matricola} & \textbf{Cognome} & \textbf{Nome} & \textbf{DataNascita} \\
+    \midrule
+    6554 & Rossi & Mario & 1978/12/05 \\
+    8765 & Neri & Paolo & 1976/11/03 \\
+    9283 & Verdi & Luisa & 1979/11/12 \\
+    \textbf{NULL} & Rossi & Maria & 1978/02/01 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Come evidenziato nell'ultima riga, se il valore NULL si presenta su un attributo deputato a identificare la riga (la matricola), il record non può più essere collegato in modo univoco agli esami sostenuti o ad altre tabelle del database. Nasce così la necessità di regole strutturali rigide: i \textbf{vincoli di integrità}.
+
+\subsection{Vincoli di Integrità e Loro Classificazione}
+\noindent \textbf{Limiti della Correttezza Sintattica.} Non tutte le istanze di basi di dati sintatticamente conformi a uno schema descrivono una realtà plausibile o corretta per l'applicazione. Si consideri la seguente istanza di prova:
+\begin{center}
+\small
+\textbf{Relazione ESAMI} \\[1ex]
+\begin{tabular}{cccc}
+    \toprule
+    \textbf{Matricola} & \textbf{Voto} & \textbf{Lode} & \textbf{Corso} \\
+    \midrule
+    276545 & \textbf{32} & & 01 \\
+    276545 & 30 & Lode & 02 \\
+    787643 & \textbf{27} & \textbf{Lode} & 03 \\
+    739430 & 24 & & 04 \\
+    \bottomrule
+\end{tabular}
+\qquad
+\textbf{Relazione STUDENTI} \\[1ex]
+\begin{tabular}{cll}
+    \toprule
+    \textbf{Matricola} & \textbf{Cognome} & \textbf{Nome} \\
+    \midrule
+    276545 & Rossi & Mario \\
+    \textbf{787643} & Neri & Piero \\
+    \textbf{787643} & Bianchi & Luca \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Dal punto di vista dei tipi di dato l'istanza è impeccabile (i voti sono interi, i nomi sono stringhe), eppure contiene gravi anomalie semantiche:
+\begin{itemize}
+    \item Un voto d'esame pari a $32$, valore inammissibile nella scala di valutazione universitaria ($18 \le \text{voto} \le 30$).
+    \item L'assegnazione della lode a una prova superata con $27$, combinazione priva di senso regolamentare.
+    \item La presenza di due studenti differenti registrati con la medesima matricola (\texttt{787643}).
+\end{itemize}
+
+\begin{cbox}{Definizione Formale di Vincolo di Integrità}
+\noindent Un \textbf{vincolo di integrità} è un predicato logico (una funzione booleana) associato a uno schema di base di dati che associa a ogni possibile istanza di relazione o di base di dati il valore di verità \textbf{Vero} (\textit{True}) o \textbf{Falso} (\textit{False}):
+$$\mathcal{C}: \text{Istanze}(R) \longrightarrow \{\text{True}, \text{False}\}$$
+\begin{itemize}
+    \item Un'istanza di base di dati si definisce \textbf{valida} (o \textbf{legale}) se soddisfa tutti i vincoli di integrità definiti sullo schema ($\mathcal{C}(r) = \text{True}$).
+    \item Un'istanza è \textbf{non valida} se viola anche un solo vincolo ($\mathcal{C}(r) = \text{False}$).
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Motivazioni per l'Introduzione dei Vincoli.} La definizione esplicita dei vincoli è essenziale per molteplici scopi:
+\begin{itemize}
+    \item \textbf{Accuratezza Semantica}: consente di descrivere in modo rigoroso e formale le regole del mondo reale modellato nel database.
+    \item \textbf{Qualità dei Dati (\textit{Data Quality})}: funge da barriera protettiva contro errori di digitazione dell'utente o anomalie dei programmi applicativi.
+    \item \textbf{Guida nella Progettazione}: aiuta a strutturare gli schemi e a identificare precocemente ridondanze o difetti di normalizzazione.
+    \item \textbf{Ottimizzazione delle Query}: l'ottimizzatore interno del DBMS sfrutta la certezza dell'integrità dei dati per semplificare i piani di esecuzione delle interrogazioni, scartando scansioni inutili di blocchi su disco.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Supporto dei Vincoli nei DBMS.} I DBMS non offrono il medesimo livello di supporto per qualsiasi tipo di vincolo:
+\begin{itemize}
+    \item \textbf{Vincoli Dichiarativi Nativi}: sono supportati direttamente dal linguaggio DDL del DBMS (es. chiavi primarie, vincoli di unicità, integrità referenziale e controlli generici con la clausola \texttt{CHECK}). Il DBMS ne verifica automaticamente il rispetto durante ogni operazione di scrittura, respingendo le transazioni illegali.
+    \item \textbf{Vincoli Procedurali Esterni}: vincoli complessi che coinvolgono predicati articolati o computazioni aggregate su molte tabelle spesso non sono esprimibili tramite DDL standard. Devono pertanto essere implementati dal programmatore tramite \textbf{trigger}, \textbf{stored procedure} o controlli inseriti nel software applicativo esterno.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Tassonomia dei Vincoli di Integrità.} I vincoli si dividono in due grandi classi:
+\begin{enumerate}
+    \item \textbf{Vincoli Intra-relazionali}: il predicato deve essere valutato esaminando i dati contenuti all'interno di una singola relazione.
+    \begin{itemize}
+        \item \textit{Vincoli su valori (o di dominio)}: coinvolgono un singolo attributo isolato.
+        \item \textit{Vincoli di tupla}: coinvolgono più attributi ma all'interno della medesima tupla.
+    \end{itemize}
+    \item \textbf{Vincoli Inter-relazionali}: il predicato coinvolge tuple appartenenti a relazioni distinte (o alla stessa relazione esaminata su istanze diverse), coordinando la coerenza complessiva della base di dati.
+\end{enumerate}
+
+\subsection{Vincoli Intra-relazionali: Dominio e Tupla}
+\noindent \textbf{Vincoli di Dominio.} Un \textbf{vincolo di dominio} è una condizione imposta sul singolo attributo di una relazione, limitando l'insieme dei valori ammissibili a un sottoinsieme proprio del dominio di tipo:
+$$t[A] \in D' \subseteq \text{dom}(A)$$
+\textit{Esempi}: imporre che il voto di un esame sia compreso nell'intervallo $[18, 30]$, che l'età di un dipendente sia strettamente positiva o che il campo \texttt{Genere} ammetta unicamente i caratteri \texttt{'M'}, \texttt{'F'} o \texttt{'N'}.
+
+\medskip
+\noindent \textbf{Vincoli di Tupla.} Un \textbf{vincolo di tupla} esprime una regola che coinvolge una combinazione di più attributi appartenenti alla medesima riga, \textbf{in modo del tutto indipendente} dalle altre tuple memorizzate nella tabella.
+
+\medskip
+\noindent \textbf{Sintassi dei Vincoli di Tupla.} Formalmente, un vincolo di tupla viene espresso come un'espressione booleana composta da atomi collegati da connettivi logici (\texttt{AND}, \texttt{OR}, \texttt{NOT}). Ciascun atomo può essere:
+\begin{itemize}
+    \item Un confronto tra valori o attributi del dominio (es. $(\text{Voto} \ge 18) \land (\text{Voto} \le 30)$).
+    \item Un confronto tra espressioni aritmetiche calcolate sugli attributi della tupla.
+\end{itemize}
+
+\begin{cbox}{Esempio: Vincolo di Tupla Contabile sulla Busta Paga}
+\noindent Si consideri la tabella \textbf{STIPENDI}, dove ogni riga rappresenta la retribuzione mensile di un dipendente suddivisa in imponibile lordo, trattenute fiscali e compenso netto percepito:
+\begin{center}
+\small
+\begin{tabular}{lccc}
+    \toprule
+    \textbf{Dipendente} & \textbf{StipendioLordo} & \textbf{Ritenute} & \textbf{StipendioNetto} \\
+    \midrule
+    Rossi & 55.000 & 12.500 & 42.500 \\
+    Neri & 45.000 & 10.000 & 35.000 \\
+    Bruni & 47.000 & 11.000 & 36.000 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Il dominio contabile impone un rigoroso \textbf{vincolo di tupla aritmetico}:
+$$\text{StipendioLordo} = \text{Ritenute} + \text{StipendioNetto}$$
+Tutte le tuple dell'istanza sopra riportata soddisfano il vincolo:
+\begin{itemize}
+    \item Tupla di Rossi: $55.000 = 12.500 + 42.500$ \quad (\textit{Verificato}).
+    \item Tupla di Neri: $45.000 = 10.000 + 35.000$ \quad (\textit{Verificato}).
+    \item Tupla di Bruni: $47.000 = 11.000 + 36.000$ \quad (\textit{Verificato}).
+\end{itemize}
+\medskip
+\noindent \textbf{Esempio di Violazione del Vincolo.} Si supponga che un aggiornamento errato alteri la riga del dipendente Bruni come segue:
+\begin{center}
+\small
+\begin{tabular}{lccc}
+    \toprule
+    \textbf{Dipendente} & \textbf{StipendioLordo} & \textbf{Ritenute} & \textbf{StipendioNetto} \\
+    \midrule
+    Bruni & \textbf{50.000} & 11.000 & 36.000 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Poiché $11.000 + 36.000 = 47.000 \ne 50.000$, la tupla viola il vincolo di integrità di tupla; il DBMS deve respingere la modifica lasciando inalterato lo stato della base di dati.
+\end{cbox}
+
+\subsection{Identificazione delle Tuple: Superchiavi e Chiavi}
+\noindent \textbf{Il Problema dell'Identificazione Univoca.} Nel paradigma relazionale basato su valori, non esistono puntatori fisici o numeri di riga impliciti. L'unico modo per individuare una specifica tupla, accedere alle sue informazioni e collegarla ad altre relazioni consiste nel fare leva sui valori dei suoi attributi.
+
+\begin{cbox}{Definizioni Formali: Superchiave e Chiave}
+\noindent Sia $r$ un'istanza di relazione conforme allo schema $R(X)$ con $X = \{A_1, A_2, \dots, A_n\}$:
+\begin{enumerate}
+    \item \textbf{Superchiave}: un insieme di attributi $K \subseteq X$ è una \textbf{superchiave} per $r$ se l'istanza non contiene due tuple distinte $t_1, t_2 \in r$ che coincidano su tutti gli attributi di $K$:
+    $$\forall t_1, t_2 \in r, \quad (t_1 \ne t_2) \implies t_1[K] \ne t_2[K]$$
+    \item \textbf{Chiave (o Chiave Candidata)}: un insieme di attributi $K \subseteq X$ è una \textbf{chiave} per $r$ se è una \textbf{superchiave minimale}, ossia:
+    \begin{itemize}
+        \item $K$ è una superchiave per $r$.
+        \item Nessun sottoinsieme proprio $K' \subset K$ è una superchiave per $r$ (eliminando anche un solo attributo da $K$, la proprietà di unicità decade).
+    \end{itemize}
+\end{enumerate}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Esempio Dettagliato: Ricerca delle Chiavi.} Si consideri la seguente istanza della relazione \textbf{STUDENTI}:
+\begin{center}
+\small
+\begin{tabular}{clllc}
+    \toprule
+    \textbf{Matricola} & \textbf{Cognome} & \textbf{Nome} & \textbf{CorsoDiStudi} & \textbf{DataNascita} \\
+    \midrule
+    27655 & Rossi & Mario & Ingegneria Informatica & 1978/12/05 \\
+    78763 & Rossi & Mario & Ingegneria Informatica & 1976/11/03 \\
+    65432 & Neri & Piero & Ingegneria Meccanica & 1979/07/10 \\
+    87654 & Neri & Mario & Ingegneria Informatica & 1976/11/03 \\
+    67653 & Rossi & Piero & Ingegneria Meccanica & 1978/12/05 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Analizziamo le possibili combinazioni di attributi:
+\begin{itemize}
+    \item $K_1 = \{\text{Matricola}\}$: ciascuna tupla possiede un numero di matricola univoco. È una superchiave ed è composta da un singolo attributo, quindi è \textbf{minimale per definizione}: $K_1$ è una \textbf{chiave}.
+    \item $K_2 = \{\text{Cognome}, \text{Nome}, \text{DataNascita}\}$: non esistono due studenti con stesso cognome, stesso nome e medesima data di nascita. È una superchiave. Inoltre:
+    \begin{itemize}
+        \item $\{\text{Cognome}, \text{Nome}\}$ non basta (ci sono due \textit{Mario Rossi}).
+        \item $\{\text{Cognome}, \text{DataNascita}\}$ non basta (ci sono due \textit{Rossi} nati il 1978/12/05).
+        \item $\{\text{Nome}, \text{DataNascita}\}$ non basta (ci sono due \textit{Mario} nati il 1976/11/03).
+    \end{itemize}
+    Poiché nessun sottoinsieme proprio identifica le tuple, $K_2$ è minimale ed è una \textbf{seconda chiave candidata}.
+    \item $K_3 = \{\text{Matricola}, \text{Cognome}\}$: identifica univocamente le tuple, ma contiene la chiave $\{\text{Matricola}\}$ come sottoinsieme proprio. È una \textbf{superchiave non minimale}, quindi non è una chiave.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Schemi, Vincoli e Stati: Il Rischio delle Chiavi Accidentali.} Si consideri la combinazione $K_4 = \{\text{Cognome}, \text{CorsoDiStudi}\}$. Nell'istanza specifica mostrata nella tabella precedente, per pura coincidenza, non figurano due tuple uguali su questa coppia di attributi. Possiamo affermare che $\{\text{Cognome}, \text{CorsoDiStudi}\}$ sia una chiave?
+
+\begin{cbox}{Vincoli a Livello di Schema vs Proprietà dello Stato}
+\noindent La risposta è tassativamente \textbf{no}:
+\begin{itemize}
+    \item I vincoli di integrità riflettono \textbf{proprietà del mondo reale modellato} e sono definiti a livello di \textbf{schema}.
+    \item Un vincolo deve essere soddisfatto da \textbf{tutte le istanze legali ammissibili}, presenti e future, non soltanto dai dati momentaneamente inseriti.
+    \item L'unicità di $\{\text{Cognome}, \text{CorsoDiStudi}\}$ è una coincidenza dello stato attuale (\textit{by chance}): nel mondo reale nulla impedisce a due fratelli o omonimi con il cognome \textit{Rossi} di iscriversi entrambi a \textit{Ingegneria Informatica}.
+\end{itemize}
+$\implies$ Le chiavi non si desumono mai guardando i dati di una tabella campione, ma unicamente dall'analisi dei requisiti e della semantica del dominio.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Il Teorema di Esistenza della Chiave.} Poiché per definizione assiomatica del modello relazionale una relazione è un \textbf{insieme di tuple distinte}, ne consegue una proprietà teorica di fondamentale importanza:
+\begin{enumerate}
+    \item L'insieme formato da \textbf{tutti gli attributi della relazione} $X = \{A_1, A_2, \dots, A_n\}$ garantisce l'assenza di tuple identiche ed è perciò sempre una \textbf{superchiave}.
+    \item Poiché l'insieme degli attributi è finito, esso deve contenere almeno un sottoinsieme minimale (che nel caso limite peggiore coincide con l'intero insieme $X$).
+\end{enumerate}
+$\implies$ \textbf{Ogni relazione possiede sempre almeno una chiave}.
+
+\medskip
+\noindent \textbf{L'Importanza Sistemistica delle Chiavi.} L'esistenza garantita di almeno una chiave assicura due requisiti cardine:
+\begin{itemize}
+    \item \textbf{Accessibilità univoca}: qualunque elemento informativo all'interno della base di dati può essere reperito in modo deterministico specificando il nome della relazione, il nome dell'attributo e il valore della chiave.
+    \item \textbf{Fondamento delle relazioni per valore}: le chiavi costituiscono l'ancora logica per connettere relazioni distinte senza ambiguità.
+\end{itemize}
+
+\subsection{Chiavi, Valori NULL e la Chiave Primaria}
+\noindent \textbf{L'Incompatibilità tra Valori NULL e Chiavi.} Se gli attributi appartenenti a una chiave contenessero valori NULL, la funzione stessa della chiave verrebbe irrimediabilmente compromessa:
+\begin{itemize}
+    \item \textbf{Perdita di identificazione}: due tuple con un valore NULL sulla chiave non possono essere confrontate (NULL non è uguale a NULL nella logica a tre valori), rendendo impossibile verificare se rappresentino la stessa entità o entità distinte.
+    \item \textbf{Impossibilità di referenziazione}: un'altra tabella che desideri puntare a quella specifica riga non avrebbe un valore concreto da registrare nella propria colonna di collegamento.
+\end{itemize}
+
+\begin{cbox}{Esempio: La Corruzione dell'Identità delle Tuple con Valori NULL}
+\noindent Si consideri una tabella di studenti con valori NULL distribuiti sulle possibili chiavi:
+\begin{center}
+\small
+\begin{tabular}{clllc}
+    \toprule
+    \textbf{Matricola} & \textbf{Cognome} & \textbf{Nome} & \textbf{CorsoDiStudi} & \textbf{DataNascita} \\
+    \midrule
+    \textbf{NULL} & \textbf{NULL} & Mario & Ing. Informatica & 1978/12/05 \\
+    78763 & Rossi & Mario & Ingegneria Civile & 1976/11/03 \\
+    65432 & Neri & Piero & Ingegneria Meccanica & 1979/07/10 \\
+    87654 & Neri & Mario & Ing. Informatica & \textbf{NULL} \\
+    \textbf{NULL} & Neri & Mario & Ing. Informatica & \textbf{NULL} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Nell'ultima riga, la matricola è ignota e la data di nascita è assente: né $\{\text{Matricola}\}$ né $\{\text{Cognome}, \text{Nome}, \text{DataNascita}\}$ possono essere utilizzate per distinguere questa persona dagli altri iscritti o per verbalizzare un esame sostenuto.
+\end{cbox}
+
+\medskip
+\noindent \textbf{La Scelta della Chiave Primaria (\textit{Primary Key}).} Tra tutte le chiavi candidate individuate su una relazione, il progettista deve selezionarne una specifica che assuma il ruolo di \textbf{chiave primaria}:
+\begin{itemize}
+    \item La chiave primaria funge da identificatore formale, privilegiato e immutabile delle tuple della tabella.
+    \item Tutte le altre chiavi candidate non prescelte prendono il nome di \textbf{chiavi alternative} o secondarie (garantite dal vincolo \texttt{UNIQUE} in SQL).
+    \item Si prediligono chiavi compatte (composte da pochi attributi), stabili nel tempo (i cui valori non cambiano mai) e preferibilmente numeriche.
+\end{itemize}
+
+\begin{cbox}{Vincolo di Integrità dell'Entità (\textit{Entity Integrity Constraint})}
+\noindent \textbf{Regola Aurea}: Gli attributi che compongono la \textbf{chiave primaria} di una relazione \textbf{non possono mai assumere il valore NULL} (\textit{NOT NULL implicito}). \\
+
+\noindent \textbf{Convenzione Grafica e Notazionale}: \\
+Negli schemi testuali e nelle tabelle relazionali, la chiave primaria viene evidenziata applicando una \textbf{\underline{sottolineatura}} agli attributi che la compongono:
+$$\text{STUDENTI}(\underline{\text{Matricola}}, \text{Cognome}, \text{Nome}, \text{CorsoDiStudi}, \text{DataNascita})$$
+\end{cbox}
+
+\subsection{Integrità Referenziale e Chiavi Esterne (\textit{Foreign Key})}
+\noindent \textbf{Il Collegamento Inter-relazionale per Valore.} Nel modello relazionale, informazioni memorizzate in tabelle distinte vengono poste in correlazione mediante la sovrapposizione di valori condivisi. In particolare, una tabella referenziante include tra i propri attributi i valori della chiave primaria della tabella referenziata.
+
+\medskip
+\noindent Affinché la base di dati resti affidabile, tali collegamenti devono essere \textbf{coerenti}: non deve mai essere possibile fare riferimento a un'entità inesistente o cancellata.
+
+\begin{cbox}{Definizione Formale di Vincolo di Integrità Referenziale}
+\noindent Siano date due relazioni $R_1$ e $R_2$ con rispettivi schemi. Un \textbf{vincolo di integrità referenziale} (o \textbf{chiave esterna} / \textit{foreign key}) tra un insieme di attributi $X$ di $R_1$ (detta \textbf{relazione referenziante}) e la chiave primaria $K$ di $R_2$ (detta \textbf{relazione referenziata}) impone che:
+\begin{itemize}
+    \item Per ogni tupla $t_1 \in r_1$, se il valore di $t_1[X]$ è interamente valorizzato (non contiene NULL), allora deve esistere una tupla $t_2 \in r_2$ tale che:
+    $$t_1[X] = t_2[K]$$
+    \item In notazione insiemistica di algebra relazionale:
+    $$\pi_X(r_1) \setminus \{ \text{NULL} \} \subseteq \pi_K(r_2)$$
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Esempio Completo: Il Sistema di Verbalizzazione delle Infrazioni.} Si consideri il sistema di gestione del comando di polizia locale, modellato su tre relazioni:
+\begin{center}
+\small
+\textbf{Relazione INFRAZIONI} \\[1ex]
+\begin{tabular}{ccccc}
+    \toprule
+    \textbf{\underline{Codice}} & \textbf{Data} & \textbf{Vigile} & \textbf{Stato} & \textbf{Targa} \\
+    \midrule
+    34321 & 1995/02/01 & 3987 & Italia & MI39548K \\
+    53524 & 1995/03/04 & 3295 & Italia & AJ046EZ \\
+    64521 & 1996/04/05 & 3295 & Francia & ET234RY \\
+    73321 & 1998/02/05 & 9345 & Finlandia & MMG-418 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{center}
+\small
+\textbf{Relazione VIGILI} \qquad \qquad \textbf{Relazione AUTO} \\[1ex]
+\begin{tabular}{cll}
+    \toprule
+    \textbf{\underline{Matricola}} & \textbf{Cognome} & \textbf{Nome} \\
+    \midrule
+    3987 & Rossi & Luca \\
+    3295 & Neri & Piero \\
+    9345 & Neri & Mario \\
+    7543 & Mori & Gino \\
+    \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{llcl}
+    \toprule
+    \textbf{\underline{Stato}} & \textbf{\underline{Targa}} & \textbf{Cognome} & \textbf{Nome} \\
+    \midrule
+    Italia & MI39548K & Rossi & Mario \\
+    Italia & AJ046EZ & Verdi & Giuseppe \\
+    Francia & ET234RY & Debussy & Claude \\
+    Finlandia & MMG-418 & Sibelius & Jean \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Sulla tabella \textbf{INFRAZIONI} insistono due distinti vincoli di integrità referenziale:
+\begin{enumerate}
+    \item L'attributo singolo \texttt{Vigile} referenzia la chiave primaria della tabella \textbf{VIGILI}:
+    $$\text{INFRAZIONI}[\text{Vigile}] \xrightarrow{\quad \text{FK} \quad} \text{VIGILI}[\text{Matricola}]$$
+    \item La coppia di attributi $\{\text{Stato}, \text{Targa}\}$ referenzia la chiave primaria composita della tabella \textbf{AUTO}:
+    $$\text{INFRAZIONI}[\text{Stato}, \text{Targa}] \xrightarrow{\quad \text{FK} \quad} \text{AUTO}[\text{Stato}, \text{Targa}]$$
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Violazione dell'Integrità Referenziale.} Una violazione del vincolo si verificherebbe qualora venisse inserita nella tabella \textbf{INFRAZIONI} una tupla con:
+\begin{itemize}
+    \item \texttt{Vigile} $= 8888$, ma tale matricola non compare in \textbf{VIGILI}.
+    \item \texttt{Stato} $= \text{'Italia'}$, \texttt{Targa} $= \text{'XX000YY'}$, ma tale veicolo non risulta registrato nella tabella \textbf{AUTO}.
+\end{itemize}
+In entrambi i casi, l'infrazione punterebbe al vuoto (\textit{dangling reference}), compromettendo la qualità e l'affidabilità della base di dati.
+
+\subsection{Politiche di Reazione alle Violazioni e Vincoli Multipli}
+\noindent \textbf{Integrità Referenziale e Valori NULL.} Il vincolo di chiave esterna non impone necessariamente che il riferimento esista: ammette che l'attributo assuma il valore NULL, a patto che la colonna non sia marcata con il vincolo aggiuntivo \texttt{NOT NULL}.
+
+\begin{cbox}{Esempio: Partecipazione Opzionale a Progetti}
+\noindent Si consideri una base di dati aziendale composta dalle relazioni:
+\begin{align*}
+& \text{DIPENDENTI}(\underline{\text{Matricola}}, \text{Cognome}, \text{Progetto}) \\
+& \text{PROGETTI}(\underline{\text{Codice}}, \text{DataInizio}, \text{DurataMesi}, \text{CostoMilioni})
+\end{align*}
+\begin{center}
+\small
+\begin{tabular}{clc}
+    \toprule
+    \textbf{\underline{Matricola}} & \textbf{Cognome} & \textbf{Progetto} \\
+    \midrule
+    34321 & Rossi & IDEA \\
+    53524 & Neri & XYZ \\
+    64521 & Verdi & \textbf{NULL} \\
+    73032 & Bianchi & IDEA \\
+    \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{lccc}
+    \toprule
+    \textbf{\underline{Codice}} & \textbf{DataInizio} & \textbf{Mesi} & \textbf{Costo} \\
+    \midrule
+    IDEA & 2000/01 & 36 & 200 \\
+    XYZ & 2001/07 & 24 & 120 \\
+    BOH & 2001/09 & 24 & 150 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent La presenza di \textbf{NULL} sul dipendente \textit{Verdi} è lecita: significa semanticamente che il dipendente è momentaneamente senza allocazione progettuale. Per i dipendenti che hanno un valore specificato, invece, il codice deve esistere tassativamente nella tabella \textbf{PROGETTI}.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Gestione degli Effetti Collaterali: Azioni Compensative.} Quando un utente o un programma richiede la \textbf{cancellazione} o la \textbf{modifica della chiave} di una tupla nella tabella referenziata (es. eliminare il progetto \texttt{XYZ} da \textbf{PROGETTI}), le tuple della tabella referenziante (\textbf{DIPENDENTI}) rimarrebbero con una chiave esterna orfana, violando il vincolo.
+
+\medskip
+\noindent I DBMS commerciali permettono di gestire l'anomalia configurando quattro distinte \textbf{azioni compensative}:
+\begin{enumerate}
+    \item \textbf{Rifiuto / Blocco (\textit{Restrict / No Action})}: il DBMS impedisce tassativamente l'operazione di cancellazione o aggiornamento, segnalando un errore applicativo fintanto che esistono record figli collegati. È il comportamento predefinito di sicurezza.
+    \item \textbf{Cancellazione a Cascata (\textit{Cascade})}: l'eliminazione della tupla genitore provoca l'\textbf{eliminazione a catena} automatica di tutte le tuple figlie collegate nella tabella referenziante. Se si cancella il progetto \texttt{XYZ}, vengono automaticamente eliminati anche tutti i dipendenti assegnati a quel progetto.
+    \item \textbf{Assegnazione a NULL (\textit{Set NULL})}: la tupla genitore viene regolarmente eliminata; nei record referenzianti collegati, il valore della chiave esterna viene commutato automaticamente al marcatore speciale NULL (il dipendente \textit{Neri} non viene licenziato, ma la sua colonna \texttt{Progetto} diventa NULL).
+    \item \textbf{Assegnazione al Default (\textit{Set Default})}: il campo della chiave esterna nelle tuple figlie viene reimpostato su un valore predefinito valido specificato nello schema (es. un progetto jolly aziendale generico).
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Vincoli Referenziali su Attributi Multipli e Corrispondenza Posizionale.} Una relazione può possedere più chiavi esterne indipendenti rivolte verso la medesima tabella di destinazione. Si consideri la relazione \textbf{INCIDENTI} che descrive sinistri stradali tra due autovetture:
+\begin{center}
+\small
+\textbf{Relazione INCIDENTI} \\[1ex]
+\begin{tabular}{ccccc}
+    \toprule
+    \textbf{\underline{Codice}} & \textbf{StatoA} & \textbf{TargaA} & \textbf{StatoB} & \textbf{TargaB} \\
+    \midrule
+    34321 & Italia & AJ046EZ & Italia & MI39548K \\
+    53524 & Finlandia & MMG-418 & Francia & ET234RY \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent In questa tabella sussistono due vincoli distinti verso la tabella $\text{AUTO}(\underline{\text{Stato}}, \underline{\text{Targa}})$:
+\begin{align*}
+\mathcal{C}_1: & \quad (\text{StatoA}, \text{TargaA}) \xrightarrow{\quad \text{FK} \quad} \text{AUTO}(\text{Stato}, \text{Targa}) \\
+\mathcal{C}_2: & \quad (\text{StatoB}, \text{TargaB}) \xrightarrow{\quad \text{FK} \quad} \text{AUTO}(\text{Stato}, \text{Targa})
+\end{align*}
+
+\begin{cbox}{La Rigidità dell'Ordinamento Posizionale nella Definizione dei Vincoli}
+\noindent Quando un vincolo referenziale è definito su una chiave composita formata da più attributi $(A_1, A_2, \dots, A_m) \to (K_1, K_2, \dots, K_m)$:
+\begin{itemize}
+    \item L'\textbf{ordine posizionale} degli attributi specificato nella clausola è determinante: l'attributo in posizione $i$ della chiave esterna viene confrontato esclusivamente con l'attributo in posizione $i$ della chiave primaria di destinazione.
+    \item Scambiare l'ordine (es. definire erroneamente $(\text{TargaA}, \text{StatoA}) \to (\text{Stato}, \text{Targa})$) genera un errore immediato di tipo di dato incompatibile oppure tenta di abbinare una targa a uno stato geografico, corrompendo l'integrità logica del modello.
+\end{itemize}
+\end{cbox}
+
 \end{document}
