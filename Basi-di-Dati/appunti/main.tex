@@ -1,0 +1,611 @@
+\documentclass[12pt]{extarticle}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage[shortlabels]{enumitem}
+\usepackage{latexsym}
+\usepackage{fixmath}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{gensymb}
+\usepackage{centernot}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{mdframed}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage[most]{tcolorbox}
+\usepackage{lipsum}
+\usepackage{python}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus .2ex}{2ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{3ex plus 1ex minus .2ex}{1.2ex plus .2ex}
+
+\newtcolorbox{cbox}[1]{
+    colback=orange!5!white,
+    colframe=orange!40!black,
+    fonttitle=\bfseries,
+    title=#1,
+    arc=2mm,
+    boxrule=0.5mm,
+    left=10pt,
+    right=10pt,
+    top=10pt,
+    bottom=10pt,
+    before skip=12pt,
+    after skip=12pt,
+    breakable
+}
+
+\title{Database}
+\author{Mattia Masina\\CdL in Informatica -- Università di Bologna}
+\date{Anno Accademico 2026/2027}
+
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{bluegreen}{rgb}{0,0.6,0.6}
+\definecolor{darkorange}{rgb}{1.0, 0.55, 0.0}
+\definecolor{lightgray}{rgb}{0.83, 0.83, 0.83}
+\definecolor{seashell}{rgb}{1.0, 0.96, 0.93}
+\definecolor{lightyellow}{rgb}{1.0, 1.0, 1.0}
+\definecolor{ghostwhite}{rgb}{0.97, 0.97, 1.0}
+\definecolor{deepcarrotorange}{rgb}{0.91, 0.41, 0.17}
+\definecolor{aqua}{rgb}{0.0, 1.0, 1.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{blue-violet}{rgb}{0.54, 0.17, 0.89}
+\definecolor{beaver}{rgb}{0.62, 0.51, 0.44}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{ghostwhite},
+    identifierstyle=\color{black},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue-violet}\bfseries,
+    numberstyle=\tiny\color{bluegreen},
+    stringstyle=\color{blue},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    morekeywords={exp, logspace, print, Exception, try, catch, from, import, while, True, False},
+    emphstyle=\color{blue}\bfseries,
+    emph={[2]null},
+    emphstyle={[2]\color{deepcarrotorange}\bfseries},
+    emph={[3]size, length},
+    emphstyle={[3]\color{deepcarrotorange}\bfseries},
+    morestring=[b]",
+    morestring=[b]',
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Basi di Dati e Sistemi di Gestione dei Dati (DBMS)}
+
+\subsection{Metodologia di Studio e Sistemi Informativi}
+\noindent \textbf{Studio Individuale e Concetti Fondamentali.} Per imparare a gestire le basi di dati non basta mandare a memoria definizioni astratte. È fondamentale sviluppare una forma mentale rigorosa: capire come rappresentare la realtà in modo formale e collegare sempre la teoria a problemi pratici e casi d'uso concreti.
+
+\medskip
+\noindent \textbf{Attività Applicativa e Strumenti Software.} La teoria deve andare di pari passo con la pratica. Esercizi, laboratori e progetti d'esame richiedono l'uso operativo di sistemi software dedicati, detti \textbf{DBMS} (\textit{Database Management System}). Nel mondo reale e sul mercato esistono diverse categorie di DBMS:
+\begin{itemize}
+    \item \textbf{Sistemi Enterprise e Commerciali}: IBM DB2, Oracle Database, Microsoft SQL Server (pensati per grandi aziende con carichi elevati).
+    \item \textbf{Sistemi Open Source Relazionali Standard}: PostgreSQL, MySQL (molto diffusi nel web e nei progetti moderni).
+    \item \textbf{Sistemi Desktop ed Embedded}: Microsoft Access, SQLite (leggeri, spesso integrati dentro singole applicazioni o app per smartphone).
+    \item \textbf{Piattaforme Cloud e Analitiche}: Google BigQuery (ottimizzate per analizzare moli immense di dati).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Punto di Vista Metodologico vs Tecnologico.} La materia viene affrontata da due angolazioni complementari:
+\begin{itemize}
+    \item \textbf{Punto di vista metodologico}: riguarda la \textit{progettazione}. Ci si concentra sui modelli logici e concettuali usati per descrivere le informazioni del mondo reale in modo pulito, astraendo dai dettagli fisici del computer.
+    \item \textbf{Punto di vista tecnologico}: riguarda il \textit{software}. Esamina come è fatto internamente un DBMS: come scrive i dati sui dischi, come gestisce la memoria, come gestisce accessi simultanei e quali linguaggi offre.
+\end{itemize}
+
+\begin{cbox}{I Quattro Contenuti Fondamentali della Disciplina}
+\begin{itemize}
+    \item \textbf{Modelli per l'organizzazione dei dati}: insiemi di regole e strutture matematiche per descrivere entità, relazioni e vincoli del mondo reale.
+    \item \textbf{Linguaggi per l'utilizzo dei dati}: strumenti (come SQL) per inserire, leggere, aggiornare ed eliminare i record.
+    \item \textbf{Sistemi per la gestione dei dati}: l'architettura dei DBMS, capace di garantire sicurezza, persistenza ed efficienza.
+    \item \textbf{Metodologie di progettazione}: i passi guidati per passare dai requisiti parlati a uno schema di database corretto, privo di errori e facile da mantenere.
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Il Sistema Informativo (SI).} Il \textbf{sistema informativo} è l'insieme di persone, strumenti e procedure con cui un'organizzazione (azienda, università, ospedale) raccoglie, organizza e scambia le informazioni indispensabili per svolgere le proprie attività. Anche se un'azienda non ha un reparto chiamato formalmente ``Ufficio Sistema Informativo'', possiede comunque un sistema informativo che ne supporta il lavoro quotidiano.
+
+\medskip
+\noindent \textbf{Indipendenza dall'Automazione Informatica.} Un sistema informativo \textbf{non deve essere per forza computerizzato}. \\
+\textit{Esempio}: Gli archivi notarili o gli uffici anagrafe comunali dell'Ottocento funzionavano benissimo usando faldoni cartacei, registri scritti a mano e fattorini; costituivano a tutti gli effetti un sistema informativo, pur in totale assenza di computer.
+
+\medskip
+\noindent \textbf{Il Ciclo di Gestione dell'Informazione.} Qualsiasi informazione all'interno di un'organizzazione attraversa un ciclo di quattro passaggi:
+\begin{itemize}
+    \item \textbf{Raccolta e Acquisizione}: reperire i dati (es. far compilare un modulo di iscrizione a uno studente).
+    \item \textbf{Archiviazione e Conservazione}: salvare i dati in modo duraturo per poterli ritrovare in futuro (es. registrarli in un archivio o sul disco).
+    \item \textbf{Elaborazione e Trasformazione}: calcolare nuovi risultati a partire dai dati grezzi (es. calcolare la media dei voti o il bilancio annuale).
+    \item \textbf{Distribuzione e Comunicazione}: trasmettere i risultati a chi ne ha bisogno (es. inviare una ricevuta via email o mostrare una schermata all'operatore).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il Sistema Informatico (IT System).} Il \textbf{sistema informatico} è la parte tecnologica e automatizzata del sistema informativo. È composto dall'hardware (server, dischi, reti), dal software (DBMS, programmi applicativi) e dagli specialisti informatici che li gestiscono.
+
+\begin{cbox}{Gerarchia dei Sistemi Aziendali: Modello a Cerchi Concentrici}
+\noindent Dal contesto più ampio a quello più specifico, l'organizzazione si struttura in quattro livelli concentrici:
+\begin{enumerate}
+    \item \textbf{Impresa (\textit{Enterprise})}: l'ente economico complessivo nel suo mercato (obiettivi di business, clienti, risorse).
+    \item \textbf{Organizzazione (\textit{Organization})}: l'insieme coordinato di persone, uffici, compiti e processi decisionali.
+    \item \textbf{Sistema Informativo (\textit{Information System})}: la parte dell'organizzazione dedicata specificamente alla gestione dei flussi informativi.
+    \item \textbf{Sistema Informatico (\textit{IT System})}: l'infrastruttura tecnologica digitale (computer e software) che automatizza il sistema informativo.
+\end{enumerate}
+\medskip
+\noindent \textbf{Relazione di inclusione}: $\text{Enterprise} \supset \text{Organization} \supset \text{Information System} \supset \text{IT System}$.\\
+
+\noindent Tutti gli informatici vorrebbero che il sistema informativo e quello informatico fossero perfettamente allineati. Il problema è che in certi casi non conviene o non ha senso informatizzare alcune informazioni.
+\end{cbox}
+
+\subsection{Dati, Informazione e Codifica}
+\noindent \textbf{Distinzione Concettuale e Necessità di Interpretazione.} Nella vita di tutti i giorni esprimiamo concetti in molti modi: parole parlate, testo scritto, disegni, numeri o gesti. Tali informazioni possono essere salvate nella nostra memoria biologica (il cervello), su carta oppure su supporti digitali. Nei calcolatori, però, tutta questa varietà deve essere ridotta e formalizzata sotto forma di \textbf{dati}.
+
+\medskip
+\noindent I due termini hanno ruoli distinti:
+\begin{itemize}
+    \item \textbf{Informazione}: la conoscenza o il significato che una persona ricava da una notizia, da un fatto o da un contesto.
+    \item \textbf{Dato}: l'elemento grezzo, preciso e privo di ambiguità (es. una stringa o un numero), memorizzato come punto di partenza per il calcolo.
+\end{itemize}
+
+\begin{cbox}{Il Dato è Inutile senza Interpretazione: L'Esempio dei Segnali Finlandesi}
+\noindent Si considerino tre cartelli stradali finlandesi di divieto di sosta con pannelli integrativi numerici:
+\begin{center}
+\small
+\begin{tabular}{cp{10.8cm}}
+    \toprule
+    \textbf{Dato Grezzo} & \textbf{Significato Reale (Informazione Compresa)} \\
+    \midrule
+    \textbf{8 -- 17} & Divieto attivo dalle 8:00 alle 17:00 nei giorni feriali (Lunedì--Venerdì). \\
+    \addlinespace
+    \textbf{(8 -- 13)} & Divieto attivo dalle 8:00 alle 13:00 nella giornata di Sabato (indicato tra parentesi). \\
+    \addlinespace
+    \textbf{\textcolor{red}{8 -- 14}} & Divieto attivo dalle 8:00 alle 14:00 nei giorni festivi e Domenica (indicato in rosso). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent \textbf{Analisi Semantica}: \\
+I numeri da soli sono solo cifre. Senza conoscere il codice stradale finlandese (il contesto), non sappiamo a cosa si riferiscano parentesi o colori. \\
+$\implies$ \textbf{Regola chiave}: $\text{Dato} + \text{Contesto / Chiave Interpretativa} = \text{Informazione}$.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Il Processo di Codifica dell'Informazione.} Per consentire a un computer di elaborare la realtà, dobbiamo codificare le informazioni secondo regole fisse e ripetibili:
+\begin{itemize}
+    \item Si prendono descrizioni del mondo reale ricche e discorsive (es. dati di un cittadino).
+    \item Si scompone il testo in attributi precisi: \textit{Nome}, \textit{Cognome}, \textit{Data di Nascita}.
+    \item Si crea un identificatore standard sintetico e univoco: ad esempio il \textbf{Codice Fiscale}.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Perché i Dati Sono una Risorsa Strategica.} All'interno di qualsiasi ente o azienda, quasi tutto cambia in fretta:
+\begin{itemize}
+    \item I processi di business e le strategie commerciali si rinnovano continuamente.
+    \item I computer, i server e i linguaggi di programmazione invecchiano e vengono rimpiazzati in pochi anni.
+    \item Le persone cambiano ruolo o vanno in pensione.
+    \item \textbf{I dati invece restano stabili nel tempo}: un contratto, uno storico di bonifici bancari o un registro delle nascite mantengono la propria validità e struttura invariate per decenni. I dati sono quindi il patrimonio più durevole dell'azienda.
+\end{itemize}
+
+\subsection{Basi di Dati, DBMS e Confronto con i File System}
+\noindent \textbf{Definizione di Base di Dati.} L'espressione \textbf{base di dati} (\textit{database}) viene usata con due significati:
+\begin{itemize}
+    \item \textbf{Significato Generico}: qualsiasi archivio strutturato di dati usato per supportare le attività di un'organizzazione o di un individuo (anche una rubrica telefonica cartacea).
+    \item \textbf{Significato Informatico}: una collezione organizzata di dati, salvata su memorie di massa persistenti (dischi SSD, hard disk) e gestita in modo centralizzato da un programma dedicato chiamato \textbf{DBMS}.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il DBMS (DataBase Management System).} Un \textbf{DBMS} è un sistema software concepito per gestire grandi collezioni di dati, garantendo che le operazioni siano sicure, affidabili ed efficienti.
+
+\begin{cbox}{Le Tre Proprietà Intrinseche dei Dati Gestiti da un DBMS}
+\noindent Un database gestito da un DBMS possiede tre proprietà distintive:
+\begin{enumerate}
+    \item \textbf{Grandi Dimensioni (\textit{Big})}: i dati non possono risiedere per intero nella memoria RAM del computer; il sistema sfrutta la memoria secondaria (dischi fisici o storage cloud).
+    \item \textbf{Persistenza (\textit{Persistent})}: i dati sopravvivono alla chiusura delle applicazioni e allo spegnimento della macchina.
+    \item \textbf{Condivisione (\textit{Shared})}: la stessa base di dati è usata contemporaneamente da programmi diversi e da utenti diversi, evitando di dover duplicare gli archivi per ogni ufficio.
+\end{enumerate}
+\end{cbox}
+
+\medskip
+\noindent \textbf{I Quattro Requisiti di Garanzia del DBMS.} Un DBMS affidabile offre quattro garanzie fondamentali:
+\begin{itemize}
+    \item \textbf{Riservatezza (\textit{Privacy / Sicurezza})}: ciascun utente vede e modifica solo i dati per cui ha un permesso esplicito (es. uno studente vede il proprio libretto, ma non quello degli altri).
+    \item \textbf{Affidabilità (\textit{Reliability})}: in caso di guasto hardware o interruzione improvvisa della corrente elettrica, i dati memorizzati non si corrompono né vanno persi.
+    \item \textbf{Efficienza (\textit{Efficiency})}: il sistema risponde velocemente alle richieste senza sprecare memoria o tempo di CPU, sfruttando algoritmi di indicizzazione mirati.
+    \item \textbf{Efficacia (\textit{Effectiveness})}: mette a disposizione strumenti intuitivi, potenti e flessibili per estrarre e lavorare sui dati utili al lavoro quotidiano.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Disponibilità dei DBMS sul Mercato.} I DBMS si possono installare sui propri server (\textit{on-premise}) oppure noleggiare come servizi gestiti nel cloud (\textit{Database as a Service}). Alcuni dei prodotti più usati sono Oracle, Microsoft SQL Server, PostgreSQL, MySQL, IBM DB2, Google BigQuery e SQLite.
+
+\medskip
+\noindent \textbf{Volumetrie e Ordini di Grandezza delle Basi di Dati.} Quando diciamo che i database sono ``grandi'', intendiamo volumi di dati tali per cui caricare tutto il database in RAM sarebbe impossibile o insostenibile dal punto di vista dei costi.
+
+\begin{cbox}{Ordini di Grandezza nelle Basi di Dati}
+\begin{center}
+\begin{tabular}{lr}
+    \toprule
+    Tipologia di Base di Dati e Utilizzo & Dimensione Tipica \\
+    \midrule
+    Database Operativi Quotidiani (OLTP - acquisti, pagamenti) & 1 -- 5 Terabyte \\
+    Database per Analisi e Report (OLAP / Data Warehouse) & 30 -- 50 Terabyte \\
+    Database Scientifici (meteo, fisica delle particelle) & 500 -- 800 Terabyte \\
+    Numero Complessivo di Record & $>$ 100 miliardi di righe \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent \textit{Nota}: Per archiviare queste moli di dati, l'unico vero limite considerato dal DBMS è lo spazio fisico dei dischi (SSD o magnetici) e dello storage collegato in rete.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Condivisione, Ridondanza e Inconsistenza.} In un'organizzazione complessa (es. un ateneo), uffici diversi (segreteria studenti, biblioteca, mensa) lavorano spesso sulle stesse informazioni (es. l'anagrafica degli studenti). Se ogni ufficio usasse un proprio archivio separato, nascerebbero grossi problemi. La frammentazione dei dati porta a due rischi tipici:
+\begin{itemize}
+    \item \textbf{Ridondanza}: lo stesso dato viene duplicato in più archivi differenti (es. l'indirizzo di casa dello studente è salvato sia nel file della segreteria sia in quello della biblioteca).
+    \item \textbf{Inconsistenza}: le copie duplicate non coincidono tra loro. \\
+    \textit{Esempio}: Lo studente cambia residenza e comunica il nuovo indirizzo solo alla segreteria; la biblioteca mantiene il vecchio indirizzo. Il sistema ora contiene due informazioni reciprocamente contraddittorie sullo stesso fatto.
+\end{itemize}
+\noindent Centralizzare i dati in un unico database gestito da un DBMS evita la ridondanza inutile e impedisce l'inconsistenza.
+
+\medskip
+\noindent \textbf{Evoluzione Storica dell'Architettura per la Gestione dei Dati.} Il modo di archiviare i dati si è trasformato radicalmente nel corso dei decenni:
+\begin{itemize}
+    \item \textbf{Anni '70 (Senza DBMS)}: i programmi leggevano e scrivevano direttamente su file di testo o file binari tramite il sistema operativo. Non c'era separazione tra il codice e il formato del file: se il file cambiava struttura, tutti i programmi andavano riscritti.
+    \item \textbf{Anni '80 (Primi DBMS Relazionali)}: nasce il DBMS come strato intermedio. I programmi (scritti ad esempio in C o Pascal) non toccano più i file su disco, ma chiedono al DBMS le tabelle e i dati di cui hanno bisogno.
+    \item \textbf{Anni '90 (Logica Condivisa e DBMS Attivi)}: parte delle regole di controllo viene spostata dentro il database con le \textbf{stored procedure} e i \textbf{trigger} (il database reagisce in automatico a modifiche e cancellazioni).
+    \item \textbf{Anni 2000 (Architetture Web a Tre Livelli)}: separazione netta tra interfaccia e dati:
+    $$\text{Browser (Client)} \longleftrightarrow \text{Server Applicativo (Java, PHP, Python)} \longleftrightarrow \text{DBMS}$$
+    \item \textbf{Anni 2010 (Mobile e Cloud)}: decine di dispositivi diversi (app iOS, Android, web) si collegano ad API centralizzate che dialogano con basi di dati distribuite e scalabili.
+\end{itemize}
+
+\begin{cbox}{Evoluzione della Logica Procedurale: Stored Procedure vs Trigger}
+\noindent Negli anni '90 i DBMS hanno iniziato a eseguire logica direttamente sul server:
+\begin{itemize}
+    \item \textbf{Stored Procedure}: blocchi di codice salvati direttamente sul database ed eseguiti su richiesta delle applicazioni; riducono il traffico di rete ma spesso non sono facilmente portabili tra DBMS di marche diverse.
+    \item \textbf{Trigger (DBMS Attivi)}: regole automatiche che scattano da sole secondo lo schema \textbf{Evento-Condizione-Azione}. \\
+    \textit{Esempio}: \textit{Quando} viene inserito un nuovo ordine (\textit{Evento}), \textit{se} la quantità ordinata supera le scorte in magazzino (\textit{Condizione}), \textit{allora} blocca l'inserimento e invia una notifica (\textit{Azione}).
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Garanzie del DBMS: Riservatezza, Affidabilità e Transazioni.} Poiché la base di dati è condivisa da molte persone, il DBMS applica regole di accesso granulari:
+\begin{itemize}
+    \item \textit{Esempio A}: Uno studente può visualizzare tutti i propri voti, ma ha il permesso di modificare soltanto la propria password e il proprio recapito telefonico.
+    \item \textit{Esempio B}: Il docente del corso può inserire e modificare i voti dei propri studenti, ma non può visualizzare o alterare i dati fiscali o bancari degli stessi.
+\end{itemize}
+\noindent Se salta la corrente o il computer va in crash mentre stiamo salvando un dato, il database non deve corrompersi né lasciare operazioni a metà. Per garantire questa affidabilità, il DBMS utilizza il meccanismo delle \textbf{transazioni}.
+
+\begin{cbox}{La Transazione: Proprietà Fondamentali (Prospettiva di Sistema)}
+\noindent Una \textbf{transazione} è un blocco di operazioni che il sistema tratta come un'unica unità di lavoro indivisibile, garantendo tre caratteristiche principali:
+\begin{enumerate}
+    \item \textbf{Atomicità (Tutto o Niente)}: o tutte le istruzioni del blocco vanno a buon fine, oppure, al minimo errore o interruzione, il sistema annulla tutto e torna allo stato iniziale. \\
+    \textit{Esempio del bonifico}: Se trasferiamo 100€ dal conto A al conto B, il sistema deve togliere 100€ da A e aggiungere 100€ su B. Se la macchina va in crash subito dopo aver tolto i soldi da A, la transazione viene annullata e i 100€ ritornano su A.
+    \item \textbf{Coerenza e Gestione della Concorrenza}: più utenti possono operare contemporaneamente sugli stessi dati senza calpestarsi i piedi. \\
+    \textit{Esempio del posto sul treno}: Se due persone tentano di prenotare l'ultimo posto disponibile nello stesso identico secondo, il DBMS assegna il posto a una sola delle due e notifica l'esaurimento all'altra, evitando il sovrapprezzo o l'\textit{overbooking}.
+    \item \textbf{Permanenza (Durabilità)}: una volta che l'operazione è confermata (\textit{commit}), le modifiche sono scritte sul disco (e registrate in un file di log protetto). Anche se il computer si spegne improvvisamente un istante dopo, il dato salvato non andrà perso.
+\end{enumerate}
+\end{cbox}
+
+\noindent Il DBMS deve raggiungere due traguardi pratici:
+\begin{itemize}
+    \item \textbf{Efficienza}: velocità di esecuzione e basso consumo di memoria, grazie a indici intelligenti (es. alberi B-Tree) e all'ottimizzatore di interrogazioni.
+    \item \textbf{Efficacia}: fornire linguaggi semplici e potenti (come SQL) che permettano a programmatori e analisti di ottenere le risposte cercate senza dover scrivere algoritmi a basso livello.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Limiti del File System Tradizionale.} Un normale sistema operativo permette di salvare dati organizzandoli in file e cartelle (\textbf{file system}). \\
+Il limite principale dei file system è la \textbf{grana grossa}: un file va generalmente aperto, letto e riscritto per intero. Se abbiamo un file con 2 milioni di righe e vogliamo modificare il numero di telefono di una sola persona, il programma applicativo deve rileggere il file, localizzare la riga corretta in memoria e riscrivere il file sul disco. Il DBMS, al contrario, lavora a \textbf{grana fine}: individua e modifica direttamente il singolo record in frazioni di secondo.
+
+\medskip
+\noindent \textbf{Descrizione dei Dati e Catalogo Centralizzato.} La differenza più profonda tra i due modelli sta nel modo in cui è descritta la forma dei dati:
+\begin{itemize}
+    \item \textbf{Nei sistemi con File System}: ogni singolo programma deve sapere a memoria come è formattato il file (es. ``i primi 20 byte contengono il cognome, i successivi 10 la data''). Se modifichiamo il formato del file aggiungendo un campo, tutti i programmi esistenti smettono di funzionare finché non vengono riscritti.
+    \item \textbf{Nei DBMS}: la struttura dei dati è definita in un solo posto centrale chiamato \textbf{catalogo} (o \textbf{dizionario dei dati}). I programmi non devono conoscere i dettagli fisici di memorizzazione: chiedono semplicemente le informazioni per nome al DBMS.
+\end{itemize}
+
+\subsection{Modelli dei Dati, Architettura e Indipendenza}
+\noindent \textbf{Il Modello dei Dati.} Un \textbf{modello dei dati} è una collezione di concetti usati per organizzare e descrivere i dati. \\
+Ogni modello offre specifici \textbf{costruttori di tipo}, simili a quelli usati nella programmazione (come array o struct). Nel \textbf{modello relazionale}, il costruttore principale è la \textbf{relazione} (comunemente vista come una \textbf{tabella}), composta da righe omogenee (tuple).
+
+\medskip
+\noindent \textbf{Schema e Istanza.} In qualunque base di dati si distingue nettamente tra forma e contenuto:
+\begin{itemize}
+    \item \textbf{Schema (Aspetto Intensionale)}: l'intestazione, la struttura, i tipi di dato e i vincoli delle tabelle. È fisso e quasi mai soggetto a modifiche nel tempo.
+    \item \textbf{Istanza (Aspetto Estensionale)}: i dati concreti memorizzati nelle righe in un determinato momento. È molto dinamica, poiché righe vengono inserite, aggiornate o cancellate di continuo.
+\end{itemize}
+
+\begin{cbox}{Esempio: Schema e Istanza nella Tabella Orario Lezioni}
+\noindent Si consideri una semplice tabella che organizza l'orario delle lezioni:
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \multicolumn{4}{c}{\textbf{Schema della Relazione (Intestazione fissa, definita una volta sola)}} \\
+    \textbf{Corso (\textit{Course})} & \textbf{Docente (\textit{Lecturer})} & \textbf{Aula (\textit{Room})} & \textbf{Ora (\textit{Time})} \\
+    \midrule
+    \multicolumn{4}{c}{\textbf{Istanza della Relazione (Le righe di dati salvate in questo momento)}} \\
+    Analisi I & Luigi Neri & N1 & 8:00 \\
+    Basi di Dati & Pier Rossi & N2 & 9:45 \\
+    Chimica & Nicola Mori & N1 & 9:45 \\
+    Fisica I & Mario Bruni & N1 & 11:45 \\
+    Fisica II & Mario Bruni & N3 & 9:45 \\
+    Sistemi Informatici & Pier Rossi & N3 & 8:00 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Le intestazioni definiscono \textbf{cosa} può contenere la tabella (lo \textit{schema}); le sei righe di valori rappresentano il contenuto effettivo attuale (l'\textit{istanza}).
+\end{cbox}
+
+\medskip
+\noindent \textbf{Modelli Logici vs Modelli Concettuali.} Esistono due grandi famiglie di modelli usate in momenti diversi della progettazione:
+\begin{itemize}
+    \item \textbf{Modelli Logici}: sono i modelli compresi e usati dai DBMS per organizzare i dati su disco. Sono indipendenti dai dettagli fisici del disco, ma già vicini all'implementazione software. \\
+    \textit{Esempi}: il modello \textbf{relazionale} (a tabelle), il modello gerarchico, a oggetti o documentale/JSON (NoSQL).
+    \item \textbf{Modelli Concettuali}: sono formalismi grafici e intuitivi usati per dialogare con i committenti e descrivere la realtà senza pensare a quale software verrà usato in futuro. \\
+    \textit{Il più celebre}: il \textbf{Modello Entità-Relazione (E-R)}.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Architettura dei DBMS: Livelli e Astrazione.} In prima approssimazione, un sistema di gestione dati separa due aspetti (Architettura Semplificata a Due Livelli):
+\begin{itemize}
+    \item \textbf{Schema Logico}: la vista complessiva della struttura (quali tabelle esistono, quali colonne contengono, quali relazioni ci sono tra loro).
+    \item \textbf{Schema Interno (o Fisico)}: come quei record sono disposti sui blocchi del disco, quali puntatori e quali file fisici vengono usati.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Architettura Standard ANSI/SPARC a Tre Livelli.} Articola la visione dei dati su tre livelli:
+\begin{enumerate}
+    \item \textbf{Livello Esterno (Schemi Esterni / Viste)}: schermate e finestre ritagliate su misura per utenti specifici. Ogni gruppo di utenti vede solo i dati di proprio interesse.
+    \item \textbf{Livello Logico (Schema Logico)}: la descrizione completa, unica e priva di ridondanze dell'intera base di dati.
+    \item \textbf{Livello Interno (Schema Interno)}: l'organizzazione fisica su disco, i file di memoria e le strutture di indicizzazione.
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={draw, rectangle, rounded corners=2pt, minimum width=2.4cm, minimum height=0.75cm, text centered, font=\small},
+    widebox/.style={draw, rectangle, rounded corners=2pt, minimum width=9cm, minimum height=0.8cm, text centered, font=\small\bfseries},
+    db/.style={draw, rectangle, rounded corners=4pt, minimum width=3cm, minimum height=0.9cm, text centered, font=\small\bfseries, fill=ghostwhite},
+    arrow/.style={thick, -{Latex[length=2.5mm]}}
+]
+    % Utenti
+    \node (u1) at (-3.2, 3.8) {Utente 1};
+    \node (u2) at (-1.6, 3.8) {Utente 2};
+    \node (u3) at (0, 3.8) {Utente 3};
+    \node (u4) at (1.6, 3.8) {Utente 4};
+    \node (u5) at (3.2, 3.8) {Utente 5};
+
+    % Schemi Esterni
+    \node[box, fill=orange!10] (e1) at (-2.7, 2.5) {Schema Esterno};
+    \node[box, fill=orange!10] (e2) at (0, 2.5) {Schema Esterno};
+    \node[box, fill=orange!10] (e3) at (2.7, 2.5) {Schema Esterno};
+
+    % Schema Logico
+    \node[widebox, fill=blue!10] (log) at (0, 1.0) {Schema Logico};
+
+    % Schema Interno
+    \node[widebox, fill=gray!15] (int) at (0, -0.4) {Schema Interno};
+
+    % Base di Dati
+    \node[db] (db) at (0, -1.8) {Memoria Fisica (Disco / BD)};
+
+    % Collegamenti
+    \draw (u1) -- (e1);
+    \draw (u2) -- (e1);
+    \draw (u3) -- (e2);
+    \draw (u4) -- (e3);
+    \draw (u5) -- (e3);
+
+    \draw[thick] (e1) -- (log);
+    \draw[thick] (e2) -- (log);
+    \draw[thick] (e3) -- (log);
+    \draw[thick] (log) -- (int);
+    \draw[thick] (int) -- (db);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Il Meccanismo delle Viste.} Una \textbf{vista} è una tabella virtuale: non memorizza dati duplicati su disco, ma calcola le righe al momento eseguendo una query sulle tabelle reali sottostanti.
+
+\begin{cbox}{Esempio di Costruzione di una Vista: Accoppiamento Corsi-Aule}
+\noindent Consideriamo due tabelle di base memorizzate nel database:
+\begin{center}
+\small
+\textbf{Tabella Lezioni} \qquad \qquad \textbf{Tabella Aule} \\[1ex]
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Corso} & \textbf{Docente} & \textbf{Aula} \\
+    \midrule
+    Basi di Dati & Rossi & DS3 \\
+    Sistemi & Neri & N3 \\
+    Reti & Bruni & N3 \\
+    Controlli & Bruni & G \\
+    \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Nome} & \textbf{Edificio} & \textbf{Piano} \\
+    \midrule
+    DS1 & OMI & Terra \\
+    N3 & OMI & Terra \\
+    G & Pincherle & Primo \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent Se agli studenti interessa solo sapere dove andare a lezione (senza vedere il nome del docente o le aule vuote), il DBMS può creare al volo la vista \textbf{AuleLezioni}, collegando le due tabelle tramite l'aula:
+\begin{center}
+\small
+\begin{tabular}{llll}
+    \toprule
+    \textbf{Corso} & \textbf{Aula} & \textbf{Edificio} & \textbf{Piano} \\
+    \midrule
+    Sistemi & N3 & OMI & Terra \\
+    Reti & N3 & OMI & Terra \\
+    Controlli & G & Pincherle & Primo \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\noindent In questo modo l'utente vede una tabella pulita e pronta all'uso, senza che i dati siano stati duplicati sul disco.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Le Due Forme di Indipendenza dei Dati.} Separare i tre livelli garantisce il principio di \textbf{indipendenza dei dati}:
+\begin{itemize}
+    \item \textbf{Indipendenza Fisica}: possiamo cambiare il modo in cui i file sono scritti su disco, spostare il database su un SSD più veloce o aggiungere un indice per velocizzare le ricerche, \textbf{senza dover cambiare una sola riga} dei programmi applicativi o delle query SQL.
+    \item \textbf{Indipendenza Logica}: possiamo aggiungere nuove tabelle o nuove colonne al database \textbf{senza rompere} i programmi preesistenti, che continuano a funzionare interagendo con le loro viste abituali.
+\end{itemize}
+
+\subsection{Linguaggi per Basi di Dati e Modalità di Utilizzo}
+\noindent \textbf{Classificazione Funzionale: DDL vs DML.} Nei database si usano due categorie distinte di comandi:
+\begin{itemize}
+    \item \textbf{DDL (Data Definition Language)}: comandi per creare o modificare la struttura delle tabelle (lo schema). \\
+    \textit{Esempi}: \texttt{CREATE TABLE}, \texttt{ALTER TABLE}, \texttt{DROP TABLE}.
+    \item \textbf{DML (Data Manipulation Language)}: comandi per inserire, cercare, modificare ed eliminare i record effettivi (l'istanza). \\
+    \textit{Esempi}: \texttt{SELECT}, \texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}.
+\end{itemize}
+
+\begin{lstlisting}[language=SQL, caption={Esempio DDL: creazione dello schema di una tabella}]
+CREATE TABLE orario (
+    corso   CHAR(20),
+    docente CHAR(20),
+    aula    CHAR(4),
+    ora     CHAR(5)
+);
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{I Quattro Paradigmi di Interazione con la Base di Dati.} Un utente o un programma può dialogare con il DBMS in quattro modi:
+
+\medskip
+\noindent \textbf{1. Linguaggio Interattivo Testuale (SQL a riga di comando).} L'utente scrive direttamente comandi SQL in una console per ottenere subito i risultati a video:
+
+\begin{lstlisting}[language=SQL, caption={Query SQL interattiva}]
+SELECT Corso, Aula, Piano
+FROM Aule, Lezioni
+WHERE Nome = Aula
+  AND Piano = 'Terra';
+\end{lstlisting}
+
+\noindent \textbf{2. SQL Immerso in un Linguaggio Ospite (\textit{Embedded SQL}).} I comandi SQL vengono inseriti all'interno di un linguaggio tradizionale (es. C o Pascal). Poiché SQL restituisce insiemi di righe mentre le variabili dei linguaggi procedurali leggono un valore alla volta, si usa un \textbf{cursore} per scorrere i risultati riga per riga:
+
+\begin{lstlisting}[language=Pascal, caption={Esempio di Embedded SQL in Pascal con cursore}]
+write('Nome della citta? '); readln(citta);
+EXEC SQL DECLARE P CURSOR FOR
+    SELECT NAME, INCOME
+    FROM PEOPLE
+    WHERE CITY = :citta;
+EXEC SQL OPEN P;
+EXEC SQL FETCH P INTO :name, :income;
+while SQLCODE = 0 do begin
+    write('Nome persona: ', name, ' Aumento? ');
+    readln(aumento);
+    EXEC SQL UPDATE PEOPLE
+        SET INCOME = INCOME + :aumento
+        WHERE CURRENT OF P;
+    EXEC SQL FETCH P INTO :name, :income;
+end;
+EXEC SQL CLOSE CURSOR P;
+\end{lstlisting}
+
+\noindent \textbf{3. Linguaggi Procedurali Integrati nel DBMS (es. Oracle PL/SQL).} Si tratta di linguaggi che uniscono istruzioni SQL a costrutti classici di programmazione (\texttt{IF}, cicli \texttt{WHILE}, gestione degli errori):
+
+\begin{lstlisting}[language=SQL, caption={Esempio di blocco procedurale PL/SQL}]
+DECLARE
+    Stip NUMBER;
+BEGIN
+    SELECT SALARY INTO Stip FROM EMPLOYEE
+    WHERE NUMBER = '575488' FOR UPDATE OF SALARY;
+
+    IF Stip > 30 THEN
+        UPDATE EMPLOYEE SET SALARY = SALARY * 1.1
+        WHERE NUMBER = '575488';
+    ELSE
+        UPDATE EMPLOYEE SET SALARY = SALARY * 1.15
+        WHERE NUMBER = '575488';
+    END IF;
+
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        INSERT INTO ERRORS
+        VALUES ('MATRICOLA NON ESISTENTE', SYSDATE);
+END;
+\end{lstlisting}
+
+\noindent \textbf{4. Interfacce Grafiche (GUI e Maschere a Schermo).} Gli utenti non tecnici (es. operatori di sportello, cassieri) non scrivono comandi SQL: usano maschere grafiche con campi da compilare, pulsanti e menu a tendina (es. Microsoft Access o pagine web gestionali). Dietro le quinte, il software genera ed esegue i comandi SQL corrispondenti.
+
+\subsection{Attori, Ruoli, Transazioni e Valutazione dei DBMS}
+\noindent \textbf{I Quattro Gruppi di Ruoli Operativi.} Nel mondo delle basi di dati lavorano quattro figure principali:
+\begin{enumerate}
+    \item \textbf{Costruttori del DBMS}: gli ingegneri informatici che scrivono il motore del DBMS (progettano gli ottimizzatori di query, la gestione della memoria su disco e i compilatori interni).
+    \item \textbf{Progettisti del Database e DBA}: chi decide come strutturare le tabelle per uno specifico problema e ne amministra il funzionamento quotidiano.
+    \item \textbf{Sviluppatori Applicativi}: i programmatori che scrivono i programmi e le interfacce utente per interagire con i dati.
+    \item \textbf{Utenti}:
+    \begin{itemize}
+        \item \textit{Utenti Finali (Operativi)}: usano interfacce guidate e maschere predefinite per compiti di routine (es. l'impiegato postale che registra un pacco).
+        \item \textit{Utenti Casuali (\textit{Casual Users})}: analisti o manager che interrogano il database formulando query SQL personalizzate per prendere decisioni strategiche.
+    \end{itemize}
+\end{enumerate}
+
+\medskip
+\noindent \textbf{L'Amministratore della Base di Dati (DBA).} Il \textbf{DBA} (\textit{Database Administrator}) è il custode e responsabile dell'efficienza e della salute del database. I suoi compiti principali sono:
+\begin{itemize}
+    \item Monitorare le prestazioni del sistema e configurare gli indici per non rallentare le ricerche.
+    \item Pianificare i salvataggi periodici (\textbf{backup}) e le procedure di ripristino dei dati in caso di guasti o disastri (\textit{disaster recovery}).
+    \item Gestire gli account, le password e le autorizzazioni di sicurezza di tutti gli utenti.
+    \item Spesso collabora anche alla progettazione iniziale e all'evoluzione delle tabelle.
+\end{itemize}
+
+\medskip
+\noindent \textbf{I Due Punti di Vista sulla Transazione.} La parola ``transazione'' ha due sfumature:
+\begin{itemize}
+    \item \textbf{Per l'utente finale}: è un'azione applicativa compiuta con uno scopo chiaro (es. fare un bonifico, comprare un biglietto aereo, iscriversi a un esame).
+    \item \textbf{Per il DBMS}: è una serie indivisibile di comandi che devono essere eseguiti con successo al 100\% oppure annullati del tutto, salvaguardando la coerenza dell'archivio anche in caso di errori o accessi concorrenti.
+\end{itemize}
+
+\medskip
+\noindent \textbf{I Vantaggi (Pros) nell'Adozione di un DBMS.} Scegliere un DBMS porta chiari vantaggi:
+\begin{itemize}
+    \item \textbf{Dati Condivisi}: un'unica fonte di verità centralizzata per tutti i reparti dell'azienda.
+    \item \textbf{Niente Duplicazioni Inutili}: si eliminano i rischi di avere dati disallineati e contraddittori.
+    \item \textbf{Servizi Integrati}: il DBMS gestisce da solo sicurezza, controllo della concorrenza, transazioni e salvataggi.
+    \item \textbf{Indipendenza dei Dati}: se si modifica l'hardware o la disposizione fisica dei file, non serve riscrivere i software applicativi.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Gli Svantaggi e i Costi (Cons).} Un DBMS non è sempre la soluzione ideale in qualunque scenario, a causa di due fattori:
+\begin{itemize}
+    \item \textbf{Costi Economici e Complessità}: le licenze enterprise sono onerose, richiedono server potenti e personale altamente qualificato (i DBA) per l'amministrazione.
+    \item \textbf{Struttura Impegnativa (\textit{Overhead})}: le funzioni di controllo transazionale, sicurezza e logging sono sempre attive e consumano risorse. Per compiti minuscoli o file di log elementari, un semplice file di testo gestito dal sistema operativo può risultare più veloce ed economico rispetto a un intero DBMS.
+\end{itemize}
+
+\end{document}
