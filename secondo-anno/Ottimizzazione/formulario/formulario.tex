@@ -1,0 +1,1995 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.3cm,right=2.3cm]{geometry}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{hyperref}
+
+\definecolor{navy}{HTML}{1F3A63}
+\definecolor{teal}{HTML}{0F6E6E}
+\definecolor{amber}{HTML}{B26B00}
+\definecolor{crimson}{HTML}{9B2226}
+\definecolor{lightbg}{HTML}{F6F7FA}
+
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy}
+
+% --- spaziatura generosa ---
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\linespread{1.08}
+\setlist[itemize]{itemsep=0.35em,topsep=0.35em,leftmargin=1.4em}
+\setlist[enumerate]{itemsep=0.4em,topsep=0.35em,leftmargin=1.6em}
+
+% --- titoli ---
+\titleformat{\section}{\Large\bfseries\color{navy}}{\thesection.}{0.6em}{}[\vspace{-0.5em}\color{navy}\rule{\textwidth}{1pt}]
+\titlespacing*{\section}{0pt}{1.6em}{1em}
+\titleformat{\subsection}{\large\bfseries\color{teal}}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{1.4em}{0.6em}
+\titleformat{\subsubsection}{\bfseries\color{navy}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\subsubsection}{0pt}{1.1em}{0.4em}
+
+% --- box ---
+\newtcolorbox{ric}[1]{enhanced,breakable,colback=teal!4,colframe=teal,boxrule=1pt,arc=4pt,
+  left=10pt,right=10pt,top=8pt,bottom=8pt,fonttitle=\bfseries,coltitle=white,
+  title={Ricetta \ --- \ #1}}
+\newtcolorbox{att}[1]{enhanced,breakable,colback=crimson!4,colframe=crimson,boxrule=1pt,arc=4pt,
+  left=10pt,right=10pt,top=8pt,bottom=8pt,fonttitle=\bfseries,coltitle=white,
+  title={Attenzione \ --- \ #1}}
+\newtcolorbox{teo}[1]{enhanced,breakable,colback=navy!4,colframe=navy,boxrule=1pt,arc=4pt,
+  left=10pt,right=10pt,top=8pt,bottom=8pt,fonttitle=\bfseries,coltitle=white,
+  title={Teoria \ --- \ #1}}
+\newtcolorbox{es}[1]{enhanced,breakable,colback=amber!5,colframe=amber,boxrule=1pt,arc=4pt,
+  left=10pt,right=10pt,top=8pt,bottom=8pt,fonttitle=\bfseries,coltitle=white,
+  title={Esempio svolto \ --- \ #1}}
+\newtcolorbox{idea}{enhanced,breakable,colback=amber!6,colframe=amber,boxrule=0pt,
+  leftrule=4pt,arc=0pt,left=10pt,right=10pt,top=7pt,bottom=7pt}
+
+% blocco "mattone": nome + formula, ben distanziati
+\newcommand{\mattone}[2]{%
+\par\vspace{0.5em}\textbf{#1}\par\vspace{-0.4em}
+\begin{center}$\displaystyle #2$\end{center}\vspace{-0.2em}}
+
+
+% --- grafi per l'esempio di cancellazione dei cicli ---
+\tikzset{nd/.style={circle,draw=navy,thick,minimum size=7mm,inner sep=1pt,font=\small}}
+\newcommand{\mcfnodes}{%
+  \node[nd] (A) at (0,2.1) {$A$};
+  \node[nd] (B) at (0,-2.1) {$B$};
+  \node[nd] (C) at (3.0,0) {$C$};
+  \node[nd] (D) at (6.0,2.1) {$D$};
+  \node[nd] (E) at (6.0,-2.1) {$E$};}
+% arco residuo: #1 = tipo di freccia, #2 = da, #3 = a, #4 = costo diretto
+\newcommand{\ra}[4]{\draw[#1,thick,black!65] (#2) -- node[font=\scriptsize,black!70,fill=amber!5,inner sep=1pt]{$#4$} (#3);}
+% arco del ciclo scelto
+\newcommand{\cy}[3]{\draw[->,line width=1.2pt,crimson] (#1) to[bend left=16] node[font=\scriptsize,crimson,fill=amber!5,inner sep=1pt]{$#3$} (#2);}
+% arco del grafo originale: #3 = (capacita,costo), #4 = flusso
+\newcommand{\fa}[4]{\draw[->,thick,black!45] (#1) -- node[font=\scriptsize,black!55,sloped,above,inner sep=1.5pt]{$#3$} node[font=\small,teal,sloped,below,inner sep=1.5pt]{$\mathbf{#4}$} (#2);}
+
+\begin{document}
+
+%---------------------------------------------------------------- copertina
+\thispagestyle{empty}
+\vspace*{3cm}
+\begin{center}
+{\color{navy}\rule{\textwidth}{2pt}}\\[1.2em]
+{\Huge\bfseries\color{navy} Formulario di\\[0.3em] Ottimizzazione Combinatoria}\\[1.2em]
+{\large Spiegazioni passo passo ed esempi svolti dai compiti d'esame}\\[1em]
+{\color{navy}\rule{\textwidth}{2pt}}
+\end{center}
+\vfill
+\begin{idea}
+\textbf{Come si usa.} Ogni sezione copre un esercizio dello scritto.
+
+\textbf{Ricette} (verde): la procedura da seguire meccanicamente durante il compito.\\
+\textbf{Esempi svolti} (arancione): lo stesso procedimento applicato a un compito vero, con tutti i conti.\\
+\textbf{Teoria} (blu): enunciati e dimostrazioni da riportare tali e quali.\\
+\textbf{Attenzione} (rosso): gli errori che tolgono punti.
+
+Gli esempi svolti sono presi dai compiti del 25/05/2026, 25/06/2026, 27/07/2026 e 08/07/2025
+e i conti sono stati rifatti a mano: puoi fidarti dei numeri e usarli come autoverifica.
+\end{idea}
+\newpage
+
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+%================================================================
+\section{Struttura dello scritto}
+
+Tre esercizi, sempre degli stessi tipi.
+
+\begin{center}
+\begin{tabular}{@{}p{0.9cm} p{5.0cm} p{7.9cm}@{}}
+\toprule
+& \textbf{Argomento} & \textbf{Cosa viene chiesto}\\
+\midrule
+\textbf{Es 1} & Modellazione PLI \newline (8--9 punti) &
+Testo a parole $\to$ variabili, obiettivo, vincoli. A volte una variante del testo (punti extra).\\
+\addlinespace
+\textbf{Es 2} & PL e simplesso \newline (11--13 punti) &
+(a) regione ammissibile grafica, (b) simplesso primale da una base data, (c) duale oppure una definizione, (d) una dimostrazione.\\
+\addlinespace
+\textbf{Es 3} & Reti di flusso \newline (8--11 punti) &
+Edmonds--Karp, oppure costo minimo (cancellazione cicli), oppure matching; più una o due domande di teoria.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{idea}
+\textbf{Regola d'oro.} Scrivi tutti i passaggi. I punti si prendono anche col procedimento
+corretto e il conto sbagliato; non si prendono mai col risultato giusto e nessuna spiegazione.
+Il testo dice esplicitamente: \emph{«occorre riportare in modo chiaro tutti i passi che portano
+alla determinazione del risultato»}.
+\end{idea}
+
+\begin{att}{niente calcolatrice}
+Non sono ammesse calcolatrici. Tutti i conti del simplesso sono su matrici $2\times 2$
+con numeri piccoli: si fanno a mano con la formula dell'inversa (sezione~\ref{sec:inversa}).
+Se ti escono frazioni mostruose, quasi certamente hai sbagliato un segno nella normalizzazione.
+\end{att}
+
+\newpage
+%================================================================
+\section{Esercizio 1 --- Modellazione PLI}
+
+\subsection{La procedura}
+
+\begin{ric}{modellazione in cinque passi}
+\begin{enumerate}
+\item \textbf{Dati.} Elenca insiemi e parametri con i loro indici. Scriverli \emph{prima}
+      evita di inventare simboli a metà esercizio.
+      Tipicamente: $i = 1,\dots,m$ \emph{contenitori} (macchine, camion, camerieri, server),
+      $j = 1,\dots,n$ \emph{oggetti} (lavori, pallet, tavoli, query).
+
+\item \textbf{Variabili.} Decidi \emph{cosa} si sceglie. Binarie per sì/no, intere per quantità.
+      Scrivi sempre il significato a parole, altrimenti si perdono punti anche col modello giusto:
+      \[ x_{ij} = \begin{cases} 1 & \text{se l'oggetto $j$ è assegnato a $i$}\\ 0 & \text{altrimenti}\end{cases}
+         \qquad
+         y_{i} = \begin{cases} 1 & \text{se $i$ è attivato}\\ 0 & \text{altrimenti}\end{cases}\]
+      \emph{Regola pratica:} se nel testo compare un \textbf{costo fisso} (di utilizzo, di
+      apertura, di assunzione) serve \emph{sempre} anche la variabile $y_i$.
+
+\item \textbf{Obiettivo.} Somma di costi o profitti moltiplicati per le variabili.
+      Controlla se è minimo o massimo. Se ci sono costi fissi \emph{e} variabili,
+      l'obiettivo ha due sommatorie: $\sum_i (\text{fisso})_i\, y_i + \sum_i\sum_j (\text{variabile})_{ij}\, x_{ij}$.
+
+\item \textbf{Vincoli.} Uno per ogni frase del testo. Rileggi il testo frase per frase
+      e per ognuna scrivi la disuguaglianza corrispondente. Quantifica sempre con $\forall i$ oppure $\forall j$.
+
+\item \textbf{Domini.} $x_{ij} \in \{0,1\}$, \quad $y_i \in \{0,1\}$, \quad $z_i \ge 0$ intero.
+\end{enumerate}
+\end{ric}
+
+\begin{idea}
+\textbf{Come si capisce quale indice va sotto la sommatoria.} Guarda \emph{su cosa} il vincolo
+parla:
+\begin{itemize}
+\item «ogni \emph{oggetto} $j$ deve\dots» $\Rightarrow$ somma su $i$ (i contenitori), vincolo $\forall j$;
+\item «ogni \emph{contenitore} $i$ può\dots» $\Rightarrow$ somma su $j$ (gli oggetti), vincolo $\forall i$.
+\end{itemize}
+L'indice che compare nel \emph{«per ogni»} è quello che \emph{non} viene sommato.
+\end{idea}
+
+\subsection{I mattoni da memorizzare}
+
+Quasi ogni testo d'esame è una combinazione di questi blocchi.
+
+\mattone{Assegnamento --- ogni $j$ va a esattamente una risorsa}
+{\sum_{i} x_{ij} = 1 \qquad \forall j}
+
+\mattone{Semi-assegnamento --- ogni $j$ va al più a una risorsa (\emph{«un sottoinsieme di\dots»})}
+{\sum_{i} x_{ij} \le 1 \qquad \forall j}
+
+\mattone{Copertura multipla --- ogni $j$ va su esattamente $p_j$ risorse}
+{\sum_{i} x_{ij} = p_j \qquad \forall j}
+
+\mattone{Capacità --- peso o tempo massimo della risorsa $i$}
+{\sum_{j} w_j\, x_{ij} \le b_i \qquad \forall i}
+
+\mattone{Cardinalità --- al più $q_i$ oggetti sulla risorsa $i$}
+{\sum_{j} x_{ij} \le q_i \qquad \forall i}
+
+\mattone{Attivazione e costo fisso --- lega $x$ alla risorsa aperta $y$ (due forme equivalenti)}
+{\sum_{j} w_j x_{ij} \le b_i\, y_i \quad \forall i
+ \qquad\text{oppure}\qquad
+ \Big[\ \sum_{j} w_j x_{ij} \le b_i \ \ \forall i \ \ \text{ e } \ \ x_{ij} \le y_i \ \ \forall i,j\ \Big]}
+
+\mattone{Incompatibilità --- $h$ e $k$ non sulla stessa risorsa}
+{x_{ih} + x_{ik} \le 1 \qquad \forall i, \ (h,k) \in L}
+
+\mattone{Prerequisito --- $b$ richiede $a$}
+{x_b \le x_a}
+
+\mattone{Quorum --- almeno metà delle risorse attive}
+{\sum_{i} y_i \ \ge\ \left\lceil n/2 \right\rceil}
+
+\mattone{Quantità minima positiva --- o $x = 0$, oppure $x \ge \ell$}
+{\ell\, y \ \le\ x \ \le\ M\, y, \qquad y \in \{0,1\}}
+
+\mattone{Big-M --- vincolo attivo solo quando $y = 1$}
+{a^T x \ \le\ b + M\,(1 - y)}
+
+\mattone{Valore assoluto --- linearizzare $\min |z|$}
+{\min t \quad\text{con}\quad t \ge z, \ \ t \ge -z}
+
+\mattone{Min-max, tipo makespan --- minimizzare il carico più alto}
+{\min T \quad\text{con}\quad T \ \ge\ \sum_{j} p_j\, x_{ij} \quad \forall i}
+
+\newpage
+\subsection{Un testo tradotto frase per frase}
+
+\begin{es}{camion e pallet (compito 25/05/2026)}
+\textbf{Testo.} \emph{«Un'azienda deve caricare gli $m$ camion disponibili per servire un
+sottoinsieme di clienti, ciascuno dei quali richiede un pallet. Ogni camion $i$ ha capacità
+$b_i$ quintali e costo di utilizzo $c_i$ euro. Si scelgono un sottoinsieme degli $n$ pallet,
+ciascuno con profitto $p_j$ e peso $w_j$. Massimizzare il profitto netto. Qualche camion può
+restare inutilizzato a costo nullo.»}
+
+\medskip
+\textbf{Traduzione, frase per frase:}
+
+\begin{center}
+\begin{tabular}{@{}p{7.0cm} p{7.4cm}@{}}
+\toprule
+\textbf{Frase del testo} & \textbf{Pezzo di modello}\\
+\midrule
+«caricare gli $m$ camion» & serve $x_{ij}=1$ se il pallet $j$ va sul camion $i$\\
+\addlinespace
+«costo di utilizzo $c_i$», «qualche camion può restare inutilizzato» &
+serve $y_i=1$ se il camion $i$ è usato: il costo si paga solo se lo si usa\\
+\addlinespace
+«un \emph{sottoinsieme} dei pallet» &
+semi-assegnamento: $\sum_i x_{ij} \le 1$, non $=1$\\
+\addlinespace
+«capacità in peso $b_i$» &
+$\sum_j w_j x_{ij} \le b_i y_i$: con $y_i=0$ il camion non può portare nulla\\
+\addlinespace
+«massimizzare il profitto netto = profitto pallet $-$ costo camion» &
+$\max \sum_i\sum_j p_j x_{ij} - \sum_i c_i y_i$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{Modello finale.}
+\[
+\max \ \sum_{i=1}^{m}\sum_{j=1}^{n} p_j x_{ij} \ -\ \sum_{i=1}^{m} c_i y_i
+\]
+\[
+\begin{aligned}
+&\sum_{i=1}^{m} x_{ij} \le 1 && \forall j = 1,\dots,n &&\text{(ogni pallet al più su un camion)}\\
+&\sum_{j=1}^{n} w_j x_{ij} \le b_i\, y_i && \forall i = 1,\dots,m &&\text{(capacità + attivazione)}\\
+&x_{ij} \in \{0,1\} && \forall i,j\\
+&y_i \in \{0,1\} && \forall i
+\end{aligned}
+\]
+
+\textbf{Perché $b_i y_i$ e non $b_i$.} Se scrivessi $\sum_j w_j x_{ij} \le b_i$, allora
+$y_i$ non comparirebbe in nessun vincolo: l'ottimo metterebbe $y_i = 0$ per tutti (risparmiando
+i costi $c_i$) e caricherebbe comunque i pallet. Il modello sarebbe sbagliato.
+La forma alternativa accettata è $\sum_j w_j x_{ij}\le b_i$ \emph{insieme a} $x_{ij}\le y_i$
+$\forall i,j$: anche lì $y_i$ è forzato a 1 appena un pallet è caricato.
+\end{es}
+
+\newpage
+\subsection{Archetipi già usciti all'esame}
+
+\textbf{Camerieri e tavoli} \quad {\small(compito 25/06/2026)}\\
+Costo fisso $l_i$ per cameriere assunto, costo variabile $v_i$ per tavolo servito, tempo $p_j$
+per servire il tavolo $j$, budget di tempo $c_i$ per cameriere. Qui i tavoli vanno serviti
+\emph{tutti}, quindi assegnamento con $=1$.
+\[
+\min \ \sum_i l_i y_i + \sum_i \sum_j v_i x_{ij}
+\qquad
+\begin{aligned}
+&\sum_i x_{ij} = 1 &&\forall j\\
+&\sum_j p_j x_{ij} \le c_i\, y_i &&\forall i\\
+&x_{ij},\,y_i \in \{0,1\}
+\end{aligned}
+\]
+
+\textbf{Lavori e macchine con lista di incompatibilità} \quad {\small(compito 27/07/2026)}\\
+Ogni lavoro $j$ va eseguito da $p_j$ macchine, ogni macchina ne fa al più $q_i$,
+e la lista $L$ contiene coppie che non possono stare sulla stessa macchina.
+Qui \emph{non} c'è costo fisso, quindi \emph{non} servono le $y_i$.
+\[
+\min \ \sum_i \sum_j c_{ij} x_{ij}
+\qquad
+\begin{aligned}
+&\sum_i x_{ij} = p_j &&\forall j\\
+&\sum_j x_{ij} \le q_i &&\forall i\\
+&x_{ih} + x_{ik} \le 1 &&\forall i,\ \forall (h,k) \in L\\
+&x_{ij} \in \{0,1\}
+\end{aligned}
+\]
+
+\textbf{Server e query} \quad {\small(compito 08/07/2025)}\\
+Attenzione: qui l'oggetto non è individuale, sono $k$ query \emph{indistinguibili}.
+Quindi la variabile è \textbf{intera}, non binaria: $x_i$ = numero di query assegnate al server $i$.
+Il testo chiede di tenere accesi almeno metà degli $n$ server.
+\[
+\min \ \sum_i p_i x_i
+\qquad
+\begin{aligned}
+&\sum_i x_i = k && \text{(tutte le query vanno smaltite)}\\
+&x_i \le q_i\, y_i &&\forall i \quad\text{(capacità + accensione)}\\
+&\sum_i y_i \ge \lceil n/2 \rceil && \text{(vincolo contrattuale)}\\
+&x_i \ge 0 \ \text{intero},\quad y_i \in \{0,1\}
+\end{aligned}
+\]
+
+\textbf{Variante dello stesso compito} (punti extra): togliere il vincolo di quorum e
+aggiungere un consumo $a_i$ per il solo fatto che il server $i$ resti acceso. Cambia solo
+l'obiettivo, i vincoli restano (meno il quorum):
+\[
+\min \ \sum_i p_i x_i + \sum_i a_i y_i
+\]
+
+\begin{idea}
+\textbf{Riconoscere il tipo in dieci secondi.}
+Costo fisso nel testo $\Rightarrow$ variabili $y$. \enspace
+«tutti» / «ogni\dots deve» $\Rightarrow$ vincolo $=$. \enspace
+«un sottoinsieme» / «se conveniente» $\Rightarrow$ vincolo $\le$. \enspace
+Oggetti indistinguibili e contati $\Rightarrow$ variabili intere, non binarie.
+\end{idea}
+
+\begin{att}{errori che costano punti}
+\begin{itemize}
+\item Vincolo di capacità scritto senza $y_i$ quando c'è un costo fisso: il costo non viene mai
+      pagato e il modello è sbagliato (è l'errore più penalizzato).
+\item Quantificatori $\forall i$ o $\forall j$ dimenticati.
+\item Variabili continue dove servono binarie, o binarie dove serve una quantità intera.
+\item Obiettivo che mescola minimizzazione e massimizzazione.
+\item Variabili non definite a parole.
+\item Dimenticare la riga finale dei domini.
+\end{itemize}
+\end{att}
+
+\newpage
+%================================================================
+\section{Esercizio 2 --- PL, dualità, simplesso}
+
+\subsection{Forma standard del corso}
+
+\begin{att}{tutto va portato in questa forma, sempre}
+Il corso lavora \emph{esclusivamente} con
+\[
+\boxed{\ \max\ c\,x \qquad A x \le b\ }
+\]
+$A$ è $m\times n$ (all'esame $n=2$ variabili, $m=6$ vincoli), $c$ è un vettore \emph{riga},
+$x$ e $b$ vettori colonna. \textbf{Non} ci sono vincoli di non negatività impliciti:
+se il testo vuole $x_1\ge 0$, quello è un vincolo come gli altri e va scritto come $-x_1 \le 0$.
+\end{att}
+
+\begin{ric}{normalizzazione}
+\begin{enumerate}
+\item \textbf{Obiettivo.} Se il testo dice $\min c\,x$, riscrivi $\max\, (-c)\,x$.
+      Ricordati alla fine che il valore ottimo del problema originale è $-$(valore trovato).
+\item \textbf{Vincoli $\ge$.} Moltiplica per $-1$ e girali: $a\,x \ge b \Longrightarrow -a\,x \le -b$.
+\item \textbf{Vincoli $=$.} Si sdoppiano in $a x \le b$ e $-a x \le -b$ (raro all'esame).
+\item \textbf{Variabili a sinistra, costanti a destra.} Porta ogni $x$ a sinistra del segno
+      e ogni numero a destra.
+\item \textbf{Numera i vincoli} $1,\dots,m$ e scrivi esplicitamente $A$, $b$, $c$.
+\end{enumerate}
+\end{ric}
+
+\subsubsection{Come si numerano i vincoli e come si individua la base iniziale}
+\label{sec:base}
+
+Il testo d'esame presenta i vincoli in una tabella su \textbf{tre colonne da due righe},
+e poi dice: \emph{«partendo dalla base costituita dai due vincoli della colonna più a sinistra»}.
+
+\begin{idea}
+\textbf{Regola di numerazione:} si legge \textbf{colonna per colonna, dall'alto in basso}.
+Quindi la prima colonna dà i vincoli $1$ e $2$, la seconda i vincoli $3$ e $4$, la terza i
+vincoli $5$ e $6$. La base iniziale è di conseguenza sempre
+\[ B = \{1,\,2\}. \]
+\end{idea}
+
+\textbf{Che cos'è concretamente una base, in questo corso.} Non è un insieme di variabili
+(come nel simplesso a tableau di altri corsi): è un insieme di \textbf{indici di vincoli}.
+Con $n=2$ variabili, una base è una coppia di vincoli. Dalla base si ricava tutto:
+
+\begin{center}
+\begin{tabular}{@{}p{3.2cm} p{11.3cm}@{}}
+\toprule
+\textbf{Simbolo} & \textbf{Che cos'è, in pratica}\\
+\midrule
+$B$ & i due indici di riga scelti, es.\ $B=\{1,2\}$\\
+$A_B$ & la matrice $2\times 2$ fatta \emph{solo} da quelle due righe di $A$\\
+$b_B$ & il vettore $2\times 1$ con i due termini noti corrispondenti\\
+$N$ & tutti gli altri indici, es.\ $N=\{3,4,5,6\}$\\
+$A_N,\ b_N$ & le righe restanti di $A$ e le componenti restanti di $b$\\
+$x$ & $A_B^{-1} b_B$: il punto dove i due vincoli di base valgono con l'\emph{uguaglianza}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Geometricamente: i due vincoli di base sono due rette; la soluzione di base è il loro
+punto di intersezione. È una \emph{base} legittima solo se le due rette non sono parallele,
+cioè se $\det A_B \ne 0$. È \emph{ammissibile} se quel punto soddisfa anche gli altri quattro
+vincoli, e in tal caso è un vertice della regione ammissibile.
+
+\begin{att}{la base data dal testo è già ammissibile}
+All'esame la base iniziale $\{1,2\}$ è sempre ammissibile: non serve una fase~I.
+Se calcolando $x = A_B^{-1}b_B$ ti accorgi che qualche vincolo fuori base è violato,
+hai sbagliato la normalizzazione (tipicamente un segno). Torna indietro e ricontrolla.
+\end{att}
+
+\subsubsection{Inversa di una matrice $2\times 2$}
+\label{sec:inversa}
+
+Tutta l'algebra del simplesso all'esame si riduce a questa formula. Impararla bene fa
+risparmiare metà del tempo.
+\[
+A_B = \begin{pmatrix} a & b\\ c & d\end{pmatrix}
+\qquad
+\det A_B = ad - bc
+\qquad
+A_B^{-1} = \frac{1}{ad-bc}\begin{pmatrix} d & -b\\ -c & a\end{pmatrix}
+\]
+A parole: \emph{scambia i due elementi della diagonale principale, cambia segno agli altri due,
+dividi tutto per il determinante}.
+
+\textbf{Controllo veloce:} $A_B A_B^{-1}$ deve dare $\begin{psmallmatrix}1&0\\0&1\end{psmallmatrix}$.
+Costa cinque secondi e salva l'intera iterazione.
+
+\subsection{Metodo grafico}
+
+Sono tre punti facili: vale sempre la pena farli con cura, e servono anche a controllare
+il risultato del simplesso.
+
+\begin{ric}{risoluzione grafica}
+\begin{enumerate}
+\item Normalizza i vincoli e numerali (sezione~\ref{sec:base}).
+\item Per ogni vincolo $a_1 x_1 + a_2 x_2 \le b$, disegna la \textbf{retta} $a_1x_1+a_2x_2 = b$.
+      Il modo più veloce: trova i due punti in cui incrocia gli assi
+      (poni $x_1=0$ e ricava $x_2$, poi $x_2=0$ e ricava $x_1$) e uniscili.
+      Se il vincolo ha una sola variabile è una retta verticale o orizzontale.
+\item Per capire da che lato sta il semipiano ammissibile, \textbf{sostituisci un punto di prova}:
+      se l'origine non sta sulla retta, usa $(0,0)$. Se $a_1\cdot 0 + a_2\cdot 0 \le b$ è vera,
+      il semipiano buono è quello che contiene l'origine; altrimenti è l'altro.
+      Segna una freccetta sulla retta verso il lato buono.
+\item Colora l'intersezione dei sei semipiani: è la regione ammissibile. Segna i vertici con un pallino.
+\item Disegna il vettore gradiente $c$ uscente dall'origine (per $c=(1,1)$: la bisettrice
+      verso l'alto a destra). Essendo il problema in forma $\max$, ci si muove \textbf{nel verso di $c$}.
+\item Il vertice più spinto in quel verso è l'ottimo. Ricavane le coordinate risolvendo il sistema
+      dei due vincoli attivi lì (quello è anche il modo di leggere la base ottima!), poi valuta $c\,x$.
+\end{enumerate}
+\end{ric}
+
+\begin{idea}
+\textbf{Il legame fra grafico e simplesso.} Ogni vertice del disegno corrisponde a una base;
+i vincoli che passano per quel vertice sono gli indici in $B$. Se il simplesso ti dà una base
+finale $B=\{3,5\}$, sul disegno devi vedere le rette $3$ e $5$ incrociarsi proprio nel vertice
+ottimo. È l'autoverifica migliore che hai.
+\end{idea}
+
+\newpage
+\subsection{Simplesso primale: la ricetta del corso}
+
+\begin{ric}{una iterazione (problema $\max c\,x$, $Ax \le b$)}
+Dati: base $B$ (due indici), $A_B$, $b_B$, e $N$ con $A_N$, $b_N$.
+
+\begin{enumerate}
+\item \textbf{Inversa e punto corrente.}
+      \[ A_B^{-1} \quad\text{(formula }2\times2\text{)}, \qquad x = A_B^{-1}\, b_B \]
+      Alla prima iterazione verifica che $x$ soddisfi anche i vincoli fuori base.
+
+\item \textbf{Soluzione duale di base (costi ridotti).}
+      \[ y_B = c\, A_B^{-1} \]
+      Attenzione all'ordine: $c$ è un vettore \emph{riga} e moltiplica $A_B^{-1}$ \emph{da sinistra}.
+      Il risultato è un vettore riga con una componente per ogni vincolo in base.
+      Il vettore duale completo $y$ ha quelle componenti sugli indici di $B$ e zero altrove.
+
+\item \textbf{Test di ottimalità.} Se $y_B \ge 0$ (tutte le componenti), \textbf{stop}:
+      $x$ è ottimo, e $y$ è il certificato duale. Valore ottimo $c\,x = y\,b$.
+
+\item \textbf{Vincolo uscente.} Scegli $h \in B$ con $y_h < 0$.
+      Se ce n'è più di uno: regola di Bland, prendi l'indice più piccolo (evita i cicli).
+
+\item \textbf{Direzione.}
+      \[ \xi = -\,A_B^{-1}\, u_h \]
+      dove $u_h$ è il versore che vale 1 nella \emph{posizione che $h$ occupa dentro $B$}
+      (prima o seconda). In pratica: \textbf{prendi quella colonna di $A_B^{-1}$ e cambiale segno}.
+      Questa direzione lascia attivo l'altro vincolo di base e allontana da $h$, aumentando l'obiettivo.
+
+\item \textbf{Rapporti.} Calcola i due vettori $A_N \xi$ e $A_N x$. Per ogni $i \in N$ con
+      $A_i \xi > 0$ (cioè i vincoli verso cui ci stiamo muovendo):
+      \[ \lambda_i \;=\; \frac{b_i - A_i x}{A_i \xi} \;\ge\; 0 \]
+      cioè \emph{slack diviso velocità di avvicinamento}.
+      Se \textbf{nessun} $i$ ha $A_i\xi > 0$, il problema è \textbf{illimitato}: stop.
+
+\item \textbf{Vincolo entrante.} $k = \arg\min_{i} \lambda_i$ --- ovvero l'\textbf{indice} con $\lambda$ minimo.
+      Nuovo punto e nuova base:
+      \[ x' = x + \lambda_k\, \xi, \qquad B' = \big(B \setminus \{h\}\big) \cup \{k\} \]
+
+\item Torna al passo 1. (Conviene riordinare $B$ in ordine crescente e ricalcolare $N$.)
+\end{enumerate}
+\end{ric}
+
+\begin{att}{i tre errori tipici}
+\begin{itemize}
+\item \textbf{$y_B = c A_B^{-1}$, non $A_B^{-1} c$.} Il prodotto è riga per matrice.
+\item \textbf{Il segno di $\xi$.} C'è un meno davanti: $\xi = -A_B^{-1}u_h$.
+\item \textbf{Il verso del rapporto.} Si prendono solo i vincoli con $A_i\xi > 0$
+      (in forma $\le$ ci si avvicina al vincolo quando $A_i\xi$ è \emph{positivo}).
+      È l'opposto di quello che si ricorda dai libri scritti in forma $\ge$.
+\end{itemize}
+\end{att}
+
+\newpage
+\subsection{Esempio svolto completo di simplesso}
+
+\begin{es}{compito del 27/07/2026, esercizio 2}
+
+\textbf{Testo.}
+\[ \max\ x_1 + x_2 \]
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
+$x_2 + 2 \ge -x_1$ & $x_1 \le 2$ & $x_1 \le 4 - x_2$\\
+$x_2 \ge -1$ & $x_2 \ge x_1 - 1$ & $2x_1 \ge 3x_2 - 6$
+\end{tabular}
+\end{center}
+Base iniziale: i due vincoli della colonna più a sinistra.
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Passo 0 --- normalizzazione.} Leggendo per colonne, dall'alto in basso:
+
+\begin{center}
+\begin{tabular}{@{}c l l@{}}
+\toprule
+$i$ & \textbf{come è scritto} & \textbf{normalizzato ($\le$)}\\
+\midrule
+1 & $x_2 + 2 \ge -x_1$ & $-x_1 - x_2 \le 2$\\
+2 & $x_2 \ge -1$ & $-x_2 \le 1$\\
+3 & $x_1 \le 2$ & $x_1 \le 2$\\
+4 & $x_2 \ge x_1 - 1$ & $x_1 - x_2 \le 1$\\
+5 & $x_1 \le 4 - x_2$ & $x_1 + x_2 \le 4$\\
+6 & $2x_1 \ge 3x_2 - 6$ & $-2x_1 + 3x_2 \le 6$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\[
+A = \begin{pmatrix}
+-1 & -1\\ 0 & -1\\ 1 & 0\\ 1 & -1\\ 1 & 1\\ -2 & 3
+\end{pmatrix}
+\qquad
+b = \begin{pmatrix} 2\\ 1\\ 2\\ 1\\ 4\\ 6\end{pmatrix}
+\qquad
+c = \begin{pmatrix} 1 & 1\end{pmatrix}
+\qquad
+B = \{1,2\}
+\]
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Iterazione 1.} \quad $B=\{1,2\}$, $N=\{3,4,5,6\}$.
+\[
+A_B = \begin{pmatrix} -1 & -1\\ 0 & -1\end{pmatrix},\quad
+b_B = \begin{pmatrix} 2\\ 1\end{pmatrix},
+\qquad
+\det A_B = 1,
+\qquad
+A_B^{-1} = \begin{pmatrix} -1 & 1\\ 0 & -1\end{pmatrix}
+\]
+\[
+x = A_B^{-1} b_B = \begin{pmatrix} -1 & 1\\ 0 & -1\end{pmatrix}\begin{pmatrix}2\\1\end{pmatrix}
+= \begin{pmatrix}-1\\-1\end{pmatrix}
+\qquad c\,x = -2
+\]
+\[
+y_B = c\,A_B^{-1} = \begin{pmatrix}1&1\end{pmatrix}\begin{pmatrix} -1 & 1\\ 0 & -1\end{pmatrix}
+= \begin{pmatrix}-1 & 0\end{pmatrix}
+\qquad\Longrightarrow\qquad y = (\,-1,\ 0,\ 0,\ 0,\ 0,\ 0\,)
+\]
+La prima componente è negativa: \textbf{non ottimo}. Esce $h = 1$ (prima posizione di $B$).
+\[
+\xi = -A_B^{-1} u_1 = -\begin{pmatrix}-1\\0\end{pmatrix} = \begin{pmatrix}1\\0\end{pmatrix}
+\qquad\text{(prima colonna di } A_B^{-1}\text{, cambiata di segno)}
+\]
+\[
+A_N \xi = \begin{pmatrix}1\\1\\1\\-2\end{pmatrix},
+\qquad
+A_N x = \begin{pmatrix}-1\\0\\-2\\-1\end{pmatrix},
+\qquad
+b_N = \begin{pmatrix}2\\1\\4\\6\end{pmatrix}
+\]
+Rapporti solo dove $A_i\xi > 0$ (quindi non $i=6$):
+\[
+\lambda_3 = \frac{2-(-1)}{1} = 3, \qquad
+\lambda_4 = \frac{1-0}{1} = \mathbf{1}, \qquad
+\lambda_5 = \frac{4-(-2)}{1} = 6
+\]
+Minimo: $k = 4$, $\lambda = 1$. Nuovo punto $x' = (-1,-1) + 1\cdot(1,0) = (0,-1)$.
+Nuova base $B = \{2,4\}$.
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Iterazione 2.} \quad $B=\{2,4\}$, $N=\{1,3,5,6\}$.
+\[
+A_B = \begin{pmatrix} 0 & -1\\ 1 & -1\end{pmatrix},\quad
+b_B = \begin{pmatrix}1\\1\end{pmatrix},
+\qquad \det A_B = 0\cdot(-1) - (-1)\cdot 1 = 1,
+\qquad
+A_B^{-1} = \begin{pmatrix} -1 & 1\\ -1 & 0\end{pmatrix}
+\]
+\[
+x = \begin{pmatrix}-1&1\\-1&0\end{pmatrix}\begin{pmatrix}1\\1\end{pmatrix} = \begin{pmatrix}0\\-1\end{pmatrix}
+\qquad c\,x = -1
+\]
+\[
+y_B = \begin{pmatrix}1&1\end{pmatrix}\begin{pmatrix}-1&1\\-1&0\end{pmatrix} = \begin{pmatrix}-2 & 1\end{pmatrix}
+\qquad\Longrightarrow\qquad y = (\,0,\ -2,\ 0,\ 1,\ 0,\ 0\,)
+\]
+Negativa la componente in prima posizione di $B$, cioè il vincolo $2$: esce $h = 2$.
+\[
+\xi = -A_B^{-1}u_1 = -\begin{pmatrix}-1\\-1\end{pmatrix} = \begin{pmatrix}1\\1\end{pmatrix}
+\]
+\[
+A_N\xi = \begin{pmatrix}-2\\1\\2\\1\end{pmatrix},\qquad
+A_N x = \begin{pmatrix}1\\0\\-1\\-3\end{pmatrix},\qquad
+b_N = \begin{pmatrix}2\\2\\4\\6\end{pmatrix}
+\qquad (N = \{1,3,5,6\})
+\]
+\[
+\lambda_3 = \frac{2-0}{1} = \mathbf{2},\qquad
+\lambda_5 = \frac{4-(-1)}{2} = 2.5,\qquad
+\lambda_6 = \frac{6-(-3)}{1} = 9
+\]
+$k = 3$, $\lambda = 2$, $x' = (0,-1) + 2(1,1) = (2,1)$. Nuova base $B=\{3,4\}$.
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Iterazione 3.} \quad $B=\{3,4\}$, $N=\{1,2,5,6\}$.
+\[
+A_B = \begin{pmatrix}1 & 0\\ 1 & -1\end{pmatrix},\quad
+b_B = \begin{pmatrix}2\\1\end{pmatrix},
+\qquad \det A_B = -1,
+\qquad
+A_B^{-1} = \frac{1}{-1}\begin{pmatrix}-1 & 0\\ -1 & 1\end{pmatrix}
+= \begin{pmatrix}1 & 0\\ 1 & -1\end{pmatrix}
+\]
+\[
+x = \begin{pmatrix}1&0\\1&-1\end{pmatrix}\begin{pmatrix}2\\1\end{pmatrix} = \begin{pmatrix}2\\1\end{pmatrix}
+\qquad c\,x = 3
+\]
+\[
+y_B = \begin{pmatrix}1&1\end{pmatrix}\begin{pmatrix}1&0\\1&-1\end{pmatrix} = \begin{pmatrix}2 & -1\end{pmatrix}
+\qquad\Longrightarrow\qquad y = (\,0,\ 0,\ 2,\ -1,\ 0,\ 0\,)
+\]
+Negativa la \emph{seconda} componente, che corrisponde al vincolo $4$: esce $h = 4$.
+\[
+\xi = -A_B^{-1}u_2 = -\begin{pmatrix}0\\-1\end{pmatrix} = \begin{pmatrix}0\\1\end{pmatrix}
+\]
+\[
+A_N\xi = \begin{pmatrix}-1\\-1\\1\\3\end{pmatrix},\qquad
+A_N x = \begin{pmatrix}-3\\-1\\3\\-1\end{pmatrix},\qquad
+b_N = \begin{pmatrix}2\\1\\4\\6\end{pmatrix}
+\qquad (N=\{1,2,5,6\})
+\]
+\[
+\lambda_5 = \frac{4-3}{1} = \mathbf{1},\qquad
+\lambda_6 = \frac{6-(-1)}{3} = \tfrac{7}{3}
+\]
+$k = 5$, $\lambda = 1$, $x' = (2,1) + 1\cdot(0,1) = (2,2)$. Nuova base $B = \{3,5\}$.
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Iterazione 4.} \quad $B=\{3,5\}$.
+\[
+A_B = \begin{pmatrix}1 & 0\\ 1 & 1\end{pmatrix},\quad
+b_B = \begin{pmatrix}2\\4\end{pmatrix},
+\qquad \det A_B = 1,
+\qquad
+A_B^{-1} = \begin{pmatrix}1 & 0\\ -1 & 1\end{pmatrix}
+\]
+\[
+x = \begin{pmatrix}1&0\\-1&1\end{pmatrix}\begin{pmatrix}2\\4\end{pmatrix} = \begin{pmatrix}2\\2\end{pmatrix}
+\qquad c\,x = 4
+\]
+\[
+y_B = \begin{pmatrix}1&1\end{pmatrix}\begin{pmatrix}1&0\\-1&1\end{pmatrix} = \begin{pmatrix}0 & 1\end{pmatrix}
+\ \ \ge 0
+\qquad\Longrightarrow\qquad \textbf{ottimo.}
+\]
+
+\textbf{Risposta.} $x^* = (2,2)$, valore ottimo $z^* = 4$, certificato duale
+$y^* = (0,0,0,0,1,0)$.
+
+\textbf{Cammino percorso:} $(-1,-1) \to (0,-1) \to (2,1) \to (2,2)$; da riportare sul disegno
+del punto (a).
+
+\textbf{Osservazione da scrivere.} $y_3 = 0$ all'ottimo pur essendo il vincolo $3$ in base:
+c'è quindi un \emph{intero spigolo} di soluzioni ottime, quello lungo il vincolo $5$
+($x_1+x_2=4$), che è perpendicolare al gradiente $c=(1,1)$.
+Infatti anche $(2,2)$ e ogni punto ammissibile con $x_1+x_2=4$ vale 4.
+\end{es}
+
+\begin{idea}
+\textbf{Come presentarlo sul foglio.} Una tabella per iterazione, con:
+$B$, $A_B$, $A_B^{-1}$, $x$, valore $c\,x$, $y_B$, vincolo uscente $h$, direzione $\xi$,
+i rapporti $\lambda_i$, vincolo entrante $k$.
+Poi ripassa sul disegno i vertici percorsi: è il cammino del simplesso.
+\end{idea}
+
+\subsection{Casi speciali da riconoscere}
+
+\begin{center}
+\begin{tabular}{@{}p{3.2cm} p{11.3cm}@{}}
+\toprule
+\textbf{Caso} & \textbf{Come si manifesta e cosa scrivere}\\
+\midrule
+Illimitato & Al passo dei rapporti, \emph{nessun} $i \in N$ ha $A_i\xi > 0$: la direzione $\xi$
+non incontra alcun vincolo. Scrivi: «il problema è illimitato lungo la direzione $\xi = \dots$».\\
+\addlinespace
+Degenere & Più di $n$ vincoli attivi nello stesso vertice; risulta $\lambda_k = 0$: la base
+cambia ma il punto no. Non è un errore, prosegui; usa Bland per non ciclare.\\
+\addlinespace
+Ottimi multipli & All'ottimo una componente di $y$ vale 0 su un vincolo di base: esiste
+un intero spigolo di soluzioni ottime (vedi l'esempio sopra).\\
+\addlinespace
+Vuoto & Nessun punto soddisfa tutti i vincoli. All'esame non capita partendo da una base
+ammissibile data.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Definizioni chieste a voce}
+
+\begin{teo}{soluzione di base e soluzione di base ammissibile}
+Dato il problema $\max c\,x$ con $Ax \le b$, $x \in \mathbb{R}^n$:
+
+una \textbf{base} $B$ è un insieme di $n$ indici di vincoli le cui righe sono linearmente
+indipendenti, cioè $\det A_B \ne 0$.
+
+La \textbf{soluzione di base} associata a $B$ è l'unico punto $x_B = A_B^{-1} b_B$,
+cioè il punto in cui quegli $n$ vincoli sono soddisfatti come uguaglianze (sono \emph{attivi}).
+
+La soluzione di base è \textbf{ammissibile} se soddisfa anche tutti gli altri vincoli del
+problema, cioè $A_N x_B \le b_N$. In tal caso essa coincide con un \textbf{vertice} del poliedro
+delle soluzioni ammissibili.
+\end{teo}
+
+\begin{teo}{direzione ammissibile e direzione di crescita}
+Sia $x$ una soluzione ammissibile e $I(x)$ l'insieme dei vincoli attivi in $x$.
+
+Una direzione $\xi \ne 0$ è \textbf{ammissibile} in $x$ se esiste $\lambda > 0$ tale che
+$x + \lambda \xi$ è ancora ammissibile. In forma $Ax\le b$ questo equivale a
+$A_i \xi \le 0$ per ogni vincolo $i \in I(x)$ attivo in $x$.
+
+La direzione è di \textbf{crescita} se $c\,\xi > 0$ (in un problema di massimo),
+cioè se muoversi lungo $\xi$ aumenta il valore dell'obiettivo.
+
+\textbf{Condizione di ottimalità.} $x$ è ottimo se e solo se in $x$ non esiste alcuna
+direzione ammissibile che sia anche di crescita.
+\end{teo}
+
+\newpage
+\subsection{Il duale}
+
+Nella forma standard del corso:
+\[
+\text{Primale (P):} \ \max\ c\,x, \ \ A x \le b
+\qquad\Longleftrightarrow\qquad
+\text{Duale (D):} \ \min\ y\,b, \ \ y A = c, \ \ y \ge 0
+\]
+Il duale ha \textbf{una variabile per ogni vincolo del primale} ($y \in \mathbb{R}^m$, riga)
+e \textbf{un vincolo per ogni variabile del primale} ($n$ equazioni).
+
+\begin{es}{scrivere il duale --- compito 25/05/2026}
+Primale (già normalizzato): $\max 2x_1 + x_2$ con
+\[
+\begin{aligned}
+&(1)\ -x_1 \le 3 &&(3)\ x_1 - x_2 \le 1 &&(5)\ x_1 \le 4\\
+&(2)\ -x_2 \le 2 &&(4)\ -x_1 + x_2 \le 1 &&(6)\ x_2 \le 4
+\end{aligned}
+\]
+Duale: sei variabili $y_1,\dots,y_6 \ge 0$, due vincoli (uno per colonna di $A$):
+\[
+\min\ 3y_1 + 2y_2 + y_3 + y_4 + 4y_5 + 4y_6
+\]
+\[
+\begin{aligned}
+&-y_1 + y_3 - y_4 + y_5 = 2 &&\text{(colonna di } x_1)\\
+&-y_2 - y_3 + y_4 + y_6 = 1 &&\text{(colonna di } x_2)\\
+&y \ge 0
+\end{aligned}
+\]
+\textbf{Come si costruisce meccanicamente:} il coefficiente di $y_i$ nel $j$-esimo vincolo duale
+è $a_{ij}$, cioè si legge $A$ \emph{per colonne}; il termine noto del $j$-esimo vincolo duale è $c_j$;
+i coefficienti dell'obiettivo duale sono i $b_i$.
+\end{es}
+
+\textbf{Tabella di conversione} (per problemi non nella forma standard):
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Primale (massimo)} & \textbf{Duale (minimo)}\\
+\midrule
+vincolo $\le$              & variabile $\ge 0$\\
+vincolo $\ge$              & variabile $\le 0$\\
+vincolo $=$                & variabile libera\\
+\addlinespace
+variabile $\ge 0$          & vincolo $\ge c_j$\\
+variabile libera           & vincolo $= c_j$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{teo}{dualità debole --- enunciato e dimostrazione}
+\textbf{Enunciato.} Sia $x$ ammissibile per il primale $\max c\,x$, $Ax \le b$,
+e sia $y \ge 0$ ammissibile per il duale $\min y\,b$, $yA = c$. Allora
+\[ c\,x \ \le\ y\,b .\]
+Cioè: \emph{ogni} soluzione ammissibile del duale fornisce un limite superiore al valore
+di \emph{ogni} soluzione ammissibile del primale.
+
+\textbf{Dimostrazione.}
+\[ c\,x \;=\; (y A)\,x \;=\; y\,(A x) \;\le\; y\,b, \]
+dove la prima uguaglianza usa l'ammissibilità duale $yA = c$, la seconda l'associatività,
+e la disuguaglianza finale vale perché $Ax \le b$ e $y \ge 0$
+(moltiplicare una disuguaglianza per un numero non negativo ne conserva il verso). $\square$
+
+\textbf{Conseguenze (da citare sempre).}
+\begin{itemize}
+\item Se per una coppia $x, y$ ammissibili vale $c\,x = y\,b$, allora entrambe sono ottime.
+      È esattamente ciò che certifica il simplesso quando si ferma con $y_B \ge 0$.
+\item Se il primale è illimitato superiormente, il duale è vuoto (e viceversa).
+\end{itemize}
+\end{teo}
+
+\textbf{Dualità forte.} Se uno dei due problemi ha ottimo finito, lo ha anche l'altro
+e i due valori ottimi coincidono.
+
+\textbf{Scarti complementari.} All'ottimo $y_i \,(b_i - A_i x) = 0$ per ogni $i$:
+un vincolo non attivo ha variabile duale nulla, e una variabile duale positiva implica
+vincolo attivo. È il motivo per cui nel simplesso $y$ vale zero fuori base.
+
+\textbf{Interpretazione delle variabili duali (prezzi ombra).} $y_i^*$ misura di quanto varia
+il valore ottimo se il termine noto $b_i$ cresce di una unità: è il «prezzo» che si sarebbe
+disposti a pagare per una unità in più della risorsa $i$. Un vincolo non stringente ha
+prezzo ombra nullo.
+
+\newpage
+\subsection{Branch-and-Bound}
+
+\begin{ric}{Branch-and-Bound per un problema di massimo}
+\begin{enumerate}
+\item Risolvi il \textbf{rilassamento continuo} del nodo (togliendo l'interezza):
+      dà un \textbf{bound superiore} $U_{\text{nodo}}$ per quel sottoproblema.
+\item Se la soluzione trovata è già intera, è un candidato: aggiorna l'incumbent $L$
+      (miglior soluzione intera finora) e \textbf{chiudi} il nodo.
+\item Altrimenti scegli una variabile frazionaria $x_j^*$ e ramifica in due nodi figli:
+      \[ x_j \le \lfloor x_j^* \rfloor \qquad\text{e}\qquad x_j \ge \lceil x_j^* \rceil \]
+      (i due rami sono esaustivi e disgiunti: nessuna soluzione intera va persa).
+\item \textbf{Chiudi} un nodo quando: è inammissibile, oppure dà soluzione intera,
+      oppure $U_{\text{nodo}} \le L$ (\emph{dominanza}: non può contenere niente di meglio).
+\item Quando l'albero è esaurito, $L$ è l'ottimo.
+\end{enumerate}
+Per un problema di minimo si scambiano i ruoli: bound inferiore $L_{\text{nodo}}$,
+incumbent $U$, e si chiude quando $L_{\text{nodo}} \ge U$.
+\end{ric}
+
+\begin{es}{un albero completo con numeri piccoli}
+\[ \max\ 5x_1 + 4x_2 \qquad 6x_1 + 4x_2 \le 24, \quad x_1 + 2x_2 \le 6, \quad x_1,x_2 \ge 0 \ \text{interi} \]
+
+\textbf{Nodo 0 (radice).} Rilassamento continuo: l'ottimo è all'intersezione dei due vincoli.
+Da $x_1 = 6-2x_2$ sostituito nel primo: $6(6-2x_2)+4x_2 = 24 \Rightarrow -8x_2 = -12 \Rightarrow x_2 = 1.5$,
+$x_1 = 3$. Valore $U_0 = 15 + 6 = 21$. Non intera: si ramifica su $x_2$.
+
+\textbf{Nodo 1: $x_2 \le 1$.} Con $x_2=1$: $6x_1 \le 20 \Rightarrow x_1 \le 10/3$;
+$x_1 \le 4$. Ottimo continuo $x = (10/3,\,1)$, $U_1 = 50/3 + 4 \approx 20.67$. Frazionaria: si ramifica su $x_1$.
+\begin{itemize}
+\item \textbf{Nodo 1a: $x_1 \le 3$.} Ottimo $(3,1)$, valore $19$, \emph{intero} $\Rightarrow$
+      incumbent $L = 19$. Chiuso.
+\item \textbf{Nodo 1b: $x_1 \ge 4$.} $6\cdot 4 = 24$ forza $x_2 = 0$. Ottimo $(4,0)$, valore $20$,
+      \emph{intero} e migliore $\Rightarrow$ incumbent $L = 20$. Chiuso.
+\end{itemize}
+
+\textbf{Nodo 2: $x_2 \ge 2$.} $x_1 + 2x_2 \le 6 \Rightarrow x_1 \le 2$;
+ottimo continuo $(2,2)$ di valore $18$. Poiché $U_2 = 18 \le L = 20$, il nodo è
+\textbf{chiuso per dominanza} (e comunque la soluzione è intera e peggiore).
+
+\textbf{Conclusione.} Albero esaurito: ottimo intero $x^* = (4,0)$, $z^* = 20$.
+Si noti che l'ottimo intero \emph{non} si ottiene arrotondando l'ottimo continuo $(3,\,1.5)$.
+\end{es}
+
+\newpage
+%================================================================
+\section{Esercizio 3 --- Reti di flusso}
+
+\subsection{Glossario}
+
+Rete $G = (N, A)$, con $u_{ij}$ capacità e $c_{ij}$ costo dell'arco $(i,j)$,
+e bilancio $b_i$ al nodo.
+
+\begin{att}{convenzione dei segni del bilancio}
+Nei compiti di questo corso, nel problema di flusso di costo minimo il numero accanto al nodo è
+il bilancio $b_i$ e vale: $b_i < 0$ per i nodi \textbf{sorgente} (offerta $|b_i|$),
+$b_i > 0$ per i nodi \textbf{pozzo} (domanda $b_i$), $b_i = 0$ per i nodi di transito.
+Nel compito del 27/07/2026: $A$ ha $-4$ e $B$ ha $-6$ (offrono 10 unità),
+$D$ ha $3$ ed $E$ ha $7$ (ne chiedono 10). La somma dei bilanci deve fare zero.
+\end{att}
+
+\textbf{Flusso ammissibile.} Rispetta le capacità $0 \le x_{ij} \le u_{ij}$
+e la conservazione ai nodi:
+\[ \sum_{j :\, (i,j) \in A} x_{ij} \;-\; \sum_{j :\, (j,i) \in A} x_{ji} \;=\; -\,b_i \qquad \forall i \]
+(uscite meno entrate al nodo $i$; con la convenzione dei segni sopra, un nodo sorgente
+ha uscite nette positive).
+
+\textbf{Pseudoflusso.} Rispetta le capacità $0\le x_{ij}\le u_{ij}$ ma \emph{non}
+necessariamente la conservazione: i nodi possono avere \emph{eccessi} o \emph{difetti}.
+Uno pseudoflusso è \textbf{ammissibile} quando tutti gli sbilanciamenti sono nulli,
+cioè quando è un flusso.
+
+\textbf{Taglio $s$-$t$.} Partizione $(S, T)$ dei nodi con $s \in S$ e $t \in T$.
+La \textbf{capacità} conta solo gli archi in avanti:
+\[ u(S,T) = \sum_{i \in S,\ j \in T} u_{ij} \]
+Proprietà fondamentale: per ogni flusso $x$ e ogni taglio $(S,T)$,
+$v(x) = \sum_{S\to T} x_{ij} - \sum_{T \to S} x_{ji} \le u(S,T)$.
+
+\subsection{Grafo residuo $G_x$}
+
+Per ogni arco $(i,j)$ con flusso corrente $x_{ij}$ si generano \emph{fino a due} archi residui:
+
+\begin{center}
+\begin{tabular}{@{}p{3.6cm} p{3.9cm} p{2.8cm} p{3.0cm}@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Esiste quando} & \textbf{Residuo} & \textbf{Costo}\\
+\midrule
+diretto \ $i \to j$ & $x_{ij} < u_{ij}$ & $u_{ij} - x_{ij}$ & $+\,c_{ij}$\\
+\addlinespace
+inverso \ $j \to i$ & $x_{ij} > 0$ & $x_{ij}$ & $-\,c_{ij}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{idea}
+\textbf{A che serve l'arco inverso.} Rappresenta la possibilità di \emph{disfare} flusso già
+mandato. Percorrerlo significa «togli $\delta$ unità da $(i,j)$ e mandale altrove»: è per questo
+che il flusso massimo trova l'ottimo anche se le prime scelte erano sbagliate.
+Nel matching corrisponde a \emph{riassegnare} un accoppiamento già fatto.
+\end{idea}
+
+\newpage
+\subsection{Flusso massimo con Edmonds--Karp}
+
+\begin{ric}{Edmonds--Karp}
+\begin{enumerate}
+\item Parti dal flusso nullo $x = 0$.
+\item Costruisci $G_x$ e cerca un cammino aumentante da $s$ a $t$ \textbf{con una visita BFS}
+      (in ampiezza), cioè il cammino con il \emph{minor numero di archi}.
+      A parità di distanza dichiara la regola usata per l'ordine dei nodi (alfabetico o numerico).
+\item Calcola $\delta = \min$ dei residui lungo il cammino.
+\item Aggiorna il flusso: $+\delta$ sugli archi percorsi in avanti, $-\delta$ su quelli percorsi
+      all'indietro.
+\item Ripeti finché $t$ non è più raggiungibile da $s$ in $G_x$.
+\item \textbf{Taglio minimo.} $S$ = insieme dei nodi raggiungibili da $s$ nel $G_x$ finale,
+      $T = N \setminus S$.
+\end{enumerate}
+\end{ric}
+
+\begin{idea}
+\textbf{Come si scrive una iterazione sul foglio.} Per ogni iterazione riporta:
+(i) l'ordine di visita BFS con i predecessori, (ii) il cammino trovato, (iii) il $\delta$,
+(iv) il nuovo valore del flusso, (v) il grafo aggiornato con le coppie
+$u_{ij},\,x_{ij}$ su ogni arco.
+\end{idea}
+
+\begin{es}{Edmonds--Karp su una rete a 7 nodi}
+Rete (le etichette sono le capacità):
+
+\begin{center}
+\begin{tikzpicture}[>=Latex,scale=1.15,transform shape,
+  every node/.style={font=\small},
+  nd/.style={circle,draw=navy,thick,minimum size=7mm,inner sep=1pt}]
+\node[nd] (s) at (0,0)     {$s$};
+\node[nd] (A) at (2.4,1.7) {$A$};
+\node[nd] (B) at (2.4,-1.7){$B$};
+\node[nd] (C) at (5.0,0)   {$C$};
+\node[nd] (D) at (7.6,1.7) {$D$};
+\node[nd] (E) at (7.6,-1.7){$E$};
+\node[nd] (t) at (10.0,0)  {$t$};
+\draw[->,thick] (s) -- node[above left]{4} (A);
+\draw[->,thick] (s) -- node[below left]{6} (B);
+\draw[->,thick] (A) -- node[above right,pos=0.4]{4} (C);
+\draw[->,thick] (A) -- node[above]{6} (D);
+\draw[->,thick] (B) -- node[left]{5} (A);
+\draw[->,thick] (B) -- node[below right,pos=0.4]{4} (C);
+\draw[->,thick] (B) to[bend right=22] node[below]{3} (E);
+\draw[->,thick] (C) -- node[above right,pos=0.55]{4} (D);
+\draw[->,thick] (C) -- node[below right,pos=0.55]{5} (E);
+\draw[->,thick] (D) -- node[above right]{3} (t);
+\draw[->,thick] (E) -- node[below right]{7} (t);
+\end{tikzpicture}
+\end{center}
+
+Ordine dei nodi nella BFS: alfabetico ($A$ prima di $B$, ecc.).
+
+\medskip
+\textbf{Iterazione 1.} BFS da $s$: livello 1 $\{A, B\}$; livello 2 da $A$: $\{C, D\}$,
+da $B$: $\{E\}$; livello 3 da $D$: $t$.
+Cammino: $s \to A \to D \to t$. \quad
+$\delta = \min(4,\,6,\,3) = 3$. \quad Flusso $= 3$.
+
+\textbf{Iterazione 2.} Ora $D\to t$ è saturo. BFS: $s\to B \to E \to t$. \quad
+$\delta = \min(6,\,3,\,7) = 3$. \quad Flusso $= 6$.
+
+\textbf{Iterazione 3.} $B\to E$ è saturo. BFS: $s\to A \to C \to E \to t$.
+Residui: $s\to A$ vale $4-3=1$, $A\to C$ vale 4, $C\to E$ vale 5, $E\to t$ vale $7-3=4$. \quad
+$\delta = 1$. \quad Flusso $= 7$.
+
+\textbf{Iterazione 4.} $s\to A$ è saturo. BFS: $s\to B \to C \to E \to t$.
+Residui: $6-3=3$, $4$, $5-1=4$, $7-4=3$. \quad $\delta = 3$. \quad Flusso $= 10$.
+
+\textbf{Iterazione 5.} In $G_x$ da $s$ non si raggiunge più nulla: $s\to A$ ($4/4$) e
+$s\to B$ ($6/6$) sono entrambi saturi. \textbf{Stop.}
+
+\medskip
+\textbf{Soluzione.} Flusso massimo $= 10$, con
+\[
+x_{sA}=4,\quad x_{sB}=6,\quad x_{AC}=1,\quad x_{AD}=3,\quad x_{BA}=0,\quad x_{BC}=3,
+\]
+\[
+x_{BE}=3,\quad x_{CD}=0,\quad x_{CE}=4,\quad x_{Dt}=3,\quad x_{Et}=7.
+\]
+
+\textbf{Taglio minimo.} $S = \{s\}$, $T = \{A,B,C,D,E,t\}$.
+Verifica: archi $S \to T$ sono $s\to A$ e $s\to B$, entrambi saturi;
+archi $T \to S$: nessuno. Capacità $u(S,T) = 4 + 6 = 10 = v(x)$. \checkmark
+\end{es}
+
+\begin{idea}
+\textbf{Verifica finale del taglio (tre controlli, sempre da scrivere).}
+(1) gli archi da $S$ a $T$ sono tutti saturi; (2) gli archi da $T$ a $S$ sono tutti vuoti;
+(3) $u(S,T)$ è pari al valore del flusso trovato.
+Se i tre controlli tornano, la soluzione è certamente ottima.
+\end{idea}
+
+\textbf{Complessità e differenza con Ford--Fulkerson.}
+Ford--Fulkerson generico non specifica come scegliere il cammino aumentante e costa
+$O(m \cdot U)$: dipende dai \emph{valori} delle capacità e su istanze costruite ad arte
+degenera. Edmonds--Karp è la specializzazione che sceglie sempre il cammino aumentante con
+il minor numero di archi, esplorando $G_x$ \textbf{in ampiezza (BFS)}, e costa $O(n\,m^2)$,
+\emph{indipendentemente} dai valori delle capacità. È questa la frase da scrivere quando
+la domanda è «in cosa differisce Edmonds--Karp dalle altre implementazioni».
+
+\newpage
+\begin{teo}{teorema max-flow-min-cut}
+\textbf{Enunciato.} Il valore del flusso massimo da $s$ a $t$ è uguale alla capacità
+del taglio $s$-$t$ di capacità minima.
+
+\textbf{Parte 1: ogni flusso $\le$ ogni taglio.}
+Per ogni flusso ammissibile $x$ e ogni taglio $(S,T)$ vale
+\[
+v(x) \;=\; \sum_{i\in S,\,j\in T} x_{ij} \;-\; \sum_{i\in T,\,j\in S} x_{ij}
+      \;\le\; \sum_{i\in S,\,j\in T} x_{ij}
+      \;\le\; \sum_{i\in S,\,j\in T} u_{ij} \;=\; u(S,T),
+\]
+dove la prima disuguaglianza vale perché il flusso all'indietro è $\ge 0$ e la seconda
+perché $x_{ij}\le u_{ij}$.
+Quindi $\max_x v(x) \le \min_{(S,T)} u(S,T)$.
+
+\textbf{Parte 2: esistono un flusso e un taglio che si toccano.}
+All'arresto di Ford--Fulkerson (nessun cammino aumentante) sia
+$S$ l'insieme dei nodi raggiungibili da $s$ in $G_x$; per definizione di arresto $t \notin S$,
+quindi $(S,T)$ con $T = N\setminus S$ è un taglio $s$-$t$.
+Ogni arco $(i,j)$ con $i\in S$, $j\in T$ è \emph{saturo} ($x_{ij} = u_{ij}$): altrimenti
+esisterebbe l'arco residuo diretto $i\to j$ e $j$ sarebbe raggiungibile, contro $j\in T$.
+Ogni arco $(j,i)$ con $j\in T$, $i\in S$ è \emph{vuoto} ($x_{ji} = 0$): altrimenti esisterebbe
+l'arco residuo inverso $i\to j$ e di nuovo $j$ sarebbe raggiungibile.
+Sostituendo nella formula della parte 1:
+\[ v(x) = \sum_{S\to T} u_{ij} - 0 = u(S,T). \]
+
+\textbf{Conclusione.} Per la parte 1 nessun flusso può superare $u(S,T)$ e nessun taglio può
+scendere sotto $v(x)$; poiché i due valori coincidono, $x$ è un flusso massimo e $(S,T)$ un
+taglio minimo. $\square$
+\end{teo}
+
+\subsection{Flusso di costo minimo}
+
+Due algoritmi, entrambi possibili all'esame. Il primo è quello effettivamente chiesto
+nel compito del 27/07/2026.
+
+\begin{ric}{cancellazione dei cicli --- algoritmo primale}
+\begin{enumerate}
+\item Trova un flusso \textbf{ammissibile} qualsiasi, che rispetti i bilanci $b_i$.
+      Il modo standard: aggiungi una sorgente fittizia $s$ collegata a ogni nodo di offerta
+      (capacità $=$ offerta) e un pozzo fittizio $t$ collegato da ogni nodo di domanda
+      (capacità $=$ domanda), poi calcola il \textbf{flusso massimo}.
+      Se il flusso massimo satura tutti gli archi fittizi, esiste un flusso ammissibile
+      ed è quello trovato; altrimenti il problema è inammissibile.
+\item Costruisci $G_x$ con i costi: $+c_{ij}$ sugli archi diretti, $-c_{ij}$ sugli inversi.
+\item Cerca un \textbf{ciclo orientato di costo negativo} in $G_x$, per ispezione o con
+      Bellman--Ford.
+\item Calcola $\delta = \min$ dei residui sul ciclo e spingi $\delta$ lungo il ciclo:
+      il costo totale cala di $\delta \cdot |c(\text{ciclo})|$.
+\item Ripeti finché non restano cicli negativi: allora il flusso è ottimo.
+\end{enumerate}
+\end{ric}
+
+\begin{idea}
+\textbf{Come si calcola il costo di un ciclo.} Si sommano i costi degli archi \emph{residui}
+percorsi: $+c_{ij}$ se percorri l'arco nel verso originale, $-c_{ij}$ se lo percorri
+all'indietro (stai disfacendo flusso, quindi recuperi il costo).
+\end{idea}
+
+\newpage
+\begin{es}{cancellazione dei cicli --- compito del 27/07/2026}
+
+\textbf{Rete di partenza.} Accanto a ogni arco la coppia $(\text{capacità } u_{ij},\, \text{costo } c_{ij})$; accanto ai nodi il bilancio $b_i$.
+
+\begin{center}
+\begin{tikzpicture}[>=Latex,scale=1.15,transform shape,
+  every node/.style={font=\small},
+  nd/.style={circle,draw=navy,thick,minimum size=8mm,inner sep=1pt}]
+\node[nd] (A) at (0,2.2) {$A$};
+\node[nd] (B) at (0,-2.2) {$B$};
+\node[nd] (C) at (3.2,0) {$C$};
+\node[nd] (D) at (6.4,2.2) {$D$};
+\node[nd] (E) at (6.4,-2.2) {$E$};
+\node[left=2mm of A,text=crimson] {$-4$};
+\node[left=2mm of B,text=crimson] {$-6$};
+\node[right=2mm of D,text=teal] {$3$};
+\node[right=2mm of E,text=teal] {$7$};
+\draw[->,thick] (A) -- node[above]{$6,\,6$} (D);
+\draw[->,thick] (A) -- node[above right,pos=0.45]{$4,\,1$} (C);
+\draw[->,thick] (C) -- node[above right,pos=0.55]{$4,\,4$} (D);
+\draw[->,thick] (B) -- node[left]{$5,\,1$} (A);
+\draw[->,thick] (B) -- node[below right,pos=0.45]{$4,\,1$} (C);
+\draw[->,thick] (C) -- node[below right,pos=0.55]{$5,\,2$} (E);
+\draw[->,thick] (B) -- node[below]{$3,\,6$} (E);
+\draw[->,thick] (D) -- node[right]{$3,\,-3$} (E);
+\end{tikzpicture}
+\end{center}
+
+% --- SCHEDA OPERATIVA STEP-BY-STEP ---
+\begin{tcolorbox}[colback=lightbg,colframe=navy,arc=2pt,boxrule=0.8pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
+\textbf{Metodo pratico d'esame: come tenere traccia delle variabili senza confondersi}
+\begin{enumerate}[leftmargin=1.2em,itemsep=0.2em]
+\item \textbf{Sul grafo originale $G$}: tieni traccia solo di $[x_{ij} / u_{ij}]$ (flusso inviato / capacità).
+\item \textbf{Sul grafo residuo $G_x$}: si disegnano solo gli archi che hanno residuo $r > 0$:
+  \begin{itemize}[leftmargin=1.1em,itemsep=0.1em]
+    \item \textbf{Arco Diretto} ($i \to j$, verso originale): esiste se $x_{ij} < u_{ij}$.\\
+          Residuo disponibile: $r_{ij} = u_{ij} - x_{ij}$ \quad | \quad Costo residuo: $+c_{ij}$.
+    \item \textbf{Arco Inverso} ($j \to i$, verso opposto): esiste solo se c'è flusso da disfare, cioè $x_{ij} > 0$.\\
+          Residuo disponibile: $r_{ji} = x_{ij}$ \quad | \quad Costo residuo: $-c_{ij}$ \emph{(recuperi il costo già pagato)}.
+    \item Se $0 < x_{ij} < u_{ij}$, esistono \textbf{entrambi} i versi residui ($\leftrightarrow$).
+  \end{itemize}
+\item \textbf{Identificazione ciclo $\Gamma$}: cerca un ciclo orientato chiuso in $G_x$ con $\sum c^{\text{res}} < 0$.
+\item \textbf{Quantità di incremento $\delta$}: collo di bottiglia dei residui lungo il ciclo, $\delta = \min \{r_{ij}\}$.
+\item \textbf{Aggiornamento del flusso}: percorrendo il ciclo $\Gamma$, per ogni arco attraversato:
+  \[
+  \begin{cases}
+  \text{se percorso in verso \textbf{diretto}}: & x_{ij} \leftarrow x_{ij} + \delta\\
+  \text{se percorso in verso \textbf{inverso}}: & x_{ij} \leftarrow x_{ij} - \delta
+  \end{cases}
+  \qquad\Longrightarrow\quad \Delta \text{Costo} = \delta \cdot c(\Gamma)
+  \]
+\end{enumerate}
+\end{tcolorbox}
+
+\textbf{Passo 0 --- Flusso ammissibile di partenza.}
+Aggiungendo una sorgente ausiliaria $s$ verso $A, B$ e un pozzo $t$ da $D, E$, l'algoritmo di Edmonds--Karp determina il flusso iniziale ammissibile di valore 10:
+\[
+x_{AC}=1,\quad x_{AD}=3,\quad x_{BA}=0,\quad x_{BC}=3,\quad x_{BE}=3,\quad x_{CD}=0,\quad x_{CE}=4,\quad x_{DE}=0
+\]
+Costo iniziale: $z_0 = (1\cdot 1) + (3\cdot 6) + (0\cdot 1) + (3\cdot 1) + (3\cdot 6) + (0\cdot 4) + (4\cdot 2) + (0\cdot -3) = \mathbf{48}$.
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 1 ====================
+\textbf{Iterazione 1.}
+
+\textbf{1. Tracciamento del ciclo negativo $\Gamma_1 = D \to E \to C \to D$:}
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo $c^{\text{res}}$}\\
+\midrule
+$D \to E$ & Diretto & $u_{DE} - x_{DE} = 3 - 0$ & $3$ & $+(-3) = -3$\\
+$E \to C$ & Inverso & $x_{CE}$ & $4$ & $-(+2) = -2$\\
+$C \to D$ & Diretto & $u_{CD} - x_{CD} = 4 - 0$ & $4$ & $+(+4) = +4$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Costo del ciclo}: $c(\Gamma_1) = (-3) + (-2) + (+4) = \mathbf{-1} < 0$ (ciclo migliorante).
+\item \textbf{Capacità di incremento}: $\delta = \min(3, 4, 4) = \mathbf{3}$.
+\item \textbf{Aggiornamento flussi}:
+  $x_{DE} \leftarrow 0 + 3 = \mathbf{3}$ (saturo), \quad
+  $x_{CE} \leftarrow 4 - 3 = \mathbf{1}$, \quad
+  $x_{CD} \leftarrow 0 + 3 = \mathbf{3}$.
+\item \textbf{Nuovo costo}: $z_1 = z_0 + \delta \cdot c(\Gamma_1) = 48 + 3(-1) = \mathbf{45}$.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{<->}{A}{D}{+6}
+\ra{<->}{A}{C}{+1}
+\ra{->}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{<->}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{<-}{B}{E}{+6}
+\ra{->}{D}{E}{-3}
+\cy{D}{E}{-3}
+\cy{E}{C}{-2}
+\cy{C}{D}{+4}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ iniziale: evidenziato $\Gamma_1$ ($c=-1$, $\delta=3$)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{3}
+\fa{A}{C}{4,\,1}{1}
+\fa{C}{D}{4,\,4}{3}
+\fa{B}{A}{5,\,1}{0}
+\fa{B}{C}{4,\,1}{3}
+\fa{C}{E}{5,\,2}{1}
+\fa{B}{E}{3,\,6}{3}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G$ dopo iterazione 1 (costo $45$)}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 2 ====================
+\textbf{Iterazione 2.}
+
+\textbf{1. Tracciamento del ciclo negativo $\Gamma_2 = C \to E \to B \to C$:}
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo $c^{\text{res}}$}\\
+\midrule
+$C \to E$ & Diretto & $u_{CE} - x_{CE} = 5 - 1$ & $4$ & $+2$\\
+$E \to B$ & Inverso & $x_{BE}$ & $3$ & $-6$\\
+$B \to C$ & Diretto & $u_{BC} - x_{BC} = 4 - 3$ & $1$ & $+1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Costo del ciclo}: $c(\Gamma_2) = 2 - 6 + 1 = \mathbf{-3} < 0$.
+\item \textbf{Capacità di incremento}: $\delta = \min(4, 3, 1) = \mathbf{1}$.
+\item \textbf{Aggiornamento flussi}:
+  $x_{CE} \leftarrow 1 + 1 = \mathbf{2}$, \quad
+  $x_{BE} \leftarrow 3 - 1 = \mathbf{2}$, \quad
+  $x_{BC} \leftarrow 3 + 1 = \mathbf{4}$ (saturo).
+\item \textbf{Nuovo costo}: $z_2 = 45 + 1(-3) = \mathbf{42}$.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{<->}{A}{D}{+6}
+\ra{<->}{A}{C}{+1}
+\ra{<->}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{<->}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{<-}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{C}{E}{+2}
+\cy{E}{B}{-6}
+\cy{B}{C}{+1}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ post it. 1: evidenziato $\Gamma_2$ ($c=-3$, $\delta=1$)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{3}
+\fa{A}{C}{4,\,1}{1}
+\fa{C}{D}{4,\,4}{3}
+\fa{B}{A}{5,\,1}{0}
+\fa{B}{C}{4,\,1}{4}
+\fa{C}{E}{5,\,2}{2}
+\fa{B}{E}{3,\,6}{2}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G$ dopo iterazione 2 (costo $42$)}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 3 ====================
+\textbf{Iterazione 3.}
+
+\textbf{1. Tracciamento del ciclo negativo $\Gamma_3 = C \to E \to B \to A \to C$:}
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo $c^{\text{res}}$}\\
+\midrule
+$C \to E$ & Diretto & $u_{CE} - x_{CE} = 5 - 2$ & $3$ & $+2$\\
+$E \to B$ & Inverso & $x_{BE}$ & $2$ & $-6$\\
+$B \to A$ & Diretto & $u_{BA} - x_{BA} = 5 - 0$ & $5$ & $+1$\\
+$A \to C$ & Diretto & $u_{AC} - x_{AC} = 4 - 1$ & $3$ & $+1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Costo del ciclo}: $c(\Gamma_3) = 2 - 6 + 1 + 1 = \mathbf{-2} < 0$.
+\item \textbf{Capacità di incremento}: $\delta = \min(3, 2, 5, 3) = \mathbf{2}$.
+\item \textbf{Aggiornamento flussi}:
+  $x_{CE} \leftarrow 2 + 2 = \mathbf{4}$, \quad
+  $x_{BE} \leftarrow 2 - 2 = \mathbf{0}$ (vuoto), \quad
+  $x_{BA} \leftarrow 0 + 2 = \mathbf{2}$, \quad
+  $x_{AC} \leftarrow 1 + 2 = \mathbf{3}$.
+\item \textbf{Nuovo costo}: $z_3 = 42 + 2(-2) = \mathbf{38}$.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{<->}{A}{D}{+6}
+\ra{<->}{A}{C}{+1}
+\ra{<->}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{<-}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{<->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{C}{E}{+2}
+\cy{E}{B}{-6}
+\cy{B}{A}{+1}
+\cy{A}{C}{+1}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ post it. 2: evidenziato $\Gamma_3$ ($c=-2$, $\delta=2$)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{3}
+\fa{A}{C}{4,\,1}{3}
+\fa{C}{D}{4,\,4}{3}
+\fa{B}{A}{5,\,1}{2}
+\fa{B}{C}{4,\,1}{4}
+\fa{C}{E}{5,\,2}{4}
+\fa{B}{E}{3,\,6}{0}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G$ dopo iterazione 3 (costo $38$)}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 4 ====================
+\textbf{Iterazione 4.}
+
+\textbf{1. Tracciamento del ciclo negativo $\Gamma_4 = C \to D \to A \to C$:}
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo $c^{\text{res}}$}\\
+\midrule
+$C \to D$ & Diretto & $u_{CD} - x_{CD} = 4 - 3$ & $1$ & $+4$\\
+$D \to A$ & Inverso & $x_{AD}$ & $3$ & $-6$\\
+$A \to C$ & Diretto & $u_{AC} - x_{AC} = 4 - 3$ & $1$ & $+1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Costo del ciclo}: $c(\Gamma_4) = 4 - 6 + 1 = \mathbf{-1} < 0$.
+\item \textbf{Capacità di incremento}: $\delta = \min(1, 3, 1) = \mathbf{1}$.
+\item \textbf{Aggiornamento flussi}:
+  $x_{CD} \leftarrow 3 + 1 = \mathbf{4}$ (saturo), \quad
+  $x_{AD} \leftarrow 3 - 1 = \mathbf{2}$, \quad
+  $x_{AC} \leftarrow 3 + 1 = \mathbf{4}$ (saturo).
+\item \textbf{Nuovo costo}: $z_4 = 38 + 1(-1) = \mathbf{37}$.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{<->}{A}{D}{+6}
+\ra{<->}{A}{C}{+1}
+\ra{<->}{C}{D}{+4}
+\ra{<->}{B}{A}{+1}
+\ra{<-}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{C}{D}{+4}
+\cy{D}{A}{-6}
+\cy{A}{C}{+1}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ post it. 3: evidenziato $\Gamma_4$ ($c=-1$, $\delta=1$)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{2}
+\fa{A}{C}{4,\,1}{4}
+\fa{C}{D}{4,\,4}{4}
+\fa{B}{A}{5,\,1}{2}
+\fa{B}{C}{4,\,1}{4}
+\fa{C}{E}{5,\,2}{4}
+\fa{B}{E}{3,\,6}{0}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G$ dopo iterazione 4 (costo $37$)}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 5 (OTTIMO) ====================
+\textbf{Iterazione 5 (Test di arresto ed ottimalità).}
+
+Nel nuovo grafo residuo $G_x$, gli unici cicli orientati rimasti sono:
+\begin{itemize}[itemsep=0.1em]
+\item $A \to D \to E \to C \to A$ con costo: $(+6) + (-3) + (-2) + (-1) = 0 \ge 0$.
+\item $B \to A \to D \to E \to B$ con costo: $(+1) + (+6) + (-3) + (+6) = +10 \ge 0$.
+\end{itemize}
+Non esiste alcun ciclo con costo strettamente negativo in $G_x$: \textbf{la soluzione corrente è ottima}.
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{<->}{A}{D}{+6}
+\ra{<-}{A}{C}{+1}
+\ra{<-}{C}{D}{+4}
+\ra{<->}{B}{A}{+1}
+\ra{<-}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ finale: privo di cicli orientati negativi}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{2}
+\fa{A}{C}{4,\,1}{4}
+\fa{C}{D}{4,\,4}{4}
+\fa{B}{A}{5,\,1}{2}
+\fa{B}{C}{4,\,1}{4}
+\fa{C}{E}{5,\,2}{4}
+\fa{B}{E}{3,\,6}{0}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize Flusso ottimo $x^*$, costo minimo $\mathbf{37}$}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Soluzione ottima finale.}
+\[
+x_{AC}^* = 4,\quad x_{AD}^* = 2,\quad x_{BA}^* = 2,\quad x_{BC}^* = 4,\quad x_{BE}^* = 0,
+\quad x_{CD}^* = 4,\quad x_{CE}^* = 4,\quad x_{DE}^* = 3
+\]
+\textbf{Costo totale minimo}:
+\[
+z^* = (4\cdot 1) + (2\cdot 6) + (2\cdot 1) + (4\cdot 1) + (0\cdot 6) + (4\cdot 4) + (4\cdot 2) + (3\cdot -3) = \mathbf{37}
+\]
+\textbf{Verifica finale dei bilanci ai nodi} (uscite $-$ entrate $= -b_i$):
+\begin{itemize}[itemsep=0.15em]
+\item Nodo $A$: $(x_{AC} + x_{AD}) - x_{BA} = (4 + 2) - 2 = 4 = -(-4)$ \quad \checkmark
+\item Nodo $B$: $(x_{BA} + x_{BC} + x_{BE}) - 0 = (2 + 4 + 0) = 6 = -(-6)$ \quad \checkmark
+\item Nodo $C$: $(x_{CD} + x_{CE}) - (x_{AC} + x_{BC}) = (4 + 4) - (4 + 4) = 0 = -(0)$ \quad \checkmark
+\item Nodo $D$: $x_{DE} - (x_{AD} + x_{CD}) = 3 - (2 + 4) = -3 = -(3)$ \quad \checkmark
+\item Nodo $E$: $0 - (x_{BE} + x_{CE} + x_{DE}) = 0 - (0 + 4 + 3) = -7 = -(7)$ \quad \checkmark
+\end{itemize}
+\end{es}
+
+\begin{ric}{cammini minimi successivi --- algoritmo duale}
+\begin{enumerate}
+\item Parti da uno \textbf{pseudoflusso minimale}, cioè già ottimo nei costi
+      ma non necessariamente ammissibile.
+      Se tutti i costi sono non negativi va bene $x = 0$: nessun ciclo negativo,
+      ma la conservazione è violata ovunque.
+\item Finché esistono nodi sbilanciati, scegli $s$ con eccesso positivo e $t$ con difetto.
+\item Cerca in $G_x$ il \textbf{cammino di costo minimo} da $s$ a $t$ e poni
+      \[ \delta = \min\big(\text{eccesso di } s,\ |\text{difetto di } t|,\ \text{residui del cammino}\big) \]
+\item Spingi $\delta$ lungo il cammino e aggiorna eccessi e difetti.
+      Termina quando tutti i bilanci sono soddisfatti: quel flusso è ottimo.
+\end{enumerate}
+\end{ric}
+
+\begin{es}{cammini minimi successivi --- stessa rete del compito del 27/07/2026}
+Stessa rete dell'esempio di cancellazione dei cicli (capacità, costi e bilanci identici):
+si arriva allo stesso ottimo $z^*=37$, ma partendo da uno pseudoflusso invece che da un flusso ammissibile.
+
+\textbf{Rete di partenza.} Coppia $(u_{ij},\,c_{ij})$ sugli archi, bilancio $b_i$ accanto ai nodi.
+\begin{center}
+\begin{tikzpicture}[>=Latex,scale=1.15,transform shape,
+  every node/.style={font=\small},
+  nd/.style={circle,draw=navy,thick,minimum size=8mm,inner sep=1pt}]
+\node[nd] (A) at (0,2.2) {$A$};
+\node[nd] (B) at (0,-2.2) {$B$};
+\node[nd] (C) at (3.2,0) {$C$};
+\node[nd] (D) at (6.4,2.2) {$D$};
+\node[nd] (E) at (6.4,-2.2) {$E$};
+\node[left=2mm of A,text=crimson] {$-4$};
+\node[left=2mm of B,text=crimson] {$-6$};
+\node[right=2mm of D,text=teal] {$3$};
+\node[right=2mm of E,text=teal] {$7$};
+\draw[->,thick] (A) -- node[above]{$6,\,6$} (D);
+\draw[->,thick] (A) -- node[above right,pos=0.45]{$4,\,1$} (C);
+\draw[->,thick] (C) -- node[above right,pos=0.55]{$4,\,4$} (D);
+\draw[->,thick] (B) -- node[left]{$5,\,1$} (A);
+\draw[->,thick] (B) -- node[below right,pos=0.45]{$4,\,1$} (C);
+\draw[->,thick] (C) -- node[below right,pos=0.55]{$5,\,2$} (E);
+\draw[->,thick] (B) -- node[below]{$3,\,6$} (E);
+\draw[->,thick] (D) -- node[right]{$3,\,-3$} (E);
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[colback=lightbg,colframe=navy,arc=2pt,boxrule=0.8pt,left=6pt,right=6pt,top=5pt,bottom=5pt]
+\textbf{Metodo pratico d'esame: come tenere traccia degli sbilanciamenti}
+\begin{enumerate}[leftmargin=1.2em,itemsep=0.2em]
+\item \textbf{Pseudoflusso di partenza}: $x_{ij}=0$ sugli archi con $c_{ij}\ge 0$ e
+      $x_{ij}=u_{ij}$ sugli archi con $c_{ij}<0$ (\emph{saturare gli archi negativi} è
+      indispensabile: altrimenti in $G_x$ resta un arco di costo negativo e lo pseudoflusso non è minimale).
+\item \textbf{Sbilanciamento di ogni nodo}: posto $s_i=-b_i$ (offerta del nodo),
+      \[ e_i \;=\; s_i \;+\; \text{(flusso entrante)} \;-\; \text{(flusso uscente)} \]
+      $e_i>0$ = \textbf{eccesso} (sorgente da svuotare), $e_i<0$ = \textbf{difetto} (pozzo da riempire).
+\item \textbf{Scelta della coppia}: prendi un $s$ con $e_s>0$ e un $t$ con $e_t<0$ e cerca in $G_x$
+      il cammino di \emph{costo minimo} (non il più corto in numero di archi!).
+\item \textbf{Passo}: $\delta = \min\big(e_s,\ |e_t|,\ \min r_{ij}\text{ sul cammino}\big)$; spingi $\delta$,
+      aggiorna $x$ (\,$+\delta$ sugli archi diretti, $-\delta$ su quelli inversi\,), aggiorna $e_s$ ed $e_t$.
+\item \textbf{Terminazione}: quando tutti gli $e_i$ sono nulli lo pseudoflusso è diventato un flusso,
+      ed è già ottimo (ogni passo conserva la minimalità).
+\end{enumerate}
+\end{tcolorbox}
+
+\textbf{Passo 0 --- Pseudoflusso minimale iniziale.}
+L'unico arco di costo negativo è $D\to E$ ($c=-3$): lo saturo. Tutti gli altri restano a zero.
+\[
+x_{DE}=3,\qquad x_{ij}=0 \text{ per ogni altro arco}
+\qquad\Longrightarrow\qquad z_0 = 3\cdot(-3) = \mathbf{-9}
+\]
+Sbilanciamenti (offerte: $s_A=4$, $s_B=6$, $s_D=-3$, $s_E=-7$):
+\begin{center}
+\small
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+\textbf{Nodo} & $A$ & $B$ & $C$ & $D$ & $E$\\
+\midrule
+$e_i = s_i + \text{entrate} - \text{uscite}$ & $4+0-0$ & $6+0-0$ & $0+0-0$ & $-3+0-3$ & $-7+3-0$\\
+\textbf{sbilanciamento} & $+4$ & $+6$ & $0$ & $-6$ & $-4$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Eccessi totali $=10=$ difetti totali. In $G_x$ l'arco $D\to E$ compare solo all'indietro
+($E\to D$, costo $+3$): nessun costo residuo negativo, quindi lo pseudoflusso è minimale. \checkmark
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 1 ====================
+\textbf{Iterazione 1 --- coppia $s=A$ ($e_A=+4$), $t=E$ ($e_E=-4$).}
+
+Cammini $A\rightsquigarrow E$ in $G_x$ e loro costo:
+$A\!\to\!C\!\to\!E = 1+2 = \mathbf{3}$ \ (minimo), \quad
+$A\!\to\!D$ non raggiunge $E$ (l'arco $D\to E$ è saturo).
+
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo}\\
+\midrule
+$A \to C$ & Diretto & $u_{AC}-x_{AC} = 4-0$ & $4$ & $+1$\\
+$C \to E$ & Diretto & $u_{CE}-x_{CE} = 5-0$ & $5$ & $+2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Passo}: $\delta = \min(e_A,\,|e_E|,\,4,\,5) = \min(4,4,4,5) = \mathbf{4}$.
+\item \textbf{Aggiornamento}: $x_{AC}\leftarrow \mathbf{4}$ (saturo), \quad $x_{CE}\leftarrow \mathbf{4}$.
+\item \textbf{Nuovi sbilanciamenti}: $e_A = 4-4 = \mathbf{0}$, \quad $e_E = -4+4 = \mathbf{0}$.
+\item \textbf{Costo}: $z_1 = z_0 + \delta\cdot c(\text{cammino}) = -9 + 4\cdot 3 = \mathbf{3}$.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=Latex,scale=0.85,transform shape]
+\mcfnodes
+\ra{->}{A}{D}{+6}
+\ra{->}{A}{C}{+1}
+\ra{->}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{->}{B}{C}{+1}
+\ra{->}{C}{E}{+2}
+\ra{->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{A}{C}{+1}
+\cy{C}{E}{+2}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ iniziale: evidenziato il cammino minimo $A\to C\to E$ ($c=3$, $\delta=4$)}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 2 ====================
+\textbf{Iterazione 2 --- coppia $s=B$ ($e_B=+6$), $t=D$ ($e_D=-6$).}
+
+Ora $A\to C$ è saturo (in $G_x$ resta solo $C\to A$ con costo $-1$). Cammini $B\rightsquigarrow D$:
+\begin{gather*}
+B\!\to\!C\!\to\!D = 1+4 = \mathbf{5}\ (\text{minimo}),\qquad
+B\!\to\!C\!\to\!E\!\to\!D = 1+2+3 = 6,\\
+B\!\to\!A\!\to\!D = 1+6 = 7,\qquad
+B\!\to\!E\!\to\!D = 6+3 = 9
+\end{gather*}
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo}\\
+\midrule
+$B \to C$ & Diretto & $u_{BC}-x_{BC} = 4-0$ & $4$ & $+1$\\
+$C \to D$ & Diretto & $u_{CD}-x_{CD} = 4-0$ & $4$ & $+4$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Passo}: $\delta = \min(6,\,6,\,4,\,4) = \mathbf{4}$.
+\item \textbf{Aggiornamento}: $x_{BC}\leftarrow \mathbf{4}$ (saturo), \quad $x_{CD}\leftarrow \mathbf{4}$ (saturo).
+\item \textbf{Nuovi sbilanciamenti}: $e_B = 6-4 = \mathbf{+2}$, \quad $e_D = -6+4 = \mathbf{-2}$.
+\item \textbf{Costo}: $z_2 = 3 + 4\cdot 5 = \mathbf{23}$.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[>=Latex,scale=0.85,transform shape]
+\mcfnodes
+\ra{->}{A}{D}{+6}
+\ra{<-}{A}{C}{+1}
+\ra{->}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{->}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{B}{C}{+1}
+\cy{C}{D}{+4}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ post it. 1: evidenziato $B\to C\to D$ ($c=5$, $\delta=4$)}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+% ==================== ITERAZIONE 3 ====================
+\textbf{Iterazione 3 --- coppia $s=B$ ($e_B=+2$), $t=D$ ($e_D=-2$).}
+
+$B\to C$ e $C\to D$ sono ora saturi: da $B$ restano solo $B\to A$ e $B\to E$.
+\[
+B\!\to\!A\!\to\!D = 1+6 = \mathbf{7}\ (\text{minimo}),\qquad B\!\to\!E\!\to\!D = 6+3 = 9
+\]
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\textbf{Arco residuo} & \textbf{Tipo} & \textbf{Formula residuo $r$} & \textbf{Residuo num.} & \textbf{Costo residuo}\\
+\midrule
+$B \to A$ & Diretto & $u_{BA}-x_{BA} = 5-0$ & $5$ & $+1$\\
+$A \to D$ & Diretto & $u_{AD}-x_{AD} = 6-0$ & $6$ & $+6$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}[itemsep=0.15em]
+\item \textbf{Passo}: $\delta = \min(2,\,2,\,5,\,6) = \mathbf{2}$.
+\item \textbf{Aggiornamento}: $x_{BA}\leftarrow \mathbf{2}$, \quad $x_{AD}\leftarrow \mathbf{2}$.
+\item \textbf{Nuovi sbilanciamenti}: $e_B = \mathbf{0}$, \quad $e_D = \mathbf{0}$: tutti i nodi sono bilanciati, \textbf{stop}.
+\item \textbf{Costo}: $z_3 = 23 + 2\cdot 7 = \mathbf{37}$.
+\end{itemize}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\ra{->}{A}{D}{+6}
+\ra{<-}{A}{C}{+1}
+\ra{<-}{C}{D}{+4}
+\ra{->}{B}{A}{+1}
+\ra{<-}{B}{C}{+1}
+\ra{<->}{C}{E}{+2}
+\ra{->}{B}{E}{+6}
+\ra{<-}{D}{E}{-3}
+\cy{B}{A}{+1}
+\cy{A}{D}{+6}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize $G_x$ post it. 2: evidenziato $B\to A\to D$ ($c=7$, $\delta=2$)}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}\centering
+\begin{tikzpicture}[>=Latex,scale=0.75,transform shape]
+\mcfnodes
+\fa{A}{D}{6,\,6}{2}
+\fa{A}{C}{4,\,1}{4}
+\fa{C}{D}{4,\,4}{4}
+\fa{B}{A}{5,\,1}{2}
+\fa{B}{C}{4,\,1}{4}
+\fa{C}{E}{5,\,2}{4}
+\fa{B}{E}{3,\,6}{0}
+\fa{D}{E}{3,\,-3}{3}
+\end{tikzpicture}
+\par\vspace{1mm}{\scriptsize Flusso ottimo $x^*$, costo minimo $\mathbf{37}$}
+\end{minipage}
+\end{center}
+
+\medskip
+\hrule
+\medskip
+
+\textbf{Soluzione ottima finale} (identica a quella trovata per cancellazione dei cicli):
+\[
+x_{AC}^*=4,\quad x_{AD}^*=2,\quad x_{BA}^*=2,\quad x_{BC}^*=4,\quad x_{BE}^*=0,
+\quad x_{CD}^*=4,\quad x_{CE}^*=4,\quad x_{DE}^*=3
+\]
+\[
+z^* = 4\cdot 1 + 2\cdot 6 + 2\cdot 1 + 4\cdot 1 + 0\cdot 6 + 4\cdot 4 + 4\cdot 2 + 3\cdot(-3) = \mathbf{37}
+\]
+\textbf{Confronto fra i due algoritmi.} La cancellazione dei cicli mantiene sempre
+l'\emph{ammissibilità} (parte da un flusso di costo 48 e scende a 37); i cammini minimi
+successivi mantengono sempre l'\emph{ottimalità nei costi} (parte da $-9$ e sale a 37,
+riducendo lo sbilanciamento a ogni passo). Il valore finale coincide.
+\end{es}
+
+\begin{teo}{pseudoflussi, cammini aumentanti e ottimalità}
+\textbf{Pseudoflusso.} Un vettore $x$ con $0\le x_{ij}\le u_{ij}$ per ogni arco,
+senza vincolo di conservazione. Ogni nodo ha uno \emph{sbilanciamento} (eccesso o difetto);
+lo pseudoflusso è \textbf{ammissibile} (cioè è un flusso) se e solo se tutti gli
+sbilanciamenti sono nulli.
+
+\textbf{Pseudoflusso minimale.} Uno pseudoflusso il cui grafo residuo $G_x$ non contiene
+cicli di costo negativo: è di costo minimo fra tutti gli pseudoflussi con gli stessi
+sbilanciamenti.
+
+\textbf{Condizione di ottimalità.} Un flusso ammissibile $x$ è di costo minimo se e solo se
+$G_x$ non contiene cicli di costo negativo.
+
+\textbf{Trasformazione fra pseudoflussi.} Due pseudoflussi qualunque con gli stessi
+sbilanciamenti differiscono per una combinazione di cicli di $G_x$: si passa dall'uno all'altro
+inviando flusso lungo cicli, e la differenza di costo è la somma dei costi di quei cicli.
+Se invece gli sbilanciamenti sono diversi, la differenza è una combinazione di cicli
+\emph{e} di cammini fra nodi sbilanciati.
+
+\textbf{Effetto di un cammino aumentante di costo minimo.} Spingere flusso lungo un cammino
+di costo minimo da un nodo in eccesso a uno in difetto trasforma uno pseudoflusso minimale
+in un altro pseudoflusso ancora minimale, riducendo lo sbilanciamento complessivo.
+Da qui la correttezza dei cammini minimi successivi.
+
+\textbf{Simmetria dei due algoritmi.} La cancellazione dei cicli mantiene
+l'\emph{ammissibilità} e migliora il costo (algoritmo primale); i cammini minimi successivi
+mantengono l'\emph{ottimalità dei costi} e ripristinano l'ammissibilità (algoritmo duale).
+\end{teo}
+
+\newpage
+\subsection{Matching di massima cardinalità}
+
+Grafo bipartito con lati $U$ e $V$ e insieme di archi $E$.
+
+\begin{ric}{matching risolto come flusso massimo}
+\begin{enumerate}
+\item Aggiungi una sorgente $s$ e un arco $s \to u$ di capacità 1 per ogni $u \in U$.
+\item Orienta ogni arco di $E$ come $u \to v$, con capacità 1 (o $+\infty$, è indifferente:
+      i colli di bottiglia sono agli estremi).
+\item Aggiungi un pozzo $t$ e un arco $v \to t$ di capacità 1 per ogni $v \in V$.
+\item Esegui Edmonds--Karp sulla rete così costruita.
+\item Il valore del flusso massimo è la cardinalità massima del matching;
+      gli archi $u \to v$ con flusso 1 sono le coppie accoppiate.
+\end{enumerate}
+\end{ric}
+
+\begin{es}{matching con una riassegnazione}
+$U = \{u_1,u_2,u_3\}$, $V = \{v_1,v_2,v_3\}$, archi
+$E = \{u_1v_1,\ u_1v_2,\ u_2v_1,\ u_3v_2,\ u_3v_3\}$.
+
+\begin{center}
+\begin{tikzpicture}[>=Latex,every node/.style={font=\small},
+  nd/.style={circle,draw=navy,thick,minimum size=7mm,inner sep=1pt}]
+\node[nd] (u1) at (0,2) {$u_1$};
+\node[nd] (u2) at (0,1) {$u_2$};
+\node[nd] (u3) at (0,0) {$u_3$};
+\node[nd] (v1) at (3,2) {$v_1$};
+\node[nd] (v2) at (3,1) {$v_2$};
+\node[nd] (v3) at (3,0) {$v_3$};
+\node[nd] (s) at (-2,1) {$s$};
+\node[nd] (t) at (5,1) {$t$};
+\draw[->,thick] (s) -- (u1); \draw[->,thick] (s) -- (u2); \draw[->,thick] (s) -- (u3);
+\draw[->,thick] (v1) -- (t); \draw[->,thick] (v2) -- (t); \draw[->,thick] (v3) -- (t);
+\draw[->,thick,teal] (u1) -- (v1);
+\draw[->,thick,teal] (u1) -- (v2);
+\draw[->,thick,teal] (u2) -- (v1);
+\draw[->,thick,teal] (u3) -- (v2);
+\draw[->,thick,teal] (u3) -- (v3);
+\end{tikzpicture}
+\end{center}
+Tutte le capacità valgono 1. Ordine BFS: per indice crescente.
+
+\textbf{Iterazione 1.} Cammino più corto: $s \to u_1 \to v_1 \to t$ (3 archi). $\delta = 1$,
+flusso $=1$. Matching parziale: $u_1$--$v_1$.
+
+\textbf{Iterazione 2.} $s\to u_2 \to v_1$ è bloccato perché $v_1\to t$ è saturo;
+il cammino più corto disponibile è $s \to u_3 \to v_2 \to t$ (3 archi). $\delta=1$, flusso $=2$.
+Matching: $u_1$--$v_1$, $u_3$--$v_2$.
+
+\textbf{Iterazione 3.} Resta libero solo $u_2$, che vede solo $v_1$, già occupato.
+BFS in $G_x$: $s \to u_2 \to v_1 \to u_1$ (\emph{arco inverso}: si disfa $u_1$--$v_1$)
+$\to v_2 \to u_3$ (\emph{arco inverso}: si disfa $u_3$--$v_2$) $\to v_3 \to t$.
+Sette archi, $\delta = 1$, flusso $= 3$.
+
+\textbf{Iterazione 4.} Da $s$ nessun arco residuo uscente ($s\to u_1,u_2,u_3$ tutti saturi):
+\textbf{stop}.
+
+\medskip
+\textbf{Soluzione.} Matching massimo di cardinalità \textbf{3}:
+\[ u_1\text{--}v_2, \qquad u_2\text{--}v_1, \qquad u_3\text{--}v_3 \]
+Si noti come i due archi inversi dell'iterazione 3 abbiano \emph{riassegnato} $u_1$ e $u_3$
+per fare posto a $u_2$: è esattamente il meccanismo del cammino aumentante.
+
+\textbf{Certificato.} $S=\{s\}$ non funziona qui perché il flusso vale 3 = numero di archi
+uscenti da $s$: il taglio $(\{s\},\text{resto})$ ha capacità 3 = valore del flusso, quindi è
+minimo e certifica l'ottimalità (nessun matching può superare $|U| = 3$).
+\end{es}
+
+L'ottimalità è sempre certificata dal taglio minimo. È il \textbf{teorema di König}:
+in un grafo bipartito la cardinalità massima di un matching è uguale alla
+cardinalità minima di una copertura per vertici; la copertura minima si legge dal taglio
+minimo come $(U \cap T) \cup (V \cap S)$.
+
+\newpage
+%================================================================
+\section{Le domande di teoria che possono uscire}
+
+Elenco ufficiale dei possibili approfondimenti teorici (a.a.\ 2025--26).
+Le voci in \textbf{grassetto} sono già state chieste nei compiti recenti.
+
+\textbf{Ottimizzazione lineare}
+\begin{itemize}[itemsep=0.15em]
+\item Descrivere i quattro casi di soluzione di un problema di ottimizzazione
+      (ottimo finito, ottimi multipli, illimitato, vuoto).
+\item Definire problema di ottimizzazione, di esistenza e di certificato.
+\item Definire un algoritmo di tipo primale e duale e fornirne un esempio
+      (cancellazione cicli / cammini minimi successivi).
+\item Definire un rilassamento di un problema di ottimizzazione e illustrarne un esempio
+      (rilassamento continuo nel Branch-and-Bound).
+\item Modellazione con vincoli lineari di relazioni logiche (almeno un caso):
+      implicazione $x_b \le x_a$, incompatibilità $x_h + x_k \le 1$, big-M.
+\item Modellazione con vincoli lineari di funzioni lineari a tratti e convesse.
+\item \textbf{Definire una soluzione base ed una soluzione base ammissibile di un problema PL.}
+\item Enunciare il teorema di Motzkin (decomposizione) per un poliedro.
+\item Enunciare e dimostrare la proprietà fondamentale della PL.
+\item Definire il problema primale e duale e fornire un esempio.
+\item \textbf{Discutere l'interpretazione delle variabili duali} (prezzi ombra).
+\item \textbf{Enunciare e dimostrare il teorema debole della dualità.}
+\item \textbf{Definire una direzione ammissibile e di crescita.}
+\item Enunciare la condizione di ottimalità per la PL.
+\end{itemize}
+
+\textbf{Ottimizzazione su rete}
+\begin{itemize}[itemsep=0.15em]
+\item Definire il problema del flusso massimo su una rete ed il relativo modello matematico.
+\item Definire il problema del flusso di costo minimo su una rete ed il relativo modello matematico.
+\item Data una rete definire un taglio $s$-$t$ ed illustrarne le proprietà.
+\item Data una rete ed un flusso definire il grafo residuo corrispondente.
+\item Definire un cammino aumentante per il flusso massimo sul grafo residuo.
+\item Discutere la correttezza dell'algoritmo di Ford--Fulkerson.
+\item \textbf{Enunciare e dimostrare il teorema max-flow-min-cut.}
+\item \textbf{Definire uno pseudoflusso e discutere le condizioni della sua ammissibilità.}
+\item Definire un cammino aumentante per il flusso a costo minimo sul grafo residuo.
+\item Definire uno pseudoflusso minimale.
+\item Discutere l'effetto di un cammino aumentante a costo minimo su uno pseudoflusso minimale.
+\item Discutere come ottenere un flusso ammissibile, se esiste, per un problema di flusso
+      a costo minimo (rete ampliata con $s$ e $t$ fittizi + flusso massimo).
+\item \textbf{In cosa differisce Edmonds--Karp dalle altre implementazioni per il flusso massimo}
+      (visita in ampiezza, cammino con meno archi, complessità indipendente dalle capacità).
+\item \textbf{Definire un flusso ammissibile.}
+\end{itemize}
+
+\textbf{I quattro casi di soluzione} (domanda ricorrente, risposta pronta):
+\begin{enumerate}[itemsep=0.15em]
+\item \textbf{Ottimo finito unico}: esiste una sola soluzione ottima.
+\item \textbf{Ottimi multipli}: l'insieme delle soluzioni ottime è una faccia del poliedro
+      (spigolo o faccia intera); segnalato da una variabile duale nulla in base.
+\item \textbf{Illimitato}: esiste una direzione ammissibile di crescita infinita;
+      il duale è vuoto.
+\item \textbf{Vuoto (inammissibile)}: nessuna soluzione soddisfa i vincoli.
+\end{enumerate}
+
+\newpage
+%================================================================
+\section{Checklist prima di consegnare}
+
+\begin{idea}
+\textbf{Modellazione}
+\begin{itemize}
+\item Tutte le variabili definite a parole, con il loro dominio nella riga finale.
+\item Ogni vincolo quantificato con $\forall i$ oppure $\forall j$.
+\item Costi fissi legati alle variabili di attivazione ($\le b_i y_i$ oppure $x_{ij}\le y_i$).
+\item Riletto il testo frase per frase: ogni frase ha prodotto un vincolo?
+\end{itemize}
+\end{idea}
+
+\begin{idea}
+\textbf{Simplesso}
+\begin{itemize}
+\item Vincoli normalizzati in $\max c\,x$, $Ax\le b$ e \emph{numerati per colonne}.
+\item $A$, $b$, $c$ scritti esplicitamente prima di iniziare.
+\item Regione ammissibile colorata, vertici marcati, gradiente $c$ disegnato col verso.
+\item Una tabella per ogni iterazione con $B$, $A_B^{-1}$, $x$, $y_B$, $h$, $\xi$, $\lambda_i$, $k$.
+\item Ogni $A_B^{-1}$ verificata con $A_B A_B^{-1} = I$.
+\item Vettore $y$ finale riportato come certificato di ottimalità, e verifica $c\,x = y\,b$.
+\item Il vertice ottimo del simplesso coincide con quello letto sul grafico.
+\end{itemize}
+\end{idea}
+
+\begin{idea}
+\textbf{Reti}
+\begin{itemize}
+\item Grafo residuo ridisegnato a ogni iterazione, con il $\delta$ evidenziato.
+\item Cammino o ciclo scelto scritto esplicitamente in lettere, non solo indicato sul disegno.
+\item Regola di rottura dei pari nella BFS dichiarata a inizio esercizio.
+\item Taglio minimo dato come coppia $(S, T)$, con i tre controlli numerici.
+\item Nel costo minimo: bilanci di ogni nodo verificati alla fine, costo totale ricalcolato.
+\end{itemize}
+\end{idea}
+
+\begin{idea}
+\textbf{Teoria}
+\begin{itemize}
+\item Prima l'enunciato, poi la dimostrazione, in poche righe pulite.
+\item Le definizioni vanno scritte per intero: base, base ammissibile, direzione ammissibile,
+      direzione di crescita, flusso ammissibile, pseudoflusso, pseudoflusso minimale, taglio.
+\item Nelle dimostrazioni, dichiarare sempre \emph{dove} si usa ogni ipotesi
+      (es. «qui uso $y\ge0$ e $Ax\le b$»).
+\end{itemize}
+\end{idea}
+
+\end{document}

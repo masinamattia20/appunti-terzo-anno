@@ -1,0 +1,611 @@
+\documentclass[12pt]{extarticle} % Utilizza il pacchetto extsizes per impostare la dimensione del font a 14pt
+\usepackage{graphicx} % Required for inserting images
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{xcolor}
+\usepackage{txfonts}
+\usepackage{amsfonts}
+\usepackage[shortlabels]{enumitem}
+\usepackage{latexsym}
+\usepackage{fixmath}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{gensymb}
+\usepackage{centernot}
+\usepackage{tikz}
+\usetikzlibrary{patterns,arrows.meta,positioning,calc}
+% --- STILI PER I GRAFICI DI FLUSSO DI COSTO MINIMO ---
+\tikzset{
+  mcfnode/.style={circle,draw,minimum size=6mm,inner sep=0pt},
+  arcvuoto/.style={->,gray!60},
+  arcusato/.style={->,blue!70!black,very thick},
+  arcsaturo/.style={->,red!75!black,very thick},
+  arcsel/.style={->,orange!90!black,very thick,dashed},
+  mcflab/.style={font=\footnotesize,midway,fill=white,inner sep=1pt}
+}
+\usepackage{mdframed}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage[most]{tcolorbox}
+\usepackage{lipsum}
+\usepackage{multirow}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+
+% Ridefinizione per evitare conflitti (se necessario)
+\renewcommand{\iint}{\DOTSI\MultiIntegral{2}}
+
+\title{Ottimizzazione combinatoria}
+\author{Mattia Masina\\CdL in Informatica}
+\date{}
+
+% --- STILI PER IL CODICE ---
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{bluegreen}{rgb}{0,0.6,0.6}
+\definecolor{darkorange}{rgb}{1.0, 0.55, 0.0}
+\definecolor{ghostwhite}{rgb}{0.97, 0.97, 1.0}
+\definecolor{deepcarrotorange}{rgb}{0.91, 0.41, 0.17}
+\definecolor{blue-violet}{rgb}{0.54, 0.17, 0.89}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{ghostwhite},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue-violet}\bfseries,
+    numberstyle=\tiny\color{bluegreen},
+    stringstyle=\color{blue},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    morekeywords={exp, logspace, print, Exception, try, catch, from, import, while, True, False},
+}
+
+\lstset{style=mystyle}
+
+% --- BOX PER LE DOMANDE DI TEORIA D'ESAME ---
+\newtcolorbox[auto counter]{teoriabox}[2][]{%
+    enhanced,
+    breakable,
+    colback=ghostwhite,
+    colframe=blue-violet,
+    boxrule=0.8pt,
+    arc=3pt,
+    left=6pt, right=6pt, top=6pt, bottom=6pt,
+    fonttitle=\bfseries,
+    coltitle=white,
+    title={Domanda \thetcbcounter\ --- #2},
+    #1
+}
+
+
+% --- FIGURA BASE PER LA REGIONE AMMISSIBILE DELL'ESEMPIO GUIDA (sez. Geometria della PL) ---
+% #1 = overlay da disegnare sopra il poligono
+\newcommand{\poliguida}[1]{%
+\begin{tikzpicture}[scale=0.95,>=latex]
+  \fill[blue!10] (2,0)--(3,0)--(3,2)--(0,2)--(0,1)--cycle;
+  #1
+  \draw[gray!70,dashed] (0,1)--(3.6,-0.8);
+  \draw[gray!70,dashed] (3,-0.6)--(3,2.6);
+  \draw[gray!70,dashed] (-0.5,2)--(3.7,2);
+  \draw[gray!70,dashed] (0,-0.6)--(0,2.6);
+  \draw[gray!70,dashed] (-0.5,0)--(3.7,0);
+  \draw[->] (-0.7,0)--(4.2,0) node[right,font=\small] {$x$};
+  \draw[->] (0,-0.8)--(0,3.0) node[above,font=\small] {$y$};
+  \node[font=\tiny] at (3.75,-0.72) {(1)};
+  \node[font=\tiny] at (3.15,2.78) {(2)};
+  \node[font=\tiny] at (3.9,2) {(3)};
+  \node[font=\tiny] at (-0.28,2.78) {(4)};
+  \node[font=\tiny] at (3.9,-0.24) {(5)};
+  \foreach \p in {(2,0),(3,0),(3,2),(0,2),(0,1)} \fill[black] \p circle (1.3pt);
+  \node[font=\tiny,below left] at (0,0) {$O$};
+\end{tikzpicture}}
+
+\begin{document}
+
+
+\section{Ottimizzazione Lineare}
+
+\begin{teoriabox}{Descrivere i quattro casi di soluzione di un problema di ottimizzazione}
+Dato $(P) \; z(P) = \min\{c(x) : x \in F\}$, la regione ammissibile e la funzione di costo determinano quattro scenari:
+\begin{enumerate}
+    \item \textbf{Problema impossibile}: $F = \emptyset$. Convenzionalmente $z(P) = +\infty$ per un problema di minimo ($-\infty$ per un massimo).
+    \item \textbf{Problema illimitato} (inferiormente per un minimo): comunque si scelga $M \in \mathbb{R}$, esiste $x \in F$ con $c(x) \le M$. Si pone $z(P) = -\infty$ ($+\infty$ per un massimo).
+    \item \textbf{Valore ottimo finito ma privo di soluzione ottima}: esiste un estremo inferiore finito, $-\infty < z(P) < +\infty$, ma nessun $x \in F$ realizza $c(x) = z(P)$. È il caso tipico di modelli scritti male, ad esempio con vincoli di disuguaglianza \textit{stretta} ($>$ invece di $\ge$).
+    \item \textbf{Esistenza dell'ottimo globale}: il valore ottimo è finito ed esiste almeno una soluzione $x^* \in F$ che lo realizza, cioè $c(x^*) \le c(x)$ per ogni $x \in F$.
+\end{enumerate}
+\end{teoriabox}
+
+\begin{teoriabox}{Definire problema di ottimizzazione, di esistenza e di certificato}
+Sia $F$ la regione ammissibile e $c: F \to \mathbb{R}$ la funzione obiettivo.
+\begin{itemize}
+    \item \textbf{Problema di ottimizzazione}: determinare $x^* \in F$ tale che $c(x^*) \le c(x)$ per ogni $x \in F$ (caso di minimo), ossia calcolare $z(P) = \min\{c(x) : x \in F\}$ ed esibire una soluzione che lo realizza.
+    \item \textbf{Problema di esistenza (o di decisione)}: stabilire se $F \ne \emptyset$, cioè se esiste almeno una soluzione ammissibile. È la versione "sì/no" del problema; nella forma con soglia si chiede se esista $x \in F$ con $c(x) \le k$.
+    \item \textbf{Problema di certificato}: data una soluzione potenziale $\bar{x} \in F' \supseteq F$, verificare che $\bar{x} \in F$, cioè che soddisfi tutti i vincoli.
+\end{itemize}
+\end{teoriabox}
+
+\begin{teoriabox}{Definire un algoritmo di tipo primale e duale e fornirne un esempio}
+Sia $(P)$ un problema di massimo e $(D)$ il suo duale (di minimo).
+\begin{itemize}
+    \item Un \textbf{algoritmo primale} mantiene ad ogni iterazione una soluzione \textbf{ammissibile per il primale}, migliorandone progressivamente il valore, e termina quando riesce a dimostrarne l'ottimalità. Ogni soluzione intermedia fornisce quindi un \textbf{lower bound} su $z(P)$.
+    \item Un \textbf{algoritmo duale} metodo che parte da una soluzione non ammissibile per il primale ma più che ottima e ad ogni iterazione genera una nuova soluzione meno inammissibile e peggiorante, terminando quando si recupera l'ammissibilità primale. Ogni soluzione intermedia fornisce un \textbf{upper bound} su $z(P)$.
+\end{itemize}
+\textbf{Esempio.}
+\begin{itemize}
+    \item \textbf{Algoritmo del Simplesso (Primale)}: parte da una soluzione di base ammissibile $\bar{x} = A_B^{-1}b_B$ e mantiene l'ammissibilità primale come invariante lungo tutte le iterazioni.
+    Ad ogni passo, se esiste un indice $h \in B$ tale che $\bar{y}_h < 0$, si individua la direzione di crescita $\xi = -A_B^{-1}u_h$ e 
+    ci si sposta verso una base ammissibile adiacente, migliorando progressivamente il valore della funzione obiettivo. 
+    L'algoritmo termina quando $\bar{y}_B \ge 0$, e la soluzione corrente risulta ottima ($c\bar{x} = \bar{y}b$).
+
+    \item \textbf{Cammini minimi successivi (Duale)}: parte da uno pseudoflusso iniziale minimale, il quale rispetta i vincoli di capacità e non ammette 
+    cicli a costo negativo nel grafo residuo $G_x$: la soluzione soddisfa dunque la condizione di ottimalità, ma non rispetta i vincoli di bilanciamento ai nodi. 
+    Ad ogni iterazione individua un cammino aumentante di costo minimo $P$ in $G_x$ da un nodo con eccesso $i \in O_x$ a un nodo con difetto $j \in D_x$ e 
+    incrementa il flusso lungo $P$: per il teorema di invarianza della minimalità, il nuovo pseudoflusso resta minimale (preserva l'ottimalità) e riduce 
+    lo sbilanciamento totale. Termina quando lo sbilanciamento si annulla ($g(x) = 0$).
+\end{itemize}
+\end{teoriabox}
+
+\begin{teoriabox}{Definire un rilassamento di un problema di ottimizzazione e illustrarne un esempio}
+Dato $(P) \; z(P) = \min\{c(x) : x \in F\}$, il problema $(\overline{P}) \; z(\overline{P}) = \min\{\overline{c}(x) : x \in \overline{F}\}$ è un suo \textbf{rilassamento} se
+\[
+F \subseteq \overline{F} \hspace{1cm}\text{e}\hspace{1cm} \overline{c}(x) \le c(x) \quad \forall x \in F
+\]
+cioè se si amplia la regione ammissibile e si approssima per difetto la funzione di costo. Ne segue la proprietà fondamentale
+\[
+z(\overline{P}) \le z(P)
+\]
+ossia il rilassamento fornisce un \textbf{lower bound} sul valore ottimo (per un problema di minimo). Inoltre, se la soluzione ottima $\overline{x}^*$ del rilassamento è ammissibile per $P$ e $\overline{c}(\overline{x}^*) = c(\overline{x}^*)$, allora essa è ottima anche per $P$:
+\[
+\overline{c}(\overline{x}^*) \le z(\overline{P}) \le z(P) \le c(\overline{x}^*) = \overline{c}(\overline{x}^*)
+\]
+
+\noindent\textbf{Esempi.}
+\begin{itemize}
+    \item \textit{Rilassamento continuo di un PLI}: $\textsc{Relax}(\min\{cx \mid Ax\le b \wedge x \in \mathbb{Z}^n\}) = \min\{cx \mid Ax \le b\}$. È il rilassamento su cui si fonda il Branch-and-Bound; se la soluzione del rilassamento è intera, essa è ottima per il problema intero.
+    \item \textit{MST come rilassamento del TSP}: la formulazione del TSP coincide con quella dell'MST più i vincoli di grado, dunque $F(TSP) \subseteq F(MST)$ con la stessa funzione obiettivo: il costo dell'albero di copertura minimo è un lower bound sul costo del ciclo hamiltoniano ottimo.
+\end{itemize}
+\end{teoriabox}
+
+\begin{teoriabox}{Modellazione con vincoli lineari di relazioni logiche}
+Le relazioni logiche tra variabili booleane $x,y,z \in \{0,1\}$ si esprimono con vincoli lineari:
+\begin{itemize}
+    \item \textbf{Negazione} ($y = \neg x$): $y = 1-x$.
+    \item \textbf{Implicazione} ($x \implies y$): $y \ge x$. Se $x=1$, $y$ è forzata a $1$; se $x=0$, $y$ resta libera.
+    \item \textbf{Congiunzione} ($z = x \wedge y$): $z \le x$, $z \le y$, $z \ge x+y-1$. I primi due vincoli impongono $z=0$ se almeno una tra $x$ e $y$ vale $0$; il terzo impone $z=1$ se entrambe valgono $1$.
+    \item \textbf{Disgiunzione} ($z = x \vee y$): $z \ge x$, $z \ge y$, $z \le x+y$.
+\end{itemize}
+
+\noindent\textbf{Esempio.} Siano $x_1,x_2,x_3 \in \{0,1\}$ le variabili booleane che indicano se i tre impianti sono attivi. La condizione "almeno due impianti attivi" si traduce in $x_1+x_2+x_3 \ge 2$. La condizione "al massimo un impianto attivo" si traduce in $x_1+x_2+x_3 \le 1$. La condizione "esattamente due impianti attivi" si traduce in $x_1+x_2+x_3 = 2$.
+\end{teoriabox}
+
+\begin{teoriabox}{Modellazione con vincoli lineari di funzioni lineari a tratti e convesse}
+Sia $f$ lineare a tratti su $[a_1,a_3]$:
+\[
+f(x) = \begin{cases} b_1 + c_1x & x \in [a_1,a_2]\\ b_2 + c_2x & x \in (a_2,a_3]\end{cases}
+\]
+\textbf{Caso generale (non convesso).} Si introducono le variabili booleane $y_1, y_2$ (indicatrici dell'intervallo attivo) e le quantitative $z_1, z_2$ (scostamento dall'estremo inferiore dell'intervallo attivo):
+\[
+0 \le z_1 \le (a_2-a_1)y_1, \hspace{0.8cm} 0 \le z_2 \le (a_3-a_2)y_2, \hspace{0.8cm} y_1+y_2 = 1
+\]
+con $x = a_1y_1 + z_1 + a_2y_2 + z_2$. La funzione diventa lineare in $\mathbb{R}^4$:
+\[
+f(z_1,z_2,y_1,y_2) = (b_1+c_1a_1)y_1 + c_1z_1 + (b_2+c_2a_2)y_2 + c_2z_2
+\]
+Con due soli intervalli basta un'unica booleana ($y_1 = y$, $y_2 = 1-y$).
+
+\noindent\textbf{Caso convesso (da minimizzare).} Una funzione lineare a $n$ tratti è convessa se è continua e ha pendenza non decrescente ($c_i \le c_{i+1}$). In questo caso, se il problema è di minimo, \textbf{le variabili booleane non servono}: bastano le quantitative
+\[
+0 \le z_i \le a_{i+1}-a_i \quad i=1,\dots,n \hspace{1cm} \min \left(b_1 + c_1a_1 + \sum_{i=1}^n c_i z_i\right)
+\]
+perché la minimizzazione "riempie" spontaneamente prima le $z_i$ con coefficiente $c_i$ minore, cioè i primi intervalli, rispettando l'ordine imposto dalla convessità. Il valore originale si ricostruisce come $\bar{x} = a_1 + \sum_i z_i$. Simmetricamente per la massimizzazione di funzioni concave.
+\end{teoriabox}
+
+\begin{teoriabox}{Definire una soluzione base ed una soluzione base ammissibile di un problema PL}
+Dato il poliedro $P = \{x \in \mathbb{R}^n \mid Ax \le b\}$ con $A \in \mathbb{R}^{m\times n}$, si consideri un sottoinsieme di indici di riga $B \subseteq \{1,\dots,m\}$ con $|B| = n$ tale che la sottomatrice $A_B$ sia \textbf{quadrata e invertibile}. Allora:
+\begin{itemize}
+    \item $B$ è detta \textbf{base} e $A_B$ \textbf{matrice di base};
+    \item il punto $x_B = A_B^{-1}b_B$, unica soluzione del sistema $A_Bx = b_B$, è la corrispondente \textbf{soluzione di base};
+    \item la soluzione di base è \textbf{ammissibile} se $x_B \in P$, cioè se soddisfa anche tutti i vincoli non in base ($A_{\overline{B}}x_B \le b_{\overline{B}}$); altrimenti è non ammissibile.
+\end{itemize}
+Vale la corrispondenza fondamentale tra algebra e geometria: \textbf{i vertici di $P$ sono tutte e sole le sue soluzioni di base ammissibili}. Poiché le basi sono al più $\binom{m}{n}$, i vertici sono in numero finito, il che giustifica la restrizione dello spazio di ricerca operata dal Simplesso.
+\end{teoriabox}
+
+\begin{teoriabox}{Enunciare il teorema di Motzkin (decomposizione) per un poliedro}
+Dati $X, Y \subseteq \mathbb{R}^n$ si indica con $X+Y = \{x+y \mid x \in X \wedge y \in Y\}$ la loro somma insiemistica.
+
+\noindent\textbf{Teorema (Motzkin).} $P \subseteq \mathbb{R}^n$ è un poliedro \textbf{se e solo se} esistono due insiemi \textbf{finiti} $X$ e $V$ tali che
+\[
+P = \text{conv}(X) + \text{cono}(V)
+\]
+dove $\text{conv}(X)$ è l'inviluppo convesso dei punti di $X$ e $\text{cono}(V)$ è il cono finitamente generato dalle direzioni di $V$.
+
+\noindent Si dice che $P$ è generato dai punti di $X$ e dalle direzioni di $V$. Inoltre:
+\begin{itemize}
+    \item se $X$ è \textbf{minimale}, i suoi elementi sono tutti e soli i \textbf{vertici} di $P$;
+    \item se $V$ è \textbf{minimale}, i suoi elementi sono detti \textbf{raggi esterni} e corrispondono alle direzioni degli spigoli illimitati.
+\end{itemize}
+Il teorema stabilisce quindi l'equivalenza tra la rappresentazione di un poliedro \textit{per facce} (intersezione di semispazi) e quella \textit{per punti e direzioni}. Le due rappresentazioni non hanno però la stessa dimensione: l'ipercubo $0 \le x_i \le 1$ è descritto da $2n$ semispazi ma ha $2^n$ vertici.
+\end{teoriabox}
+
+\begin{teoriabox}{Enunciare e dimostrare la proprietà fondamentale della PL}
+\textbf{Teorema.} Sia $P = \{x \mid Ax \le b\}$ e siano $x_1,\dots,x_s, v_1,\dots,v_t \in \mathbb{R}^n$ tali che
+\[
+P = \text{conv}(\{x_1,\dots,x_s\}) + \text{cono}(\{v_1,\dots,v_t\})
+\]
+Allora il problema $\max\{cx \mid Ax \le b\}$ ha \textbf{ottimo finito se e solo se} $cv_j \le 0$ per ogni $j = 1,\dots,t$. In tal caso esiste $k \in \{1,\dots,s\}$ tale che $x_k$ è una soluzione ottima (cioè \textbf{l'ottimo si trova in un vertice}).
+
+\noindent\textbf{Dimostrazione.} Per il teorema di decomposizione, ogni $x \in P$ si scrive come $x = \sum_i \lambda_i x_i + \sum_j \mu_j v_j$ con $\sum_i \lambda_i = 1$, $\lambda_i \ge 0$, $\mu_j \ge 0$. Il problema è quindi equivalente a
+\[
+\max \; \sum_{i=1}^s \lambda_i (cx_i) + \sum_{j=1}^t \mu_j (cv_j)
+\]
+\begin{itemize}
+    \item[$\implies$] Se fosse $cv_j > 0$ per qualche $j$, basterebbe far crescere $\mu_j$ indefinitamente per far crescere a piacimento la funzione obiettivo: il problema sarebbe illimitato.
+    \item[$\impliedby$] Sia $cv_j \le 0$ per ogni $j$ e sia $y \in P$ con coefficienti $\lambda_i, \mu_j$. Allora $\sum_j \mu_j (cv_j) \le 0$ e quindi
+    \[
+    cy = \sum_{i=1}^s \lambda_i(cx_i) + \sum_{j=1}^t \mu_j(cv_j) \le \sum_{i=1}^s \lambda_i (cx_i)
+    \]
+    Detto $x_k$ il vertice migliore, cioè quello che massimizza $cx_i$:
+    \[
+    cy \le \sum_{i=1}^s \lambda_i(cx_i) \le \sum_{i=1}^s \lambda_i (cx_k) = cx_k
+    \]
+    poiché $\sum_i \lambda_i = 1$. Nessun punto di $P$ è dunque migliore di $x_k$, che è pertanto ottimo e finito. $\blacksquare$
+\end{itemize}
+\noindent\textbf{Conseguenza operativa.} Lo spazio di ricerca, in linea di principio infinito, si riduce all'insieme finito dei vertici del poliedro: è il fondamento dell'algoritmo del Simplesso.
+\end{teoriabox}
+
+\begin{teoriabox}{Definire il problema primale e duale e fornire un esempio}
+Ad ogni problema di PL (detto \textbf{primale}) si associa un secondo problema, il \textbf{duale}, costruito con gli stessi coefficienti trasposti e con i ruoli di costi e termini noti scambiati. Le due coppie notevoli sono:
+\begin{itemize}
+    \item \textbf{Coppia asimmetrica}: $(P) \max\{cx \mid Ax \le b\}$, $(D) \min\{yb \mid yA = c, \; y \ge 0\}$;
+    \item \textbf{Coppia simmetrica}: $(P) \max\{cx \mid Ax \le b, \; x\ge 0\}$, $(D) \min\{yb \mid yA \ge c, \; y \ge 0\}$.
+\end{itemize}
+Nel caso generale si usa la tabella di conversione: ogni vincolo del primale genera una variabile duale e ogni variabile primale genera un vincolo duale. La distinzione tra primale e duale è solo legata al problema che si vuole risolvere: \textbf{il duale del duale è il primale} (la dualità è un'involuzione).
+
+\noindent\textbf{Esempio (problema della dieta).} Il primale è il punto di vista dell'allevatore, che miscela alimenti al minimo costo garantendo il fabbisogno delle sostanze nutritive:
+\[
+\min\{cx : Ax \ge d, \; x \ge 0\}
+\]
+Il duale è il punto di vista di un produttore di pillole di sostanze nutritive, che fissa i prezzi $y_i$ delle sostanze in modo da massimizzare il ricavo restando competitivo rispetto agli alimenti:
+\[
+\max\{yd : yA \le c, \; y \ge 0\}
+\]
+Il ricavo del venditore di pillole non potrà mai superare il costo di una qualunque dieta ammissibile: è la dualità debole.
+\end{teoriabox}
+
+\begin{teoriabox}{Discutere l'interpretazione delle variabili duali}
+Le variabili duali rappresentano dei \textbf{prezzi} associati alle risorse del problema primale: le sostanze nutritive nel problema della dieta o le merci da trasportare nel problema dei trasporti. Il problema duale determina il sistema di prezzi che massimizza il valore delle risorse restando compatibile con i costi del primale.
+
+\noindent Più precisamente, data una base $B$ la funzione obiettivo vale $\varphi = c\bar{x} = \bar{y}b$: le variabili duali sono quindi le \textbf{derivate direzionali} della funzione obiettivo rispetto ai termini noti dei vincoli,
+\[
+\bar{y} = \frac{\partial \varphi}{\partial b}
+\]
+cioè misurano la variazione dell'obiettivo a fronte di un incremento unitario delle risorse. All'ottimo esse prendono il nome di \textbf{prezzi ombra}: se una unità aggiuntiva della risorsa $i$ fosse disponibile, la funzione obiettivo cambierebbe di $\bar{y}_i$ unità, che è dunque il massimo prezzo che conviene pagare per quell'unità.
+
+\noindent Due conseguenze pratiche:
+\begin{itemize}
+    \item se il vincolo $i$ non è attivo all'ottimo, la risorsa è in eccesso e il suo prezzo ombra è nullo ($\bar{y}_i = 0$);
+    \item il prezzo ombra è una derivata, quindi vale \textit{localmente}: oltre un certo incremento del termine noto la base ottima cambia e la stima lineare cessa di essere valida.
+\end{itemize}
+\end{teoriabox}
+
+\begin{teoriabox}{Enunciare e dimostrare il teorema debole della dualità}
+\textbf{Teorema.} Data una coppia di problemi primale e duale, siano $\bar{x}$ una soluzione ammissibile per il primale (di massimo) e $\bar{y}$ una soluzione ammissibile per il duale (di minimo). Allora
+\[
+c\bar{x} \le \bar{y}b
+\]
+
+\noindent\textbf{Dimostrazione (caso asimmetrico).} Il primale è $\max\{cx \mid Ax \le b\}$ e il duale $\min\{yb \mid yA = c, \; y \ge 0\}$. Poiché $A\bar{x} \le b$ e $\bar{y} \ge 0$, moltiplicando la prima disuguaglianza a sinistra per $\bar{y}$ (operazione che non ne cambia il verso, essendo $\bar y$ non negativo) si ottiene
+\[
+\bar{y}A\bar{x} \le \bar{y}b
+\]
+Poiché $\bar{y}$ è ammissibile per il duale vale $\bar{y}A = c$, da cui $c\bar{x} \le \bar{y}b$. $\blacksquare$
+
+\noindent\textbf{Corollari.}
+\begin{enumerate}
+    \item Se il primale è \textbf{illimitato}, allora il duale è \textbf{impossibile}.
+    \item Se $\bar{x}$ e $\bar{y}$ sono ammissibili per i rispettivi problemi e $c\bar{x} = \bar{y}b$, allora \textbf{entrambe sono ottime}.
+\end{enumerate}
+\end{teoriabox}
+
+\begin{teoriabox}{Definire una direzione ammissibile e di crescita}
+Sia $\bar{x}$ una soluzione ammissibile del primale $\max\{cx \mid Ax \le b\}$ e si consideri lo spostamento $x(\lambda) = \bar{x} + \lambda\xi$.
+\begin{itemize}
+    \item Il vettore $\xi \in \mathbb{R}^n$ è una \textbf{direzione ammissibile} in $\bar{x}$ se esiste $\bar{\lambda} > 0$ tale che $x(\lambda)$ sia ammissibile per ogni $\lambda \in [0,\bar{\lambda}]$.
+    \item Il vettore $\xi$ è una \textbf{direzione di crescita} se lo spostamento fa aumentare la funzione obiettivo:
+    \[
+    cx(\lambda) = c\bar{x} + \lambda c\xi > c\bar{x} \iff c\xi > 0
+    \]
+\end{itemize}
+
+\noindent\textbf{Lemma (caratterizzazione delle direzioni ammissibili).} $\xi$ è ammissibile in $\bar{x}$ se e solo se $A_{I(\bar{x})}\xi \le 0$, dove $I(\bar{x}) = \{i \mid A_i\bar{x} = b_i\}$ è l'insieme dei \textbf{vincoli attivi} in $\bar{x}$.
+\end{teoriabox}
+
+\begin{teoriabox}{Enunciare la condizione di ottimalità per la PL}
+\textbf{Lemma.} Sia $c \ne 0$. Una soluzione ammissibile $\bar{x}$ è ottima per $(P) \max\{cx \mid Ax\le b\}$ \textbf{se e solo se} $\bar{x}$ non ammette direzioni che siano contemporaneamente \textbf{ammissibili e di crescita}, cioè se e solo se
+\[
+\nexists \; \xi \in \mathbb{R}^n : \; A_{I(\bar{x})}\xi \le 0 \; \wedge \; c\xi > 0
+\]
+(Se invece $c = 0$, la funzione obiettivo è costante e ogni soluzione ammissibile è ottima.)
+
+\noindent\textbf{Dimostrazione.}
+\begin{itemize}
+    \item[$\implies$] Se $\bar{x}$ è ottima non possono esistere direzioni ammissibili di crescita.
+    \item[$\impliedby$] Se $\bar{x}$ non è ottima esiste $x'$ ammissibile con $cx' > c\bar{x}$, cioè $c(x'-\bar{x}) > 0$. La direzione $\xi = x'-\bar{x}$ è di crescita ed è anche ammissibile, poiché $P$ è convesso e contiene quindi l'intero segmento tra $\bar x$ e $x'$: si è costruita una direzione ammissibile di crescita, contro l'ipotesi. $\blacksquare$
+\end{itemize}
+\noindent\textbf{Forma duale della condizione.} Data una base $B$ con soluzione $\bar{x} = A_B^{-1}b_B$ e soluzione duale complementare $\bar{y} = (cA_B^{-1}, 0)$, la condizione di ottimalità si verifica algebricamente controllando che
+\[
+\bar{y}_B \ge 0
+\]
+\end{teoriabox}
+
+\newpage
+
+\section{Ottimizzazione su Rete}
+
+% DOMANDA 15
+
+\begin{teoriabox}{Definire il problema del flusso massimo su una rete ed il relativo modello matematico}
+Data una rete rappresentata da un grafo orientato $G = (N, A)$, con $|N| = n$ nodi e $|A| = m$ archi, a ciascun arco $(i, j) \in A$ è associata una capacità superiore $u_{ij} \ge 0$ (assumendo capacità inferiori nulle, $l_{ij} = 0$). Siano inoltre fissati due nodi distinti: un nodo sorgente $s \in N$ e un nodo pozzo (o destinazione) $t \in N$.
+
+Un \textbf{flusso ammissibile} è un vettore $x = (x_{ij})_{(i,j) \in A}$ di variabili reali non-negative che rispetta:
+\begin{enumerate}
+    \item \textbf{I vincoli di capacità:} $0 \le x_{ij} \le u_{ij}$ per ogni $(i, j) \in A$;
+    \item \textbf{I vincoli di conservazione del flusso:} per ogni nodo intermedio di transito $i \in N \setminus \{s, t\}$, la quantità totale di flusso entrante deve eguagliare la quantità uscente.
+\end{enumerate}
+
+Il \textbf{valore del flusso} $v$ rappresenta la quantità netta di flusso trasferita da $s$ a $t$.
+Definite per ogni nodo $i \in N$ la \emph{forward star} $FS(i) = \{(i, k) \in A\}$ (archi uscenti) e la \emph{backward star} $BS(i) = \{(k, i) \in A\}$ (archi entranti), il problema del Flusso Massimo (MF) consiste nel massimizzare il valore $v$ ed è formalizzato dal seguente modello di Programmazione Lineare:
+
+\begin{align*}
+    \max \quad & v \\
+    \text{s.t.} \quad 
+    & \sum_{(j, s) \in BS(s)} x_{js} + v = \sum_{(s, j) \in FS(s)} x_{sj} && \text{(bilancio alla sorgente $s$, con $b_s = -v$)} \\
+    & \sum_{(j, i) \in BS(i)} x_{ji} - \sum_{(i, j) \in FS(i)} x_{ij} = 0 && \forall i \in N \setminus \{s, t\} \quad \text{(conservazione nei nodi)} \\
+    & \sum_{(j, t) \in BS(t)} x_{jt} = \sum_{(t, j) \in FS(t)} x_{tj} + v && \text{(bilancio al pozzo $t$, con $b_t = v$)} \\
+    & 0 \le x_{ij} \le u_{ij} && \forall (i, j) \in A \quad \text{(capacità degli archi)}
+\end{align*}
+\end{teoriabox}
+
+% DOMANDA 16
+
+\begin{teoriabox}{Definire il problema del flusso di costo minimo su una rete ed il relativo modello matematico}
+Data una rete orientata $G = (N, A)$ con $|N| = n$ nodi e $|A| = m$ archi, a ciascun arco $(i, j) \in A$ sono associati un costo unitario $c_{ij}$ e una capacità superiore $u_{ij} \ge 0$ (assumendo capacità inferiori nulle, $l_{ij} = 0$).
+
+Ad ogni nodo $i \in N$ è associato un valore scalare $b_i$, detto \textbf{sbilanciamento}, che ne definisce il ruolo nella rete:
+\begin{itemize}
+    \item $b_i > 0$: nodo di \textbf{domanda} (destinazione, pozzo, nodo di output, $i \in D$);
+    \item $b_i < 0$: nodo di \textbf{offerta} (origine, sorgente, nodo di input, $i \in O$);
+    \item $b_i = 0$: nodo di \textbf{trasferimento} (transito, $i \in T$).
+\end{itemize}
+Affinché il problema sia ammissibile, domanda ed offerta complessive devono equivalersi (condizione di bilanciamento globale):
+\[
+\sum_{i \in D} b_i = -\sum_{i \in O} b_i \iff \sum_{i \in N} b_i = 0
+\]
+
+Il problema del \textbf{Flusso di Costo Minimo} richiede di soddisfare i bilanci a tutti i nodi al minimo costo complessivo, rispettando le capacità degli archi. 
+
+Definite la \emph{forward star} $FS(i) = \{(i, k) \in A\}$ (archi uscenti) e la \emph{backward star} $BS(i) = \{(k, i) \in A\}$ (archi entranti), il modello di Programmazione Lineare è:
+\[
+\begin{aligned}
+\min \quad & \sum_{(i,j)\in A} c_{ij}x_{ij} \\
+\text{s.t.} \quad & \sum_{(j,i)\in BS(i)} x_{ji} - \sum_{(i,j)\in FS(i)} x_{ij} = b_i \quad && \forall i \in N \quad \text{(bilanciamento ai nodi, } Ex = b\text{)} \\
+& 0 \le x_{ij} \le u_{ij} \quad && \forall (i,j) \in A \quad \text{(capacità degli archi)}
+\end{aligned}
+\]
+\end{teoriabox}
+
+% DOMANDA 17
+
+\begin{teoriabox}{Data una rete definire un taglio s-t ed illustrarne le proprietà}
+Un \textbf{taglio $s$-$t$} è una partizione dei nodi $(N_s, N_t)$ con $N_s \cup N_t = N$, $N_s \cap N_t = \emptyset$, $s \in N_s$ e $t \in N_t$. Si definiscono:
+\begin{itemize}
+    \item gli \textbf{archi avanti}: $A^+(N_s, N_t) = \{(i, j) \in A \mid i \in N_s \wedge j \in N_t\}$;
+    \item gli \textbf{archi indietro}: $A^-(N_s, N_t) = \{(i, j) \in A \mid i \in N_t \wedge j \in N_s\}$.
+\end{itemize}
+La \textbf{capacità} del taglio $u(N_s, N_t)$ è la somma delle sole capacità degli archi avanti:
+\[
+u(N_s, N_t) = \sum_{(i,j) \in A^+(N_s, N_t)} u_{ij}
+\]
+
+\noindent\textbf{Proprietà.} Per ogni flusso ammissibile $x$ di valore $v$ e per ogni taglio $s$-$t$:
+\begin{enumerate}
+    \item il valore del flusso è pari al \textbf{flusso del taglio} $x(N_s, N_t)$, ossia il flusso netto che lo attraversa:
+    \[
+    v = x(N_s, N_t) = \sum_{(i,j) \in A^+(N_s, N_t)} x_{ij} - \sum_{(i,j) \in A^-(N_s, N_t)} x_{ij}
+    \]
+    (sommando le equazioni di bilanciamento su tutti i nodi di $N_s$, i flussi sugli archi interni si elidono a vicenda);
+    \item di conseguenza $v = x(N_s, N_t) \le u(N_s, N_t)$, poiché $x_{ij} \le u_{ij}$ sugli archi avanti e $x_{ij} \ge 0$ su quelli indietro.
+\end{enumerate}
+\end{teoriabox}
+
+% DOMANDA 18
+
+\begin{teoriabox}{Data una rete ed un flusso definire il grafo residuo corrispondente}
+Dato un flusso ammissibile $x$ sulla rete $G=(N,A)$, il \textbf{grafo residuo} $G_x = (N, A_x)$ è il multigrafo avente gli stessi nodi e che, per ogni arco $(i,j) \in A$, contiene:
+\begin{itemize}
+    \item un \textbf{arco concorde (o avanti)} $(i,j)$ con capacità residua $r_{ij} = u_{ij} - x_{ij}$, se $x_{ij} < u_{ij}$: rappresenta la quantità di flusso che si può ancora \textit{aggiungere} su $(i,j)$;
+    \item un \textbf{arco discorde (o indietro)} $(j,i)$ con capacità residua $r_{ji} = x_{ij}$, se $x_{ij} > 0$: rappresenta la quantità di flusso che si può \textit{annullare} su $(i,j)$.
+\end{itemize}
+Nel caso del flusso di costo minimo si associano ai due archi anche i relativi \textbf{costi residui}: $c_{ij}$ all'arco concorde (aggiungere una unità costa $c_{ij}$) e $-c_{ij}$ all'arco discorde (rimuovere una unità fa risparmiare $c_{ij}$).
+\end{teoriabox}
+
+% DOMANDA 19
+
+\begin{teoriabox}{Definire un cammino aumentante per il flusso massimo sul grafo residuo}
+Dato un flusso ammissibile $x$, un \textbf{cammino aumentante} $P$ è un cammino semplice e orientato da $s$ a $t$ nel grafo residuo $G_x$. Detti $P^+$ l'insieme degli archi avanti e $P^-$ l'insieme degli archi indietro in $P$, la \textbf{capacità del cammino} rispetto a $x$ è definita come:
+\[
+\theta(P,x) = \min \left\{ \min_{(i,j) \in P^+} \{u_{ij} - x_{ij}\}, \; \min_{(j,i) \in P^-} \{x_{ij}\} \right\} > 0
+\]
+L'\textbf{operazione di aumento} definisce il nuovo flusso $x(P,\theta(P,x))$ aggiornando le variabili come segue:
+\begin{itemize}
+    \item $x_{ij} \leftarrow x_{ij} + \theta(P,x)$ se $(i,j) \in P^+$ (arco avanti);
+    \item $x_{ij} \leftarrow x_{ij} - \theta(P,x)$ se l'arco indietro $(j,i) \in P^-$ (corrispondente all'arco $(i,j)$ di $G$).
+\end{itemize}
+Il flusso risultante è ancora ammissibile (le capacità sono rispettate per la definizione di $\theta(P,x)$ e la conservazione ai nodi intermedi è preservata) ed il suo valore complessivo risulta aumentato esattamente di $\theta(P,x)$.
+
+\noindent Vale il risultato chiave: \textbf{un flusso $x$ è massimo se e solo se in $G_x$ non esiste alcun cammino aumentante}, cioè se $t$ non è raggiungibile da $s$ nel grafo residuo.
+\end{teoriabox}
+
+% DOMANDA 20
+
+\begin{teoriabox}{Domanda 20 -- Discutere la correttezza dell'algoritmo di Ford-Fulkerson}
+\textbf{1. Schema dell'Algoritmo} (metodo primale su rete $G=(N,A)$ con $l_{ij}=0$):
+\begin{itemize}
+    \item $x_{ij} = 0 \;\; \forall (i,j) \in A$
+    \item Costruisci il grafo residuo $G_x = (N, A_x)$. Cerca un cammino aumentante $P$ e se esiste:
+    \begin{itemize}
+        \item Calcola la capacità residua del cammino:
+        \[
+        \theta(P,x) = \min \left\{ \min_{(i,j)\in P^+} \{u_{ij} - x_{ij}\}, \; \min_{(j,i)\in P^-} \{x_{ij}\} \right\} > 0
+        \]
+        \item Aggiorna il flusso $x$ sommando se $(i,j) \in P^+$ (arco avanti) o sottraendo se $(j,i) \in P^-$ (arco indietro)
+        \item Aggiorna il valore del flusso: $v \leftarrow v + \theta(P,x)$.
+    \end{itemize}
+    \item \textbf{Arresto}: Se in $G_x$ non esistono cammini aumentanti da $s$ a $t$, termina e restituisci $x$.
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{2. Dimostrazione della Correttezza}
+\begin{itemize}
+    \item \textbf{Invariante di ammissibilità}: Se $x$ è ammissibile, $x(P, \theta(P,x))$ resta ammissibile per i vincoli sulla capacità e per la conservazione ai nodi intermedi.
+    \item \textbf{Ottimalità alla terminazione}:
+    \begin{itemize}
+        \item Alla terminazione $t$ non è raggiungibile da $s$ in $G_x$. Si definisce la partizione dei nodi:
+        \[
+        N_s = \{i \in N \mid i \text{ è raggiungibile da } s \text{ in } G_x\}, \quad N_t = N \setminus N_s
+        \]
+        Poiché $s \in N_s$ e $t \in N_t$, $(N_s, N_t)$ è un $(s,t)$-taglio ammissibile.
+        \item Dal Lemma del flusso del taglio segue:
+        \[
+        v = x(N_s, N_t) = \sum_{(i,j)\in A^+(N_s, N_t)} x_{ij} - \sum_{(i,j)\in A^-(N_s, N_t)} x_{ij} = \sum_{(i,j)\in A^+(N_s, N_t)} u_{ij} - 0 = u(N_s, N_t)
+        \]
+        Poiché per dualità debole $v \le u(S, T)$ per ogni taglio, l'uguaglianza $v = u(N_s, N_t)$ certifica che $x$ è un \textbf{flusso massimo} e $(N_s, N_t)$ è un \textbf{taglio di capacità minima} (Max-Flow Min-Cut).
+    \end{itemize}
+\end{itemize}
+
+\end{teoriabox}
+
+% DOMANDA 21
+
+\begin{teoriabox}{Enunciare e dimostrare il teorema max-flow-min-cut}
+\textbf{Teorema (Ford-Fulkerson).} In una rete $G=(N,A)$ con capacità non negative, il valore massimo di un flusso da $s$ a $t$ è uguale alla capacità minima di un taglio $s$-$t$: %[cite: 2]
+\[
+\max_x v(x) = \min_{(N_s,N_t)} u(N_s,N_t)
+\] %[cite: 2]
+
+\noindent\textbf{Dimostrazione.} Si mostra l'equivalenza delle tre affermazioni seguenti, dato un flusso ammissibile $x$ di valore $v$: %[cite: 2]
+\begin{enumerate}
+    \item[(a)] $x$ è un flusso massimo; %[cite: 2]
+    \item[(b)] in $G_x$ non esiste alcun cammino aumentante da $s$ a $t$; %[cite: 2]
+    \item[(c)] esiste un taglio $s$-$t$ con $u(N_s,N_t) = v$. %[cite: 2]
+\end{enumerate}
+
+\noindent $(a) \implies (b)$: se esistesse un cammino aumentante si potrebbe incrementare il flusso di $\theta(P,x) > 0$, ottenendo un flusso ammissibile di valore $v + \theta(P,x) > v$, contro la massimalità di $x$. %[cite: 2]
+
+\noindent $(b) \implies (c)$: sia $N_s$ l'insieme dei nodi raggiungibili da $s$ in $G_x$ e $N_t = N\setminus N_s$; per ipotesi $t \notin N_s$, quindi $(N_s,N_t)$ è un taglio $s$-$t$.
+E vale:
+\[
+v = x(N_s,N_t) = \sum_{(i,j)\in A^+(N_s,N_t)} x_{ij} - \sum_{(i,j)\in A^-(N_s,N_t)} x_{ij} = \sum_{(i,j)\in A^+(N_s,N_t)} u_{ij} - \sum_{(i,j)\in A^-(N_s,N_t)} 0 = u(N_s,N_t)
+\] %[cite: 2]
+
+\noindent $(c) \implies (a)$: per ogni taglio vale $v = x(N_s, N_t) \le u(N_s,N_t)$; se il valore $v$ eguaglia la capacità di un particolare taglio $(N_s,N_t)$, allora $v$ è il massimo possibile (nessun flusso ammissibile può superare la capacità di un taglio) e quel taglio è di capacità minima. $\blacksquare$ %[cite: 2]
+
+\end{teoriabox}
+
+% DOMANDA 22
+
+\begin{teoriabox}{Definire uno pseudoflusso e discutere le condizioni della sua ammissibilità}
+Dato un problema di flusso a costo minimo con bilanci $b_i$, uno \textbf{pseudoflusso} è un vettore $x$ che rispetta i soli \textbf{vincoli di capacità} %[cite: 2]
+\[
+0 \le x_{ij} \le u_{ij} \quad \forall (i,j)\in A
+\] %[cite: 2]
+ma non necessariamente i vincoli di bilanciamento. Per ogni nodo si definisce lo \textbf{sbilanciamento} rispetto a $x$ come: %[cite: 2]
+\[
+e_x(i) = \sum_{(j,i)\in BS(i)} x_{ji} - \sum_{(i,j)\in FS(i)} x_{ij} - b_i
+\] %[cite: 2]
+e si dice che il nodo $i$ è:
+\begin{itemize}
+    \item con \textbf{eccesso di flusso} ($i \in O_x$) se $e_x(i) > 0$: il flusso netto entrante supera $b_i$; %[cite: 2]
+    \item con \textbf{difetto di flusso} ($i \in D_x$) se $e_x(i) < 0$: il flusso netto entrante è inferiore a $b_i$; %[cite: 2]
+    \item \textbf{bilanciato} se $e_x(i) = 0$. %[cite: 2]
+\end{itemize}
+Poiché $\sum_{i \in N} b_i = 0$, la somma algebrica degli sbilanciamenti è nulla ($\sum_{i \in N} e_x(i) = 0$), quindi esistono nodi con eccesso se e solo se esistono nodi con difetto. Lo \textbf{sbilanciamento complessivo} di $x$ è definito come: %[cite: 2]
+\[
+g(x) = \sum_{i \in O_x} e_x(i) = -\sum_{j \in D_x} e_x(j)
+\] %[cite: 2]
+
+\noindent\textbf{Condizione di ammissibilità.} Uno pseudoflusso $x$ è un \textbf{flusso ammissibile} se e solo se %[cite: 2]
+\[
+e_x(i) = 0 \quad \forall i \in N \iff O_x = D_x = \emptyset \iff g(x) = 0
+\] %[cite: 2]
+cioè se tutti gli sbilanciamenti sono nulli.
+\end{teoriabox}
+
+% DOMANDA 23
+
+\begin{teoriabox}{Definire un cammino aumentante per il flusso a costo minimo sul grafo residuo}
+Nel problema di flusso a costo minimo, il grafo residuo $G_x$ è costruito come nel flusso massimo, ma ad ogni arco residuo si associa anche un \textbf{costo residuo}: %[cite: 2]
+\[
+c_{ij} \text{ sull'arco concorde (avanti) } (i,j), \hspace{1cm} -c_{ij} \text{ sull'arco discorde (indietro) } (j,i)
+\] %[cite: 2]
+Dato uno pseudoflusso $x$, un \textbf{cammino aumentante} $P$ è un cammino orientato in $G_x$ che va da un nodo con \textbf{eccesso di flusso} $i \in O_x$ ($e_x(i) > 0$) a un nodo con \textbf{difetto di flusso} $j \in D_x$ ($e_x(j) < 0$). Il suo \textbf{costo} è la somma dei costi residui degli archi che lo compongono: %[cite: 2]
+\[
+c(P) = \sum_{(i,j)\in P^+} c_{ij} - \sum_{(i,j)\in P^-} c_{ij}
+\] %[cite: 2]
+L'aumento avviene di
+\[
+\theta = \min\Big\{ e_x(i), \; -e_x(j), \; \theta(P,x) \Big\}
+\] %[cite: 2]
+unità: si incrementa $x$ di $\theta$ sugli archi concordi ($P^+$) e lo si decrementa di $\theta$ su quelli discordi ($P^-$). L'operazione riduce lo sbilanciamento di $i$ e di $j$ di $\theta$ (lasciando invariati gli altri) e fa variare il costo totale di $\theta$ volte il costo del cammino, ossia $c(x \oplus \theta P) = c \cdot x + \theta c(P)$. %[cite: 2]
+
+\noindent Un \textbf{cammino aumentante a costo minimo} è un cammino di costo minimo tra tutti quelli che uniscono un nodo di $O_x$ ad un nodo di $D_x$ in $G_x$: è la scelta operata dall'algoritmo dei cammini minimi successivi. %[cite: 2]
+\end{teoriabox}
+
+% DOMANDA 24
+
+\begin{teoriabox}{Definire uno pseudoflusso minimale}
+Uno pseudoflusso $x$ si dice \textbf{minimale} se ha \textbf{costo minimo tra tutti gli pseudoflussi aventi lo stesso vettore di sbilanciamento $e_x$}, cioè se non è possibile ridurne il costo senza modificare i valori $e_x(i)$. %[cite: 2]
+
+\noindent\textbf{Caratterizzazione.} Uno pseudoflusso $x$ è minimale se e solo se il grafo residuo $G_x$ \textbf{non contiene cicli aumentanti di costo negativo}. %[cite: 2]
+
+\end{teoriabox}
+
+% DOMANDA 25
+
+\begin{teoriabox}{Discutere l'effetto di un cammino aumentante a costo minimo su uno pseudoflusso minimale}
+\textbf{Teorema.} Sia $x$ uno pseudoflusso \textbf{minimale} e sia $P$ un cammino aumentante di \textbf{costo minimo}. Allora, qualunque sia lo pseudoflusso $x(\theta, P)$ ottenuto aumentando di $\theta$ unità lungo $P$ è ancora \textbf{minimale}. %[cite: 2]
+
+\noindent\textbf{Conseguenze algoritmiche.} Questo risultato è la base di correttezza dell'algoritmo dei \textbf{cammini minimi successivi} per il flusso a costo minimo: %[cite: 2]
+\begin{enumerate}
+    \item si parte da uno pseudoflusso minimale iniziale (ad esempio ponendo $x_{ij} = u_{ij}$ se $c_{ij} < 0$ e $x_{ij} = 0$ se $c_{ij} \ge 0$); %[cite: 2]
+    \item finché esistono nodi sbilanciati, si individua un cammino aumentante di costo minimo $P$ da un nodo in eccesso di flusso ad un nodo in difetto di flusso e si incrementa il flusso lungo $P$ di $\theta = \min\{\theta(P,x), \, e_x(i), \, -e_x(j)\}$; %[cite: 2]
+    \item per il teorema di invarianza, ogni pseudoflusso generato resta minimale; quando lo sbilanciamento complessivo si annulla ($g(x) = 0$), si ottiene un flusso \textit{ammissibile e minimale}, cioè \textbf{ottimo}. %[cite: 2]
+\end{enumerate}
+\end{teoriabox}
+
+% DOMANDA 26
+
+\begin{teoriabox}{Come ottenere un flusso ammissibile, se esiste, per un problema di flusso a costo minimo}
+Il problema di determinare un flusso \textit{ammissibile} (ignorando i costi) si riduce a un problema di \textbf{flusso massimo} su una rete ausiliaria, costruita come segue: %[cite: 2]
+\begin{enumerate}
+    \item si aggiungono due nodi fittizi, una \textbf{super sorgente} $s^*$ e un \textbf{super pozzo} $t^*$; %[cite: 2]
+    \item per ogni nodo $i$ con $b_i < 0$ (offerta, $i \in O$) si aggiunge l'arco $(s^*, i)$ con capacità $-b_i$; %[cite: 2]
+    \item per ogni nodo $i$ con $b_i > 0$ (domanda, $i \in D$) si aggiunge l'arco $(i, t^*)$ con capacità $b_i$; %[cite: 2]
+    \item si mantengono gli archi originali con le loro capacità $u_{ij}$ (i costi vengono ignorati in questa fase); %[cite: 2]
+    \item si risolve il problema del flusso massimo da $s^*$ a $t^*$, ad esempio con Ford-Fulkerson. %[cite: 2]
+\end{enumerate}
+
+\end{teoriabox}
+
+\end{document}

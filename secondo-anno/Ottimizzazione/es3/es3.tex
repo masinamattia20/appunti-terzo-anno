@@ -1,0 +1,685 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,backgrounds}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty,skip=2pt}
+
+\definecolor{pos}{RGB}{30,90,200}
+\definecolor{neg}{RGB}{200,40,40}
+\definecolor{hl}{RGB}{245,180,60}
+
+\tikzset{
+  vtx/.style={circle,draw,thick,minimum size=7mm,inner sep=0pt,font=\small},
+  vpos/.style={vtx,fill=pos!25},
+  vneg/.style={vtx,fill=neg!25},
+  a/.style={-{Stealth[length=2.5mm]},thick,font=\scriptsize},
+  ab/.style={-{Stealth[length=2.5mm]},thick,neg,font=\scriptsize},
+  hlarc/.style={-{Stealth[length=3mm]},line width=1.6pt,hl,font=\scriptsize},
+  lab/.style={font=\scriptsize,inner sep=1pt}
+}
+
+% coppia di grafi affiancati
+\newenvironment{coppia}{\par\medskip\noindent\begin{minipage}[t]{0.49\textwidth}\centering}
+{\end{minipage}\par\medskip}
+\newcommand{\colsep}{\end{minipage}\hfill\begin{minipage}[t]{0.49\textwidth}\centering}
+
+\title{\textbf{Esercizio 3 -- Reti di flusso}\\[2mm]
+\large Guida allo svolgimento: flusso massimo, cammini minimi successivi,\\ cancellazione dei cicli}
+\author{Ottimizzazione Combinatoria}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}[colback=hl!12,colframe=hl!70!black,title=\textbf{ATTENZIONE: convenzione dei segni usata dal docente}]
+Il professore usa la convenzione \emph{inversa} rispetto a molti testi. Dato un arco $(i,j)$
+percorso da $x_{ij}$ unità, il flusso viene \textbf{sommato} allo sbilanciamento della
+\textbf{coda} $i$ e \textbf{sottratto} da quello della \textbf{testa} $j$:
+\[
+ e_i(x)\;=\;b_i\;+\!\!\sum_{(i,j)\in A}\!\! x_{ij}\;-\!\!\sum_{(j,i)\in A}\!\! x_{ji}.
+\]
+Conseguenze pratiche, da tenere sempre a mente:
+\begin{itemize}[nosep]
+  \item $b_i<0$ (\textcolor{neg}{rosso}) $\Rightarrow$ nodo \textbf{sorgente}: deve \emph{spedire} $|b_i|$ unità;
+  \item $b_i>0$ (\textcolor{pos}{blu}) $\Rightarrow$ nodo \textbf{destinazione}: deve \emph{ricevere} $b_i$ unità;
+  \item nei disegni d'esame la freccia entrante etichettata $-16$ significa ``qui entrano 16 unità nella rete'';
+  \item nell'algoritmo dei cammini minimi successivi si aumenta lungo un cammino che va
+        \textbf{da un nodo con $e_i<0$ (rosso) a un nodo con $e_j>0$ (blu)}, finché tutti gli $e$ sono nulli.
+\end{itemize}
+\end{tcolorbox}
+
+\section{Notazione e schema di svolgimento}
+
+Ogni arco è etichettato con la coppia riportata nel testo: attenzione all'ordine, che cambia da
+compito a compito ($u_{ij},c_{ij}$ oppure $c_{ij},u_{ij}$). Nel seguito si usa
+$u_{ij}$ = capacità, $c_{ij}$ = costo, $x_{ij}$ = flusso.
+
+\paragraph{Grafo residuo $G(x)$.} Per ogni arco $(i,j)$ con flusso $x_{ij}$:
+\begin{itemize}[nosep]
+  \item se $x_{ij}<u_{ij}$: arco \emph{diretto} $i\to j$, capacità residua $u_{ij}-x_{ij}$, costo $+c_{ij}$;
+  \item se $x_{ij}>0$: arco \emph{inverso} $j\to i$, capacità residua $x_{ij}$, costo $-c_{ij}$.
+\end{itemize}
+
+\paragraph{Impaginazione consigliata (quella usata qui).} Due grafi per riga:
+a \textbf{sinistra} il grafo residuo con costi/capacità residue e il cammino (o ciclo) evidenziato,
+a \textbf{destra} il grafo originale con i flussi aggiornati. È esattamente lo schema che il
+docente si aspetta di vedere nel compito.
+
+\vspace{2mm}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Problema & Algoritmo & Sezione\\
+\midrule
+Flusso massimo (MF) & Ford--Fulkerson con visita BFS (Edmonds--Karp) & \S\ref{sec:ek}\\
+Flusso di costo minimo (MCF) & Cammini minimi successivi (SSP) & \S\ref{sec:ssp}\\
+Flusso di costo minimo (MCF) & Cancellazione dei cicli & \S\ref{sec:cc}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% =====================================================================
+\section{Flusso massimo: algoritmo di Edmonds--Karp}\label{sec:ek}
+
+\subsection{Procedura}
+\begin{enumerate}[nosep]
+  \item Parti da $x=0$.
+  \item Costruisci $G(x)$ e cerca un cammino aumentante $s\to t$ con \textbf{visita in ampiezza (BFS)}:
+        è questo che distingue Edmonds--Karp da Ford--Fulkerson generico (si sceglie sempre
+        il cammino aumentante con il \emph{minimo numero di archi}; garantisce $O(nm^2)$).
+  \item $\theta=$ minimo delle capacità residue sul cammino; aggiorna: $+\theta$ sugli archi
+        percorsi in avanti, $-\theta$ su quelli percorsi all'indietro.
+  \item Ripeti finché $t$ non è più raggiungibile. Allora $S=\{$nodi raggiunti$\}$,
+        $T=V\setminus S$ e $(S,T)$ è un \textbf{taglio di capacità minima}: la sua capacità
+        è pari al valore del flusso massimo (max-flow / min-cut).
+\end{enumerate}
+Nella BFS conviene tenere le due tabelle che usa il docente: \texttt{Pred} (predecessore di
+ogni nodo) e \texttt{Theta} (capacità residua minima per raggiungerlo).
+
+\subsection{Esempio svolto}
+Rete con sorgente $1$, pozzo $6$; su ogni arco la capacità.
+
+\begin{center}
+\begin{tikzpicture}[node distance=18mm]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.4,1.3) {2};
+  \node[vtx] (n3) at (2.4,-1.3) {3};
+  \node[vtx] (n4) at (4.8,1.3) {4};
+  \node[vtx] (n5) at (4.8,-1.3) {5};
+  \node[vtx] (n6) at (7.2,0) {6};
+  \draw[a] (n1)--node[above left,lab]{10}(n2);
+  \draw[a] (n1)--node[below left,lab]{8}(n3);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[a] (n2)--node[above,lab]{5}(n4);
+  \draw[a] (n3)--node[below,lab]{10}(n5);
+  \draw[a] (n5)--node[right,lab]{6}(n4);
+  \draw[a] (n4)--node[above right,lab]{7}(n6);
+  \draw[a] (n5)--node[below right,lab]{6}(n6);
+  \node[left of=n1,node distance=12mm]{$s$};
+  \node[right of=n6,node distance=12mm]{$t$};
+\end{tikzpicture}
+\end{center}
+
+\newcommand{\ekgraph}[1]{%
+\begin{tikzpicture}[scale=0.86,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.2,1.2) {2};
+  \node[vtx] (n3) at (2.2,-1.2) {3};
+  \node[vtx] (n4) at (4.4,1.2) {4};
+  \node[vtx] (n5) at (4.4,-1.2) {5};
+  \node[vtx] (n6) at (6.6,0) {6};
+  #1
+\end{tikzpicture}}
+
+\paragraph{Iterazione 1.} BFS trova $1\!-\!2\!-\!4\!-\!6$, $\theta=\min\{10,5,7\}=5$.
+
+\begin{coppia}
+\ekgraph{
+  \draw[hlarc] (n1)--node[above left,lab,black]{10}(n2);
+  \draw[a] (n1)--node[below left,lab]{8}(n3);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[hlarc] (n2)--node[above,lab,black]{5}(n4);
+  \draw[a] (n3)--node[below,lab]{10}(n5);
+  \draw[a] (n5)--node[right,lab]{6}(n4);
+  \draw[hlarc] (n4)--node[above right,lab,black]{7}(n6);
+  \draw[a] (n5)--node[below right,lab]{6}(n6);
+}
+\captionof{figure}{$G(x_0)$: capacità residue, cammino BFS evidenziato ($\theta=5$)}
+\colsep
+\ekgraph{
+  \draw[a] (n1)--node[above left,lab]{10,5}(n2);
+  \draw[a] (n1)--node[below left,lab]{8,0}(n3);
+  \draw[a] (n2)--node[left,lab]{4,0}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[below,lab]{10,0}(n5);
+  \draw[a] (n5)--node[right,lab]{6,0}(n4);
+  \draw[a] (n4)--node[above right,lab]{7,5}(n6);
+  \draw[a] (n5)--node[below right,lab]{6,0}(n6);
+}
+\captionof{figure}{$x_1$: coppie $u,x$ -- valore del flusso $=5$}
+\end{coppia}
+
+\paragraph{Iterazione 2.} BFS trova $1\!-\!3\!-\!5\!-\!6$, $\theta=\min\{8,10,6\}=6$.
+
+\begin{coppia}
+\ekgraph{
+  \draw[a,bend left=10] (n1) to node[above left,lab]{5}(n2);
+  \draw[ab,bend left=10] (n2) to node[below right,lab]{5}(n1);
+  \draw[hlarc] (n1)--node[below left,lab,black]{8}(n3);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[ab] (n4)--node[above,lab]{5}(n2);
+  \draw[hlarc] (n3)--node[below,lab,black]{10}(n5);
+  \draw[a] (n5)--node[right,lab]{6}(n4);
+  \draw[a,bend left=10] (n4) to node[above right,lab]{2}(n6);
+  \draw[ab,bend left=10] (n6) to node[below left,lab]{5}(n4);
+  \draw[hlarc] (n5)--node[below right,lab,black]{6}(n6);
+}
+\captionof{figure}{$G(x_1)$: in \textcolor{neg}{rosso} gli archi inversi ($\theta=6$)}
+\colsep
+\ekgraph{
+  \draw[a] (n1)--node[above left,lab]{10,5}(n2);
+  \draw[a] (n1)--node[below left,lab]{8,6}(n3);
+  \draw[a] (n2)--node[left,lab]{4,0}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[below,lab]{10,6}(n5);
+  \draw[a] (n5)--node[right,lab]{6,0}(n4);
+  \draw[a] (n4)--node[above right,lab]{7,5}(n6);
+  \draw[a] (n5)--node[below right,lab]{6,6}(n6);
+}
+\captionof{figure}{$x_2$: valore del flusso $=11$}
+\end{coppia}
+
+\paragraph{Iterazione 3.} BFS trova $1\!-\!3\!-\!5\!-\!4\!-\!6$, $\theta=\min\{2,4,6,2\}=2$.
+Si noti che l'arco $5\to4$ viene usato in avanti: si ``devia'' il flusso verso l'unico
+arco uscente ancora libero.
+
+\begin{coppia}
+\ekgraph{
+  \draw[a,bend left=10] (n1) to node[above left,lab]{5}(n2);
+  \draw[ab,bend left=10] (n2) to node[below right,lab]{5}(n1);
+  \draw[hlarc,bend left=10] (n1) to node[below left,lab,black]{2}(n3);
+  \draw[ab,bend left=10] (n3) to node[above right,lab]{6}(n1);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[ab] (n4)--node[above,lab]{5}(n2);
+  \draw[hlarc,bend left=10] (n3) to node[below,lab,black]{4}(n5);
+  \draw[ab,bend left=10] (n5) to node[above,lab]{6}(n3);
+  \draw[hlarc] (n5)--node[right,lab,black]{6}(n4);
+  \draw[hlarc,bend left=10] (n4) to node[above right,lab,black]{2}(n6);
+  \draw[ab,bend left=10] (n6) to node[below left,lab]{5}(n4);
+  \draw[ab] (n6)--node[below right,lab]{6}(n5);
+}
+\captionof{figure}{$G(x_2)$: cammino $1,3,5,4,6$ ($\theta=2$)}
+\colsep
+\ekgraph{
+  \draw[a] (n1)--node[above left,lab]{10,5}(n2);
+  \draw[a] (n1)--node[below left,lab]{8,8}(n3);
+  \draw[a] (n2)--node[left,lab]{4,0}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[below,lab]{10,8}(n5);
+  \draw[a] (n5)--node[right,lab]{6,2}(n4);
+  \draw[a] (n4)--node[above right,lab]{7,7}(n6);
+  \draw[a] (n5)--node[below right,lab]{6,6}(n6);
+}
+\captionof{figure}{$x_3$: valore del flusso $=13$}
+\end{coppia}
+
+\paragraph{Iterazione 4: arresto e taglio.}
+Dalla BFS su $G(x_3)$ si raggiungono $S=\{1,2,3,4,5\}$ ma non $6$: gli archi $4\to6$ e $5\to6$
+sono saturi. Quindi
+\[
+ v^\ast = 13, \qquad (S,T)=\bigl(\{1,2,3,4,5\},\{6\}\bigr), \qquad
+ u(S,T)=u_{46}+u_{56}=7+6=13 .
+\]
+
+\begin{coppia}
+\ekgraph{
+  \begin{scope}[on background layer]
+    \fill[pos!12,rounded corners=10pt] (-0.9,-2.1) rectangle (5.5,2.1);
+  \end{scope}
+  \draw[a,bend left=10] (n1) to node[above left,lab]{5}(n2);
+  \draw[ab,bend left=10] (n2) to node[below right,lab]{5}(n1);
+  \draw[ab] (n3)--node[below left,lab]{8}(n1);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[ab] (n4)--node[above,lab]{5}(n2);
+  \draw[ab] (n5)--node[below,lab]{8}(n3);
+  \draw[a,bend left=10] (n5) to node[right,lab]{4}(n4);
+  \draw[ab,bend left=10] (n4) to node[left,lab]{2}(n5);
+  \draw[ab] (n6)--node[above right,lab]{7}(n4);
+  \draw[ab] (n6)--node[below right,lab]{6}(n5);
+}
+\captionof{figure}{$G(x_3)$: $t$ irraggiungibile, insieme $S$ ombreggiato}
+\colsep
+\ekgraph{
+  \draw[a] (n1)--node[above left,lab]{10,5}(n2);
+  \draw[a] (n1)--node[below left,lab]{8,8}(n3);
+  \draw[a] (n2)--node[left,lab]{4,0}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[below,lab]{10,8}(n5);
+  \draw[a] (n5)--node[right,lab]{6,2}(n4);
+  \draw[hlarc] (n4)--node[above right,lab,black]{7,7}(n6);
+  \draw[hlarc] (n5)--node[below right,lab,black]{6,6}(n6);
+}
+\captionof{figure}{Soluzione ottima: archi del taglio evidenziati}
+\end{coppia}
+
+\begin{tcolorbox}[colback=gray!8,title=Cosa scrivere nel compito]
+Per ogni iterazione: (i) l'albero BFS o le tabelle \texttt{Pred}/\texttt{Theta};
+(ii) il cammino aumentante scritto a ritroso da $t$ a $s$; (iii) $\theta$ e il nuovo valore del flusso;
+(iv) la matrice/il grafo dei flussi. Alla fine: valore ottimo, soluzione ottima arco per arco,
+taglio di capacità minima con verifica $v^\ast=u(S,T)$.
+\end{tcolorbox}
+
+% =====================================================================
+
+\newpage
+
+\section{MCF: algoritmo dei cammini minimi successivi}\label{sec:ssp}
+
+\subsection{Procedura}
+\begin{enumerate}[nosep]
+  \item \textbf{Pseudoflusso iniziale minimale}: $x_{ij}=0$ se $c_{ij}\ge 0$,
+        $x_{ij}=u_{ij}$ se $c_{ij}<0$. (Così ogni arco è già al costo minimo possibile:
+        il pseudoflusso è \emph{minimale}, ma viola i bilanciamenti.)
+  \item Calcola gli sbilanciamenti con la convenzione del docente
+        $e_i=b_i+\sum_{(i,j)}x_{ij}-\sum_{(j,i)}x_{ji}$.
+        Colora \textcolor{neg}{rosso} i nodi con $e_i<0$, \textcolor{pos}{blu} quelli con $e_i>0$.
+  \item Se tutti gli $e_i=0$: STOP, $x$ è ottimo. Altrimenti scegli $s$ con $e_s<0$ e $t$ con $e_t>0$.
+  \item Nel grafo residuo trova il \textbf{cammino di costo minimo} $P$ da $s$ a $t$
+        (Bellman--Ford: ci sono costi negativi; per costruzione non esistono cicli negativi).
+  \item $\theta=\min\{|e_s|,\;e_t,\;\min_{(i,j)\in P} r_{ij}\}$; aumenta di $\theta$ lungo $P$ e torna al passo 2.
+\end{enumerate}
+Il pseudoflusso resta sempre \emph{minimale}: ad ogni passo si sposta flusso al minimo costo
+possibile, quindi appena i bilanciamenti sono soddisfatti la soluzione è ottima.
+
+\subsection{Esempio svolto (traccia d'esame)}
+Archi etichettati $c_{ij},u_{ij}$. Bilanciamenti: $b_1=-16$ (sorgente), $b_4=+16$ (destinazione),
+$b_2=b_3=0$.
+
+\newcommand{\sspgraph}[1]{%
+\begin{tikzpicture}[scale=0.82,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.4,0) {2};
+  \node[vtx] (n3) at (4.8,0) {3};
+  \node[vtx] (n4) at (7.2,0) {4};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\sspgraph{
+  \draw[a] (n1)--node[below,lab]{3,8}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5}(n4);
+  \draw[a] (-1.2,-1.0)--node[left,lab]{$-16$}(n1);
+  \draw[a] (n4)--node[right,lab]{$16$}(8.2,1.0);
+}
+\end{center}
+
+\paragraph{Passo 0: pseudoflusso minimale.} Solo $c_{23}=-1<0$, quindi $x_{23}=u_{23}=10$,
+tutti gli altri nulli. Sbilanciamenti (regola del docente: il flusso di $(2,3)$ si somma a $e_2$
+e si sottrae da $e_3$):
+\[ e_1=-16,\quad e_2=0+10=+10,\quad e_3=0-10=-10,\quad e_4=+16 . \]
+
+\begin{coppia}
+\sspgraph{
+  \draw[a] (n1)--node[below,lab]{3,8}(n2);
+  \draw[hlarc,bend left=18] (n3) to node[above,lab,black]{1,10}(n2);
+  \draw[a] (n3)--node[below,lab]{3,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5}(n4);
+}
+\captionof{figure}{$G(x_0)$: cammino $3\to2$, costo $C=1$, $\theta=\min\{10,10,10\}=10$}
+\colsep
+\sspgraph{
+  \node[vneg] at (n1) {1}; \node[vpos] at (n2) {2};
+  \node[vneg] at (n3) {3}; \node[vpos] at (n4) {4};
+  \draw[a] (n1)--node[below,lab]{3,8,0}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10,10}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8,0}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5,0}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9,0}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5,0}(n4);
+}
+\captionof{figure}{$x_0$: terne $c,u,x$ -- $e=(-16,+10,-10,+16)$}
+\end{coppia}
+
+\paragraph{Iterazione 1.} $\theta=10$ su $3\to2$ (arco inverso): $x_{23}$ scende a $0$.
+Ora $e_2=e_3=0$; restano $e_1=-16$, $e_4=+16$.
+
+\begin{coppia}
+\sspgraph{
+  \draw[hlarc] (n1)--node[below,lab,black]{3,8}(n2);
+  \draw[hlarc] (n2)--node[below,lab,black]{-1,10}(n3);
+  \draw[hlarc] (n3)--node[below,lab,black]{3,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5}(n4);
+}
+\captionof{figure}{$G(x_1)$: cammino $1,2,3,4$, $C=3-1+3=5$, $\theta=\min\{16,16,8,10,8\}=8$}
+\colsep
+\sspgraph{
+  \node[vneg] at (n1) {1}; \node[vtx] at (n2) {2};
+  \node[vtx] at (n3) {3}; \node[vpos] at (n4) {4};
+  \draw[a] (n1)--node[below,lab]{3,8,0}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10,0}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8,0}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5,0}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9,0}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5,0}(n4);
+}
+\captionof{figure}{$x_1$: $e=(-16,0,0,+16)$}
+\end{coppia}
+
+\paragraph{Iterazione 2.} Si spediscono $8$ unità su $1\to2\to3\to4$.
+Ora $e_1=-16+8=-8$, $e_4=16-8=+8$.
+
+\begin{coppia}
+\sspgraph{
+  \draw[ab,bend left=18] (n2) to node[above,lab]{-3,8}(n1);
+  \draw[a,bend left=18] (n2) to node[below,lab]{-1,2}(n3);
+  \draw[hlarc,bend left=18] (n3) to node[above,lab,black]{1,8}(n2);
+  \draw[ab,bend left=18] (n4) to node[above=3pt,lab]{-3,8}(n3);
+  \draw[hlarc,bend left=45] (n1) to node[above,lab,black]{3,5}(n3);
+  \draw[hlarc,bend left=45] (n2) to node[above,lab,black]{3,9}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5}(n4);
+}
+\captionof{figure}{$G(x_2)$: cammino $1,3,2,4$, $C=3+1+3=7$ (meglio di $1\to4$, $C=8$), $\theta=5$}
+\colsep
+\sspgraph{
+  \node[vneg] at (n1) {1}; \node[vtx] at (n2) {2};
+  \node[vtx] at (n3) {3}; \node[vpos] at (n4) {4};
+  \draw[a] (n1)--node[below,lab]{3,8,8}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10,8}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5,0}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9,0}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5,0}(n4);
+}
+\captionof{figure}{$x_2$: $e=(-8,0,0,+8)$}
+\end{coppia}
+
+\paragraph{Iterazione 3.} $\theta=5$: $x_{13}=5$, $x_{24}=5$ e l'arco inverso $3\to2$
+riduce $x_{23}$ da $8$ a $3$. Ora $e_1=-3$, $e_4=+3$; l'unico arco residuo uscente da $1$
+è $1\to4$ (costo $8$), quindi $\theta=3$.
+
+\begin{coppia}
+\sspgraph{
+  \draw[ab,bend left=18] (n2) to node[above,lab]{-3,8}(n1);
+  \draw[a,bend left=18] (n2) to node[below,lab]{-1,7}(n3);
+  \draw[a,bend left=18] (n3) to node[above,lab]{1,3}(n2);
+  \draw[ab,bend left=18] (n4) to node[above=3pt,lab]{-3,8}(n3);
+  \draw[ab,bend left=45] (n3) to node[above,lab]{-3,5}(n1);
+  \draw[a,bend left=45] (n2) to node[above=8pt,lab]{3,4}(n4);
+  \draw[hlarc,bend right=40] (n1) to node[below,lab,black]{8,5}(n4);
+}
+\captionof{figure}{$G(x_3)$: unico cammino $1\to4$, $C=8$, $\theta=\min\{3,3,5\}=3$}
+\colsep
+\sspgraph{
+  \node[vneg] at (n1) {1}; \node[vtx] at (n2) {2};
+  \node[vtx] at (n3) {3}; \node[vpos] at (n4) {4};
+  \draw[a] (n1)--node[below,lab]{3,8,8}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10,3}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5,5}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9,5}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5,0}(n4);
+}
+\captionof{figure}{$x_3$: $e=(-3,0,0,+3)$}
+\end{coppia}
+
+\paragraph{Soluzione ottima.} Tutti gli $e_i=0$: STOP.
+\begin{coppia}
+\sspgraph{
+  \draw[ab,bend left=18] (n2) to node[above,lab]{-3,8}(n1);
+  \draw[a,bend left=18] (n2) to node[below,lab]{-1,7}(n3);
+  \draw[a,bend left=18] (n3) to node[above,lab]{1,3}(n2);
+  \draw[ab,bend left=18] (n4) to node[above=3pt,lab]{-3,8}(n3);
+  \draw[ab,bend left=45] (n3) to node[above,lab]{-3,5}(n1);
+  \draw[a,bend left=45] (n2) to node[above=8pt,lab]{3,4}(n4);
+  \draw[ab,bend right=40] (n4) to node[below,lab]{-8,3}(n1);
+}
+\captionof{figure}{$G(x^\ast)$: nessun nodo sbilanciato, nessun ciclo negativo}
+\colsep
+\sspgraph{
+  \draw[a] (n1)--node[below,lab]{3,8,8}(n2);
+  \draw[a] (n2)--node[below,lab]{-1,10,3}(n3);
+  \draw[a] (n3)--node[below,lab]{3,8,8}(n4);
+  \draw[a,bend left=45] (n1) to node[above,lab]{3,5,5}(n3);
+  \draw[a,bend left=45] (n2) to node[above,lab]{3,9,5}(n4);
+  \draw[a,bend right=40] (n1) to node[below,lab]{8,5,3}(n4);
+}
+\captionof{figure}{$x^\ast$: $e=(0,0,0,0)$}
+\end{coppia}
+
+\[
+ c(x^\ast)=3\cdot8+3\cdot5+8\cdot3+(-1)\cdot3+3\cdot5+3\cdot8
+ =24+15+24-3+15+24=\mathbf{99}.
+\]
+
+% =====================================================================
+
+\newpage
+
+\section{MCF: algoritmo di cancellazione dei cicli}\label{sec:cc}
+
+\subsection{Procedura}
+\begin{enumerate}[nosep]
+  \item \textbf{Trova un flusso ammissibile} (non serve che sia buono, solo che rispetti
+        bilanciamenti e capacità). Metodo standard: aggiungi due nodi fittizi $s$ e $t$,
+        un arco $s\to i$ di capacità $|b_i|$ per ogni sorgente ($b_i<0$) e un arco $j\to t$
+        di capacità $b_j$ per ogni destinazione ($b_j>0$); risolvi il \textbf{flusso massimo}
+        con Edmonds--Karp. Se satura tutti gli archi fittizi, la restrizione alla rete originale
+        è un flusso ammissibile; altrimenti il problema è inammissibile.
+  \item Costruisci $G(x)$ con i costi ($+c_{ij}$ avanti, $-c_{ij}$ indietro).
+  \item Cerca un \textbf{ciclo di costo negativo} con Bellman--Ford. Se non esiste: STOP, $x$ è ottimo.
+  \item $\theta=$ minima capacità residua sul ciclo; aggiorna il flusso lungo il ciclo
+        (il costo cala esattamente di $\theta\cdot|c(\text{ciclo})|$); torna al passo 2.
+\end{enumerate}
+Differenza rispetto a SSP: qui si parte da una soluzione \emph{ammissibile ma non ottima} e si
+migliora il costo; in SSP si parte da una soluzione \emph{ottima nel costo ma non ammissibile}
+e si ripristina l'ammissibilità.
+
+\subsection{Esempio svolto (compito del 27 luglio 2026)}
+Archi etichettati $u_{ij},c_{ij}$; bilanciamenti $b_A=-4$, $b_B=-6$, $b_C=0$, $b_D=+3$, $b_E=+7$.
+
+\newcommand{\ccgraph}[1]{%
+\begin{tikzpicture}[scale=0.82,every node/.style={transform shape}]
+  \node[vtx] (A) at (0,1.6) {A};
+  \node[vtx] (B) at (0,-1.6) {B};
+  \node[vtx] (C) at (2.6,0) {C};
+  \node[vtx] (D) at (5.2,1.6) {D};
+  \node[vtx] (E) at (5.2,-1.6) {E};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\ccgraph{
+  \node[lab] at (-1.1,1.6) {$-4$}; \node[lab] at (-1.1,-1.6) {$-6$};
+  \node[lab] at (6.3,1.6) {$3$};   \node[lab] at (6.3,-1.6) {$7$};
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6}(D);
+  \draw[a] (A)--node[above right,lab]{4,1}(C);
+  \draw[a] (A)--node[left,lab]{5,1}(B);
+  \draw[a] (B)--node[below right,lab]{4,1}(C);
+  \draw[a,bend right=22] (B) to node[below,lab]{3,6}(E);
+  \draw[a] (C)--node[above left,lab]{4,4}(D);
+  \draw[a] (C)--node[below left,lab]{5,2}(E);
+  \draw[a] (D)--node[right,lab]{3,-3}(E);
+}
+\end{center}
+
+\paragraph{Passo 1: flusso ammissibile via flusso massimo.}
+Rete ausiliaria: $s\to A$ (cap. 4), $s\to B$ (cap. 6), $D\to t$ (cap. 3), $E\to t$ (cap. 7);
+capacità totale da saturare $=10$ per lato. Con Edmonds--Karp si ottiene ad esempio
+\[ x_{AC}=4,\quad x_{BC}=4,\quad x_{BE}=2,\quad x_{CD}=3,\quad x_{CE}=5, \]
+tutti gli altri nulli. Verifica: $A$ spedisce 4, $B$ spedisce 6, $C$ è in equilibrio ($8$ entranti,
+$8$ uscenti), $D$ riceve $3$, $E$ riceve $7$. Costo iniziale
+$4\cdot1+4\cdot1+2\cdot6+3\cdot4+5\cdot2=42$.
+
+\begin{coppia}
+\begin{tikzpicture}[scale=0.78,every node/.style={transform shape}]
+  \node[vtx] (s) at (-1.8,0) {$s$};
+  \node[vtx] (A) at (0.4,1.6) {A};
+  \node[vtx] (B) at (0.4,-1.6) {B};
+  \node[vtx] (C) at (2.8,0) {C};
+  \node[vtx] (D) at (5.2,1.6) {D};
+  \node[vtx] (E) at (5.2,-1.6) {E};
+  \node[vtx] (t) at (7.2,0) {$t$};
+  \draw[a,neg] (s)--node[above left,lab]{4}(A);
+  \draw[a,neg] (s)--node[below left,lab]{6}(B);
+  \draw[a,neg] (D)--node[above right,lab]{3}(t);
+  \draw[a,neg] (E)--node[below right,lab]{7}(t);
+  \draw[a,bend left=22] (A) to node[above,lab]{6}(D);
+  \draw[a] (A)--node[above right,lab]{4}(C);
+  \draw[a] (A)--node[left,lab]{5}(B);
+  \draw[a] (B)--node[below right,lab]{4}(C);
+  \draw[a,bend right=22] (B) to node[below,lab]{3}(E);
+  \draw[a] (C)--node[above left,lab]{4}(D);
+  \draw[a] (C)--node[below left,lab]{5}(E);
+  \draw[a] (D)--node[right,lab]{3}(E);
+\end{tikzpicture}
+\captionof{figure}{Rete ausiliaria per il flusso massimo (archi fittizi in \textcolor{neg}{rosso})}
+\colsep
+\ccgraph{
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6,0}(D);
+  \draw[a] (A)--node[above right,lab]{4,1,4}(C);
+  \draw[a] (A)--node[left,lab]{5,1,0}(B);
+  \draw[a] (B)--node[below right,lab]{4,1,4}(C);
+  \draw[a,bend right=22] (B) to node[below,lab]{3,6,2}(E);
+  \draw[a] (C)--node[above left,lab]{4,4,3}(D);
+  \draw[a] (C)--node[below left,lab]{5,2,5}(E);
+  \draw[a] (D)--node[right,lab]{3,-3,0}(E);
+}
+\captionof{figure}{$x_0$ ammissibile: terne $u,c,x$ -- costo $42$}
+\end{coppia}
+
+\paragraph{Iterazione 1.} Nel grafo residuo c'è il ciclo
+$D\to E\to C\to D$ di costo $-3+(-2)+4=-1$ (l'arco $E\to C$ è l'inverso di $C\to E$).
+Capacità: $\theta=\min\{3-0,\;5,\;4-3\}=1$.
+
+\begin{coppia}
+\ccgraph{
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6}(D);
+  \draw[ab] (C)--node[above right,lab]{4,-1}(A);
+  \draw[a] (A)--node[left,lab]{5,1}(B);
+  \draw[ab] (C)--node[below right,lab]{4,-1}(B);
+  \draw[a,bend right=30] (B) to node[below,lab]{1,6}(E);
+  \draw[ab,bend right=10] (E) to node[above=2pt,lab]{2,-6}(B);
+  \draw[hlarc] (C)--node[above left,lab,black]{1,4}(D);
+  \draw[ab,bend left=15] (E) to node[below=6pt,lab,black]{5,-2}(C);
+  \draw[hlarc,bend left=15] (E) to (C);
+  \draw[hlarc] (D)--node[right,lab,black]{3,-3}(E);
+}
+\captionof{figure}{$G(x_0)$: ciclo negativo $D,E,C,D$ di costo $-1$, $\theta=1$}
+\colsep
+\ccgraph{
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6,0}(D);
+  \draw[a] (A)--node[above right,lab]{4,1,4}(C);
+  \draw[a] (A)--node[left,lab]{5,1,0}(B);
+  \draw[a] (B)--node[below right,lab]{4,1,4}(C);
+  \draw[a,bend right=22] (B) to node[below,lab]{3,6,2}(E);
+  \draw[a] (C)--node[above left,lab]{4,4,4}(D);
+  \draw[a] (C)--node[below left,lab]{5,2,4}(E);
+  \draw[a] (D)--node[right,lab]{3,-3,1}(E);
+}
+\captionof{figure}{$x_1$: costo $42-1\cdot1=41$}
+\end{coppia}
+
+\noindent Effetto sul flusso: $x_{DE}{:}\,0\to1$ (avanti), $x_{CE}{:}\,5\to4$ (arco inverso, si
+\emph{riduce}), $x_{CD}{:}\,3\to4$ (avanti). I bilanciamenti restano soddisfatti perché
+lungo un ciclo ogni nodo ha un arco entrante e uno uscente.
+
+\paragraph{Iterazione 2: verifica di ottimalità.}
+In $G(x_1)$ l'arco $C\to D$ è saturo, quindi il ciclo precedente non è più percorribile.
+Gli unici cicli residui contenenti archi negativi hanno costo $\ge 0$:
+\[
+ D\to E\to C\to A\to D:\;-3-2-1+6=0,\qquad
+ D\to C\to A\to D:\;-4-1+6=+1,
+\]
+\[
+ D\to C\to E\to D:\;-4+2+3=+1,\qquad
+ A\to B\to E\to C\to A:\;1+6-2-1=+4 .
+\]
+Nessun ciclo negativo $\Rightarrow$ $x_1$ è \textbf{ottimo}.
+
+\begin{coppia}
+\ccgraph{
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6}(D);
+  \draw[ab] (C)--node[above right,lab]{4,-1}(A);
+  \draw[a] (A)--node[left,lab]{5,1}(B);
+  \draw[ab] (C)--node[below right,lab]{4,-1}(B);
+  \draw[a,bend right=30] (B) to node[below,lab]{1,6}(E);
+  \draw[ab,bend right=10] (E) to node[above=2pt,lab]{2,-6}(B);
+  \draw[ab] (D)--node[above left,lab]{4,-4}(C);
+  \draw[a,bend left=15] (C) to node[below=2pt,lab]{1,2}(E);
+  \draw[ab,bend left=15] (E) to node[above=8pt,lab]{4,-2}(C);
+  \draw[a,bend left=12] (D) to node[right,lab]{2,-3}(E);
+  \draw[ab,bend left=12] (E) to node[left,lab]{1,3}(D);
+}
+\captionof{figure}{$G(x_1)$: nessun ciclo di costo negativo}
+\colsep
+\ccgraph{
+  \draw[a,bend left=22] (A) to node[above,lab]{6,6,0}(D);
+  \draw[a] (A)--node[above right,lab]{4,1,4}(C);
+  \draw[a] (A)--node[left,lab]{5,1,0}(B);
+  \draw[a] (B)--node[below right,lab]{4,1,4}(C);
+  \draw[a,bend right=22] (B) to node[below,lab]{3,6,2}(E);
+  \draw[a] (C)--node[above left,lab]{4,4,4}(D);
+  \draw[a] (C)--node[below left,lab]{5,2,4}(E);
+  \draw[a] (D)--node[right,lab]{3,-3,1}(E);
+}
+\captionof{figure}{$x^\ast$: soluzione ottima}
+\end{coppia}
+
+\[
+ c(x^\ast)=4\cdot1+4\cdot1+2\cdot6+4\cdot4+4\cdot2+1\cdot(-3)=4+4+12+16+8-3=\mathbf{41}.
+\]
+
+% =====================================================================
+
+\newpage
+
+\section{Errori tipici e checklist finale}
+
+\begin{tcolorbox}[colback=neg!7,colframe=neg!60!black,title=Errori che costano punti]
+\begin{itemize}[nosep]
+  \item Leggere la coppia sull'arco nell'ordine sbagliato: controlla sempre nel testo se è
+        $(u_{ij},c_{ij})$ o $(c_{ij},u_{ij})$.
+  \item Sbagliare il segno dei bilanciamenti: con la convenzione del docente
+        \textbf{negativo = sorgente}, positivo = destinazione.
+  \item Dimenticare gli \textbf{archi inversi} nel grafo residuo (costo $-c_{ij}$, capacità $x_{ij}$):
+        senza di essi non si trovano i cammini/cicli migliorativi.
+  \item In Edmonds--Karp usare DFS invece di BFS: il cammino aumentante deve essere il più corto
+        in numero di archi.
+  \item In SSP partire da $x=0$ anche con archi di costo negativo: lo pseudoflusso iniziale
+        deve essere \emph{minimale} ($x_{ij}=u_{ij}$ se $c_{ij}<0$).
+  \item Nella cancellazione dei cicli, aumentare lungo il ciclo dimenticando che sugli archi
+        inversi il flusso \emph{diminuisce}.
+  \item Non riportare esplicitamente valore ottimo, soluzione ottima e (per MF) taglio minimo.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Checklist di consegna}
+\begin{enumerate}[nosep]
+  \item Ho scritto quale algoritmo sto usando e da quale soluzione iniziale parto.
+  \item Per ogni iterazione: grafo residuo (sinistra) + grafo dei flussi (destra).
+  \item Per ogni iterazione: cammino/ciclo individuato, $\theta$, costo del cammino/ciclo,
+        nuovo valore dell'obiettivo.
+  \item Criterio di arresto motivato ($t$ irraggiungibile / tutti gli $e_i=0$ / nessun ciclo negativo).
+  \item Riepilogo finale: $x^\ast$ arco per arco, valore ottimo, ed eventuale taglio minimo.
+\end{enumerate}
+
+\end{document}

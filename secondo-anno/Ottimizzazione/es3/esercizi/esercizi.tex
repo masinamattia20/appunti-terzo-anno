@@ -1,0 +1,1032 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,backgrounds}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{caption}
+\captionsetup[figure]{labelformat=empty,skip=2pt}
+
+\definecolor{pos}{RGB}{30,90,200}
+\definecolor{neg}{RGB}{200,40,40}
+\definecolor{hl}{RGB}{245,180,60}
+
+\tikzset{
+  vtx/.style={circle,draw,thick,minimum size=7mm,inner sep=0pt,font=\small},
+  vpos/.style={vtx,fill=pos!25},
+  vneg/.style={vtx,fill=neg!25},
+  a/.style={-{Stealth[length=2.5mm]},thick,font=\scriptsize},
+  ab/.style={-{Stealth[length=2.5mm]},thick,neg,font=\scriptsize},
+  hlarc/.style={-{Stealth[length=3mm]},line width=1.6pt,hl,font=\scriptsize},
+  lab/.style={font=\scriptsize,inner sep=1pt}
+}
+
+\newenvironment{coppia}{\par\medskip\noindent\begin{minipage}[t]{0.49\textwidth}\centering}
+{\end{minipage}\par\medskip}
+\newcommand{\colsep}{\end{minipage}\hfill\begin{minipage}[t]{0.49\textwidth}\centering}
+
+\newtcolorbox{testo}[1]{colback=gray!6,colframe=gray!60!black,title=\textbf{#1}}
+\newtcolorbox{sol}{colback=pos!5,colframe=pos!55!black,title=\textbf{Svolgimento}}
+
+% arco residuo diretto / inverso in formule
+\newcommand{\rd}[4]{\mbox{$(#1,#2)\!:r{=}#3,\,c{=}#4$}\hspace{1.1em}}
+\newcommand{\ri}[4]{\mbox{$\textcolor{neg}{(#1,#2)\!:r{=}#3,\,c{=}#4}$}\hspace{1.1em}}
+\newcommand{\rdm}[3]{\mbox{$(#1,#2)\!:r{=}#3$}\hspace{1.1em}}
+\newcommand{\rim}[3]{\mbox{$\textcolor{neg}{(#1,#2)\!:r{=}#3}$}\hspace{1.1em}}
+\newenvironment{resid}{\par\smallskip\noindent\small\raggedright\ignorespaces}{\par\smallskip\noindent}
+
+\title{\textbf{Esercizi sulle reti di flusso}\\begin{resid}2mm]
+\large Edmonds--Karp, cammini minimi successivi, cancellazione dei cicli\\[1mm]
+\normalsize Sei esercizi svolti sul modello dei compiti d'esame}
+\author{Ottimizzazione Combinatoria}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{tcolorbox}[colback=hl!12,colframe=hl!70!black,title=\textbf{Convenzioni usate (le stesse della guida allo svolgimento)}]
+\begin{itemize}[nosep]
+  \item \textbf{Sbilanciamenti:} $\displaystyle e_i(x)=b_i+\!\!\sum_{(i,j)\in A}\!\! x_{ij}-\!\!\sum_{(j,i)\in A}\!\! x_{ji}$.
+        Quindi $b_i<0$ (\textcolor{neg}{rosso}) $=$ \textbf{sorgente}, $b_i>0$ (\textcolor{pos}{blu}) $=$ \textbf{destinazione}.
+  \item \textbf{Grafo residuo:} arco diretto $i\to j$ con $r_{ij}=u_{ij}-x_{ij}$ e costo $+c_{ij}$ se $x_{ij}<u_{ij}$;
+        arco inverso $j\to i$ (in \textcolor{neg}{rosso}) con $r_{ji}=x_{ij}$ e costo $-c_{ij}$ se $x_{ij}>0$.
+  \item \textbf{Etichette:} negli esercizi di flusso massimo l'arco porta solo $u_{ij}$;
+        negli esercizi SSP la coppia è $c_{ij},u_{ij}$; in quelli di cancellazione dei cicli è
+        $u_{ij},c_{ij}$ (ordine diverso: \emph{leggere sempre il testo}). Nei grafi delle soluzioni
+        si aggiunge come ultimo valore il flusso $x_{ij}$.
+\end{itemize}
+\end{tcolorbox}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{Edmonds--Karp}
+
+% ---------------------------------------------------------------- EK1
+\subsection{Esercizio 1 (flusso massimo)}
+
+\begin{testo}{Testo}
+Nella rete seguente, con sorgente $s=1$ e pozzo $t=6$, le etichette sugli archi indicano la
+capacità $u_{ij}$. Determinare un flusso massimo con l'algoritmo di Edmonds--Karp
+(Ford--Fulkerson con visita in ampiezza), riportando per ogni iterazione il cammino aumentante,
+il valore di $\theta$ e il valore del flusso. Esibire infine un taglio di capacità minima e
+verificare la relazione max-flow / min-cut.
+\end{testo}
+
+\newcommand{\gek}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.3,1.25) {2};
+  \node[vtx] (n3) at (2.3,-1.25) {3};
+  \node[vtx] (n4) at (4.6,1.25) {4};
+  \node[vtx] (n5) at (4.6,-1.25) {5};
+  \node[vtx] (n6) at (6.9,0) {6};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gek{
+  \node[lab] at (-0.8,0.55) {$s$}; \node[lab] at (7.7,0.55) {$t$};
+  \draw[a] (n1)--node[above left,lab]{12}(n2);
+  \draw[a] (n1)--node[below left,lab]{9}(n3);
+  \draw[a] (n2)--node[left,lab]{3}(n3);
+  \draw[a] (n2)--node[above,lab]{6}(n4);
+  \draw[a] (n3)--node[below,lab]{11}(n5);
+  \draw[a] (n5)--node[right,lab]{4}(n4);
+  \draw[a] (n4)--node[above right,lab]{8}(n6);
+  \draw[a] (n5)--node[below right,lab]{7}(n6);
+}
+\end{center}
+
+\begin{sol}
+Si parte da $x_0=0$.
+
+\paragraph{Iterazione 1.} $G(x_0)$ coincide con il grafo di partenza. La BFS da $1$ raggiunge $6$
+con il cammino di lunghezza minima $P_1=1\!-\!2\!-\!4\!-\!6$;
+$\theta_1=\min\{12,6,8\}=6$. Valore del flusso: $6$.
+
+\paragraph{Iterazione 2.} Archi residui di $G(x_1)$:
+\begin{resid}
+\rdm{1}{2}{6} \rim{2}{1}{6} \rdm{1}{3}{9} \rdm{2}{3}{3} \rim{4}{2}{6}
+\rdm{3}{5}{11} \rdm{5}{4}{4} \rdm{4}{6}{2} \rim{6}{4}{6} \rdm{5}{6}{7}
+\end{resid}
+(nel flusso massimo i costi non compaiono: si legga solo $r$).
+La BFS trova $P_2=1\!-\!3\!-\!5\!-\!6$, $\theta_2=\min\{9,11,7\}=7$. Valore del flusso: $13$.
+
+\paragraph{Iterazione 3.} In $G(x_2)$ gli archi $4\to6$ e $5\to6$ hanno residuo $2$ e $0$:
+l'unico cammino disponibile è $P_3=1\!-\!3\!-\!5\!-\!4\!-\!6$, che usa in avanti l'arco $5\to4$
+per deviare flusso verso l'unico arco ancora libero verso $t$.
+$\theta_3=\min\{2,4,4,2\}=2$. Valore del flusso: $15$.
+
+\paragraph{Iterazione 4: arresto.} In $G(x_3)$ la BFS raggiunge $S=\{1,2,3,4,5\}$ ma non $6$
+($4\to6$ e $5\to6$ sono saturi). Quindi
+\[
+ v^\ast=15,\qquad (S,T)=\bigl(\{1,2,3,4,5\},\{6\}\bigr),\qquad u(S,T)=u_{46}+u_{56}=8+7=15=v^\ast .
+\]
+
+\begin{center}\small
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,5)$ & $(5,4)$ & $(4,6)$ & $(5,6)$\\
+$u_{ij}$ & 12 & 9 & 3 & 6 & 11 & 4 & 8 & 7\\
+\midrule
+$x_0$ & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+$x_1$ & 6 & 0 & 0 & 6 & 0 & 0 & 6 & 0\\
+$x_2$ & 6 & 7 & 0 & 6 & 7 & 0 & 6 & 7\\
+$x_3=x^\ast$ & 6 & 9 & 0 & 6 & 9 & 2 & \textbf{8} & \textbf{7}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{coppia}
+\gek{
+  \begin{scope}[on background layer]
+    \fill[pos!12,rounded corners=10pt] (-0.8,-2.0) rectangle (5.5,2.0);
+  \end{scope}
+  \draw[a,bend left=10] (n1) to node[above left,lab]{6}(n2);
+  \draw[ab,bend left=10] (n2) to node[below right,lab]{6}(n1);
+  \draw[ab] (n3)--node[below left,lab]{9}(n1);
+  \draw[a] (n2)--node[left,lab]{3}(n3);
+  \draw[ab] (n4)--node[above,lab]{6}(n2);
+  \draw[a,bend left=10] (n3) to node[below,lab]{2}(n5);
+  \draw[ab,bend left=10] (n5) to node[above,lab]{9}(n3);
+  \draw[a,bend left=10] (n5) to node[right,lab]{2}(n4);
+  \draw[ab,bend left=10] (n4) to node[left,lab]{2}(n5);
+  \draw[ab] (n6)--node[above right,lab]{8}(n4);
+  \draw[ab] (n6)--node[below right,lab]{7}(n5);
+}
+\captionof{figure}{$G(x_3)$: $t$ non raggiungibile, $S$ ombreggiato}
+\colsep
+\gek{
+  \draw[a] (n1)--node[above left,lab]{12,6}(n2);
+  \draw[a] (n1)--node[below left,lab]{9,9}(n3);
+  \draw[a] (n2)--node[left,lab]{3,0}(n3);
+  \draw[a] (n2)--node[above,lab]{6,6}(n4);
+  \draw[a] (n3)--node[below,lab]{11,9}(n5);
+  \draw[a] (n5)--node[right,lab]{4,2}(n4);
+  \draw[hlarc] (n4)--node[above right,lab,black]{8,8}(n6);
+  \draw[hlarc] (n5)--node[below right,lab,black]{7,7}(n6);
+}
+\captionof{figure}{$x^\ast$: coppie $u,x$; in evidenza il taglio, $v^\ast=15$}
+\end{coppia}
+\end{sol}
+
+\newpage
+% ---------------------------------------------------------------- EK2
+\subsection{Esercizio 2 (flusso massimo)}
+
+\begin{testo}{Testo}
+Rete con sorgente $s=1$ e pozzo $t=5$; sugli archi è riportata la capacità $u_{ij}$.
+Applicare Edmonds--Karp, indicando a ogni passo le tabelle \texttt{Pred} e \texttt{Theta}
+della visita in ampiezza, il cammino aumentante e $\theta$. Determinare il flusso massimo e
+un taglio di capacità minima.
+\end{testo}
+
+\newcommand{\gekb}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.4,1.3) {2};
+  \node[vtx] (n3) at (2.4,-1.3) {3};
+  \node[vtx] (n4) at (4.8,1.3) {4};
+  \node[vtx] (n5) at (4.8,-1.3) {5};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gekb{
+  \node[lab] at (-0.8,0.55) {$s$}; \node[lab] at (5.7,-1.9) {$t$};
+  \draw[a] (n1)--node[above left,lab]{8}(n2);
+  \draw[a] (n1)--node[below left,lab]{6}(n3);
+  \draw[a] (n2)--node[left,lab]{4}(n3);
+  \draw[a] (n2)--node[above,lab]{5}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{3}(n4);
+  \draw[a] (n3)--node[below,lab]{7}(n5);
+  \draw[a] (n4)--node[right,lab]{9}(n5);
+}
+\end{center}
+
+\begin{sol}
+\paragraph{Iterazione 1.} $x_0=0$. BFS: il cammino più corto verso $5$ è
+$P_1=1\!-\!3\!-\!5$ (2 archi), $\theta_1=\min\{6,7\}=6$. Flusso $=6$.
+
+\begin{center}\small
+\begin{tabular}{@{}l|ccccc@{}}
+\toprule
+nodo & 1 & 2 & 3 & 4 & 5\\
+\midrule
+\texttt{Pred} & -- & 1 & 1 & 2 & 3\\
+\texttt{Theta} & $\infty$ & 8 & 6 & 5 & 6\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Iterazione 2.} Archi residui di $G(x_1)$:
+\begin{resid}
+\rdm{1}{2}{8} \rim{3}{1}{6} \rdm{2}{3}{4} \rdm{2}{4}{5} \rdm{3}{4}{3}
+\rdm{3}{5}{1} \rim{5}{3}{6} \rdm{4}{5}{9}
+\end{resid}
+BFS (3 archi): $P_2=1\!-\!2\!-\!3\!-\!5$, $\theta_2=\min\{8,4,1\}=1$. Flusso $=7$.
+(Anche $1\!-\!2\!-\!4\!-\!5$ ha 3 archi: si può scegliere indifferentemente, cambia solo
+l'ordine delle iterazioni successive.)
+
+\paragraph{Iterazione 3.} In $G(x_2)$ l'arco $3\to5$ è saturo; BFS trova
+$P_3=1\!-\!2\!-\!4\!-\!5$, $\theta_3=\min\{7,5,9\}=5$. Flusso $=12$.
+
+\paragraph{Iterazione 4.} In $G(x_3)$ resta $r_{12}=2$ e la BFS trova
+$P_4=1\!-\!2\!-\!3\!-\!4\!-\!5$, $\theta_4=\min\{2,3,3,4\}=2$. Flusso $=14$.
+
+\paragraph{Iterazione 5: arresto.} In $G(x_4)$ entrambi gli archi uscenti da $1$ sono saturi
+($x_{12}=8=u_{12}$, $x_{13}=6=u_{13}$): la BFS raggiunge solo $S=\{1\}$. Dunque
+\[
+ v^\ast=14,\qquad (S,T)=\bigl(\{1\},\{2,3,4,5\}\bigr),\qquad u(S,T)=u_{12}+u_{13}=8+6=14=v^\ast .
+\]
+
+\begin{center}\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & $(3,5)$ & $(4,5)$\\
+$u_{ij}$ & 8 & 6 & 4 & 5 & 3 & 7 & 9\\
+\midrule
+$x_0$ & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+$x_1$ & 0 & 6 & 0 & 0 & 0 & 6 & 0\\
+$x_2$ & 1 & 6 & 1 & 0 & 0 & 7 & 0\\
+$x_3$ & 6 & 6 & 1 & 5 & 0 & 7 & 5\\
+$x_4=x^\ast$ & \textbf{8} & \textbf{6} & 3 & 5 & 2 & 7 & 7\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{coppia}
+\gekb{
+  \begin{scope}[on background layer]
+    \fill[pos!12,rounded corners=8pt] (-0.65,-0.65) rectangle (0.65,0.65);
+  \end{scope}
+  \draw[ab] (n2)--node[above left,lab]{8}(n1);
+  \draw[ab] (n3)--node[below left,lab]{6}(n1);
+  \draw[a,bend left=12] (n2) to node[left,lab]{1}(n3);
+  \draw[ab,bend left=12] (n3) to node[right,lab]{3}(n2);
+  \draw[ab] (n4)--node[above,lab]{5}(n2);
+  \draw[a,bend left=12] (n3) to node[above=4pt,lab]{1}(n4);
+  \draw[ab,bend left=12] (n4) to node[below=2pt,lab]{2}(n3);
+  \draw[ab] (n5)--node[below,lab]{7}(n3);
+  \draw[a,bend left=12] (n4) to node[right,lab]{2}(n5);
+  \draw[ab,bend left=12] (n5) to node[left,lab]{7}(n4);
+}
+\captionof{figure}{$G(x_4)$: da $1$ non si esce, $S=\{1\}$}
+\colsep
+\gekb{
+  \draw[hlarc] (n1)--node[above left,lab,black]{8,8}(n2);
+  \draw[hlarc] (n1)--node[below left,lab,black]{6,6}(n3);
+  \draw[a] (n2)--node[left,lab]{4,3}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{3,2}(n4);
+  \draw[a] (n3)--node[below,lab]{7,7}(n5);
+  \draw[a] (n4)--node[right,lab]{9,7}(n5);
+}
+\captionof{figure}{$x^\ast$: coppie $u,x$; taglio evidenziato, $v^\ast=14$}
+\end{coppia}
+\end{sol}
+
+\newpage
+% =====================================================================
+\section{Cammini minimi successivi}
+
+% --------------------------------------------------------------- SSP1
+\subsection{Esercizio 3 (MCF, cammini minimi successivi)}
+
+\begin{testo}{Testo}
+Nella rete seguente gli archi sono etichettati con la coppia $c_{ij},u_{ij}$ e i bilanciamenti
+sono $b_1=-10$, $b_2=b_3=b_4=0$, $b_5=+10$. Risolvere il problema di flusso di costo minimo
+con l'algoritmo dei cammini minimi successivi, partendo dallo pseudoflusso minimale.
+\end{testo}
+
+\newcommand{\gsa}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.3,1.3) {2};
+  \node[vtx] (n3) at (2.3,-1.3) {3};
+  \node[vtx] (n4) at (4.6,1.3) {4};
+  \node[vtx] (n5) at (4.6,-1.3) {5};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-10$}; \node[lab] at (5.6,-1.9) {$+10$};
+  \draw[a] (n1)--node[above left,lab]{2,6}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,7}(n3);
+  \draw[a] (n2)--node[left,lab]{-2,4}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{1,6}(n4);
+  \draw[a] (n3)--node[below,lab]{6,5}(n5);
+  \draw[a] (n4)--node[right,lab]{2,8}(n5);
+}
+\end{center}
+
+\begin{sol}
+\paragraph{Passo 0: pseudoflusso minimale.} L'unico arco di costo negativo è $(2,3)$ con
+$c_{23}=-2$: si pone $x_{23}=u_{23}=4$, tutti gli altri archi a $0$. Sbilanciamenti
+(il flusso di $(2,3)$ si \emph{somma} a $e_2$ e si \emph{sottrae} da $e_3$):
+\[
+ e_1=-10,\quad e_2=0+4=+4,\quad e_3=0-4=-4,\quad e_4=0,\quad e_5=+10 .
+\]
+
+\paragraph{Iterazione 1.} Sorgente $s=1$ ($e_1<0$), destinazione $t=2$ ($e_2>0$).
+Cammino minimo in $G(x_0)$: $1\to2$, costo $C=2$.
+$\theta=\min\{|e_1|,e_2,r_{12}\}=\min\{10,4,6\}=4$. Nuovo $x_{12}=4$, $e=(-6,0,-4,0,+10)$.
+
+\paragraph{Iterazione 2.} $s=1$, $t=5$. Archi residui di $G(x_1)$:
+\begin{resid}
+\rd{1}{2}{2}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{7}{4} \ri{3}{2}{4}{2}
+\rd{2}{4}{5}{5} \rd{3}{4}{6}{1} \rd{3}{5}{5}{6} \rd{4}{5}{8}{2}
+\end{resid}
+Cammino minimo $1\to3\to4\to5$ di costo $C=4+1+2=7$ (contro $1\to3\to5$: $4+6=10$, e
+$1\to2\to4\to5$: $2+5+2=9$). $\theta=\min\{6,10,7,6,8\}=6$.
+Ora $x_{13}=6$, $x_{34}=6$, $x_{45}=6$, $e=(0,0,-4,0,+4)$.
+
+\paragraph{Iterazione 3.} Restano sbilanciati $e_3=-4$ (sorgente!) ed $e_5=+4$.
+Archi residui di $G(x_2)$:
+\begin{resid}
+\rd{1}{2}{2}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{1}{4} \ri{3}{1}{6}{-4}
+\ri{3}{2}{4}{2} \rd{2}{4}{5}{5} \ri{4}{3}{6}{-1} \rd{3}{5}{5}{6}
+\rd{4}{5}{2}{2} \ri{5}{4}{6}{-2}
+\end{resid}
+Il cammino minimo da $3$ a $5$ è $3\to1\to2\to4\to5$ con
+$C=-4+2+5+2=5$, migliore di $3\to5$ ($C=6$).
+$\theta=\min\{|e_3|,e_5,6,2,5,2\}=\min\{4,4,6,2,5,2\}=2$.
+Aggiornamento: $x_{13}:6\to4$ (arco inverso), $x_{12}:4\to6$, $x_{24}:0\to2$, $x_{45}:6\to8$.
+Ora $e=(0,0,-2,0,+2)$.
+
+\paragraph{Iterazione 4.} In $G(x_3)$ l'arco $(1,2)$ è saturo e $(4,5)$ pure: l'unico cammino
+residuo da $3$ a $5$ è l'arco diretto $3\to5$, $C=6$.
+$\theta=\min\{2,2,5\}=2$, quindi $x_{35}=2$ e $e=(0,0,0,0,0)$: \textbf{STOP}.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccccc|l@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & $(3,5)$ & $(4,5)$ & $e=(e_1,\dots,e_5)$\\
+$c_{ij},u_{ij}$ & 2,6 & 4,7 & -2,4 & 5,5 & 1,6 & 6,5 & 2,8 & \\
+\midrule
+$x_0$ & 0 & 0 & 4 & 0 & 0 & 0 & 0 & $(-10,+4,-4,0,+10)$\\
+$x_1$ & 4 & 0 & 4 & 0 & 0 & 0 & 0 & $(-6,0,-4,0,+10)$\\
+$x_2$ & 4 & 6 & 4 & 0 & 6 & 0 & 6 & $(0,0,-4,0,+4)$\\
+$x_3$ & 6 & 4 & 4 & 2 & 6 & 0 & 8 & $(0,0,-2,0,+2)$\\
+$x_4=x^\ast$ & 6 & 4 & 4 & 2 & 6 & 2 & 8 & $(0,0,0,0,0)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\[
+ c(x^\ast)=2\cdot6+4\cdot4+(-2)\cdot4+5\cdot2+1\cdot6+6\cdot2+2\cdot8
+ =12+16-8+10+6+12+16=\mathbf{64}.
+\]
+
+\begin{coppia}
+\gsa{
+  \draw[ab] (n2)--node[above left,lab]{-2,6}(n1);
+  \draw[a,bend left=14] (n1) to node[below=2pt,lab]{4,3}(n3);
+  \draw[ab,bend left=14] (n3) to node[above=2pt,lab]{-4,4}(n1);
+  \draw[ab] (n3)--node[left,lab]{2,4}(n2);
+  \draw[a,bend left=14] (n2) to node[above=2pt,lab]{5,3}(n4);
+  \draw[ab,bend left=14] (n4) to node[below=2pt,lab]{-5,2}(n2);
+  \draw[ab] (n4)--node[above=6pt,lab]{-1,6}(n3);
+  \draw[a,bend left=14] (n3) to node[below,lab]{6,3}(n5);
+  \draw[ab,bend left=14] (n5) to node[above=2pt,lab]{-6,2}(n3);
+  \draw[ab] (n5)--node[right,lab]{-2,8}(n4);
+}
+\captionof{figure}{$G(x^\ast)$: coppie $c,r$ -- nessun nodo sbilanciato}
+\colsep
+\gsa{
+  \draw[a] (n1)--node[above left,lab]{2,6,6}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,7,4}(n3);
+  \draw[a] (n2)--node[left,lab]{-2,4,4}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5,2}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{1,6,6}(n4);
+  \draw[a] (n3)--node[below,lab]{6,5,2}(n5);
+  \draw[a] (n4)--node[right,lab]{2,8,8}(n5);
+}
+\captionof{figure}{$x^\ast$: terne $c,u,x$ -- costo $64$}
+\end{coppia}
+\end{sol}
+
+\newpage
+% ------------------------------------------------------- SSP1-variante
+\subsection{Esercizio 3\emph{bis} (stessa rete, coppia iniziale $(3,2)$)}
+
+\begin{testo}{Testo}
+Stessa rete dell'Esercizio 3 (etichette $c_{ij},u_{ij}$; $b_1=-10$, $b_2=b_3=b_4=0$, $b_5=+10$),
+stesso pseudoflusso minimale di partenza. Rifare lo svolgimento con l'algoritmo dei cammini
+minimi successivi scegliendo come \textbf{prima} coppia sorgente--destinazione $(s,t)=(3,2)$,
+riportando ad ogni iterazione la coppia di grafi (residuo e flusso corrente) e il costo
+accumulato.
+\end{testo}
+
+% flusso corrente: argomenti x12,x13,x23,x24,x34,x35,x45
+\newcommand{\fsa}[7]{%
+\gsa{
+  \draw[a] (n1)--node[above left,lab]{2,6,#1}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,7,#2}(n3);
+  \draw[a] (n2)--node[left,lab]{-2,4,#3}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5,#4}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{1,6,#5}(n4);
+  \draw[a] (n3)--node[below,lab]{6,5,#6}(n5);
+  \draw[a] (n4)--node[right,lab]{2,8,#7}(n5);
+}}
+
+\begin{sol}
+\paragraph{Passo 0: pseudoflusso minimale.} Invariato rispetto all'Esercizio 3: l'unico arco di
+costo negativo è $(2,3)$, quindi $x_{23}=u_{23}=4$ e tutti gli altri archi a $0$:
+\[
+ e_1=-10,\quad e_2=+4,\quad e_3=-4,\quad e_4=0,\quad e_5=+10,
+ \qquad c(x_0)=-2\cdot4=\mathbf{-8}.
+\]
+La coppia ammissibile non è unica: $e_1<0$ ed $e_3<0$ sono sorgenti, $e_2>0$ ed $e_5>0$ sono
+destinazioni. Qui si sceglie $(s,t)=(3,2)$ (nell'Esercizio 3 si era scelta $(1,2)$).
+
+\begin{center}
+\fsa{0}{0}{4}{0}{0}{0}{0}
+\captionof{figure}{$x_0$: terne $c,u,x$ -- costo finora $-8$;\quad $e=(-10,+4,-4,0,+10)$}
+\end{center}
+
+% ---------------- iterazione 1
+\paragraph{Iterazione 1: $s=3$, $t=2$.} Archi residui di $G(x_0)$ (l'arco $(2,3)$ è saturo,
+quindi compare solo il suo inverso $(3,2)$ di costo $+2$):
+\begin{resid}
+\rd{1}{2}{6}{2} \rd{1}{3}{7}{4} \ri{3}{2}{4}{2} \rd{2}{4}{5}{5}
+\rd{3}{4}{6}{1} \rd{3}{5}{5}{6} \rd{4}{5}{8}{2}
+\end{resid}
+L'unico cammino da $3$ a $2$ è l'arco inverso $3\to2$, $C=+2$.
+$\theta=\min\{|e_3|,e_2,r_{32}\}=\min\{4,4,4\}=4$: si \emph{riduce} il flusso su $(2,3)$,
+$x_{23}:4\to0$. Ora $e=(-10,0,0,0,+10)$ e il costo sale di $\theta C=4\cdot2=8$.
+
+\begin{coppia}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-10$}; \node[lab] at (2.3,2.0) {$+4$};
+  \node[lab] at (2.3,-2.0) {$-4$}; \node[lab] at (5.6,-1.9) {$+10$};
+  \draw[a] (n1)--node[above left,lab]{2,6}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,7}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{1,6}(n4);
+  \draw[a] (n3)--node[below,lab]{6,5}(n5);
+  \draw[a] (n4)--node[right,lab]{2,8}(n5);
+  \draw[hlarc] (n3)--node[left,lab]{2,4}(n2);
+}
+\captionof{figure}{$G(x_0)$: coppie $c,r$ -- cammino $3\to2$, $C=2$, $\theta=4$}
+\colsep
+\fsa{0}{0}{0}{0}{0}{0}{0}
+\captionof{figure}{$x_1$ -- costo finora $-8+8=0$;\quad $e=(-10,0,0,0,+10)$}
+\end{coppia}
+
+% ---------------- iterazione 2
+\paragraph{Iterazione 2: $s=1$, $t=5$.} Con $x_1=0$ il grafo residuo coincide con la rete
+originale:
+\begin{resid}
+\rd{1}{2}{6}{2} \rd{1}{3}{7}{4} \rd{2}{3}{4}{-2} \rd{2}{4}{5}{5}
+\rd{3}{4}{6}{1} \rd{3}{5}{5}{6} \rd{4}{5}{8}{2}
+\end{resid}
+Confronto dei cammini $1\to5$:
+$1\!-\!2\!-\!3\!-\!4\!-\!5=2-2+1+2=\mathbf{3}$, $1\!-\!2\!-\!3\!-\!5=2-2+6=6$,
+$1\!-\!3\!-\!4\!-\!5=4+1+2=7$, $1\!-\!2\!-\!4\!-\!5=2+5+2=9$, $1\!-\!3\!-\!5=4+6=10$.
+Cammino minimo $1\to2\to3\to4\to5$, $C=3$, $\theta=\min\{10,10,\;6,4,6,8\}=4$;
+costo $+\,\theta C=12$.
+
+\begin{coppia}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-10$}; \node[lab] at (5.6,-1.9) {$+10$};
+  \draw[a] (n1)--node[below left,lab]{4,7}(n3);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[a] (n3)--node[below,lab]{6,5}(n5);
+  \draw[hlarc] (n1)--node[above left,lab]{2,6}(n2);
+  \draw[hlarc] (n2)--node[left,lab]{-2,4}(n3);
+  \draw[hlarc] (n3)--node[above=6pt,lab]{1,6}(n4);
+  \draw[hlarc] (n4)--node[right,lab]{2,8}(n5);
+}
+\captionof{figure}{$G(x_1)$ -- cammino $1\to2\to3\to4\to5$, $C=3$, $\theta=4$}
+\colsep
+\fsa{4}{0}{4}{0}{4}{0}{4}
+\captionof{figure}{$x_2$ -- costo finora $0+12=12$;\quad $e=(-6,0,0,0,+6)$}
+\end{coppia}
+
+\end{sol}
+
+\begin{sol}
+
+% ---------------- iterazione 3
+\paragraph{Iterazione 3: $s=1$, $t=5$.} Archi residui di $G(x_2)$:
+\begin{resid}
+\rd{1}{2}{2}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{7}{4} \ri{3}{2}{4}{2}
+\rd{2}{4}{5}{5} \rd{3}{4}{2}{1} \ri{4}{3}{4}{-1} \rd{3}{5}{5}{6}
+\rd{4}{5}{4}{2} \ri{5}{4}{4}{-2}
+\end{resid}
+L'arco $(2,3)$ è ora saturo, quindi il cammino di costo $3$ non è più disponibile:
+$1\!-\!3\!-\!4\!-\!5=\mathbf{7}$ batte $1\!-\!2\!-\!4\!-\!5=9$ e $1\!-\!3\!-\!5=10$.
+$\theta=\min\{6,6,\;r_{13}{=}7,\;r_{34}{=}2,\;r_{45}{=}4\}=2$; costo $+\,\theta C=14$.
+
+\begin{coppia}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-6$}; \node[lab] at (5.6,-1.9) {$+6$};
+  \draw[a,bend left=14] (n1) to node[above=2pt,lab]{2,2}(n2);
+  \draw[ab,bend left=14] (n2) to node[below=2pt,lab]{-2,4}(n1);
+  \draw[ab] (n3)--node[left,lab]{2,4}(n2);
+  \draw[a] (n2)--node[above,lab]{5,5}(n4);
+  \draw[ab,bend left=14] (n4) to node[above=8pt,lab]{-1,4}(n3);
+  \draw[a] (n3)--node[below,lab]{6,5}(n5);
+  \draw[ab,bend left=14] (n5) to node[left=2pt,lab]{-2,4}(n4);
+  \draw[hlarc] (n1)--node[below left,lab]{4,7}(n3);
+  \draw[hlarc,bend left=14] (n3) to node[below=8pt,lab]{1,2}(n4);
+  \draw[hlarc,bend left=14] (n4) to node[right=2pt,lab]{2,4}(n5);
+}
+\captionof{figure}{$G(x_2)$ -- cammino $1\to3\to4\to5$, $C=7$, $\theta=2$}
+\colsep
+\fsa{4}{2}{4}{0}{6}{0}{6}
+\captionof{figure}{$x_3$ -- costo finora $12+14=26$;\quad $e=(-4,0,0,0,+4)$}
+\end{coppia}
+
+% ---------------- iterazione 4
+\paragraph{Iterazione 4: $s=1$, $t=5$.} Archi residui di $G(x_3)$ (ora $(3,4)$ è saturo):
+\begin{resid}
+\rd{1}{2}{2}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{5}{4} \ri{3}{1}{2}{-4}
+\ri{3}{2}{4}{2} \rd{2}{4}{5}{5} \ri{4}{3}{6}{-1} \rd{3}{5}{5}{6}
+\rd{4}{5}{2}{2} \ri{5}{4}{6}{-2}
+\end{resid}
+Restano solo $1\!-\!2\!-\!4\!-\!5=2+5+2=\mathbf{9}$ e $1\!-\!3\!-\!5=4+6=10$.
+$\theta=\min\{4,4,\;r_{12}{=}2,\;r_{24}{=}5,\;r_{45}{=}2\}=2$; costo $+\,\theta C=18$.
+
+\begin{coppia}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-4$}; \node[lab] at (5.6,-1.9) {$+4$};
+  \draw[a,bend left=14] (n1) to node[below=2pt,lab]{4,5}(n3);
+  \draw[ab,bend left=14] (n3) to node[above=2pt,lab]{-4,2}(n1);
+  \draw[ab] (n3)--node[left,lab]{2,4}(n2);
+  \draw[ab] (n4)--node[above=6pt,lab]{-1,6}(n3);
+  \draw[a] (n3)--node[below,lab]{6,5}(n5);
+  \draw[ab,bend left=14] (n2) to node[above=8pt,lab]{-2,4}(n1);
+  \draw[ab,bend left=14] (n5) to node[left=2pt,lab]{-2,6}(n4);
+  \draw[hlarc,bend left=14] (n1) to node[above=8pt,lab]{2,2}(n2);
+  \draw[hlarc] (n2)--node[above,lab]{5,5}(n4);
+  \draw[hlarc,bend left=14] (n4) to node[right=2pt,lab]{2,2}(n5);
+}
+\captionof{figure}{$G(x_3)$ -- cammino $1\to2\to4\to5$, $C=9$, $\theta=2$}
+\colsep
+\fsa{6}{2}{4}{2}{6}{0}{8}
+\captionof{figure}{$x_4$ -- costo finora $26+18=44$;\quad $e=(-2,0,0,0,+2)$}
+\end{coppia}
+
+% ---------------- iterazione 5
+\paragraph{Iterazione 5: $s=1$, $t=5$.} In $G(x_4)$ gli archi $(1,2)$ e $(4,5)$ sono saturi,
+quindi l'unico cammino residuo da $1$ a $5$ è $1\to3\to5$:
+\begin{resid}
+\ri{2}{1}{6}{-2} \rd{1}{3}{5}{4} \ri{3}{1}{2}{-4} \ri{3}{2}{4}{2}
+\rd{2}{4}{3}{5} \ri{4}{2}{2}{-5} \ri{4}{3}{6}{-1} \rd{3}{5}{5}{6}
+\ri{5}{4}{8}{-2}
+\end{resid}
+$C=4+6=10$, $\theta=\min\{2,2,\;5,5\}=2$; costo $+\,\theta C=20$ ed
+$e=(0,0,0,0,0)$ $\Rightarrow$ \textbf{STOP}.
+
+\begin{coppia}
+\gsa{
+  \node[lab] at (-0.9,0.6) {$-2$}; \node[lab] at (5.6,-1.9) {$+2$};
+  \draw[ab] (n2)--node[above left,lab]{-2,6}(n1);
+  \draw[ab,bend left=14] (n3) to node[above=2pt,lab]{-4,2}(n1);
+  \draw[ab] (n3)--node[left,lab]{2,4}(n2);
+  \draw[a,bend left=14] (n2) to node[above=2pt,lab]{5,3}(n4);
+  \draw[ab,bend left=14] (n4) to node[below=2pt,lab]{-5,2}(n2);
+  \draw[ab] (n4)--node[above=6pt,lab]{-1,6}(n3);
+  \draw[ab] (n5)--node[right,lab]{-2,8}(n4);
+  \draw[hlarc,bend left=14] (n1) to node[below=8pt,lab]{4,5}(n3);
+  \draw[hlarc,bend left=14] (n3) to node[below,lab]{6,5}(n5);
+}
+\captionof{figure}{$G(x_4)$ -- cammino $1\to3\to5$, $C=10$, $\theta=2$}
+\colsep
+\fsa{6}{4}{4}{2}{6}{2}{8}
+\captionof{figure}{$x_5=x^\ast$ -- costo finale $44+20=\mathbf{64}$;\quad $e=(0,0,0,0,0)$}
+\end{coppia}
+
+\begin{center}\small
+\begin{tabular}{@{}lccccccc|cc@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & $(3,5)$ & $(4,5)$ & $e=(e_1,\dots,e_5)$ & costo\\
+$c_{ij},u_{ij}$ & 2,6 & 4,7 & -2,4 & 5,5 & 1,6 & 6,5 & 2,8 & & \\
+\midrule
+$x_0$ & 0 & 0 & 4 & 0 & 0 & 0 & 0 & $(-10,+4,-4,0,+10)$ & $-8$\\
+$x_1$ & 0 & 0 & 0 & 0 & 0 & 0 & 0 & $(-10,0,0,0,+10)$ & $0$\\
+$x_2$ & 4 & 0 & 4 & 0 & 4 & 0 & 4 & $(-6,0,0,0,+6)$ & $12$\\
+$x_3$ & 4 & 2 & 4 & 0 & 6 & 0 & 6 & $(-4,0,0,0,+4)$ & $26$\\
+$x_4$ & 6 & 2 & 4 & 2 & 6 & 0 & 8 & $(-2,0,0,0,+2)$ & $44$\\
+$x_5=x^\ast$ & 6 & 4 & 4 & 2 & 6 & 2 & 8 & $(0,0,0,0,0)$ & $\mathbf{64}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Ad ogni passo $c(x_{k+1})=c(x_k)+\theta\cdot C$, e verifica diretta sull'ottimo:
+\[
+ c(x^\ast)=2\cdot6+4\cdot4+(-2)\cdot4+5\cdot2+1\cdot6+6\cdot2+2\cdot8
+ =12+16-8+10+6+12+16=\mathbf{64}.
+\]
+
+\begin{center}
+\gsa{
+  \draw[ab] (n2)--node[above left,lab]{-2,6}(n1);
+  \draw[a,bend left=14] (n1) to node[below=2pt,lab]{4,3}(n3);
+  \draw[ab,bend left=14] (n3) to node[above=2pt,lab]{-4,4}(n1);
+  \draw[ab] (n3)--node[left,lab]{2,4}(n2);
+  \draw[a,bend left=14] (n2) to node[above=2pt,lab]{5,3}(n4);
+  \draw[ab,bend left=14] (n4) to node[below=2pt,lab]{-5,2}(n2);
+  \draw[ab] (n4)--node[above=6pt,lab]{-1,6}(n3);
+  \draw[a,bend left=14] (n3) to node[below,lab]{6,3}(n5);
+  \draw[ab,bend left=14] (n5) to node[above=2pt,lab]{-6,2}(n3);
+  \draw[ab] (n5)--node[right,lab]{-2,8}(n4);
+}
+\captionof{figure}{$G(x^\ast)$: coppie $c,r$ -- nessun nodo sbilanciato, nessun ciclo negativo}
+\end{center}
+
+\paragraph{Osservazione.} La scelta della coppia iniziale cambia il numero di iterazioni
+($5$ invece di $4$) e i flussi intermedi, ma non l'ottimo: $x^\ast$ e il costo $64$ coincidono
+con quelli dell'Esercizio 3.
+\end{sol}
+
+\newpage
+% --------------------------------------------------------------- SSP2
+\subsection{Esercizio 4 (MCF, cammini minimi successivi, due sorgenti)}
+
+\begin{testo}{Testo}
+Rete con archi etichettati $c_{ij},u_{ij}$ e bilanciamenti $b_1=-5$, $b_2=-5$, $b_3=+4$,
+$b_4=+6$. Risolvere con i cammini minimi successivi. Si osservi che le sorgenti sono due.
+\end{testo}
+
+\newcommand{\gsb}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,1.4) {1};
+  \node[vtx] (n2) at (0,-1.4) {2};
+  \node[vtx] (n3) at (3.0,0) {3};
+  \node[vtx] (n4) at (6.0,0) {4};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gsb{
+  \node[lab] at (-1.0,1.4) {$-5$}; \node[lab] at (-1.0,-1.4) {$-5$};
+  \node[lab] at (3.0,0.9) {$+4$};  \node[lab] at (7.0,0) {$+6$};
+  \draw[a] (n1)--node[above right,lab]{3,4}(n3);
+  \draw[a,bend left=32] (n1) to node[above,lab]{7,5}(n4);
+  \draw[a] (n2)--node[below right,lab]{-1,3}(n3);
+  \draw[a,bend right=32] (n2) to node[below,lab]{4,4}(n4);
+  \draw[a] (n3)--node[below,lab]{2,5}(n4);
+}
+\end{center}
+
+\begin{sol}
+\paragraph{Passo 0: pseudoflusso minimale.} $c_{23}=-1<0\Rightarrow x_{23}=u_{23}=3$;
+tutti gli altri archi a $0$. Sbilanciamenti:
+\[
+ e_1=-5,\quad e_2=-5+3=-2,\quad e_3=+4-3=+1,\quad e_4=+6 .
+\]
+
+\paragraph{Iterazione 1.} $s=1$, $t=3$; cammino $1\to3$, $C=3$.
+$\theta=\min\{5,1,4\}=1$ (limitato da $e_3$). $x_{13}=1$, $e=(-4,-2,0,+6)$.
+
+\paragraph{Iterazione 2.} $s=1$, $t=4$. Archi residui:
+\begin{resid}
+\rd{1}{3}{3}{3} \ri{3}{1}{1}{-3} \rd{1}{4}{5}{7} \ri{3}{2}{3}{1}
+\rd{2}{4}{4}{4} \rd{3}{4}{5}{2}
+\end{resid}
+Cammino minimo $1\to3\to4$, $C=3+2=5$ (contro $1\to4$, $C=7$).
+$\theta=\min\{4,6,3,5\}=3$. Ora $x_{13}=4$, $x_{34}=3$, $e=(-1,-2,0,+3)$.
+
+\paragraph{Iterazione 3.} $s=1$, $t=4$. L'arco $(1,3)$ è saturo, quindi da $1$ resta solo
+$1\to4$ con $C=7$. $\theta=\min\{1,3,5\}=1$: $x_{14}=1$, $e=(0,-2,0,+2)$.
+
+\paragraph{Iterazione 4.} $s=2$, $t=4$. Cammini possibili: $2\to4$ con $C=4$, oppure
+$2\to3\to4$ — ma $(2,3)$ è già saturo ($x_{23}=3=u_{23}$), quindi l'unica alternativa
+passerebbe da archi inversi con costo maggiore. Si sceglie $2\to4$, $C=4$,
+$\theta=\min\{2,2,4\}=2$: $x_{24}=2$ ed $e=(0,0,0,0)$: \textbf{STOP}.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccc|l@{}}
+\toprule
+arco & $(1,3)$ & $(1,4)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & $e=(e_1,e_2,e_3,e_4)$\\
+$c_{ij},u_{ij}$ & 3,4 & 7,5 & -1,3 & 4,4 & 2,5 & \\
+\midrule
+$x_0$ & 0 & 0 & 3 & 0 & 0 & $(-5,-2,+1,+6)$\\
+$x_1$ & 1 & 0 & 3 & 0 & 0 & $(-4,-2,0,+6)$\\
+$x_2$ & 4 & 0 & 3 & 0 & 3 & $(-1,-2,0,+3)$\\
+$x_3$ & 4 & 1 & 3 & 0 & 3 & $(0,-2,0,+2)$\\
+$x_4=x^\ast$ & 4 & 1 & 3 & 2 & 3 & $(0,0,0,0)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\[
+ c(x^\ast)=3\cdot4+7\cdot1+(-1)\cdot3+4\cdot2+2\cdot3=12+7-3+8+6=\mathbf{30}.
+\]
+
+\begin{coppia}
+\gsb{
+  \draw[ab] (n3)--node[above right,lab]{-3,4}(n1);
+  \draw[a,bend left=32] (n1) to node[above,lab]{7,4}(n4);
+  \draw[ab,bend left=18] (n4) to node[above=2pt,lab]{-7,1}(n1);
+  \draw[ab] (n3)--node[below right,lab]{1,3}(n2);
+  \draw[a,bend right=32] (n2) to node[below,lab]{4,2}(n4);
+  \draw[ab,bend right=18] (n4) to node[below=2pt,lab]{-4,2}(n2);
+  \draw[a,bend left=16] (n3) to node[above,lab]{2,2}(n4);
+  \draw[ab,bend left=16] (n4) to node[below,lab]{-2,3}(n3);
+}
+\captionof{figure}{$G(x^\ast)$: coppie $c,r$ -- tutti gli $e_i$ nulli}
+\colsep
+\gsb{
+  \draw[a] (n1)--node[above right,lab]{3,4,4}(n3);
+  \draw[a,bend left=32] (n1) to node[above,lab]{7,5,1}(n4);
+  \draw[a] (n2)--node[below right,lab]{-1,3,3}(n3);
+  \draw[a,bend right=32] (n2) to node[below,lab]{4,4,2}(n4);
+  \draw[a] (n3)--node[below,lab]{2,5,3}(n4);
+}
+\captionof{figure}{$x^\ast$: terne $c,u,x$ -- costo $30$}
+\end{coppia}
+\end{sol}
+
+\newpage
+% =====================================================================
+\section{Cancellazione dei cicli}
+
+% ---------------------------------------------------------------- CC1
+\subsection{Esercizio 5 (MCF, cancellazione dei cicli)}
+
+\begin{testo}{Testo}
+Rete con archi etichettati $u_{ij},c_{ij}$ (\emph{attenzione all'ordine}) e bilanciamenti
+$b_1=-9$, $b_2=b_3=0$, $b_4=+4$, $b_5=+5$. Determinare un flusso ammissibile risolvendo un
+problema di flusso massimo su rete ausiliaria, poi ottimizzarlo con l'algoritmo di
+cancellazione dei cicli.
+\end{testo}
+
+\newcommand{\gca}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.4,1.5) {2};
+  \node[vtx] (n3) at (2.4,-1.5) {3};
+  \node[vtx] (n4) at (5.0,1.5) {4};
+  \node[vtx] (n5) at (5.0,-1.5) {5};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gca{
+  \node[lab] at (-0.8,0.6) {$-9$};
+  \node[lab] at (5.9,1.5) {$+4$}; \node[lab] at (5.9,-1.5) {$+5$};
+  \draw[a] (n1)--node[above left,lab]{5,2}(n2);
+  \draw[a] (n1)--node[below left,lab]{6,5}(n3);
+  \draw[a] (n2)--node[left,lab]{4,1}(n3);
+  \draw[a] (n2)--node[above,lab]{4,7}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{5,2}(n4);
+  \draw[a] (n3)--node[below,lab]{4,4}(n5);
+  \draw[a] (n4)--node[right,lab]{5,-2}(n5);
+}
+\end{center}
+
+\begin{sol}
+\paragraph{Passo 1: flusso ammissibile.} Si aggiungono $s$ e $t$ con archi
+$s\to1$ (cap.\ $9$), $4\to t$ (cap.\ $4$), $5\to t$ (cap.\ $5$); capacità da saturare $=9$.
+Con Edmonds--Karp: $s\!-\!1\!-\!2\!-\!4\!-\!t$ con $\theta=4$;
+$s\!-\!1\!-\!3\!-\!5\!-\!t$ con $\theta=4$; $s\!-\!1\!-\!3\!-\!4\!-\!5\!-\!t$ con $\theta=1$.
+Valore $9$: tutti gli archi fittizi sono saturi, quindi il problema è ammissibile e
+\[
+ x_0:\quad x_{12}=4,\; x_{13}=5,\; x_{23}=0,\; x_{24}=4,\; x_{34}=1,\; x_{35}=4,\; x_{45}=1,
+\]
+con costo $4\cdot2+5\cdot5+4\cdot7+1\cdot2+4\cdot4+1\cdot(-2)=8+25+28+2+16-2=77$.
+
+\paragraph{Iterazione 1.} Archi residui di $G(x_0)$ (coppie $r,c$):
+\begin{resid}
+\rd{1}{2}{1}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{1}{5} \ri{3}{1}{5}{-5}
+\rd{2}{3}{4}{1} \ri{4}{2}{4}{-7} \rd{3}{4}{4}{2} \ri{4}{3}{1}{-2}
+\ri{5}{3}{4}{-4} \rd{4}{5}{4}{-2} \ri{5}{4}{1}{2}
+\end{resid}
+Ciclo negativo: $3\to4\to5\to3$ di costo $2+(-2)+(-4)=-4$
+($5\to3$ è l'inverso di $(3,5)$). Capacità: $\theta=\min\{4,4,4\}=4$.
+Aggiornamento: $x_{34}:1\to5$, $x_{45}:1\to5$, $x_{35}:4\to0$.
+Nuovo costo $77-4\cdot4=61$.
+
+\paragraph{Iterazione 2.} Archi residui di $G(x_1)$:
+\begin{resid}
+\rd{1}{2}{1}{2} \ri{2}{1}{4}{-2} \rd{1}{3}{1}{5} \ri{3}{1}{5}{-5}
+\rd{2}{3}{4}{1} \ri{4}{2}{4}{-7} \ri{4}{3}{5}{-2} \rd{3}{5}{4}{4} \ri{5}{4}{5}{2}
+\end{resid}
+Ciclo negativo: $1\to2\to3\to1$ di costo $2+1+(-5)=-2$
+($3\to1$ è l'inverso di $(1,3)$). $\theta=\min\{1,4,5\}=1$.
+Aggiornamento: $x_{12}:4\to5$, $x_{23}:0\to1$, $x_{13}:5\to4$.
+Nuovo costo $61-1\cdot2=59$.
+
+\paragraph{Iterazione 3: verifica di ottimalità.} In $G(x_2)$ gli archi residui sono
+\begin{resid}
+\ri{2}{1}{5}{-2} \rd{1}{3}{2}{5} \ri{3}{1}{4}{-5} \rd{2}{3}{3}{1}
+\ri{3}{2}{1}{-1} \ri{4}{2}{4}{-7} \ri{4}{3}{5}{-2} \rd{3}{5}{4}{4} \ri{5}{4}{5}{2}
+\end{resid}
+($ (1,2)$ è saturo, quindi il ciclo precedente non è più percorribile). I cicli ancora presenti
+hanno costo non negativo, ad esempio
+\[
+ 1\to3\to2\to1:\;5-1-2=+2,\qquad 3\to5\to4\to3:\;4+2-2=+4 ,
+\]
+e non esistono altri cicli orientati. Nessun ciclo negativo $\Rightarrow$ $x_2=x^\ast$ è
+\textbf{ottimo}.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccccc|c@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & $(3,5)$ & $(4,5)$ & costo\\
+$u_{ij},c_{ij}$ & 5,2 & 6,5 & 4,1 & 4,7 & 5,2 & 4,4 & 5,-2 & \\
+\midrule
+$x_0$ & 4 & 5 & 0 & 4 & 1 & 4 & 1 & $77$\\
+$x_1$ & 4 & 5 & 0 & 4 & 5 & 0 & 5 & $61$\\
+$x_2=x^\ast$ & 5 & 4 & 1 & 4 & 5 & 0 & 5 & $\mathbf{59}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\[
+ c(x^\ast)=5\cdot2+4\cdot5+1\cdot1+4\cdot7+5\cdot2+0\cdot4+5\cdot(-2)
+ =10+20+1+28+10+0-10=\mathbf{59}.
+\]
+
+\begin{coppia}
+\gca{
+  \draw[ab] (n2)--node[above left,lab]{5,-2}(n1);
+  \draw[a,bend left=14] (n1) to node[below=3pt,lab]{2,5}(n3);
+  \draw[ab,bend left=14] (n3) to node[above=3pt,lab]{4,-5}(n1);
+  \draw[a,bend left=14] (n2) to node[left,lab]{3,1}(n3);
+  \draw[ab,bend left=14] (n3) to node[right,lab]{1,-1}(n2);
+  \draw[ab] (n4)--node[above,lab]{4,-7}(n2);
+  \draw[ab] (n4)--node[above=6pt,lab]{5,-2}(n3);
+  \draw[a] (n3)--node[below,lab]{4,4}(n5);
+  \draw[ab] (n5)--node[right,lab]{5,2}(n4);
+}
+\captionof{figure}{$G(x^\ast)$: coppie $r,c$ -- nessun ciclo negativo}
+\colsep
+\gca{
+  \draw[a] (n1)--node[above left,lab]{5,2,5}(n2);
+  \draw[a] (n1)--node[below left,lab]{6,5,4}(n3);
+  \draw[a] (n2)--node[left,lab]{4,1,1}(n3);
+  \draw[a] (n2)--node[above,lab]{4,7,4}(n4);
+  \draw[a] (n3)--node[above=6pt,lab]{5,2,5}(n4);
+  \draw[a] (n3)--node[below,lab]{4,4,0}(n5);
+  \draw[a] (n4)--node[right,lab]{5,-2,5}(n5);
+}
+\captionof{figure}{$x^\ast$: terne $u,c,x$ -- costo $59$}
+\end{coppia}
+\end{sol}
+
+\newpage
+% ---------------------------------------------------------------- CC2
+\subsection{Esercizio 6 (MCF, cancellazione dei cicli)}
+
+\begin{testo}{Testo}
+Rete con archi etichettati $u_{ij},c_{ij}$ e bilanciamenti $b_1=-8$, $b_2=b_3=0$, $b_4=+8$.
+Trovare un flusso ammissibile con Edmonds--Karp sulla rete ausiliaria e ottimizzarlo per
+cancellazione dei cicli, indicando ogni ciclo negativo, il suo costo e $\theta$.
+\end{testo}
+
+\newcommand{\gcb}[1]{%
+\begin{tikzpicture}[scale=0.84,every node/.style={transform shape}]
+  \node[vtx] (n1) at (0,0) {1};
+  \node[vtx] (n2) at (2.6,1.5) {2};
+  \node[vtx] (n3) at (2.6,-1.5) {3};
+  \node[vtx] (n4) at (5.2,0) {4};
+  #1
+\end{tikzpicture}}
+
+\begin{center}
+\gcb{
+  \node[lab] at (-0.9,0.6) {$-8$}; \node[lab] at (6.1,0.6) {$+8$};
+  \draw[a] (n1)--node[above left,lab]{6,4}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,6}(n3);
+  \draw[a] (n2)--node[left,lab]{4,-1}(n3);
+  \draw[a] (n2)--node[above right,lab]{5,3}(n4);
+  \draw[a] (n3)--node[below right,lab]{8,2}(n4);
+}
+\end{center}
+
+\begin{sol}
+\paragraph{Passo 1: flusso ammissibile.} Rete ausiliaria con $s\to1$ (cap.\ $8$) e
+$4\to t$ (cap.\ $8$). Edmonds--Karp: $s\!-\!1\!-\!2\!-\!4\!-\!t$ con $\theta=5$ (satura $(2,4)$),
+poi $s\!-\!1\!-\!3\!-\!4\!-\!t$ con $\theta=3$. Valore $8$: archi fittizi saturi, quindi
+\[
+ x_0:\quad x_{12}=5,\; x_{13}=3,\; x_{23}=0,\; x_{24}=5,\; x_{34}=3,
+\]
+di costo $5\cdot4+3\cdot6+0\cdot(-1)+5\cdot3+3\cdot2=20+18+15+6=59$.
+Il flusso è ammissibile ma chiaramente non ottimo: usa l'arco caro $(1,3)$ e ignora
+l'arco di costo negativo $(2,3)$.
+
+\paragraph{Iterazione 1.} Archi residui di $G(x_0)$ (coppie $r,c$):
+\begin{resid}
+\rd{1}{2}{1}{4} \ri{2}{1}{5}{-4} \rd{1}{3}{1}{6} \ri{3}{1}{3}{-6}
+\rd{2}{3}{4}{-1} \ri{4}{2}{5}{-3} \rd{3}{4}{5}{2} \ri{4}{3}{3}{-2}
+\end{resid}
+Ciclo negativo: $1\to2\to3\to1$ di costo $4+(-1)+(-6)=-3$.
+$\theta=\min\{r_{12},r_{23},r_{31}\}=\min\{1,4,3\}=1$.
+Aggiornamento: $x_{12}:5\to6$, $x_{23}:0\to1$, $x_{13}:3\to2$.
+Nuovo costo $59-1\cdot3=56$.
+
+\paragraph{Iterazione 2.} Archi residui di $G(x_1)$:
+\begin{resid}
+\ri{2}{1}{6}{-4} \rd{1}{3}{2}{6} \ri{3}{1}{2}{-6} \rd{2}{3}{3}{-1}
+\ri{3}{2}{1}{1} \ri{4}{2}{5}{-3} \rd{3}{4}{5}{2} \ri{4}{3}{3}{-2}
+\end{resid}
+Ora $(1,2)$ è saturo, quindi il ciclo precedente non è più percorribile. Resta però il ciclo
+$2\to3\to4\to2$ di costo $-1+2+(-3)=-2$ ($4\to2$ è l'inverso di $(2,4)$).
+$\theta=\min\{r_{23},r_{34},r_{42}\}=\min\{3,5,5\}=3$.
+Aggiornamento: $x_{23}:1\to4$, $x_{34}:3\to6$, $x_{24}:5\to2$.
+Nuovo costo $56-3\cdot2=50$.
+
+\paragraph{Iterazione 3: verifica di ottimalità.} In $G(x_2)$ gli archi residui sono
+\begin{resid}
+\ri{2}{1}{6}{-4} \rd{1}{3}{2}{6} \ri{3}{1}{2}{-6} \ri{3}{2}{4}{1}
+\rd{2}{4}{3}{3} \ri{4}{2}{2}{-3} \rd{3}{4}{2}{2} \ri{4}{3}{6}{-2}
+\end{resid}
+($(2,3)$ è saturo). I cicli orientati residui hanno tutti costo non negativo:
+\[
+ 1\to3\to2\to1:\;6+1-4=+3,\qquad 2\to4\to3\to2:\;3-2+1=+2,
+\]
+e non ne esistono altri: l'arco $(2,3)$ è saturo (manca $2\to3$ in avanti) e anche
+$(1,2)$ lo è, quindi nessun ciclo può richiudersi su $2$ passando da $1$.
+Nessun ciclo negativo $\Rightarrow$ $x_2=x^\ast$ è \textbf{ottimo}.
+
+\begin{center}\small
+\begin{tabular}{@{}lccccc|c@{}}
+\toprule
+arco & $(1,2)$ & $(1,3)$ & $(2,3)$ & $(2,4)$ & $(3,4)$ & costo\\
+$u_{ij},c_{ij}$ & 6,4 & 4,6 & 4,-1 & 5,3 & 8,2 & \\
+\midrule
+$x_0$ & 5 & 3 & 0 & 5 & 3 & $59$\\
+$x_1$ & 6 & 2 & 1 & 5 & 3 & $56$\\
+$x_2=x^\ast$ & 6 & 2 & 4 & 2 & 6 & $\mathbf{50}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\[
+ c(x^\ast)=6\cdot4+2\cdot6+4\cdot(-1)+2\cdot3+6\cdot2=24+12-4+6+12=\mathbf{50}.
+\]
+
+\begin{coppia}
+\gcb{
+  \draw[ab] (n2)--node[above left,lab]{6,-4}(n1);
+  \draw[a,bend left=14] (n1) to node[below=3pt,lab]{2,6}(n3);
+  \draw[ab,bend left=14] (n3) to node[above=3pt,lab]{2,-6}(n1);
+  \draw[ab] (n3)--node[left,lab]{4,1}(n2);
+  \draw[a,bend left=14] (n2) to node[above right,lab]{3,3}(n4);
+  \draw[ab,bend left=14] (n4) to node[below=3pt,lab]{2,-3}(n2);
+  \draw[a,bend left=14] (n3) to node[below right,lab]{2,2}(n4);
+  \draw[ab,bend left=14] (n4) to node[above=3pt,lab]{6,-2}(n3);
+}
+\captionof{figure}{$G(x^\ast)$: coppie $r,c$ -- nessun ciclo negativo}
+\colsep
+\gcb{
+  \draw[a] (n1)--node[above left,lab]{6,4,6}(n2);
+  \draw[a] (n1)--node[below left,lab]{4,6,2}(n3);
+  \draw[a] (n2)--node[left,lab]{4,-1,4}(n3);
+  \draw[a] (n2)--node[above right,lab]{5,3,2}(n4);
+  \draw[a] (n3)--node[below right,lab]{8,2,6}(n4);
+}
+\captionof{figure}{$x^\ast$: terne $u,c,x$ -- costo $50$}
+\end{coppia}
+\end{sol}
+
+% =====================================================================
+\newpage
+\section*{Riepilogo dei risultati}
+\addcontentsline{toc}{section}{Riepilogo dei risultati}
+
+\begin{center}
+\begin{tabular}{@{}clll@{}}
+\toprule
+Es. & Algoritmo & Iterazioni & Risultato\\
+\midrule
+1 & Edmonds--Karp & 3 cammini aumentanti & $v^\ast=15$, taglio $(\{1,\dots,5\},\{6\})$\\
+2 & Edmonds--Karp & 4 cammini aumentanti & $v^\ast=14$, taglio $(\{1\},\{2,3,4,5\})$\\
+3 & Cammini minimi successivi & 4 cammini & $c(x^\ast)=64$\\
+4 & Cammini minimi successivi & 4 cammini & $c(x^\ast)=30$\\
+5 & Cancellazione dei cicli & 2 cicli negativi & $77\to61\to59$\\
+6 & Cancellazione dei cicli & 2 cicli negativi & $59\to56\to50$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{4mm}
+\begin{tcolorbox}[colback=neg!7,colframe=neg!60!black,title=Promemoria finale]
+\begin{itemize}[nosep]
+  \item Controllare \emph{sempre} l'ordine della coppia sull'arco: $(u,c)$ oppure $(c,u)$.
+  \item In SSP lo pseudoflusso iniziale è \emph{minimale}: $x_{ij}=u_{ij}$ per gli archi con $c_{ij}<0$.
+  \item Con la convenzione del docente $e_i<0$ indica una sorgente: si aumenta da un nodo rosso
+        verso un nodo blu.
+  \item Nella cancellazione dei cicli il flusso \emph{diminuisce} sugli archi inversi del ciclo.
+  \item Concludere sempre con: valore ottimo, $x^\ast$ arco per arco e (per il flusso massimo)
+        il taglio di capacità minima con la verifica $v^\ast=u(S,T)$.
+\end{itemize}
+\end{tcolorbox}
+
+\end{document}

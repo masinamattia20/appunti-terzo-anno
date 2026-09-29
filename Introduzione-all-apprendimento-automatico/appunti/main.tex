@@ -145,46 +145,175 @@ Rientrano in questo ambito compiti percettivi e decisionali quali la \textbf{cla
 
 \noindent L'obiettivo primario di un modello addestrato è formulare \textbf{predizioni su nuovi dati} non inclusi nel training set (generalizzazione), collocando nuovi input nella corretta classe discreta o stimandone il valore continuo atteso. I modelli possono inoltre essere impiegati per estrarre conoscenza intrinseca dalla struttura dei dati, identificando raggruppamenti naturali (\textit{cluster}) o correlazioni latenti. %[cite: 2]
 
-\subsection{Tassonomia dei Compiti e Rappresentazione dei Dati}
+\subsection{Rappresentazione dei Dati: Il Ruolo Fondamentale delle Feature}
 
-\noindent I compiti di apprendimento si dividono in tre paradigmi principali in base alla natura dei dati disponibili:
+\noindent Nel paradigma dell'apprendimento automatico, si definisce \textbf{feature} (o attributo/caratteristica) qualsiasi informazione, grandezza misurabile o proprietà relativa a un dato utile a descriverne gli aspetti salienti. %
+Le feature costituiscono l'input effettivo fornito al modello di apprendimento induttivo. %
+
+\noindent L'efficacia, l'accuratezza predittiva e la stabilità dell'apprendimento sono estremamente sensibili alla scelta e alla qualità delle feature adottate. %
+Tuttavia, individuare e isolare feature informative è un compito complesso che richiede storicamente una solida \textbf{conoscenza del dominio applicativo} (\textit{domain knowledge}). %
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    \multicolumn{3}{c}{\textbf{Esemplificazione di Feature per Dominio Applicativo}} \\
+    \textbf{Diagnosi Medica} & \textbf{Profilazione Utente} & \textbf{Previsioni Meteorologiche} \\
+    \midrule
+    Sintomi soggettivi & Dati anagrafici & Temperatura al suolo e in quota \\ %
+    Condizioni generali del paziente & Interessi e preferenze personali & Umidità relativa \\ %
+    Cartella clinica pregressa & Community e reti sociali & Pressione barometrica \\ %
+    Esiti di esami e referti strumentali & Stile di vita e abitudini & Intensità del vento, precipitazioni, ecc. \\ %
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{Evoluzione della Rappresentazione: Dal Feature Engineering al Deep Learning}
+\noindent Il modo in cui le feature vengono ricavate ed elaborate definisce l'evoluzione storica dell'Intelligenza Artificiale (come formalizzato nel testo di riferimento di Goodfellow, Bengio e Courville): %
+
+\begin{enumerate}
+    \item \textbf{Sistemi basati sulla conoscenza / su regole (\textit{Rule-based / Knowledge-based systems})}:
+    \begin{itemize}
+        \item \textit{Approccio}: ci si rivolge a un esperto di dominio, si analizza come risolve formalmente un problema e si tenta di replicare la sua competenza tramite regole logiche deduttive codificate manualmente (\textit{hand-designed program}). %[cite: 2]
+        \item \textit{Flusso}: $\text{Input} \longrightarrow \text{Programma ad hoc} \longrightarrow \text{Output}$. %[cite: 2]
+        \item \textit{Apprendimento}: totalmente assente; il sistema non impara dall'esperienza, ma esegue regole statiche predeterminate. %[cite: 2]
+    \end{itemize}
+
+    \item \textbf{Machine Learning classico (\textit{Traditional Machine Learning})}:
+    \begin{itemize}
+        \item \textit{Approccio}: si consulta l'esperto umano per comprendere non le regole, ma quali siano le proprietà rilevanti dei dati per discriminare il fenomeno. L'esperto progetta ed estrae manualmente le feature (\textit{feature engineering / hand-designed features}), lasciando alla macchina il solo compito di apprendere la funzione di mappatura verso l'output (\textit{mapping from features}). %[cite: 2]
+        \item \textit{Flusso}: $\text{Input} \longrightarrow \text{Feature ingegnerizzate a mano} \longrightarrow \boxed{\text{Mappatura appresa}} \longrightarrow \text{Output}$. %[cite: 2]
+        \item \textit{Caratteristica}: si impiegano tradizionalmente algoritmi analitici, efficienti e ben compresi (come modelli lineari o alberi di decisione). %[cite: 2]
+    \end{itemize}
+
+    \item \textbf{Apprendimento delle Rappresentazioni (\textit{Representation Learning})}:
+    \begin{itemize}
+        \item \textit{Approccio}: il sistema mitiga il collo di bottiglia dell'ingegnerizzazione manuale imparando in modo supervisionato o non supervisionato a mappare i dati grezzi in una rappresentazione intermedia di feature utili alla classificazione o regressione finale. %[cite: 2]
+        \item \textit{Flusso}: $\text{Input} \longrightarrow \boxed{\text{Feature apprese}} \longrightarrow \boxed{\text{Mappatura appresa}} \longrightarrow \text{Output}$. %[cite: 2]
+        \item \textit{Esempio cardine}: gli \textit{autoencoder}, capaci di ricavare autonomamente spazi latenti non lineari e compatti a partire dall'input. %[cite: 2]
+    \end{itemize}
+
+    \item \textbf{Apprendimento Profondo (\textit{Deep Learning})}:
+    \begin{itemize}
+        \item \textit{Approccio}: l'obiettivo programmatico è superare del tutto la dipendenza dall'esperto umano (\textit{«get rid of the expert»}) nella selezione delle feature. %[cite: 2]
+        Si forniscono direttamente alla macchina i dati grezzi (\textit{raw data}), delegando al modello l'onere di sintetizzare rappresentazioni interne (\textit{internal representations}) ottimali per il compito. %[cite: 2]
+        \item \textit{Architettura}: è implementato tramite Reti Neurali Artificiali (\textit{NN}) dotate di molteplici strati nascosti (\textit{hidden layers}): %[cite: 2]
+        $$\text{Input Layer} \longrightarrow \text{Hidden Layer 1} \longrightarrow \text{Hidden Layer 2} \longrightarrow \dots \longrightarrow \text{Output Layer}$$ %[cite: 2]
+        Ciascun livello nascosto calcola progressivamente nuove feature a partire da quelle elaborate dallo strato precedente, costruendo gerarchie di astrazione crescente (dai dettagli elementari di basso livello a concetti semantici complessi). %[cite: 2]
+        \item \textit{Flusso}: $\text{Input} \longrightarrow \boxed{\text{Feature semplici}} \longrightarrow \boxed{\text{Feature complesse}} \longrightarrow \boxed{\text{Mappatura}} \longrightarrow \text{Output}$. %[cite: 2]
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Relazioni Insiemistiche tra le Discipline}
+I paradigmi sopra descritti formano una gerarchia di sottoinsiemi concentrici: %[cite: 2]
+$$\text{Artificial Intelligence} \;\supset\; \text{Machine Learning} \;\supset\; \text{Representation Learning} \;\supset\; \text{Deep Learning}$$ %[cite: 2]
+A ciascun livello di inclusione corrispondono modelli e metodologie caratteristiche: %[cite: 2]
 \begin{itemize}
-    \item \textbf{Apprendimento Supervisionato (\textit{Supervised Learning})}: il dataset fornisce coppie input-output $\langle \mathbf{x}, y \rangle$. Se l'output $y$ assume valori discreti si ha un problema di \textbf{classificazione}; se assume valori continui si ha un problema di \textbf{regressione}. %[cite: 2]
-    \item \textbf{Apprendimento Non Supervisionato (\textit{Unsupervised Learning})}: il sistema riceve esclusivamente gli input $\mathbf{x}$, senza alcuna etichetta. Lo scopo è apprendere la distribuzione o la struttura interna dei dati tramite compiti di \textit{clustering}, analisi delle componenti o \textit{autoencoding}. %[cite: 2]
-    \item \textbf{Apprendimento per Rinforzo (\textit{Reinforcement Learning})}: un agente interagisce attivamente con un ambiente, compiendo azioni e ricevendo ricompense scalari (\textit{rewards}). Il modello apprende una politica decisionale volta a massimizzare il guadagno atteso a lungo termine (\textit{model-free planning}). %[cite: 2]
-\end{itemize}
-
-\noindent Per definire i modelli si impiegano molteplici formalismi (alberi di decisione, modelli lineari, reti neurali artificiali) e svariate funzioni di perdita (Mean Squared Error, logistic loss, cross-entropy, distanza coseno, massimo margine). %[cite: 2]
-
-\begin{cbox}{Dalle Feature Ingegnerizzate al Deep Learning}
-\noindent Si definisce \textbf{feature} qualsiasi proprietà o misurazione numerica relativa a un dato utile a descriverne gli aspetti salienti (es. sintomi ed esami in ambito medico, dati anagrafici e interessi per la profilazione utente, temperatura e pressione per le previsioni meteorologiche). %[cite: 2]
-
-\noindent L'apprendimento è estremamente sensibile alla qualità delle feature fornite in ingresso. Storicamente si sono succeduti diversi approcci alla rappresentazione della conoscenza:
-\begin{itemize}
-    \item \textbf{Sistemi basati su regole}: un esperto umano formalizza a mano regole logiche deduttive; il sistema non apprende. %[cite: 2]
-    \item \textbf{Machine Learning classico}: l'esperto seleziona e calcola manualmente feature rilevanti dai dati grezzi (\textit{feature engineering}); l'algoritmo apprende unicamente la funzione di mappatura dalle feature all'output. %[cite: 2]
-    \item \textbf{Representation Learning}: il sistema apprende in autonomia anche le trasformazioni intermedie dai dati grezzi alle feature (es. \textit{autoencoder}). %[cite: 2]
-    \item \textbf{Deep Learning}: si elimina la necessità dell'esperto umano nella fase di estrazione delle feature. Si forniscono al modello i dati grezzi e si addestrano reti neurali profonde a strati nascosti multipli (\textit{hidden layers}): ogni livello calcola rappresentazioni interne via via più astratte combinando le feature dello strato precedente. %[cite: 2]
+    \item \textbf{Intelligenza Artificiale}: basi di conoscenza e sistemi deduttivi esperti (\textit{Knowledge Bases}). %[cite: 2]
+    \item \textbf{Machine Learning}: modelli parametrici e di separazione lineare (es. \textit{Logistic Regression}). %[cite: 2]
+    \item \textbf{Representation Learning}: tecniche di riduzione della dimensionalità e codifica latente (es. \textit{Autoencoders}). %[cite: 2]
+    \item \textbf{Deep Learning}: reti neurali profonde a strati densi o convoluzionali (es. \textit{Multi-Layer Perceptrons} - MLP). %[cite: 2]
 \end{itemize}
 \end{cbox}
 
 \subsection{Alberi di Decisione ed Espressività}
 
-\noindent Formalizziamo il problema dell'approssimazione supervisionata. Dato uno spazio di input $X$, uno spazio di etichette $Y$ e un training set di $N$ campioni $\mathcal{D} = \{\langle \mathbf{x}^{(i)}, y^{(i)} \rangle\}_{i=1}^N$, si intende stimare la funzione ignota $f: X \to Y$. %[cite: 2]
-Ogni tecnica richiede l'adozione di uno \textbf{spazio delle ipotesi} $H = \{h \mid h: X \to Y\}$, all'interno del quale ricercare la funzione $h$ che meglio approssima $f$ sui dati noti di addestramento. %[cite: 2]
+\subsubsection{L'Apprendimento come Approssimazione di Funzioni}
 
-\noindent Un \textbf{albero di decisione} è un modello gerarchico per la classificazione:
+\noindent L'obiettivo centrale dell'apprendimento supervisionato può essere interpretato come un problema di \textbf{approssimazione funzionale}. %[cite: 2]
+Assumiamo idealmente che esista una legge oggettiva (una funzione obiettivo sconosciuta) in grado di associare a ciascun possibile dato in ingresso il suo risultato esatto: %[cite: 2]
+$$f: X \to Y$$ %[cite: 2]
+Nel mondo reale, tuttavia, la funzione $f$ non è nota a priori né possiamo osservarne il comportamento su tutti gli elementi dello spazio di input $X$. %[cite: 2]
+L'unica informazione a nostra disposizione è un insieme finito di dati storici ed esempi noti, denominato \textbf{training set}: %[cite: 2]
+$$\mathcal{D} = \{\langle \mathbf{x}^{(1)}, y^{(1)} \rangle, \, \langle \mathbf{x}^{(2)}, y^{(2)} \rangle, \, \dots, \, \langle \mathbf{x}^{(N)}, y^{(N)} \rangle\}$$ %[cite: 2]
+dove ciascun campione $\mathbf{x}^{(i)} \in X$ è un vettore di attributi (feature) e $y^{(i)} \in Y$ è la corrispondente etichetta (\textit{label}) o valore reale. %[cite: 2]
+
+\noindent Non potendo risalire direttamente a $f$, l'obiettivo pratico è addestrare un algoritmo che trovi una funzione capace di approssimare al meglio i dati osservati nel training set, così da poter generalizzare con successo su nuovi campioni non ancora visti. %[cite: 2]
+In base alla tipologia di valori assunti dall'output $Y$, distinguiamo due compiti principali: %[cite: 2]
 \begin{itemize}
-    \item Ciascun \textbf{nodo interno} esegue un test su un determinato attributo $X_j$. %[cite: 2]
-    \item Ciascun \textbf{ramo} uscente corrisponde a uno dei possibili valori discreti assunti dall'attributo. %[cite: 2]
-    \item Ciascuna \textbf{foglia} terminale restituisce la classe predetta $y$ (oppure una probabilità condizionata $P(Y \mid X)$). %[cite: 2]
+    \item \textbf{Problemi di Classificazione}: l'output $Y$ assume valori \textbf{discreti} o categorie (ad esempio valori booleani come $\{\text{Yes}, \text{No}\}$, diagnosi mediche o cifre numeriche da 0 a 9). Il sistema deve assegnare l'input alla classe più appropriata. %[cite: 2]
+    \item \textbf{Problemi di Regressione}: l'output $Y$ assume valori \textbf{continui} su scala reale (come una temperatura, un prezzo o una misurazione fisica). Il sistema deve stimare un valore numerico quantitativo. %[cite: 2]
 \end{itemize}
+
+\subsubsection{Lo Spazio delle Ipotesi ($H$) e la Definizione di Modello}
+
+\noindent Prima di avviare la ricerca della funzione migliore, è necessario circoscrivere l'insieme delle soluzioni matematiche ammissibili. %[cite: 2]
+La scelta di una determinata tecnica di Machine Learning fissa un vincolo su una precisa famiglia di funzioni, formalmente definita \textbf{Spazio delle Ipotesi}: %[cite: 2]
+$$H = \{h \mid h: X \to Y\}$$ %[cite: 2]
+Un \textbf{modello} rappresenta il meccanismo algoritmico o la struttura con cui viene calcolata una specifica ipotesi $h \in H$. %[cite: 2]
+Il processo di apprendimento (\textit{training}) si traduce dunque nell'esplorare lo spazio $H$ per individuare la singola funzione $h$ che minimizza l'errore di approssimazione sui dati del training set. %[cite: 2]
+
+\subsubsection{Struttura e Inferenza di un Albero di Decisione}
+
+\noindent Un \textbf{albero di decisione} è un modello predittivo gerarchico particolarmente trasparente, che risolve compiti decisionali decomponendoli in una serie ordinata di test condizionali. %[cite: 2]
+La struttura si sviluppa partendo da un nodo radice verso il basso ed è composta da tre elementi: %[cite: 2]
+\begin{enumerate}
+    \item \textbf{Nodi interni (compresa la radice)}: ciascun nodo esegue un test mirato su un singolo attributo $X_j$ (ad esempio: «Qual è la condizione meteo?»). %[cite: 2]
+    \item \textbf{Rami}: partono da un nodo e corrispondono a uno dei valori discreti ammissibili per quell'attributo (ad esempio: \textit{Sunny}, \textit{Overcast}, \textit{Rain}). %[cite: 2]
+    \item \textbf{Foglie (nodi terminali)}: punti di chiusura dell'albero privi di ramificazioni uscenti. Ciascuna foglia restituisce la classe predetta $y$, oppure una distribuzione di probabilità condizionata $P(Y \mid X)$. %[cite: 2]
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}[
+    level 1/.style={sibling distance=4.5cm, level distance=1.8cm},
+    level 2/.style={sibling distance=2.2cm, level distance=1.8cm},
+    node_box/.style={
+        draw=blue!75!black,
+        thick,
+        rectangle,
+        inner sep=6pt,
+        font=\bfseries\color{blue!75!black}
+    },
+    leaf_yes/.style={
+        font=\bfseries\color{green!60!black}
+    },
+    leaf_no/.style={
+        font=\bfseries\color{red!75!black}
+    },
+    branch_label/.style={
+        font=\small,
+        color=black
+    }
+]
+
+\node[node_box] {Outlook}
+    child {
+        node[node_box] {Humidity}
+        child {
+            node[leaf_no] {No}
+            edge from parent node[branch_label, left=2pt] {High}
+        }
+        child {
+            node[leaf_yes] {Yes}
+            edge from parent node[branch_label, right=2pt] {Normal}
+        }
+        edge from parent node[branch_label, above left] {Sunny}
+    }
+    child {
+        node[leaf_yes] {Yes}
+        edge from parent node[branch_label, right=2pt] {Overcast}
+    }
+    child {
+        node[node_box] {Wind}
+        child {
+            node[leaf_no] {No}
+            edge from parent node[branch_label, left=2pt] {Strong}
+        }
+        child {
+            node[leaf_yes] {Yes}
+            edge from parent node[branch_label, right=2pt] {Weak}
+        }
+        edge from parent node[branch_label, above right] {Rain}
+    };
+
+\end{tikzpicture}
+\end{center}
 
 \begin{center}
 \small
 \begin{tabular}{llllc}
     \toprule
-    \multicolumn{5}{c}{\textbf{Training Set di Riferimento: Problema \textit{Play Tennis}}} \\
+    \multicolumn{5}{c}{\textbf{Training Set di Esempio: Problema \textit{Play Tennis}}} \\
     \textbf{Outlook} & \textbf{Temperature} & \textbf{Humidity} & \textbf{Wind} & \textbf{Play Tennis?} \\
     \midrule
     Sunny    & Hot  & High   & Weak   & No  \\ %[cite: 2]
@@ -205,195 +334,616 @@ Ogni tecnica richiede l'adozione di uno \textbf{spazio delle ipotesi} $H = \{h \
 \end{tabular}
 \end{center}
 
-\noindent Nel dominio delle variabili booleane, gli alberi di decisione possiedono un'espressività completa: possono rappresentare qualsiasi combinazione logica in \textbf{forma normale disgiuntiva (DNF)}, in cui ogni cammino dalla radice a una foglia con etichetta positiva corrisponde a una congiunzione di test ($\wedge$) e l'albero intero costituisce la disgiunzione ($\vee$) dei percorsi favorevoli. %[cite: 2]
-Poiché la rappresentazione di una funzione logica non è unica, in accordo con il principio del \textbf{Rasoio di Occam} si preferisce l'albero più compatto e di profondità minore, riducendo il rischio di modellare rumore statistico. %[cite: 2]
+\noindent Nel celebre problema decisionale del \textit{Play Tennis}, ogni istanza è descritta da un vettore di 4 feature meteorologiche: %[cite: 2]
+$$\mathbf{x} = \langle \text{Outlook}, \, \text{Temperature}, \, \text{Humidity}, \, \text{Wind} \rangle$$ %[cite: 2]
+
+\paragraph{Esempio pratico di classificazione}
+Immaginiamo di dover classificare una nuova giornata caratterizzata dalle seguenti condizioni: %[cite: 2]
+$$\mathbf{x}^{\text{nuovo}} = \langle \text{Outlook}=\text{Sunny}, \, \text{Temperature}=\text{Cool}, \, \text{Humidity}=\text{High}, \, \text{Wind}=\text{Strong} \rangle$$ %[cite: 2]
+Il processo di inferenza percorre un unico sentiero deterministico radice-foglia: %[cite: 2]
+\begin{enumerate}
+    \item Si valuta la radice (\textit{Outlook}): il valore osservato è \textit{Sunny}, per cui si imbocca il ramo sinistro. %[cite: 2]
+    \item Si giunge al nodo di test su \textit{Humidity}: il valore riscontrato è \textit{High}, conducendo al rispettivo ramo discendente. %[cite: 2]
+    \item Si approda alla foglia terminale associata alla classe \textbf{No}: la decisione è di non giocare. %[cite: 2]
+\end{enumerate}
+\noindent Si osservi una proprietà notevole: gli attributi \textit{Temperature} e \textit{Wind} non sono stati consultati durante la decisione. L'albero possiede la naturale capacità di isolare ed esaminare solo le feature strettamente rilevanti per quello specifico cammino logico. %[cite: 2]
+
+\begin{cbox}{Espressività del Modello ed Equivalenza con la Logica Booleana}
+\noindent Quanto è potente la classe degli alberi di decisione? Quali funzioni logiche è in grado di rappresentare? %[cite: 2]
+
+\noindent Supponiamo che lo spazio di input sia formato da $n$ attributi booleani, $X = X_1 \times X_2 \times \dots \times X_n$, con $X_i \in \{\text{True}, \text{False}\}$. %[cite: 2]
+Un albero di decisione può esprimere qualsiasi combinazione logica fondamentale: %[cite: 2]
+\begin{itemize}
+    \item \textbf{Congiunzioni logiche (AND)}: ad esempio la regola $Y = X_2 \land X_5$. L'albero interroga inizialmente $X_2$: se Falso, predice subito Falso; se Vero, passa a testare $X_5$ e predice Vero solo se entrambi sono soddisfatti. %[cite: 2]
+    \item \textbf{Disgiunzioni logiche (OR)}: ad esempio la regola $Y = X_4 \lor X_1$. Se il test su $X_4$ ha esito Vero la predizione è immediatamente Vera; altrimenti si prosegue valutando $X_1$. %[cite: 2]
+    \item \textbf{Funzioni logiche complesse}: ad esempio proposizioni articolate della forma: %[cite: 2]
+    $$Y = (X_2 \land X_5) \lor (\neg X_3 \land X_4 \land X_1)$$ %[cite: 2]
+\end{itemize}
+
+\paragraph{Equivalenza con la Forma Normale Disgiuntiva (DNF)}
+Ogni singolo cammino che unisce la radice a una foglia con esito positivo descrive una congiunzione logica ($\land$) di tutte le condizioni soddisfatte lungo il tragitto. %[cite: 2]
+L'albero nel suo complesso assegna classe positiva se l'input rispetta \textit{il primo percorso valido, OPPURE il secondo percorso, OPPURE il terzo}, e così via. %[cite: 2]
+Di conseguenza, ogni albero di decisione equivale formalmente a una \textbf{Forma Normale Disgiuntiva (DNF)}: una disgiunzione (OR, $\lor$) di congiunzioni (AND, $\land$). %[cite: 2]
+
+\noindent Su attributi discreti, gli alberi di decisione presentano un'\textbf{espressività completa}: non impongono restrizioni a priori sullo spazio delle ipotesi $H$, potendo descrivere in linea teorica qualunque funzione booleana ammissibile. %[cite: 2]
+\end{cbox}
+
+\subsubsection{Le Tre Domande Cardine e il Rasoio di Occam}
+
+\noindent A fronte di tale ricchezza espressiva, si pongono tre quesiti fondamentali: %[cite: 2]
+
+\begin{enumerate}
+    \item \textbf{Esiste un albero di decisione per ogni possibile ipotesi $h \in H$?} %[cite: 2]
+    \\ \textbf{Sì}. Poiché ogni funzione logica discreta è interamente tabulabile mediante la propria tabella di verità, è sempre possibile costruire un albero che la implementi (nel caso estremo, prevedendo un ramo per ciascuna combinazione di valori). %[cite: 2]
+
+    \item \textbf{L'albero che rappresenta una data funzione è unico?} %[cite: 2]
+    \\ \textbf{No}. La medesima funzione logica (o la corretta classificazione di uno stesso dataset) può essere codificata da molteplici configurazioni di alberi differenti tra loro. Cambiando l'ordine degli attributi testati alla radice e ai livelli intermedi si generano strutture alternative con la stessa semantica complessiva. %[cite: 2]
+
+    \item \textbf{In assenza di unicità, quale albero dobbiamo preferire?} %[cite: 2]
+    \\ Si adotta il principio epistemologico del \textbf{Rasoio di Occam} (\textit{Occam's razor}): \textit{tra più ipotesi coerenti con le osservazioni disponibili, è opportuno privilegiare sempre la più semplice e parsimoniosa}. %[cite: 2]
+    Nel nostro ambito, ciò si traduce nello scegliere \textbf{l'albero con il minor numero di nodi complessivi e la minore profondità}. %[cite: 2]
+\end{enumerate}
+
+\paragraph{Fondamento intuitivo del Rasoio di Occam}
+Un albero molto profondo e ramificato è in grado di azzerare l'errore sul training set, ma rischia di memorizzare le fluttuazioni casuali o il rumore statistico dei campioni noti (\textbf{overfitting} o sovradattamento). %[cite: 2]
+Al contrario, un albero compatto seleziona esclusivamente le regolarità strutturali dominanti del dominio, preservando un'elevata capacità di generalizzazione predittiva su esempi futuri non ancora osservati. %[cite: 2]
 
 \subsection{Costruzione Top-Down, Entropia e Information Gain}
 
-\noindent La determinazione dell'albero ottimo globale è un problema $NP$-completo. Si adotta quindi un approccio euristico induttivo di tipo \textbf{greedy top-down} (algoritmo ID3):
+\subsubsection{L'Approccio Induttivo Greedy (Algoritmo ID3)}
+
+\noindent In linea teorica, l'obiettivo ideale sarebbe costruire l'albero di decisione più piccolo in assoluto (in termini di profondità e numero di nodi) capace di classificare perfettamente i dati noti. %[cite: 2]
+Tuttavia, trovare l'albero ottimo globale è un problema computazionalmente intrattabile ($NP$-completo), poiché richiederebbe di esplorare tutte le possibili combinazioni di alberi generabili. %[cite: 2]
+
+\noindent Per questa ragione, nella pratica si ricorre a un algoritmo euristico di tipo \textbf{greedy top-down} (noto storicamente come algoritmo \textbf{ID3} di Quinlan): %[cite: 2]
+\begin{itemize}
+    \item \textbf{Top-down}: la costruzione procede dall'alto verso il basso, partendo dal nodo radice e suddividendo progressivamente i dati in sottoinsiemi sempre più piccoli. %[cite: 2]
+    \item \textbf{Greedy (miope)}: a ogni singolo passo, l'algoritmo sceglie l'attributo che produce il miglior beneficio \textit{immediato}, senza esplorare in anticipo le conseguenze sui livelli successivi e senza possibilità di ritrattare la scelta (\textit{no backtracking}). %[cite: 2]
+\end{itemize}
+
+\paragraph{Il ciclo principale dell'algoritmo}
+Dato un insieme di esempi di addestramento associati al nodo corrente: %[cite: 2]
 \begin{enumerate}
-    \item Si individua l'attributo migliore $X_j$ per il nodo corrente. %[cite: 2]
-    \item Si genera un nodo figlio per ciascun valore discreto ammissibile di $X_j$. %[cite: 2]
-    \item Se tutti i campioni associati a un figlio appartengono alla medesima classe, il nodo diventa una foglia etichettata con tale classe; altrimenti si ripete ricorsivamente la procedura sui dati del sotto-nodo. %[cite: 2]
+    \item Si valuta ciascun attributo disponibile e si seleziona quello ritenuto \textbf{«migliore»} per discriminare le classi. %[cite: 2]
+    \item Per ogni possibile valore discreto dell'attributo scelto, si genera un \textbf{nodo figlio} collegato tramite un apposito ramo, partizionando gli esempi di conseguenza. %[cite: 2]
+    \item Per ciascun nodo figlio appena creato: %[cite: 2]
+    \begin{itemize}
+        \item Se tutti gli esempi che ricadono nel nodo appartengono alla medesima classe, la partizione è perfettamente omogenea: la costruzione si arresta e il nodo diventa una \textbf{foglia} con quell'etichetta. %[cite: 2]
+        \item Se gli esempi appartengono ancora a classi miste, si ripete ricorsivamente la procedura a partire dal punto 1 sul sottoinsieme di campioni di quel nodo. %[cite: 2]
+    \end{itemize}
 \end{enumerate}
 
-\noindent La scelta dell'attributo migliore viene guidata dai concetti della \textbf{Teoria dell'Informazione di Shannon}:
+\noindent A questo punto sorge la domanda chiave: \textit{su quale base stabiliamo qual è l'attributo «migliore» a ogni biforcazione?} %[cite: 2]
+Per guidare questa scelta in modo rigoroso, ci si affida ai concetti matematici della \textbf{Teoria dell'Informazione di Shannon}. %[cite: 2]
+
+\subsubsection{La Teoria dell'Informazione: Sorpresa ed Entropia}
+
+\paragraph{1. Quantità di informazione come «sorpresa»}
+Intuitivamente, la quantità di informazione trasportata da un evento è legata al suo grado di imprevedibilità: %[cite: 2]
 \begin{itemize}
-    \item \textbf{Quantità di informazione (sorpresa)}: un evento con probabilità $p$ trasmette un'informazione $I(p) = -\log_2(p)$. Per due eventi indipendenti le probabilità si moltiplicano, mentre l'informazione acquisita è additiva: $I(p_1 p_2) = I(p_1) + I(p_2)$. %[cite: 2]
-    \item \textbf{Entropia $H(X)$}: definita come il valore atteso della sorpresa, quantifica l'impurità o l'incertezza media di una distribuzione:
-    $$H(X) = -\sum_{i=1}^n P(X = i) \log_2 P(X = i)$$
-    Assume valore $0$ se l'esito è certo e tocca il massimo $\log_2(n)$ quando tutti gli $n$ eventi sono equiprobabili. %[cite: 2]
-    \item \textbf{Teoria dei codici}: l'entropia definisce il numero medio minimo di bit necessari per codificare e trasmettere senza perdite i campioni generati dalla sorgente. %[cite: 2]
+    \item Se un evento è certo ($P = 1$), il fatto che si verifichi non ci comunica nulla di nuovo (sorpresa nulla): $I(1) = 0$. %[cite: 2]
+    \item Se un evento è molto raro ($P \approx 0$), il suo accadimento ci fornisce un'informazione elevatissima (grande sorpresa). %[cite: 2]
 \end{itemize}
+Inoltre, se consideriamo due eventi indipendenti con probabilità $p_1$ e $p_2$, la probabilità congiunta è data dal loro prodotto $p_1 \cdot p_2$, ma l'informazione complessiva acquisita dall'osservazione di entrambi deve sommarsi in modo naturale: $I(p_1 \cdot p_2) = I(p_1) + I(p_2)$. %[cite: 2]
+L'unica funzione matematica che trasforma un prodotto in una somma garantendo queste proprietà è il logaritmo. Si definisce quindi l'\textbf{informazione (o sorpresa)} generata da un evento con probabilità $p$ come: %[cite: 2]
+$$I(p) = -\log_2(p) = \log_2\left(\frac{1}{p}\right)$$ %[cite: 2]
+La scelta della base 2 misura l'informazione in \textbf{bit} (detti anche \textit{Shannon}). %[cite: 2]
+
+\paragraph{2. Entropia di Shannon: misura di impurità e incertezza}
+L'\textbf{Entropia} $H(X)$ di una variabile aleatoria discreta $X$ (che assume valori tra $n$ possibili esiti) è definita formalmente come il \textbf{valore atteso della sorpresa}, ossia la media ponderata dell'informazione prodotta da ciascun esito: %[cite: 2]
+$$H(X) = -\sum_{i=1}^n P(X = i) \log_2 P(X = i)$$ %[cite: 2]
+Nel contesto dell'apprendimento automatico, l'entropia quantifica il grado di \textbf{disordine}, \textbf{incertezza} o \textbf{impurità} presente in un gruppo di dati: %[cite: 2]
+\begin{itemize}
+    \item \textbf{Entropia minima ($H = 0$)}: si ottiene quando tutti gli esempi appartengono a una sola categoria ($P=1$ per una classe e $0$ per le altre). Il nodo è \textit{puro}: non c'è incertezza sulla risposta. %[cite: 2]
+    \item \textbf{Entropia massima ($H = \log_2(n)$)}: si ottiene quando gli esempi sono distribuiti in modo perfettamente uniforme tra tutte le $n$ categorie ammissibili. Il nodo è massimamente \textit{impuro}: l'incertezza sulla classe è totale. %[cite: 2]
+    \item \textbf{Caso binario}: per una variabile booleana (es. classi Yes/No), l'entropia tocca il valore massimo di $1 \text{ bit}$ quando la distribuzione è bilanciata al 50\% e scende simmetricamente a $0$ agli estremi (100\% Yes oppure 100\% No). %[cite: 2]
+\end{itemize}
+
+\noindent Nota: perché il segno meno? La risposta è che la probabilità è compresa tra 0 e 1, quindi il logaritmo è negativo. L'aggiunta del segno meno garantisce che l'entropia sia sempre un numero positivo.
+
+\paragraph{3. Collegamento con la Teoria dei Codici}
+Shannon ha dimostrato che l'entropia rappresenta anche il \textbf{numero medio minimo di bit} necessari per trasmettere o codificare senza perdita di informazione i messaggi prodotti da una sorgente casuale. %[cite: 2]
+Se abbiamo $n$ messaggi equiprobabili, occorrono $\log_2(n)$ bit per codificarli tutti (ad esempio con 8 simboli equiprobabili servono $\log_2(8) = 3 \text{ bit}$). %[cite: 2]
+Tuttavia, se gli eventi non hanno tutti la stessa probabilità, è possibile assegnare codici binari più brevi agli eventi frequenti e più lunghi a quelli rari (come accade nei codici di Huffman): in questo caso il numero medio di bit necessari scende al di sotto di $\log_2(n)$, tendendo esattamente al valore dell'entropia $H(X)$. %[cite: 2]
 
 \begin{cbox}{Guadagno di Informazione (\textit{Information Gain})}
-\noindent Dati la variabile target $Y$ e un attributo predittivo candidato $X$, l'incertezza residua dopo aver osservato $X$ è data dall'\textbf{entropia condizionata}:
-$$H(Y \mid X) = \sum_{v \in \text{Valori}(X)} P(X = v) \, H(Y \mid X = v)$$
-L'\textbf{Information Gain} $I(Y, X)$ quantifica la riduzione netta di entropia ottenuta partizionando i dati tramite l'attributo $X$:
-$$I(Y, X) = H(Y) - H(Y \mid X)$$
-L'euristica seleziona a ogni passo l'attributo che massimizza il guadagno di informazione. %[cite: 2]
+\noindent Quando decidiamo di suddividere un nodo usando un attributo predittivo $X$, vorremmo che i nodi figli risultanti fossero \textit{più puri e ordinati} rispetto al nodo genitore di partenza. %[cite: 2]
+
+\paragraph{Definizione di Entropia Condizionata}
+Sia $Y$ la classe target da predire. Dopo aver partizionato i dati in base ai valori assunti dall'attributo $X$, l'incertezza residua media su $Y$ è data dall'\textbf{entropia condizionata} $H(Y \mid X)$, calcolata come media ponderata delle entropie di ciascun nodo figlio: %[cite: 2]
+$$H(Y \mid X) = \sum_{v \in \text{Valori}(X)} P(X = v) \, H(Y \mid X = v)$$ %[cite: 2]
+dove $P(X = v)$ rappresenta la frazione di esempi del nodo genitore che finiscono nel ramo in cui l'attributo $X$ vale $v$. %[cite: 2]
+
+\paragraph{Definizione di Information Gain}
+L'\textbf{Information Gain} (o Guadagno di Informazione) $I(Y, X)$ misura l'effettiva \textbf{riduzione di entropia} (cioè l'aumento di purezza) ottenuta partizionando i dati attraverso l'attributo $X$: %[cite: 2]
+$$I(Y, X) = H(Y) - H(Y \mid X)$$ %[cite: 2]
+\begin{itemize}
+    \item $H(Y)$ è l'incertezza iniziale prima della diramazione. %[cite: 2]
+    \item $H(Y \mid X)$ è l'incertezza media residua dopo aver effettuato il test su $X$. %[cite: 2]
+\end{itemize}
+\textbf{Regola di decisione}: a ogni nodo dell'albero, l'algoritmo calcola l'Information Gain per tutti gli attributi candidati e seleziona come test l'attributo che \textbf{massimizza} $I(Y, X)$. %[cite: 2]
 \end{cbox}
 
-\noindent \textbf{Esempio numerico di selezione tra due attributi $A$ e $B$}: \\
-Si consideri un nodo con $64$ esempi, di cui $29$ positivi e $35$ negativi, denotato come $[29+, 35-]$. L'entropia iniziale del nodo è:
+\subsubsection{Esempio Numerico Guidato: Confronto tra Due Attributi ($A$ e $B$)}
+
+\noindent Per comprendere a fondo come opera l'algoritmo di selezione, ripercorriamo passo dopo passo l'esempio classico presentato nelle slide. %[cite: 2]
+
+\noindent Immaginiamo di trovarci in un nodo che contiene un insieme di $64$ esempi, di cui $29$ con etichetta positiva e $35$ con etichetta negativa, notazione $[29+, 35-]$. %[cite: 2]
+
+\paragraph{Passo 1: Calcolo dell'entropia iniziale del nodo genitore}
+La probabilità a priori delle classi nel nodo è $P(+) = \frac{29}{64}$ e $P(-) = \frac{35}{64}$. %[cite: 2]
+L'entropia iniziale $H(Y)$ è: %[cite: 2]
 $$H(Y) = -\frac{29}{64}\log_2\left(\frac{29}{64}\right) - \frac{35}{64}\log_2\left(\frac{35}{64}\right) \approx 0.994 \text{ bit}$$ %[cite: 2]
+Il nodo presenta un'incertezza vicina a $1 \text{ bit}$, risultando fortemente impuro. %[cite: 2]
+
+\paragraph{Passo 2: Valutazione dell'attributo candidato $A$}
+L'attributo booleano $A$ divide i $64$ campioni in due rami: %[cite: 2]
 \begin{itemize}
-    \item \textbf{Attributo $A$}: suddivide il nodo nei rami $T$ ($26$ campioni: $[21+, 5-]$) ed $F$ ($38$ campioni: $[8+, 30-]$).
-    $$H(Y \mid A = T) = -\frac{21}{26}\log_2\left(\frac{21}{26}\right) - \frac{5}{26}\log_2\left(\frac{5}{26}\right) \approx 0.706 \text{ bit}$$ %[cite: 2]
-    $$H(Y \mid A = F) = -\frac{8}{38}\log_2\left(\frac{8}{38}\right) - \frac{30}{38}\log_2\left(\frac{30}{38}\right) \approx 0.742 \text{ bit}$$ %[cite: 2]
-    $$H(Y \mid A) = \frac{26}{64}(0.706) + \frac{38}{64}(0.742) \approx 0.726 \implies I(Y, A) = 0.994 - 0.726 = \mathbf{0.268 \text{ bit}}$$ %[cite: 2]
-    \item \textbf{Attributo $B$}: suddivide il nodo nei rami $T$ ($51$ campioni: $[18+, 33-]$) ed $F$ ($13$ campioni: $[11+, 2-]$).
-    $$H(Y \mid B = T) \approx 0.936 \text{ bit}, \quad H(Y \mid B = F) \approx 0.619 \text{ bit}$$ %[cite: 2]
-    $$H(Y \mid B) = \frac{51}{64}(0.936) + \frac{13}{64}(0.619) \approx 0.872 \implies I(Y, B) = 0.994 - 0.872 = \mathbf{0.122 \text{ bit}}$$ %[cite: 2]
+    \item Ramo $A = \text{True}$ ($26$ campioni su $64$): contiene $21$ positivi e $5$ negativi, denotato $[21+, 5-]$. %[cite: 2]
+    $$H(Y \mid A = \text{True}) = -\frac{21}{26}\log_2\left(\frac{21}{26}\right) - \frac{5}{26}\log_2\left(\frac{5}{26}\right) \approx 0.706 \text{ bit}$$ %[cite: 2]
+    \item Ramo $A = \text{False}$ ($38$ campioni su $64$): contiene $8$ positivi e $30$ negativi, denotato $[8+, 30-]$. %[cite: 2]
+    $$H(Y \mid A = \text{False}) = -\frac{8}{38}\log_2\left(\frac{8}{38}\right) - \frac{30}{38}\log_2\left(\frac{30}{38}\right) \approx 0.742 \text{ bit}$$ %[cite: 2]
 \end{itemize}
-Essendo $I(Y, A) > I(Y, B)$, l'algoritmo seleziona l'attributo $A$ come criterio di diramazione. %[cite: 2]
+Calcoliamo l'entropia condizionata ponderando le impurità dei due nodi figli per le relative dimensioni: %[cite: 2]
+$$H(Y \mid A) = \frac{26}{64} \cdot (0.706) + \frac{38}{64} \cdot (0.742) \approx 0.287 + 0.440 = 0.727 \text{ bit}$$ %[cite: 2]
+Il guadagno di informazione prodotto dalla scelta di $A$ è dunque: %[cite: 2]
+$$I(Y, A) = H(Y) - H(Y \mid A) = 0.994 - 0.727 = \mathbf{0.267 \text{ bit}}$$ %[cite: 2]
+
+\paragraph{Passo 3: Valutazione dell'attributo candidato $B$}
+L'attributo booleano alternativo $B$ divide invece i $64$ campioni in modo diverso: %[cite: 2]
+\begin{itemize}
+    \item Ramo $B = \text{True}$ ($51$ campioni su $64$): contiene $18$ positivi e $33$ negativi, denotato $[18+, 33-]$. %[cite: 2]
+    $$H(Y \mid B = \text{True}) = -\frac{18}{51}\log_2\left(\frac{18}{51}\right) - \frac{33}{51}\log_2\left(\frac{33}{51}\right) \approx 0.936 \text{ bit}$$ %[cite: 2]
+    \item Ramo $B = \text{False}$ ($13$ campioni su $64$): contiene $11$ positivi e $2$ negativi, denotato $[11+, 2-]$. %[cite: 2]
+    $$H(Y \mid B = \text{False}) = -\frac{11}{13}\log_2\left(\frac{11}{13}\right) - \frac{2}{13}\log_2\left(\frac{2}{13}\right) \approx 0.619 \text{ bit}$$ %[cite: 2]
+\end{itemize}
+Calcoliamo l'entropia condizionata per $B$: %[cite: 2]
+$$H(Y \mid B) = \frac{51}{64} \cdot (0.936) + \frac{13}{64} \cdot (0.619) \approx 0.746 + 0.126 = 0.872 \text{ bit}$$ %[cite: 2]
+Il guadagno di informazione prodotto da $B$ è: %[cite: 2]
+$$I(Y, B) = H(Y) - H(Y \mid B) = 0.994 - 0.872 = \mathbf{0.122 \text{ bit}}$$ %[cite: 2]
+
+\paragraph{Passo 4: Confronto e decisione}
+Mettendo a confronto i due guadagni di informazione ottenuti: %[cite: 2]
+$$I(Y, A) \approx 0.267 \text{ bit} \quad > \quad I(Y, B) \approx 0.122 \text{ bit}$$ %[cite: 2]
+L'algoritmo sceglie indiscutibilmente l'\textbf{attributo $A$} per effettuare la diramazione del nodo corrente. %[cite: 2]
+Anche se il ramo $B = \text{False}$ produce una foglia abbastanza pura ($0.619 \text{ bit}$), essa coinvolge soltanto $13$ esempi; l'attributo $A$, al contrario, riduce in maniera consistente l'incertezza su entrambi i sottoinsiemi, ottenendo un'entropia media residua notevolmente più bassa ($0.727$ contro $0.872$). %[cite: 2]
 
 \subsection{Attributi Continui e Gestione delle Soglie}
 
-\noindent Quando gli attributi assumono valori continui su scala reale ($X_j \in \mathbb{R}$), non è praticabile generare un ramo per ogni valore osservato. Si converte pertanto il test continuo in una scelta dicotomica tramite una \textbf{soglia di decisione} (\textit{threshold}) $\Theta$, definendo una condizione binaria del tipo: %[cite: 2]
-$$A < \Theta \quad \lor \quad A \ge \Theta$$ %[cite: 2]
+\subsubsection{Dalle Variabili Discrete alle Variabili Continue}
 
-\noindent Il valore ottimale di $\Theta$ viene individuato confrontando l'\textit{Information Gain} prodotto da differenti soglie candidate: %[cite: 2]
+\noindent Negli alberi di decisione tradizionali (come nell'algoritmo ID3 standard), a ogni valore discreto dell'attributo testato corrisponde un ramo uscente. %[cite: 2]
+Tuttavia, nella maggior parte dei problemi reali molti attributi assumono valori continui su scala reale ($X_j \in \mathbb{R}$), come la temperatura in gradi, l'umidità in percentuale o la pressione atmosferica. %[cite: 2]
+
+\noindent In questo contesto, non è praticabile né sensato creare un ramo distinto per ciascun valore osservato: %[cite: 2]
+se lo facessimo, ogni ramo finirebbe per contenere un singolo campione, azzerando banalmente l'entropia ma frammentando il dataset e portando a un sovradattamento totale (\textit{overfitting}) con nulla capacità di generalizzazione. %[cite: 2]
+
+\noindent La soluzione consiste nel \textbf{discretizzare dinamicamente} l'attributo continuo trasformandolo in un test binario mediante una \textbf{soglia di decisione} (\textit{threshold}) $\Theta$: %[cite: 2]
+$$A < \Theta \quad \lor \quad A \ge \Theta$$ %[cite: 2]
+In questo modo, il nodo continuo genera sempre e soltanto due rami dicotomici (Vero/Falso), preservando la struttura gerarchica dell'albero. %[cite: 2]
+
+\subsubsection{Strategie di Selezione della Soglia Ottima}
+
+\noindent Il problema si sposta quindi sulla scelta del valore migliore per la soglia $\Theta$. %[cite: 2]
+L'algoritmo affronta il problema confrontando l'\textit{Information Gain} generato da diverse soglie candidate e selezionando quella che massimizza la riduzione di entropia: %[cite: 2]
 \begin{itemize}
-    \item \textbf{Campionamento a intervalli discreti}: si valuta una griglia prefissata di valori equispaziati lungo il dominio dell'attributo. %[cite: 2]
-    \item \textbf{Valori medi tra campioni adiacenti}: si ordina il training set rispetto all'attributo considerato e si scelgono come soglie candidate le medie aritmetiche tra coppie di valori consecutivi associati a classi differenti:
-    $$\Theta = \frac{x^{(k)} + x^{(k+1)}}{2}$$ %[cite: 2]
+    \item \textbf{Campionamento a intervalli discreti (griglia)}: si suddivide l'intervallo compreso tra il valore minimo e massimo dell'attributo in un insieme prefissato di intervalli equispaziati, valutando solo quei punti specifici. È una strategia computazionalmente rapida ma approssimata. %[cite: 2]
+    \item \textbf{Punti medi tra campioni consecutivi}: si ordinano tutti gli esempi del nodo corrente in modo crescente rispetto all'attributo continuo considerato ($x_{(1)} \le x_{(2)} \le \dots \le x_{(N)}$). %[cite: 2]
+    Come soglie candidate si valutano le medie aritmetiche tra coppie di valori adiacenti: %[cite: 2]
+    $$\Theta_k = \frac{x_{(k)} + x_{(k+1)}}{2}$$ %[cite: 2]
+    Per ridurre drasticamente i calcoli inutili, nella pratica si considerano unicamente i punti medi tra campioni consecutivi che presentano \textbf{classi target differenti} ($y^{(k)} \neq y^{(k+1)}$), poiché una soglia collocata tra due esempi appartenenti alla medesima classe non può produrre un punto di massimo per l'Information Gain. %[cite: 2]
 \end{itemize}
+
+\paragraph{Esempio intuitivo di calcolo della soglia}
+Immaginiamo di voler individuare la miglior soglia per l'attributo continuo \textit{Umidità} su un campione ridotto di 4 giornate: %[cite: 2]
+\begin{center}
+\small
+\begin{tabular}{lcccc}
+    \toprule
+    \textbf{Campione} & $\mathbf{x}_1$ & $\mathbf{x}_2$ & $\mathbf{x}_3$ & $\mathbf{x}_4$ \\
+    \midrule
+    \textbf{Umidità (\%)} & $65$ & $70$ & $80$ & $85$ \\ %[cite: 2]
+    \textbf{Play Tennis} & Yes & Yes & No & No \\ %[cite: 2]
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Ordinando i campioni, notiamo che la classe cambia unicamente passando da $\mathbf{x}_2$ ($70\%$, Yes) a $\mathbf{x}_3$ ($80\%$, No). %[cite: 2]
+La soglia candidata ideale è la media tra i due valori: %[cite: 2]
+$$\Theta = \frac{70 + 80}{2} = 75\%$$ %[cite: 2]
+Il test risultante sarà $\text{Umidità} < 75$: tutti i campioni a sinistra avranno classe pura \textit{Yes}, mentre tutti quelli a destra avranno classe pura \textit{No}, portando l'entropia residua a zero e massimizzando l'Information Gain. %[cite: 2]
+
+\subsubsection{Limiti della Scelta Greedy Univariata: Il Caso dello XOR}
+
+\noindent La procedura descritta seleziona la partizione valutando \textbf{una sola feature alla volta} (\textit{approccio univariato}). %[cite: 2]
+Questo schema euristico miope (\textit{greedy}) mostra limiti evidenti quando la classe obiettivo dipende da \textbf{relazioni composite o non lineari tra più attributi contemporaneamente}, come nella funzione logica \textbf{XOR} (or esclusivo). %[cite: 2]
+
+\noindent Si consideri il seguente esempio pratico implementato in Python tramite \texttt{scikit-learn}: %[cite: 2]
 
 \begin{lstlisting}[language=Python]
 from sklearn import tree
 
-# Esempio con feature binarie/continue
+# 10 campioni descritti da 4 feature (booleane/continue 0 e 1)
 X = [[0,0,0,0], [1,0,0,0], [0,0,0,1], [0,0,1,0], [0,0,1,1],
      [0,1,0,0], [0,1,0,1], [1,1,0,1], [0,1,1,0], [0,1,1,1]]
-Y = [0, 0, 1, 1, 0, 0, 1, 1, 1, 0]  # y = 1 se X[2] != X[3], 0 altrimenti
+
+# Target: Y = 1 se e solo se X[2] != X[3] (funzione XOR tra feature 2 e 3)
+Y = [0, 0, 1, 1, 0, 0, 1, 1, 1, 0]
 
 clf = tree.DecisionTreeClassifier(criterion='entropy', random_state=0)
 clf = clf.fit(X, Y)
 
-print("Predizione:", clf.predict([[1, 1, 1, 1]]))
+print("Predizione per [1, 1, 1, 1]:", clf.predict([[1, 1, 1, 1]]))
 print("Feature importances:", clf.feature_importances_)
+# Output: [0.170, 0.029, 0.400, 0.400]
 \end{lstlisting} %[cite: 2]
 
-\noindent In presenza di relazioni complesse tra attributi (come la funzione XOR tra due feature), il guadagno d'informazione univariato calcolato alla radice può risultare nullo o fuorviante per i singoli attributi presi isolatamente. %[cite: 2]
-Nonostante ciò, la metrica di \textbf{Feature Importance} calcolata \textit{ex post} riflette fedelmente il contributo complessivo di ciascun attributo, ponderando la riduzione di impurità prodotta in ciascun nodo per il volume di campioni che lo attraversano. %[cite: 2]
+\paragraph{Perché l'Information Gain fallisce alla radice?}
+Nel dataset sopra riportato, l'output $Y$ dipende in modo deterministico unicamente dalla disuguaglianza tra la feature $X_2$ e la feature $X_3$ ($X_2 \neq X_3$). %[cite: 2]
+Le feature $X_0$ e $X_1$ rappresentano puro rumore irrilevante. %[cite: 2]
+
+\noindent Tuttavia, se valutiamo $X_2$ (o $X_3$) \textit{da sola} alla radice, essa non fornisce alcun vantaggio informativo immediato: sapendo solo che $X_2 = 1$, la probabilità che $Y$ sia 1 o 0 rimane perfettamente bilanciata al 50\%, poiché l'esito finale dipende dal valore che assume $X_3$. %[cite: 2]
+Di conseguenza, l'Information Gain univariato per $X_2$ e $X_3$ alla radice risulta nullo. %[cite: 2]
+L'algoritmo greedy, non trovando un segnale informativo immediato sulle feature determinanti, può essere ingannato da correlazioni spurie dovute al ristretto numero di campioni, finendo per scegliere come primo split una feature irrilevante (come $X_1$ o $X_0$). %[cite: 2]
+Ciò costringe l'albero a crescere più in profondità per recuperare l'informazione corretta nei sotto-nodi. %[cite: 2]
+
+\subsubsection{La Metrica di Feature Importance Calcolata Ex-Post}
+
+\noindent Anche se l'euristica greedy può compiere scelte sub-ottimali a monte, la metrica finale di \textbf{Feature Importance} (detta anche \textit{Gini Importance} o riduzione media di impurità) permette di quantificare l'effettiva utilità di ciascun attributo una volta che l'albero è stato interamente sviluppato (\textit{ex-post}). %[cite: 2]
+
+\noindent L'importanza di una feature $X_j$ viene calcolata sommando la riduzione di impurità (in termini di entropia o indice di Gini) prodotta in tutti i nodi interni $t$ in cui $X_j$ è stata utilizzata come criterio di split, ponderata per la frazione di campioni del dataset che attraversano quel nodo: %[cite: 2]
+$$\text{Importance}(X_j) = \sum_{t \in \text{split}(X_j)} \frac{N_t}{N} \, \Delta \text{Impurità}(t)$$ %[cite: 2]
+dove $N_t$ è il numero di campioni presenti nel nodo $t$, $N$ è il totale dei campioni e $\Delta \text{Impurità}(t) = I(Y, X_j)_t$. %[cite: 2]
+I valori ottenuti vengono infine normalizzati in modo che la loro somma su tutte le feature risulti pari a $1$ (o $100\%$). %[cite: 2]
+
+\paragraph{Interpretazione del risultato}
+Tornando all'output dell'esempio in Python: %[cite: 2]
+$$\text{clf.feature\_importances\_} = [0.170, \; 0.029, \; \mathbf{0.400}, \; \mathbf{0.400}]$$ %[cite: 2]
+Nonostante l'algoritmo non abbia isolato $X_2$ e $X_3$ al primo passo, il calcolo \textit{ex-post} assegna loro un'importanza predominante ($40\%$ ciascuna, contro il marginale contributo di $X_0$ e $X_1$). %[cite: 2]
+La misura riflette fedelmente il fatto che, una volta completata la ramificazione, sono proprio $X_2$ e $X_3$ a risolvere quasi la totalità dell'incertezza residua del problema. %[cite: 2]
 
 \subsection{Overfitting, Compromesso Bias-Varianza e Tecniche di Potatura}
 
-\noindent Si consideri l'errore commesso da un'ipotesi $h \in H$:
-\begin{itemize}
-    \item $error_{train}(h)$: errore empirico calcolato sul training set di addestramento. %[cite: 2]
-    \item $error_{\mathcal{D}}(h)$: errore atteso calcolato sull'intera distribuzione teorica $\mathcal{D}$. %[cite: 2]
-\end{itemize}
-Un'ipotesi $h$ soffre di \textbf{overfitting} (sovradattamento) se esiste un'altra ipotesi $h' \in H$ tale per cui:
-$$error_{train}(h) < error_{train}(h') \quad \text{ma} \quad error_{\mathcal{D}}(h) > error_{\mathcal{D}}(h')$$ %[cite: 2]
+\subsubsection{Il Problema del Sovradattamento (Overfitting)}
 
-\begin{cbox}{Il Compromesso tra Bias e Varianza (\textit{Bias-Variance Trade-off})}
-\noindent La capacità di generalizzazione di un modello dipende criticamente dalla sua complessità strutturale:
-\begin{itemize}
-    \item \textbf{Modelli poco complessi} (bassa flessibilità) esibiscono \textbf{alto bias} e \textbf{bassa varianza}: le assunzioni a priori sono troppo rigide, portando a prestazioni insoddisfacenti sia sui dati noti che sui dati futuri (\textbf{underfitting}). %[cite: 2]
-    \item \textbf{Modelli iper-complessi} esibiscono \textbf{basso bias} ed \textbf{elevata varianza}: il modello modella fedelmente il rumore statistico del training set, annullando l'errore di addestramento ma fallendo nel generalizzare (\textbf{overfitting}). %[cite: 2]
-\end{itemize}
-Poiché la distribuzione reale $\mathcal{D}$ non è direttamente campionabile, si partiziona il dataset a disposizione in due insiemi disgiunti: un \textbf{training set}, usato per calibrare i parametri dell'ipotesi $h$, e un \textbf{validation set}, impiegato come stima oggettiva della capacità predittiva su dati non visti. %[cite: 2]
-\end{cbox}
+\noindent Negli alberi di decisione, l'approccio costruttivo visto in precedenza prosegue la suddivisione ricorsiva finché ogni foglia contiene campioni appartenenti a una sola classe, oppure fino all'esaurimento degli attributi disponibili. %[cite: 2]
+Sebbene questo garantisca un'accuratezza del $100\%$ sui dati utilizzati per l'addestramento, un albero così dettagliato rischia di fallire clamorosamente quando viene applicato a nuovi dati. %[cite: 2]
 
-\noindent Negli alberi di decisione, il controllo dell'overfitting si realizza attraverso due metodologie complementari:
+\noindent Questo fenomeno prende il nome di \textbf{overfitting} (o sovradattamento): il modello non apprende le regole generali che governano il fenomeno, ma finisce per «imparare a memoria» le particolarità, le anomalie e il rumore statistico presenti nel campione di addestramento. %[cite: 2]
+
+\paragraph{Definizione formale}
+Sia data un'ipotesi $h \in H$ (nel nostro caso un albero di decisione). %[cite: 2]
+Definiamo due misure di errore: %[cite: 2]
 \begin{itemize}
-    \item \textbf{Early Stopping (Arresto Anticipato)}: si arresta la ramificazione dell'albero quando il miglioramento di purezza scende al di sotto di una soglia prestabilita o quando il nodo contiene un numero di campioni inferiore a un limite minimo. %[cite: 2]
-    \item \textbf{Post-Pruning (Potatura Retrograda)}: si sviluppa l'albero fino alla massima profondità possibile e si procede successivamente a potarlo a ritroso. %[cite: 2]
+    \item $error_{train}(h)$: l'errore empirico calcolato sul campione limitato di addestramento (\textit{training set}). %[cite: 2]
+    \item $error_{\mathcal{D}}(h)$: l'errore reale calcolato sull'intera popolazione (o distribuzione teorica) $\mathcal{D}$ di tutti i possibili dati del mondo reale. %[cite: 2]
+\end{itemize}
+Diciamo formalmente che l'ipotesi $h$ soffre di \textbf{overfitting} rispetto a un'ipotesi alternativa $h' \in H$ se si verifica la seguente condizione: %[cite: 2]
+$$error_{train}(h) < error_{train}(h') \quad \text{ma contemporaneamente} \quad error_{\mathcal{D}}(h) > error_{\mathcal{D}}(h')$$ %[cite: 2]
+In altre parole, l'ipotesi $h$ sembra preferibile basandosi unicamente sui dati già noti, ma una volta messa alla prova sulla realtà commette più errori dell'ipotesi $h'$, più semplice o meno aderente al training set. %[cite: 2]
+
+\subsubsection{Il Compromesso tra Bias e Varianza (\textit{Bias-Variance Trade-off})}
+
+\noindent La tendenza di un modello a compiere errori dipende in larga misura dalla sua \textbf{complessità strutturale} (nel caso degli alberi, il numero complessivo di nodi e la loro profondità). %[cite: 2]
+L'errore di predizione su nuovi campioni può essere idealmente scomposto in due componenti contrapposte: %[cite: 2]
+
+\begin{itemize}
+    \item \textbf{Bias (Pregiudizio o Distorsione)}: misura l'errore dovuto ad assunzioni a priori troppo rigide o semplificate sulla natura dei dati. %[cite: 2]
+    \begin{itemize}
+        \item Un modello con \textbf{alta distorsione (High Bias)} e \textbf{bassa varianza} è un modello troppo rigido o poco profondo (ad esempio un albero con un solo livello di decisione, detto \textit{decision stump}). %[cite: 2]
+        \item Non avendo sufficiente flessibilità per catturare i pattern dei dati, commette molti errori sia sul training set sia sui dati futuri. Questa situazione è detta \textbf{underfitting} (sottoadattamento). %[cite: 2]
+    \end{itemize}
+
+    \item \textbf{Varianza}: quantifica la sensibilità del modello alle specifiche fluttuazioni casuali del dataset utilizzato per addestrarlo. %[cite: 2]
+    \begin{itemize}
+        \item Un modello con \textbf{basso bias} ed \textbf{elevata varianza (High Variance)} è un modello estremamente complesso ed elastico (come un albero sviluppato fino alla massima profondità possibile). %[cite: 2]
+        \item Questo modello si adatta perfettamente a qualsiasi oscillazione locale del training set, annullando l'errore di addestramento; tuttavia, addestrato su un campione di dati leggermente diverso genererebbe regole decisionali completamente differenti, portando a prestazioni scadenti su dati nuovi (\textbf{overfitting}). %[cite: 2]
+    \end{itemize}
 \end{itemize}
 
-\paragraph{Algoritmo di Reduced-Error Post-Pruning}
+\paragraph{L'andamento dell'errore al variare della complessità}
+Aumentando la complessità del modello, l'errore sul training set decresce in modo monotono, tendendo idealmente a zero. %[cite: 2]
+L'errore sui dati futuri (test set), invece, segue una curva a U: %[cite: 2]
+inizialmente scende al crescere dell'espressività del modello, tocca un punto di minimo ottimale (\textit{punto di compromesso bias-varianza}) e poi risale bruscamente a causa della varianza fuori controllo. %[cite: 2]
+Il nostro obiettivo pratico è individuare la complessità che corrisponde a questo punto di minimo reale. %[cite: 2]
+
+\subsubsection{Rilevare l'Overfitting: Training Set e Validation Set}
+
+\noindent Una difficoltà centrale del Machine Learning risiede nel fatto che non possiamo conoscere né campionare direttamente l'intera distribuzione del mondo reale $\mathcal{D}$. %[cite: 2]
+Di conseguenza, non possiamo calcolare analiticamente $error_{\mathcal{D}}(h)$. %[cite: 2]
+
+\noindent Per aggirare questo problema, si partiziona l'insieme di dati etichettati a disposizione in due sottoinsiemi rigorosamente disgiunti: %[cite: 2]
 \begin{enumerate}
-    \item Si genera l'albero di decisione completo che classifica perfettamente il training set. %[cite: 2]
-    \item Si itera la seguente procedura finché la rimozione di nodi apporta benefici:
-    \begin{enumerate}
-        \item Per ogni sottoalbero interno non fogliare, si misura l'impatto della sua potatura (rimpiazzo con una foglia avente la classe maggioritaria) sull'accuratezza valutata sul \textit{validation set}. %[cite: 2]
-        \item Si elimina con approccio \textit{greedy} il sottoalbero la cui rimozione massimizza il guadagno di accuratezza sul validation set. %[cite: 2]
-    \end{enumerate}
+    \item \textbf{Training Set}: impiegato dall'algoritmo per far crescere l'albero e determinare la sequenza di split migliori. %[cite: 2]
+    \item \textbf{Validation Set}: tenuto nascosto durante la costruzione dell'albero e utilizzato esclusivamente \textit{dopo} come banco di prova imparziale per stimare l'accuratezza del modello su dati non visti e guidare la regolazione della sua complessità. %[cite: 2]
 \end{enumerate}
+
+\subsubsection{Strategie di Controllo: Early Stopping e Post-Pruning}
+
+\noindent Per impedire a un albero di decisione di crescere a dismisura e cadere nell'overfitting si utilizzano due filosofie complementari: %[cite: 2]
+
+\begin{itemize}
+    \item \textbf{Early Stopping (Arresto Anticipato o Pre-potatura)}: %[cite: 2]
+    consiste nel bloccare la ramificazione di un nodo prima che l'albero sia completo, trasformandolo direttamente in foglia se non sussistono determinate condizioni statistiche. %[cite: 2]
+    Tipici criteri di arresto sono:
+    \begin{itemize}
+        \item Fermarsi se il guadagno di informazione ($\text{Information Gain}$) prodotto dal miglior split disponibile è inferiore a una soglia prefissata. %[cite: 2]
+        \item Fermarsi se il numero di campioni presenti nel nodo è inferiore a una quantità minima prestabilita (ad esempio meno di 5 campioni). %[cite: 2]
+        \item Fissare a priori una profondità massima ammissibile dell'albero (\textit{max depth}). %[cite: 2]
+    \end{itemize}
+    \textit{Limite dell'Early Stopping}: è una decisione miope (\textit{greedy}). Se impostiamo un criterio troppo rigido, l'algoritmo rischia di fermarsi prematuramente ignorando combinazioni promettenti di feature che avrebbero prodotto benefici solo ai livelli successivi (come nel problema dello XOR). %[cite: 2]
+
+    \item \textbf{Post-Pruning (Potatura Retrograda)}: %[cite: 2]
+    rappresenta la strategia di gran lunga preferibile e più solida. Consiste nel lasciare crescere l'albero liberamente fino alla sua massima estensione (ottenendo un albero completo che classifica perfettamente il training set) e successivamente procedere a potarlo a ritroso, eliminando rami e sottoalberi che non dimostrano un beneficio effettivo su dati non visti. %[cite: 2]
+\end{itemize}
+
+\subsubsection{L'Algoritmo di Reduced-Error Post-Pruning}
+
+\noindent Tra le tecniche di potatura retrograda, il metodo \textbf{Reduced-Error Post-Pruning} sfrutta esplicitamente il validation set per decidere quali rami tagliare. %[cite: 2]
+
+\paragraph{Procedimento operativo}
+\begin{enumerate}
+    \item Si costruisce l'albero di decisione completo sul solo \textit{training set}, fino a raggiungere foglie pure (errore nullo sul training set). %[cite: 2]
+    \item Si misura l'accuratezza di partenza dell'albero completo valutandola sul \textit{validation set}. %[cite: 2]
+    \item Si itera la seguente procedura finché l'accuratezza sul validation set continua a migliorare: %[cite: 2]
+    \begin{enumerate}
+        \item Per ciascun sottoalbero interno non fogliare, si simula la sua potatura provvisoria: il sottoalbero viene rimosso e sostituito con una singola foglia, a cui viene assegnata l'etichetta di classe maggioritaria tra gli esempi del training set che raggiungono quel nodo. %[cite: 2]
+        \item Si valuta l'impatto di ciascuna potatura candidata sull'accuratezza misurata sul \textit{validation set}. %[cite: 2]
+        \item Si rende definitiva la potatura del sottoalbero la cui rimozione produce il massimo incremento di accuratezza (o la minor perdita di accuratezza entro un margine di tolleranza, privilegiando la parsimonia). %[cite: 2]
+    \end{enumerate}
+    \item L'algoritmo termina non appena nessuna ulteriore potatura apporta miglioramenti misurabili sul validation set. %[cite: 2]
+\end{enumerate}
+
+\paragraph{Esempio intuitivo del meccanismo di potatura}
+Immaginiamo che un sottoalbero profondo contenga alla sua base tre nodi foglia che distinguono sottogruppi microscopici con 2 campioni ciascuno, generati per catturare una singola eccezione rumorosa nel training set. %[cite: 2]
+Quando valutiamo l'albero completo sul validation set, la presenza di questi rami iper-specifici causa errori di predizione, portando ad esempio a un'accuratezza del $78\%$. %[cite: 2]
+Sostituendo l'intero sottoalbero con una foglia generica etichettata con la classe maggioritaria (ad esempio \textit{Yes}), le predizioni su casi non visti diventano più robuste e l'accuratezza sul validation set sale all'$84\%$. %[cite: 2]
+L'algoritmo convalida la potatura, ottenendo un albero non solo più piccolo e computazionalmente più rapido, ma dotato di una capacità di generalizzazione nettamente superiore. %[cite: 2]
 
 \subsection{Criteri Alternativi di Impurità ed Ensemble Learning}
 
-\noindent In alternativa all'entropia shannoniana, si ricorre ampiamente all'\textbf{Impurità di Gini} ($I_G$). Essa esprime la probabilità che un campione selezionato a caso riceva un'etichetta errata se etichettato casualmente secondo la distribuzione marginale delle classi nel nodo. %[cite: 2]
-Dato un nodo con $m$ categorie in cui $f_i$ indica la frazione di elementi di classe $i$, la probabilità di errore associata è $(1 - f_i)$. La media pesata su tutte le etichette fornisce:
-$$I_G(f) = \sum_{i=1}^m f_i(1 - f_i) = \sum_{i=1}^m f_i - \sum_{i=1}^m f_i^2 = 1 - \sum_{i=1}^m f_i^2$$ %[cite: 2]
+\subsubsection{L'Impurità di Gini come Alternativa all'Entropia}
 
-\noindent \textbf{Valutazione comparativa tra attributi $A$ e $B$ tramite Impurità di Gini}: \\
-Riprendendo il nodo con $64$ campioni ($[29+, 35-]$): %[cite: 2]
-\begin{itemize}
-    \item \textbf{Attributo $A$}: partiziona nei rami $T$ ($26$ campioni: $[21+, 5-]$) ed $F$ ($38$ campioni: $[8+, 30-]$).
-    $$I_G(A = T) = 1 - \left(\frac{21}{26}\right)^2 - \left(\frac{5}{26}\right)^2 \approx 0.310$$ %[cite: 2]
-    $$I_G(A = F) = 1 - \left(\frac{8}{38}\right)^2 - \left(\frac{30}{38}\right)^2 \approx 0.332$$ %[cite: 2]
-    $$I_G(A) = \frac{26}{64}(0.310) + \frac{38}{64}(0.332) = \mathbf{0.323}$$ %[cite: 2]
-    \item \textbf{Attributo $B$}: partiziona nei rami $T$ ($51$ campioni: $[18+, 33-]$) ed $F$ ($13$ campioni: $[11+, 2-]$).
-    $$I_G(B = T) = 1 - \left(\frac{18}{51}\right)^2 - \left(\frac{33}{51}\right)^2 \approx 0.456$$ %[cite: 2]
-    $$I_G(B = F) = 1 - \left(\frac{11}{13}\right)^2 - \left(\frac{2}{13}\right)^2 \approx 0.260$$ %[cite: 2]
-    $$I_G(B) = \frac{51}{64}(0.456) + \frac{13}{64}(0.260) = \mathbf{0.416}$$ %[cite: 2]
-\end{itemize}
-Poiché $I_G(A) < I_G(B)$, lo split indotto dall'attributo $A$ produce un'impurità residua inferiore, venendo prescelto. %[cite: 2]
+\noindent Nella costruzione degli alberi di decisione, l'entropia di Shannon non è l'unica metrica utilizzabile per valutare la purezza di un nodo. %[cite: 2]
+Un'alternativa diffusissima (adottata di default da librerie come \texttt{scikit-learn} nell'algoritmo CART) è l'\textbf{Impurità di Gini} ($I_G$). %[cite: 2]
 
-\begin{cbox}{Proprietà degli Alberi di Decisione e Random Forests}
-\noindent Gli alberi di decisione presentano vantaggi operativi rilevanti:
-\begin{itemize}
-    \item \textbf{Interpretabilità diretta}: le regole di decisione sono ispezionabili e traducibili in formule logiche. %[cite: 2]
-    \item \textbf{Pre-elaborazione minima}: gestiscono nativamente dati numerici e categorici senza richiedere normalizzazione o standardizzazione. %[cite: 2]
-    \item \textbf{Basso costo di inferenza}: la predizione richiede tempo logaritmico rispetto al numero di nodi. %[cite: 2]
-\end{itemize}
-Di contro, manifestano forte tendenza all'\textbf{overfitting}, alta varianza e instabilità strutturale rispetto a fluttuazioni del dataset, oltre a una vulnerabilità allo sbilanciamento delle classi. %[cite: 2]
+\paragraph{Significato probabilistico dell'indice di Gini}
+Immaginiamo di trovarci in un nodo e di voler eseguire il seguente esperimento concettuale: %[cite: 2]
+\begin{enumerate}
+    \item Peschiamo a caso un campione dal nodo. %[cite: 2]
+    \item Gli assegniamo un'etichetta di classe tirando a indovinare, ma rispettando fedelmente le proporzioni delle classi presenti nel nodo stesso. %[cite: 2]
+\end{enumerate}
+L'Impurità di Gini misura esattamente la \textbf{probabilità che il campione venga etichettato in modo errato}. %[cite: 2]
 
-\noindent Per ovviare a tali limiti si adotta il paradigma delle \textbf{Random Forest}, metodi ensemble basati sul principio per cui una pluralità di modelli debolmente correlati operanti come comitato supera la performance del singolo classificatore costituente. La decorrelazione è garantita da:
+\paragraph{Derivazione matematica}
+Sia $m$ il numero totale di categorie distinte e sia $f_i$ la frazione di elementi nel nodo appartenenti alla classe $i$ (ossia la probabilità empirica che un elemento estratto appartenga alla classe $i$): %[cite: 2]
 \begin{itemize}
-    \item \textbf{Bagging (\textit{Bootstrap Aggregating})}: addestramento di ogni singolo albero su un sottoinsieme di campioni estratto casualmente con reinserimento (\textit{bootstrap}) dal training set. %[cite: 2]
-    \item \textbf{Feature Randomness}: a ogni nodo, la ricerca del miglior criterio di divisione è vincolata a un sottoinsieme casuale ristretto di feature. %[cite: 2]
+    \item La probabilità di estrarre un elemento di classe $i$ è $f_i$. %[cite: 2]
+    \item La probabilità di assegnargli un'etichetta diversa da $i$ (commettendo un errore) è pari alla somma delle probabilità di tutte le altre classi, ossia $(1 - f_i)$. %[cite: 2]
 \end{itemize}
+Calcolando la probabilità di errore complessiva come media ponderata su tutte le $m$ classi disponibili, ricaviamo: %[cite: 2]
+$$I_G(f) = \sum_{i=1}^m f_i \, (1 - f_i) = \sum_{i=1}^m \left(f_i - f_i^2\right) = \sum_{i=1}^m f_i - \sum_{i=1}^m f_i^2$$ %[cite: 2]
+Poiché la somma di tutte le frazioni di classe deve dare $1$ ($\sum_{i=1}^m f_i = 1$), l'espressione si semplifica nella forma canonica: %[cite: 2]
+$$I_G(f) = 1 - \sum_{i=1}^m f_i^2$$ %[cite: 2]
+
+\paragraph{Proprietà della metrica di Gini}
+\begin{itemize}
+    \item \textbf{Minimo ($I_G = 0$)}: si ottiene quando il nodo è perfettamente puro, ovvero tutti i campioni appartengono a una sola classe ($f_1 = 1$, le altre $0$). %[cite: 2]
+    \item \textbf{Massimo nel caso binario ($I_G = 0.5$)}: si verifica quando gli esempi sono distribuiti al $50\%$ tra due classi ($1 - (0.5^2 + 0.5^2) = 1 - 0.5 = 0.5$). %[cite: 2]
+    \item \textbf{Vantaggio computazionale rispetto all'Entropia}: dal punto di vista pratico, l'indice di Gini e l'entropia portano quasi sempre a selezionare gli stessi split. %[cite: 2]
+    Tuttavia, l'indice di Gini non richiede il calcolo di logaritmi, risultando computazionalmente più veloce e leggero da calcolare durante l'addestramento. %[cite: 2]
+\end{itemize}
+
+\subsubsection{Esempio di Selezione dello Split tramite Indice di Gini}
+
+\noindent Riprendiamo il nodo genitore contenente $64$ campioni ($29$ positivi e $35$ negativi, denotato $[29+, 35-]$) e valutiamo quale tra i due attributi $A$ e $B$ produca la partizione migliore. %[cite: 2]
+
+\paragraph{Valutazione dell'Attributo $A$}
+L'attributo $A$ suddivide i campioni in: %[cite: 2]
+\begin{itemize}
+    \item Ramo $A = \text{True}$ ($26$ campioni su $64$: $[21+, 5-]$): %[cite: 2]
+    $$I_G(A = \text{True}) = 1 - \left(\frac{21}{26}\right)^2 - \left(\frac{5}{26}\right)^2 \approx 1 - 0.652 - 0.037 \approx 0.310$$ %[cite: 2]
+    \item Ramo $A = \text{False}$ ($38$ campioni su $64$: $[8+, 30-]$): %[cite: 2]
+    $$I_G(A = \text{False}) = 1 - \left(\frac{8}{38}\right)^2 - \left(\frac{30}{38}\right)^2 \approx 1 - 0.044 - 0.623 \approx 0.332$$ %[cite: 2]
+\end{itemize}
+L'impurità media residua ponderata per le dimensioni dei rami è: %[cite: 2]
+$$I_G(A) = \frac{26}{64} \cdot (0.310) + \frac{38}{64} \cdot (0.332) \approx 0.126 + 0.197 = \mathbf{0.323}$$ %[cite: 2]
+
+\paragraph{Valutazione dell'Attributo $B$}
+L'attributo $B$ suddivide i campioni in: %[cite: 2]
+\begin{itemize}
+    \item Ramo $B = \text{True}$ ($51$ campioni su $64$: $[18+, 33-]$): %[cite: 2]
+    $$I_G(B = \text{True}) = 1 - \left(\frac{18}{51}\right)^2 - \left(\frac{33}{51}\right)^2 \approx 1 - 0.124 - 0.419 \approx 0.456$$ %[cite: 2]
+    \item Ramo $B = \text{False}$ ($13$ campioni su $64$: $[11+, 2-]$): %[cite: 2]
+    $$I_G(B = \text{False}) = 1 - \left(\frac{11}{13}\right)^2 - \left(\frac{2}{13}\right)^2 \approx 1 - 0.716 - 0.024 \approx 0.260$$ %[cite: 2]
+\end{itemize}
+L'impurità media residua ponderata per $B$ è: %[cite: 2]
+$$I_G(B) = \frac{51}{64} \cdot (0.456) + \frac{13}{64} \cdot (0.260) \approx 0.363 + 0.053 = \mathbf{0.416}$$ %[cite: 2]
+
+\paragraph{Decisione finale}
+Poiché un valore più basso indica un minor disordine medio nei nodi risultanti: %[cite: 2]
+$$I_G(A) = 0.323 \quad < \quad I_G(B) = 0.416$$ %[cite: 2]
+L'algoritmo sceglie senza esitazione l'\textbf{attributo $A$}, giungendo alla medesima conclusione ottenuta in precedenza con l'Information Gain basato sull'entropia. %[cite: 2]
+
+\subsubsection{Bilancio Operativo: Pregi e Limiti degli Alberi Singoli}
+
+\noindent Gli alberi di decisione offrono qualità uniche nel panorama del Machine Learning, accompagnate però da criticità strutturali severe: %[cite: 2]
+
+\paragraph{Punti di forza}
+\begin{itemize}
+    \item \textbf{Interpretabilità diretta (modelli «White-Box»)}: ogni predizione può essere spiegata chiaramente ripercorrendo la catena logica di condizioni $se\dots allora$ che conducono dalla radice alla foglia. %[cite: 2]
+    \item \textbf{Nessun pre-processamento invasivo}: gestiscono con naturalezza sia feature numeriche continue che feature categoriche discrete, senza richiedere normalizzazione o standardizzazione delle scale dei valori. %[cite: 2]
+    \item \textbf{Basso costo di inferenza}: classificare un nuovo dato richiede unicamente di percorrere un sentiero radice-foglia, con una complessità computazionale logaritmica $O(\text{profondità})$ estremamente rapida. %[cite: 2]
+\end{itemize}
+
+\paragraph{Limiti e criticità}
+\begin{itemize}
+    \item \textbf{Instabilità strutturale e alta varianza}: una minima variazione nei dati di addestramento può stravolgere la scelta del primo split alla radice, producendo un albero finale con una struttura radicalmente diversa. %[cite: 2]
+    \item \textbf{Forte tendenza al sovradattamento}: se lasciati crescere senza vincoli, memorizzano il rumore statistico del training set perdendo capacità di generalizzazione. %[cite: 2]
+    \item \textbf{Sensibilità allo sbilanciamento delle classi}: se una categoria è dominante nel dataset, l'albero tenderà a sviluppare rami fortemente sbilanciati che favoriscono la classe maggioritaria; in questi casi è opportuno riequilibrare preventivamente il dataset. %[cite: 2]
+\end{itemize}
+
+\begin{cbox}{Il Salto di Qualità: Metodi Ensemble e Random Forests}
+\noindent Per superare l'instabilità e l'alta varianza dell'albero singolo, si adotta il paradigma dell'\textbf{Ensemble Learning} (apprendimento di insieme). %[cite: 2]
+Il principio di fondo (noto come «saggezza della folla») stabilisce che:
+\begin{quote}
+\textit{Un insieme numeroso di modelli predittivi debolmente correlati tra loro, che collaborano come un comitato, supera quasi sempre l'accuratezza del miglior singolo modello costituente.} %[cite: 2]
+\end{quote}
+
+\noindent L'algoritmo principe di questa categoria è la \textbf{Random Forest} (foresta casuale), che costruisce un comitato di decine o centinaia di alberi di decisione indipendenti. %[cite: 2]
+Affinché il comitato sia davvero efficace, è fondamentale che i singoli alberi \textbf{non siano duplicati identici}, ma formulino errori scorrelati tra loro. %[cite: 2]
+Questa diversificazione viene garantita da due meccanismi di casualità: %[cite: 2]
+
+\begin{enumerate}
+    \item \textbf{Bagging (\textit{Bootstrap Aggregating})}: %[cite: 2]
+    invece di addestrare tutti gli alberi sullo stesso dataset, ciascun albero viene addestrato su una copia campionata casualmente con reinserimento (\textit{bootstrap}) dal training set originale. %[cite: 2]
+    In media, ogni albero osserva circa il $63.2\%$ dei dati unici originali, mentre i restanti fungono da campioni non visti (\textit{Out-Of-Bag}). %[cite: 2]
+
+    \item \textbf{Feature Randomness (Scelta Casuale degli Attributi)}: %[cite: 2]
+    in un albero classico, a ogni nodo si esplorano tutte le feature per trovare la migliore. %[cite: 2]
+    Nelle Random Forest, invece, a ogni singolo split l'algoritmo è costretto a scegliere il miglior criterio di divisione all'interno di un \textbf{sottoinsieme ristretto di feature estratte a caso} (tipicamente $\sqrt{d}$ feature su un totale di $d$). %[cite: 2]
+    Questo impedisce alle feature dominanti di comparire sistematicamente alla radice di tutti gli alberi, forzando la creazione di strutture decisionali variegate e scorrelate. %[cite: 2]
+\end{enumerate}
+
+\paragraph{Fase di predizione}
+Dato un nuovo campione in ingresso, lo si fa valutare individualmente a tutti gli alberi della foresta: %[cite: 2]
+la predizione finale viene assegnata tramite \textbf{voto a maggioranza} (\textit{majority voting}) per i compiti di classificazione, oppure calcolando la \textbf{media aritmetica} dei valori predetti nel caso della regressione. %[cite: 2]
+Questo processo di aggregazione abbatte drasticamente la varianza senza aumentare il bias, rendendo le Random Forest uno dei modelli più robusti e affidabili del Machine Learning classico. %[cite: 2]
 \end{cbox}
 
-\paragraph{Sintesi dei Concetti Cardine dell'Apprendimento Induttivo}
-L'apprendimento supervisionato ricerca la funzione ottima all'interno dello spazio delle ipotesi $H$. %[cite: 2]
-Tra le ipotesi compatibili con i dati di addestramento si predilige la più parsimoniosa (Rasoio di Occam). %[cite: 2]
-Infine, il celebre \textbf{Teorema No Free Lunch (NFL)} stabilisce formalmente che nessun algoritmo di apprendimento può essere universalmente superiore a tutti gli altri su qualunque classe di problemi: qualsiasi capacità predittiva su dati non osservati necessita imprescindibilmente di un \textbf{bias induttivo} (insieme di assunzioni a priori sulla struttura dei dati). %[cite: 2]
+\subsubsection{Sintesi dei Principi Cardine e il Teorema No Free Lunch}
+
+\noindent L'analisi degli alberi di decisione introduce concetti che rimangono validi per l'intero spettro dell'apprendimento automatico: %[cite: 2]
+
+\begin{itemize}
+    \item \textbf{Definizione formale del compito}: partendo da uno spazio di input descritto da feature $X$ e uno spazio di etichette $Y$, si sfrutta il training set $\{\langle \mathbf{x}^{(i)}, y^{(i)} \rangle\}$ per ricercare la migliore funzione predittiva dentro uno spazio delle ipotesi $H = \{h \mid h: X \to Y\}$. %[cite: 2]
+    \item \textbf{Apprendimento come ottimizzazione vincolata}: addestrare un modello non significa soltanto minimizzare l'errore empirico sui campioni osservati, ma imporre una ricerca parsimoniosa (Rasoio di Occam) volta a garantire la generalizzazione futura. %[cite: 2]
+    \item \textbf{Il Teorema No Free Lunch (NFL)}: %[cite: 2]
+    stabilisce una verità matematica fondamentale: \textit{non esiste alcun algoritmo di apprendimento che sia universalmente superiore a tutti gli altri su qualunque classe di problemi possibili}. %[cite: 2]
+    Se un modello ottiene prestazioni eccellenti su determinati compiti, è unicamente perché fa affidamento su assunzioni a priori adatte alla struttura di quel dominio, definite formalmente come \textbf{bias induttivo}. %[cite: 2]
+    Senza un opportuno bias induttivo, nessun algoritmo è in grado di generalizzare razionalmente su dati non ancora osservati. %[cite: 2]
+\end{itemize}
 
 \subsection{Il Paradigma Probabilistico e Fondamenti Assiomatici}
 
-\noindent Nel paradigma deterministico l'obiettivo primario è stimare una funzione esplicita $f: X \to Y$. %[cite: 2]
-L'approccio probabilistico riformula il compito valutando la distribuzione condizionata:
-$$P(Y \mid X)$$ %[cite: 2]
-stimando la verosimiglianza di ciascuna classe $Y$ una volta acquisita l'evidenza delle feature $X$. %[cite: 2]
+\subsubsection{Dal Paradigma Deterministico a Quello Probabilistico}
 
-\noindent Definiamo formalmente gli elementi costitutivi della teoria della probabilità:
+\noindent Fino a questo punto abbiamo trattato l'apprendimento automatico in chiave prettamente deterministica: data un'istanza $\mathbf{x} \in X$, l'obiettivo era stimare una funzione esplicita: %[cite: 2]
+$$f: X \to Y$$ %[cite: 2]
+che assegna a ogni input una singola etichetta rigida e definitiva. %[cite: 2]
+
+\noindent Nei problemi del mondo reale, tuttavia, i dati sono quasi sempre affetti da rumore, ambiguità intrinseca o parziale incompletezza delle feature osservate. %[cite: 2]
+Il \textbf{paradigma probabilistico} affronta l'apprendimento riformulando il problema: invece di predire direttamente la classe esatta, si stima la \textbf{distribuzione di probabilità condizionata}: %[cite: 2]
+$$P(Y \mid X)$$ %[cite: 2]
+ovvero la probabilità che l'etichetta sia $Y$ una volta acquisita l'evidenza delle caratteristiche $X$. %[cite: 2]
+
+\paragraph{Vantaggi dell'approccio probabilistico}
 \begin{itemize}
-    \item \textbf{Spazio Campionario ($\Omega$)}: l'insieme di tutti i possibili esiti elementari associati a un esperimento aleatorio. %[cite: 2]
-    \item \textbf{Variabile Aleatoria ($X$)}: funzione misurabile definita sullo spazio campionario $\Omega \to \mathbb{R}$. Se l'insieme immagine è discreto si ha una variabile aleatoria discreta ($X: \Omega \to \{v_1, \dots, v_k\}$), se è continuo si ha una variabile continua. %[cite: 2]
-    \item \textbf{Evento ($A$)}: sottoinsieme misurabile dello spazio campionario ($A \subseteq \Omega$). %[cite: 2]
+    \item \textbf{Quantificazione dell'incertezza}: il modello non si limita a formulare una decisione, ma fornisce un grado di confidenza numerico (ad esempio, distinguere una diagnosi medica formulata con il $99\%$ di sicurezza da una con il $51\%$). %[cite: 2]
+    \item \textbf{Gestione del rumore}: permette di modellare in modo matematicamente fondato osservazioni contrastanti (ossia casi in cui lo stesso vettore di feature produce in rari casi esiti differenti). %[cite: 2]
+    \item \textbf{Ponte verso modelli generativi}: consente sia di classificare nuovi dati, sia di comprendere come i dati stessi si distribuiscono nello spazio delle feature. %[cite: 2]
 \end{itemize}
 
-\noindent \textbf{Definizione rigorosa dello Spazio Campionario}: l'intuizione probabilistica classica postula l'equiprobabilità degli eventi elementari. Nel lancio simultaneo di due dadi a sei facce, modellare gli esiti come la somma dei punti $\{2, 3, \dots, 12\}$ è fallace poiché le somme non hanno la medesima probabilità; lo spazio campionario uniforme è costituito dalle 36 coppie ordinate di esiti $\Omega = \{1, \dots, 6\} \times \{1, \dots, 6\}$, su cui la somma costituisce una specifica variabile aleatoria derivata. %[cite: 2]
+\subsubsection{Elementi Costitutivi: Spazio Campionario, Variabili Aleatorie ed Eventi}
 
-\begin{cbox}{Assiomi della Teoria della Probabilità (Kolmogorov)}
-\noindent Sia $\Omega$ lo spazio campionario e $P$ una funzione a valori reali definita sulla famiglia degli eventi:
+\noindent Per costruire un quadro matematico rigoroso dell'incertezza, è necessario formalizzare i concetti fondamentali della teoria della probabilità: %[cite: 2]
+
+\begin{itemize}
+    \item \textbf{Spazio Campionario ($\Omega$)}: è l'insieme di tutti i possibili esiti elementari associati a un esperimento aleatorio. %[cite: 2]
+    Ad esempio, se l'esperimento consiste nel selezionare una persona a caso tra quelle presenti in un'aula universitaria, lo spazio $\Omega$ è l'insieme finito di tutti gli studenti presenti. %[cite: 2]
+
+    \item \textbf{Variabile Aleatoria ($X$)}: è una funzione a valori reali definita sullo spazio campionario, che associa a ciascun esito elementare una proprietà misurabile: %[cite: 2]
+    $$X: \Omega \to \text{Valori}$$ %[cite: 2]
+    A seconda del dominio di arrivo distinguiamo:
+    \begin{itemize}
+        \item \textbf{Variabili discrete}: assumono valori in un insieme finito o numerabile (ad esempio il sesso biologico $\Omega \to \{\text{maschio}, \text{femmina}\}$, il nome proprio dello studente, o la predizione binaria $Y \in \{0, 1\}$). %[cite: 2]
+        \item \textbf{Variabili continue}: assumono valori su scala reale continua (ad esempio l'altezza di uno studente in centimetri $\Omega \to \mathbb{R}^+$). %[cite: 2]
+    \end{itemize}
+
+    \item \textbf{Evento ($A$)}: è un qualsiasi sottoinsieme misurabile dello spazio campionario ($A \subseteq \Omega$). %[cite: 2]
+    Un evento identifica una proprietà logica soddisfatta da una frazione dei campioni, come ad esempio:
+    $$A = \{x \in \Omega \mid \text{altezza}(x) \le 175\text{ cm}\}$$ %[cite: 2]
+\end{itemize}
+
+\paragraph{Interpretazione frequentista e geometrica}
+La probabilità di un evento $P(A)$ può essere interpretata in due modi equivalenti: %[cite: 2]
 \begin{enumerate}
-    \item $0 \le P(A) \le 1 \quad \forall A \subseteq \Omega$ %[cite: 2]
-    \item $P(\Omega) = P(\text{True}) = 1, \quad P(\emptyset) = P(\text{False}) = 0$ %[cite: 2]
-    \item $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ %[cite: 2]
+    \item \textbf{Frequentista}: è la frazione di volte in cui l'evento risulta verificato ripetendo l'esperimento un numero teoricamente infinito di volte nelle medesime condizioni. %[cite: 2]
+    \item \textbf{Geometrica}: se immaginiamo lo spazio campionario $\Omega$ come una superficie di area unitaria, la probabilità $P(A)$ corrisponde esattamente al rapporto tra l'area occupata dal sottoinsieme $A$ e l'area totale dello spazio $\Omega$. %[cite: 2]
+\end{enumerate}
+
+\paragraph{Attenzione alla definizione dello Spazio Campionario: L'Esempio dei Dadi}
+L'intuizione probabilistica classica si basa sul principio che tutti i punti dello spazio campionario $\Omega$ abbiano la stessa probabilità di verificarsi (\textit{eventi elementari equiprobabili}). %[cite: 2]
+Definire $\Omega$ in modo superficiale può condurre a conclusioni gravemente errate: %[cite: 2]
+
+\begin{quote}
+\textit{Esempio.} Si consideri il lancio simultaneo di due dadi regolari a 6 facce. %[cite: 2]
+Se definissimo lo spazio campionario come l'insieme dei possibili punteggi somma:
+$$\Omega_{\text{errato}} = \{2, 3, 4, \dots, 11, 12\}$$ %[cite: 2]
+commetteremmo un errore concettuale: questi 11 esiti \textbf{non sono equiprobabili}. %[cite: 2]
+Ottenere come somma $2$ richiede la combinazione unica $(1, 1)$, mentre ottenere $7$ è molto più probabile poiché realizzabile tramite 6 combinazioni distinte: $(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)$. %[cite: 2]
+\end{quote}
+
+\noindent La formulazione rigorosa impone di scegliere come spazio campionario l'insieme delle 36 coppie ordinate di esiti, tutte perfettamente equiprobabili con probabilità $1/36$: %[cite: 2]
+$$\Omega = \{1, 2, 3, 4, 5, 6\} \times \{1, 2, 3, 4, 5, 6\}$$ %[cite: 2]
+La somma dei punteggi non è lo spazio campionario, ma una specifica \textbf{variabile aleatoria} $S: \Omega \to \{2, \dots, 12\}$ calcolata su di esso: %[cite: 2]
+$$P(S = 7) = \frac{6}{36} = \frac{1}{6}, \quad P(S = 2) = \frac{1}{36}$$ %[cite: 2]
+
+\begin{cbox}{Gli Assiomi della Teoria della Probabilità (Kolmogorov)}
+\noindent La formalizzazione moderna della probabilità poggia su tre assiomi fondamentali definiti dal matematico Andrei Kolmogorov. %[cite: 2]
+Sia $\Omega$ lo spazio campionario e $P$ una funzione che assegna a ciascun evento $A \subseteq \Omega$ un numero reale: %[cite: 2]
+
+\begin{enumerate}
+    \item \textbf{Non-negatività e Limite Superiore}: %[cite: 2]
+    $$0 \le P(A) \le 1 \quad \forall A \subseteq \Omega$$ %[cite: 2]
+    La misura di probabilità è compresa tra l'impossibilità assoluta ($0$) e la certezza ($1$). %[cite: 2]
+
+    \item \textbf{Certezza dello Spazio Campionario}: %[cite: 2]
+    $$P(\Omega) = P(\text{True}) = 1, \qquad P(\emptyset) = P(\text{False}) = 0$$ %[cite: 2]
+    L'esperimento aleatorio produce sempre e sicuramente un esito appartenente allo spazio campionario. %[cite: 2]
+
+    \item \textbf{Principio di Additività (o di Inclusione-Esclusione)}: %[cite: 2]
+    Dati due eventi generici $A$ e $B$: %[cite: 2]
+    $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$ %[cite: 2]
+    La probabilità che si verifichi $A$ oppure $B$ è data dalla somma delle loro probabilità individuali, sottraendo la probabilità della loro intersezione per evitare di conteggiare due volte la regione comune. %[cite: 2]
+    Se i due eventi sono mutualmente esclusivi (disgiunti, ossia $A \cap B = \emptyset$), il termine di intersezione si annulla e si ottiene la semplice somma: $P(A \cup B) = P(A) + P(B)$. %[cite: 2]
 \end{enumerate}
 
 \paragraph{Teorema dell'Evento Complementare}
-$$P(\neg A) = 1 - P(A)$$
-\textit{Dimostrazione.} Applicando l'assioma di unione a $B = \neg A$:
-$$P(A \cup \neg A) = P(A) + P(\neg A) - P(A \cap \neg A)$$
-Poiché $A \cup \neg A = \Omega \implies P(\Omega) = 1$ e $A \cap \neg A = \emptyset \implies P(\emptyset) = 0$:
+La probabilità che l'evento $A$ \textbf{non} si verifichi (evento negato $\neg A$) è: %[cite: 2]
+$$P(\neg A) = 1 - P(A)$$ %[cite: 2]
+\textit{Dimostrazione.} Applichiamo il terzo assioma considerando $B = \neg A$: %[cite: 2]
+$$P(A \cup \neg A) = P(A) + P(\neg A) - P(A \cap \neg A)$$ %[cite: 2]
+Poiché un evento e il suo opposto coprono l'intero spazio campionario ($A \cup \neg A = \Omega \implies P(\Omega) = 1$) e non possono verificarsi contemporaneamente ($A \cap \neg A = \emptyset \implies P(\emptyset) = 0$), otteniamo: %[cite: 2]
 $$1 = P(A) + P(\neg A) - 0 \implies P(\neg A) = 1 - P(A) \quad \square$$ %[cite: 2]
 
 \paragraph{Teorema della Probabilità Totale (Formulazione Binaria)}
-$$P(A) = P(A \cap B) + P(A \cap \neg B)$$
-\textit{Dimostrazione.} Poiché $A = A \cap (B \cup \neg B) = (A \cap B) \cup (A \cap \neg B)$, ed essendo $(A \cap B)$ e $(A \cap \neg B)$ eventi disgiunti:
-$$P(A) = P(A \cap B) + P(A \cap \neg B) - P((A \cap B) \cap (A \cap \neg B)) = P(A \cap B) + P(A \cap \neg B) - 0 \quad \square$$ %[cite: 2]
+Dati due eventi $A$ e $B$, la probabilità di $A$ può sempre essere decomposta rispetto al verificarsi o meno di $B$: %[cite: 2]
+$$P(A) = P(A \cap B) + P(A \cap \neg B)$$ %[cite: 2]
+\textit{Dimostrazione.} Possiamo riscrivere l'insieme $A$ sfruttando l'identità insiemistica $A = A \cap \Omega = A \cap (B \cup \neg B) = (A \cap B) \cup (A \cap \neg B)$. %[cite: 2]
+Gli insiemi $(A \cap B)$ e $(A \cap \neg B)$ sono disgiunti per costruzione, poiché $B \cap \neg B = \emptyset$. %[cite: 2]
+Applicando il terzo assioma di additività: %[cite: 2]
+$$P(A) = P((A \cap B) \cup (A \cap \neg B)) = P(A \cap B) + P(A \cap \neg B) - P((A \cap B) \cap (A \cap \neg B))$$ %[cite: 2]
+Essendo l'intersezione vuota, $P(\emptyset) = 0$, da cui: %[cite: 2]
+$$P(A) = P(A \cap B) + P(A \cap \neg B) \quad \square$$ %[cite: 2]
 \end{cbox}
 
-\noindent Per una variabile aleatoria discreta $A$ che assume uno tra $k$ valori mutualmente esclusivi ed esaustivi $\{\nu_1, \nu_2, \dots, \nu_k\}$:
-$$P(A = \nu_i \land A = \nu_j) = 0 \quad \forall i \neq j$$ %[cite: 2]
-$$\sum_{i=1}^k P(A = \nu_i) = P\left(\bigvee_{i=1}^k (A = \nu_i)\right) = 1$$ %[cite: 2]
+\subsubsection{Estensione a Variabili Discrete Multivalore}
+
+\noindent I teoremi visti sul caso binario si generalizzano a variabili discrete che possono assumere un numero arbitrario $k$ di valori distinti. %[cite: 2]
+Diciamo che $A$ è una variabile aleatoria discreta a $k$ stati se assume esattamente uno dei valori nell'insieme $\{\nu_1, \nu_2, \dots, \nu_k\}$. %[cite: 2]
+
+\noindent Gli stati costituiscono una \textbf{partizione} dello spazio campionario, garantendo due proprietà formali: %[cite: 2]
+\begin{enumerate}
+    \item \textbf{Mutua esclusività}: due valori differenti non possono verificarsi simultaneamente: %[cite: 2]
+    $$P(A = \nu_i \land A = \nu_j) = 0 \quad \forall i \neq j$$ %[cite: 2]
+    \item \textbf{Esaustività}: la variabile deve assumere per forza almeno uno dei valori ammessi; la somma delle probabilità associate a tutti i possibili esiti è pari alla certezza: %[cite: 2]
+    $$\sum_{i=1}^k P(A = \nu_i) = P\left(\bigvee_{i=1}^k (A = \nu_i)\right) = 1$$ %[cite: 2]
+\end{enumerate}
+
+\paragraph{Formulazione generale della Probabilità Totale}
+Data una partizione dello spazio campionario formata da $k$ eventi esaustivi e disgiunti $\{B_1, B_2, \dots, B_k\}$, la probabilità di un qualunque evento $A$ è ricavabile sommando i contributi di $A$ con ciascun componente della partizione: %[cite: 2]
+$$P(A) = \sum_{i=1}^k P(A \cap B_i)$$ %[cite: 2]
+Questo principio costituisce la base matematica su cui poggiano la regola di Bayes, l'inferenza probabilistica e la marginalizzazione delle distribuzioni congiunte. %[cite: 2]
 
 \subsection{Probabilità Condizionata, Regola della Catena e Indipendenza Stocastica}
 
@@ -409,5 +959,6 @@ $$P(A \mid B) = P(A)$$ %[cite: 2]
 Ne consegue immediatamente l'espressione fattorizzata della probabilità congiunta:
 $$P(A \cap B) = P(A) \, P(B)$$ %[cite: 2]
 da cui deriva reciprocamente che $P(B \mid A) = P(B)$. %[cite: 2]
+
 
 \end{document}

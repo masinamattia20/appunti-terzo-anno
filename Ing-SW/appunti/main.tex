@@ -32,7 +32,7 @@
     colback=orange!5!white,
     colframe=orange!40!black,
     fonttitle=\bfseries,
-    title=#1,
+    title={#1},
     arc=2mm,
     boxrule=0.5mm,
     left=10pt,
@@ -582,9 +582,9 @@ Questo consente sia una consultazione rapida da parte dei singoli professionisti
     \item Team di sviluppo composto da 6 persone, con esperienza in ambienti web ma completamente prive di competenze su Essence.
 \end{itemize}
 
-\begin{cbox}{Diagnosi degli Alpha dello Scenario (Senza Prescrizione di Cura)}
+\begin{cbox}{Diagnosi degli Alpha dello Scenario. Situazione Iniziale (Week 0, Senza Prescrizione di Cura)}
 \begin{itemize}
-    \item \textbf{Requirements $\to$ Stato massimo: \textit{Conceived}}:
+    \item \textbf{Requirements $\to$ Stato iniziale: \textit{Conceived}}:
     L'ambito generale del servizio è stato delineato, ma la persistenza di conflitti non sanati sulle priorità e sulle policy di riservatezza impedisce di considerare i requisiti circoscritti e condivisi. Non è soddisfatto il checkpoint di confine per lo stato \textit{Bounded}.
     \item \textbf{Team $\to$ Stato effettivo: \textit{Formed}}:
     I 6 membri sono stati identificati e assegnati al progetto, ma operano come somma di individualità. Mancano le evidenze oggettive di cooperazione coesa, fiducia reciproca e allineamento sulla missione richieste per lo stato \textit{Collaborating}.
@@ -599,5 +599,507 @@ Questo consente sia una consultazione rapida da parte dei singoli professionisti
     \item \textbf{Evidenza mancante}: non sussistono evidenze relative all'architettura tecnica del \textit{Software System}, alla capacità produttiva misurata del \textit{Team} e alla convergenza contrattuale degli \textit{Stakeholders}. Il progetto presenta un elevato rischio di fallimento latente non rilevabile dai soli diagrammi di pianificazione.
     \item \textbf{Ruolo del Team nella Soluzione}: Essence ha diagnosticato il disallineamento; spetta ora al team definire la strategia risolutiva (es. rinegoziare lo scope con il cliente, introdurre pratiche di prototipazione rapida o adottare spike architetturali).
 \end{itemize}
+
+\subsection{Diagnostica di Progetto e Valutazione dello Stato (Project Health)}
+\noindent La valutazione dell'avanzamento in Essence non si misura tramite la percentuale di tempo trascorsa o la quantità di documentazione prodotta, bensì attraverso l'analisi oggettiva delle evidenze empiriche ricavate dai checkpoint degli Alpha.
+
+\medskip
+\noindent \textbf{I Checkpoint come Evidenze Oggettive.} Un checkpoint costituisce un'asserzione verificabile tramite l'ispezione diretta di artefatti o il raggiungimento di un accordo informato e convalidato:
+\begin{itemize}
+    \item \textbf{Evidenze vs Aspirazioni}: un piano o un'intenzione futura non certificano il passaggio di stato. Uno stato è soddisfatto esclusivamente quando \textbf{tutti i suoi checkpoint} sono supportati da evidenze tangibili.
+    \item \textbf{Relazione molti-a-uno}: molteplici prodotti di lavoro possono concorrere congiuntamente a fornire la prova richiesta da un singolo checkpoint.
+    \item \textbf{Il valore del disaccordo}: discrepanze di valutazione all'interno del team non costituiscono un fallimento, ma segnalano un'ambiguità o un'incertezza latente che richiede un'immediata investigazione.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Stato Corrente vs Prossimo Stato.} Per guidare il lavoro operativo si distinguono chiaramente due condizioni:
+\begin{itemize}
+    \item \textbf{Stato Corrente (\textit{Current State})}: il livello di maturità più avanzato i cui criteri risultano interamente coperti da evidenze oggettive.
+    \item \textbf{Prossimo Stato (\textit{Next State})}: l'obiettivo immediato da consolidare. Il divario (\textit{gap}) tra stato corrente e successivo definisce le priorità concrete dell'iterazione.
+    \item \textbf{Chasing the State}: tecnica diagnostica in cui il team isola i checkpoint ancora scoperti del prossimo stato, intraprende azioni mirate per raccogliere le evidenze mancanti e rivaluta lo stato al termine delle attività.
+\end{itemize}
+
+\begin{cbox}{Dipendenze Invarianti e Anomalie Tipiche di Progetto}
+\noindent Gli Alpha evolvono in modo solidale; andamenti disomogenei rivelano anomalie strutturali e rischi sistemici:
+\begin{itemize}
+    \item \textbf{Software avanzato a fronte di Requisiti indefiniti}: sviluppare rapidamente prototipi o codice quando i requisiti non sono ancora delimitati (\textit{Bounded}) accumula un debito di rilavorazione (\textit{rework}) difficilmente sostenibile.
+    \item \textbf{Lavoro ``Under Control'' senza Team collaborativo}: dichiarare le attività sotto controllo mentre il team è unicamente assegnato (\textit{Formed}) maschera disallineamenti comunicativi e attriti operativi.
+    \item \textbf{Soddisfazione nominale degli Stakeholder}: considerare gli interlocutori appagati senza disporre di riscontri oggettivi generati dall'effettivo utilizzo sul campo.
+    \item \textbf{Modo di Lavorare immutato di fronte ai problemi}: conservare le medesime pratiche e convenzioni operative nonostante il ripetersi di blocchi, colli di bottiglia o inefficienze metodologiche.
+\end{itemize}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Strumenti Operativi e Protocolli di Valutazione:}
+\begin{itemize}
+    \item \textbf{Progress Poker}: sessione di stima partecipativa in cui ciascun membro valuta in modo indipendente lo stato corrente supportato da evidenze; la rivelazione simultanea fa emergere le divergenze massime, indirizzando la discussione sui soli checkpoint contesi.
+    \item \textbf{Objective Go}: allineamento strategico che definisce a priori quali stati di quali Alpha siano indispensabili per considerare raggiunto un determinato traguardo di business o di rilascio.
+    \item \textbf{Protocollo di Valutazione in 30 Minuti}: audit focalizzato su 2--3 Alpha rilevanti per la decisione contingente; il team esamina le evidenze e formalizza un \textit{Evidence Record} (Stato corrente, Prossimo stato, Evidenze a supporto, Incertezze, Azioni correttive, Responsabile e Data di revisione).
+    \item \textbf{Gestione dell'ambiguità}: principio di massima prudenza: in presenza di evidenze parziali o contestate ci si attesta sempre sullo stato inferiore pienamente garantito, scongiurando falsi consensi.
+\end{itemize}
+
+ \begin{figure}[htbp]
+     \centering
+     \includegraphics[width=0.5\textwidth]{poker.png}
+     \label{fig:poker}
+ \end{figure}
+
+\medskip
+\noindent \textbf{Studio di Caso UniMagic: Valutazione a Tre Settimane.}
+L'analisi dello stato del progetto UniMagic a tre settimane dall'avvio evidenzia il confronto tra la diagnosi dei team di sviluppo e la soluzione di riferimento del docente:
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{3.2cm}p{3.2cm}p{5.2cm}}
+    \toprule
+    \textbf{Alpha} & \textbf{Valutazione Team} & \textbf{Soluzione Docente} & \textbf{Evidenze e Diagnosi Oggettiva} \\
+    \midrule
+    \textbf{Requirements} & Conceived / Bounded & \textbf{Bounded} (\textit{at best}) & Sussistono interviste e un backlog di 46 item, ma i vincoli di privacy non affrontati ne minano la coerenza complessiva. \\
+    \addlinespace
+    \textbf{Software System} & Demonstrable & \textbf{Demonstrable} & Prototipo cliccabile e pipeline di deployment operativi; assenza totale di verifiche di prontezza operativa. \\
+    \addlinespace
+    \textbf{Work} & Iniziale / Prepared & \textbf{Started} & L'esecuzione è concretamente iniziata; l'incertezza su priorità e perimetro esclude la condizione \textit{Under Control}. \\
+    \addlinespace
+    \textbf{Stakeholders} & Recognized / Involved & \textbf{Represented} & Interviste a 12 studenti e 4 amministrativi provano la rappresentanza, ma mancano accordo stabile e soddisfazione d'uso. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textit{Decisione strategica}: la criticità primaria consiste nel forte disallineamento tra la maturità tecnologica (prototipo e pipeline) e la totale mancanza di analisi sui requisiti di privacy. L'azione correttiva prioritaria impone di sospendere l'espansione dell'implementazione per condurre la privacy review e concordare i relativi criteri di accettazione sul backlog (\textit{una pipeline efficiente non compensa un requisito non bounded}).
+
+\subsection{Anatomia delle Pratiche e Struttura Operativa}
+\noindent Mentre il Kernel individua le dimensioni universali invarianti, le \textbf{pratiche} rappresentano le unità metodologiche modulari adottate dal team per rispondere a problemi operativi specifici.
+
+\begin{cbox}{Le 8 Dimensioni di Scomposizione di una Pratica}
+\noindent Quando si analizza o si formalizza una pratica in Essence si esplicitano 8 caratteristiche essenziali:
+\begin{enumerate}
+    \item \textbf{Obiettivo (\textit{Goal})}: il fine ingegneristico o il valore concreto che la pratica persegue.
+    \item \textbf{Alpha di Interesse}: gli Alpha del Kernel (o Sub-Alpha) su cui la pratica interviene o di cui misura la maturità.
+    \item \textbf{Prodotti di Lavoro (\textit{Work Products})}: gli artefatti tangibili generati, aggiornati o utilizzati come evidenza.
+    \item \textbf{Attività (\textit{Activities})}: le sequenze operative o i compiti da svolgere per far progredire il lavoro.
+    \item \textbf{Competenze}: le capacità e le abilità minime necessarie per eseguire i compiti previsti.
+    \item \textbf{Criteri di Avanzamento}: condizioni di ingresso (\textit{entry criteria}) e condizioni di uscita (\textit{exit criteria}).
+    \item \textbf{Pattern ed Esempi}: modelli riutilizzabili, linee guida o convenzioni standard.
+    \item \textbf{Supporti Ausiliari}: strumenti di automazione, supporto di intelligenza artificiale e vincoli di sicurezza.
+\end{enumerate}
+\end{cbox}
+
+\medskip
+\noindent \textbf{Sub-Alpha: Gestione della Granularità di Dettaglio.} Quando un Alpha generale del Kernel risulta troppo astratto per governare elementi operativi specifici, Essence consente di derivare dei \textbf{Sub-Alpha}:
+\begin{itemize}
+    \item \textbf{Specializzazione concettuale}: analogamente al polimorfismo o all'ereditarietà nella programmazione a oggetti, un Sub-Alpha rappresenta una specializzazione di un Alpha padre (es. singole \textit{User Story} o singoli item di backlog come sotto-istanze di \textit{Requirements}; una figura apicale critica del cliente come Sub-Alpha di \textit{Stakeholders}).
+    \item \textbf{Ciclo di vita locale}: ogni Sub-Alpha possiede stati propri e relative checklist di conformità.
+    \item \textbf{Economia cognitiva}: l'introduzione dei Sub-Alpha va ponderata con rigore; proliferare decine di sotto-alfa appesantisce la governance e oscura la chiarezza diagnostica del progetto anziché migliorarla.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Prodotti di Lavoro (\textit{Work Products}) e Indipendenza di Stato.} I Work Products sono gli artefatti contingenti della documentazione o dello sviluppo:
+\begin{itemize}
+    \item Uno o più Work Products possono fare riferimento al medesimo Alpha.
+    \item \textbf{Non-coincidenza degli stati}: completare un artefatto o portare al massimo livello singole parti non garantisce l'avanzamento complessivo dell'Alpha. Implementare tutte le funzioni software isolatamente non rende il \textit{Software System} conforme allo stato \textit{Demonstrable} o \textit{Usable} se mancano i riscontri sull'integrazione d'assieme e sulle prestazioni globali.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Attività: I Mattoncini Componibili del Metodo.} Le attività rappresentano l'unità esecutiva elementare:
+\begin{itemize}
+    \item \textbf{Modularità a grana fine}: mentre gli Alpha coprono trasversalmente l'intera iniziativa, le attività sono circoscritte e combinabili (metafora dei mattoncini Lego).
+    \item \textbf{Condizioni di ingresso e uscita}: ogni attività definisce i requisiti di abilitazione all'avvio (\textit{entry conditions}) e i risultati oggettivi che ne certificano il completamento (\textit{exit conditions}).
+    \item \textbf{Istanziazione degli Activity Spaces}: le attività concrete introdotte dalle pratiche colmano i corrispondenti Activity Spaces del Kernel, consentendo di individuare lacune metodologiche o sovrapposizioni ridondanti.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Competenze e Livelli di Abilità.} L'efficacia operativa di una pratica dipende dalle competenze umane mobilitate per condurla:
+\begin{itemize}
+    \item \textbf{Scala di valutazione sintetica}: Essence adotta livelli progressivi standardizzati (\textbf{Livello 1 -- Base}, \textbf{Livello 2 -- Medio/Applicativo}, \textbf{Livello 3 -- Esperto/Padronanza}).
+    \item \textbf{Evidenza sul campo vs titoli}: la competenza deve emergere dall'effettiva abilità esecutiva e non dal mero possesso di titoli formali o corsi di studio.
+    \item \textbf{Competenze tecniche vs sociali}: le pratiche devono precisare la natura delle capacità richieste, bilanciando requisiti puramente tecnici (es. padronanza di framework o linguaggi) e abilità relazionali (es. negoziazione e gestione del consenso con gli stakeholder).
+\end{itemize}
+
+\newpage
+
+\section{Programmazione e Progettazione Orientata agli Oggetti}
+
+\subsection{Introduzione}
+
+\noindent La programmazione orientata agli oggetti (OO) si è affermata nell'ingegneria del software con l'aspettativa primaria di accrescere in modo tangibile la produttività nello sviluppo dei sistemi. 
+Tale paradigma offre una modalità intuitiva di strutturare la comprensione del mondo reale e del dominio applicativo, basandosi su tre concetti cardine: gli \textbf{oggetti}, la trasmissione di \textbf{messaggi} e la chiara ripartizione delle \textbf{responsabilità}. 
+
+Lo sviluppo software orientato agli oggetti si configura come una metodologia onnicomprensiva: consente di osservare il contesto del sistema, di descriverne formalmente il modello concettuale e di adottare un nucleo omogeneo di concetti lungo l'intero ciclo di vita del progetto. 
+Il paradigma fornisce un supporto strutturale al conseguimento di un'elevata qualità del software, forzando lo sviluppatore ad applicare sistematicamente i principi di: 
+\begin{itemize}
+    \item \textbf{Information Hiding}: occultamento dello stato e dei dettagli implementativi interni; %[cite: 1, 3]
+    \item \textbf{Astrazione}: focalizzazione sulle proprietà essenziali dei componenti, tralasciando i dettagli contingenti; 
+    \item \textbf{Modularizzazione}: suddivisione dell'architettura in elementi coesi e debolmente interdipendenti; 
+    \item \textbf{Riuso}: condivisione e specializzazione di componenti software consolidati senza duplicazioni. 
+\end{itemize}
+
+\paragraph{Decomposizione del Sistema: Sottosistemi e Moduli.}
+La padronanza della complessità architetturale richiede la separazione del sistema in unità computazionali distinte, il cui significato varia in base al paradigma adottato: 
+\begin{itemize}
+    \item \textbf{Sottosistema (\textit{Sub-system})}: nell'approccio procedurale identifica un'unità responsabile di un compito specifico o di un insieme delimitato di compiti; nell'approccio orientato agli oggetti è costituito da un insieme cooperante di classi (esempi classici sono il DBMS e il modulo centrale di gestione degli errori). 
+    \item \textbf{Modulo (\textit{Module})}: costrutto maggiormente dipendente dal linguaggio di programmazione; corrisponde a una libreria o insieme di funzioni nel paradigma procedurale, mentre coincide con una o più classi nel paradigma orientato agli oggetti. 
+\end{itemize}
+
+\paragraph{Occultamento dell'Informazione (Information Hiding).}
+Un modulo deve celare la propria implementazione interna ed esporsi verso l'esterno unicamente tramite un'interfaccia pubblica. 
+È vietato l'accesso diretto ai dati interni e ai metodi privati, consentendo la lettura e la manipolazione dello stato unicamente tramite metodi accessori (\textit{accessor methods}). 
+Moduli e interfacce devono essere definiti tramite astrazione: una modifica all'implementazione interna che mantenga invariata l'interfaccia non deve produrre alcun effetto sul resto del sistema. 
+
+\paragraph{Accoppiamento (Coupling).}
+L'accoppiamento misura l'intensità e la natura dei legami di dipendenza tra due moduli; l'obiettivo progettuale fondamentale è il \textbf{basso accoppiamento} (\textit{loose coupling}), che realizza l'information hiding in modo nettamente più efficace rispetto a un sistema con alto accoppiamento. 
+I livelli di accoppiamento si ordinano in scala di dipendenza crescente: 
+\begin{enumerate}
+    \item \textbf{Invocazione di metodi}: un modulo richiama metodi pubblici dell'interfaccia di un altro (livello minimo raccomandato); 
+    \item \textbf{Accoppiamento di dati e di controllo}: passaggio di strutture dati o di flag che guidano il flusso logico del modulo invocato; 
+    \item \textbf{Sottoclassificazione tra moduli}: una classe di un modulo eredita direttamente da una classe allocata in un altro modulo; 
+    \item \textbf{Dipendenza da compilatore o da chiamate di sistema (OS)}: impiego di primitive o estensioni non standard dell'ambiente; 
+    \item \textbf{Accoppiamento di I/O}: vincolo e condivisione diretta sui medesimi flussi fisici o periferiche; 
+    \item \textbf{Accoppiamento comune (\textit{Common Coupling})}: condivisione simultanea di memoria o variabili globali; 
+    \item \textbf{Accoppiamento di contenuto (\textit{Content Coupling})}: un modulo altera arbitrariamente codice o dati interni di un altro (\textbf{da evitare rigorosamente}). 
+\end{enumerate}
+
+\paragraph{Coesione (Cohesion).}
+Un modulo si definisce coesivo se tutti i suoi elementi concorrono allo svolgimento di un singolo e ben identificato compito. 
+La coesione è classificata secondo magnitudo qualitativa crescente: 
+\begin{itemize}
+    \item \textbf{Coincidental}: elementi raggruppati senza alcuna ragione logica; 
+    \item \textbf{Logical}: elementi uniti solo perché appartenenti alla medesima categoria concettuale; 
+    \item \textbf{Temporal}: istruzioni eseguite nella stessa finestra temporale (es. routine di inizializzazione); 
+    \item \textbf{Procedural}: il flusso di controllo passa sequenzialmente da una parte all'altra; 
+    \item \textbf{Communicational}: componenti vincolati dall'accesso ai medesimi canali di Input/Output; 
+    \item \textbf{Sequential}: l'output di un elemento costituisce direttamente l'input del successivo; 
+    \item \textbf{Informational}: routine indipendenti che insistono sulla medesima struttura dati; 
+    \item \textbf{Functional}: tutti gli elementi concorrono a realizzare una sola funzione (\textbf{condizione ideale da perseguire}). 
+\end{itemize}
+
+\paragraph{Semplicità e Refactoring.}
+Occorre realizzare esclusivamente il codice necessario per i requisiti attuali, evitando di anticipare esigenze ipotetiche non dimostrate. 
+Il \textbf{Refactoring} è l'attività volta a ristrutturare internamente un sistema funzionante per renderlo più semplice senza alterarne il comportamento osservabile. 
+La semplicità si applica lungo tutta la gerarchia: a livello di metodo (metodi brevi, con segnature ridotte), di modulo (interfaccia pubblica snella), di sistema (evitare moduli intermediari futili, eliminare variabili globali, minimizzare cammini di controllo, mantenere gerarchie di ereditarietà basse) e in modo trasversale eliminando sistematicamente le duplicazioni di codice. 
+
+
+\subsection{UML}
+
+\noindent Verso la fine degli anni '80 e l'inizio degli anni '90, la diffusione della programmazione a oggetti ha visto proliferare metodologie, notazioni grafiche e processi eterogenei tra loro in competizione.  I tre approcci predominanti dell'epoca erano riconducibili a: 
+\begin{itemize}
+    \item Grady Booch (metodo Booch, focalizzato su analisi e design architetturale); 
+    \item James Rumbaugh (OMT -- \textit{Object-Modeling Technique}, centrato sulla modellazione concettuale dei dati); 
+    \item Ivar Jacobson (OOSE -- \textit{Object-Oriented Software Engineering}, pioniere dei casi d'uso). 
+\end{itemize}
+La confluenza di questi autori all'interno di Rational Software ha condotto all'unificazione delle rispettive notazioni, sfociando nella definizione dello \textbf{Unified Modeling Language (UML)}, in seguito standardizzato a livello internazionale dall'OMG (\textit{Object Management Group}).  L'obiettivo di UML è formalizzare e standardizzare le idee fondazionali della programmazione e progettazione ad oggetti. 
+
+\paragraph{Continuità della Rappresentazione nel Ciclo di Vita.}
+L'idea cardine del paradigma consiste nel modellare il dominio in termini di \textbf{oggetti interagenti} e mantenere inalterata tale rappresentazione concettuale attraverso tutte le fasi dello sviluppo: 
+\begin{enumerate}
+    \item \textbf{OO Concept Modeling}: modellazione dei concetti del dominio e del contesto operativo; 
+    \item \textbf{OO Analysis (OOA)}: comprensione rigorosa di cosa il sistema deve realizzare; 
+    \item \textbf{OO Design (OOD)}: definizione della struttura tecnica e delle interfacce software; 
+    \item \textbf{OO Programming (OOP)}: codifica dell'implementazione nel linguaggio di destinazione. 
+\end{enumerate}
+
+\paragraph{Concetti Fondamentali: Classi, Istanze e Messaggi.}
+Il vocabolario primario si articola attorno alle seguenti entità: 
+\begin{itemize}
+    \item \textbf{Classi e Gerarchie di Classi}: una classe agisce come stampo descrittivo generale (\textit{blueprint}, pattern o template); descrive proprietà (\textbf{attributi}) e comportamenti (\textbf{metodi}), definendo relazioni e legami di \textbf{ereditarietà} con altre classi. 
+    \item \textbf{Oggetti}: istanze concrete di una classe; possiedono attributi a cui sono assegnati valori definiti e relazioni istanziate con altri oggetti. 
+    \item \textbf{Messaggi e Metodi}: gli oggetti collaborano scambiandosi messaggi operativi, ai quali il destinatario risponde invocando il corrispondente metodo incapsulato. 
+\end{itemize}
+
+\paragraph{Esempio di Modello Concettuale ed Ereditarietà.}
+Un modello concettuale si articola specificando oggetti, i relativi attributi e le relazioni intercorrenti (ad esempio: l'oggetto persona \textit{Joe} possiede attributi come nome, indirizzo, età e patente, ed è collegato tramite la relazione \textit{owns} all'oggetto automobile \textit{Porsche}, provvisto di costruttore, modello, targa e colore).
+
+\noindent Nelle gerarchie più ampie, le relazioni di tipo generalizzazione/specializzazione (\textit{is-a}) collegano classi astratte e concrete: ad esempio la classe \textit{Person} specializza la classe \textit{Animal}, mentre le sottoclassi \textit{Girl} e \textit{Guy} specializzano ulteriormente \textit{Person}.  Parallelamente, la classe \textit{Car} specializza \textit{Means of Transportation}, e da essa possono derivare classi specializzate quali \textit{Ferrari} o \textit{Porsche}. 
+\begin{itemize}
+    \item L'oggetto \textit{Nancy} rappresenta una specifica istanza della classe \textit{Girl}: essa eredita la catena di attributi di \textit{Person} ed è univocamente identificata dalla sequenza di valori (\textit{Nancy; 11 10th Av., Washington, DC; 21; XCW553245}); 
+    \item L'oggetto \textit{550 Maranello} rappresenta una specifica istanza della classe \textit{Ferrari}: eredita gli attributi di \textit{Car} ed è caratterizzato dai valori (\textit{Ferrari; 550 Maranello; I LOVE F; Red}); 
+    \item La relazione attiva \textit{drives} associa direttamente l'istanza \textit{Nancy} all'istanza veicolare \textit{550 Maranello}; 
+    \item Durante i passaggi lungo la catena di ereditarietà, alcuni attributi possono essere progressivamente vincolati o fissati (\textit{fixed}). 
+\end{itemize}
+
+
+ \begin{figure}[htbp]
+     \centering
+     \includegraphics[width=0.88\textwidth]{oo_model_example.png}
+     \label{fig:oo_model_example}
+ \end{figure}
+
+\clearpage
+
+\begin{cbox}{Il Processo a Spirale nello Sviluppo ad Oggetti}
+\noindent Il modello di processo orientato agli oggetti adotta un paradigma \textbf{evolutivo a spirale}. Lo sviluppo non segue una sequenza a cascata rigida, bensì compie cicli concentrici progressivi. In ciascuna spira dell'evoluzione, il sistema attraversa settori cardine di ingegnerizzazione: %[cite: 3]
+\begin{itemize}
+    \item \textbf{Customer Communication}: raccolta continua dei requisiti ed esiti attesi; %[cite: 3]
+    \item \textbf{Planning}: pianificazione dell'iterazione corrente e perimetrazione degli obiettivi; %[cite: 3]
+    \item \textbf{Risk Analysis}: identificazione precoce e risoluzione dei fattori di rischio architetturale; %[cite: 3]
+    \item \textbf{Engineering, Construction \& Release}: costruzione operativa dell'incremento software; %[cite: 3]
+    \item \textbf{Customer Evaluation}: validazione sul campo con il committente/utente per raccogliere il feedback necessario a guidare l'iterazione successiva. %[cite: 3]
+\end{itemize}
+\end{cbox}
+
+ \begin{figure}[htbp]
+     \centering
+     \includegraphics[width=0.85\textwidth]{spirale.png}
+     \label{fig:spiral_oo_process}
+ \end{figure}
+
+ \paragraph{Dettaglio del Ciclo di Ingegnerizzazione delle Classi.}
+All'interno del settore di costruzione della $n$-esima iterazione, la produzione delle classi avviene mediante un processo rigoroso e fortemente orientato al riuso: 
+\begin{enumerate}
+    \item \textbf{Identificazione delle classi candidate}: individuazione delle entità logiche necessarie a implementare le funzioni dell'iterazione; 
+    \item \textbf{Verifica nella libreria (\textit{Look-up})}: ricerca preliminare per verificare se classi idonee siano già state realizzate e catalogate; 
+    \item \textbf{Estrazione del componente disponibile}: se la classe esiste già, viene estratta e riutilizzata direttamente; 
+    \item \textbf{Ingegnerizzazione della nuova classe}: se il componente non è disponibile, la classe viene sviluppata ex-novo attraversando le fasi di \textit{OO Analysis}, \textit{OO Design}, \textit{OO Programming} e \textit{OO Testing}; 
+    \item \textbf{Stoccaggio nella libreria di progetto}: la nuova classe collaudata viene catalogata nella libreria condivisa, rendendosi disponibile per tutti i cicli futuri. 
+\end{enumerate}
+
+\paragraph{Raffinamento Iterativo e Prototipazione.}
+Il processo tipico di un'iniziativa OO prevede una sequenza strutturata di cicli di revisione e raffinamento (\textit{review and refinement}): 
+\begin{itemize}
+    \item \textbf{Iterazioni iniziali di analisi e progettazione}: cicli rapidi incentrati su pianificazione, analisi e design concettuale per stabilizzare l'architettura logica; 
+    \item \textbf{Primo prototipo}: completate le analisi iniziali, si estraggono le classi riusabili, si realizza il prototipo eseguibile, lo si sottopone a test e lo si rilascia per la prima valutazione del cliente; 
+    \item \textbf{Iterazioni successive ($n$-th iteration)}: ogni ciclo incorpora i feedback della valutazione precedente, ripianifica le attività, raffina analisi e design, integra nuove classi e genera rilasci incrementali sempre più completi e stabili. 
+\end{itemize}
+
+ \begin{figure}[htbp]
+     \centering
+     \includegraphics[width=0.85\textwidth]{typical_oo_project_process.png}
+     \label{fig:typical_oo_project_process}
+ \end{figure}
+
+ \subsubsection{La Notazione delle Classi (Class Icon)}
+
+\noindent In UML una classe viene rappresentata graficamente mediante un rettangolo suddiviso orizzontalmente fino a tre scomparti distinti (\textit{slot}):
+\begin{enumerate}
+    \item \textbf{Nome della classe ed eventuale stereotipo}: costituisce l'unico elemento strettamente obbligatorio e va scritto per convenzione in \texttt{UpperCamelCase} (es. \texttt{Person}, \texttt{BankAccount}). Può essere preceduto da uno stereotipo racchiuso tra doppi apici uncinati (es. \guillemotleft\textit{boundary}\guillemotright).
+    \item \textbf{Attributi e proprietà}: opzionali, definiti per convenzione in \texttt{lowerCamelCase} (es. \texttt{age}, \texttt{accountNumber}).
+    \item \textbf{Operazioni e metodi}: opzionali, definiti anch'essi in \texttt{lowerCamelCase} (es. \texttt{getAge()}, \texttt{deposit()}).
+\end{enumerate}
+
+\noindent Un principio fondamentale di UML risiede nella flessibilità della rappresentazione: la medesima classe può comparire all'interno di diagrammi differenti con diversi livelli di dettaglio e decorazione. Nei diagrammi concettuali ad alto livello è comune mostrare il solo riquadro con il nome, mentre nei diagrammi di dettaglio progettuale vengono esplicitati tipi, visibilità e valori predefiniti.
+
+\paragraph{Sintassi Formale di Attributi e Metodi.}
+Per descrivere compiutamente i membri di una classe, UML adotta un formato standardizzato in cui soltanto il nome dell'elemento è mandatorio:
+\begin{itemize}
+    \item \textbf{Formato degli Attributi}:
+    \begin{center}
+        \texttt{visibilità nome molteplicità : Tipo = valoreIniziale}
+    \end{center}
+    Esempi validi: \texttt{-age: int}, \texttt{+names [1..*]: string}, \texttt{\#count: int = 0}.
+    \item \textbf{Formato delle Operazioni (Metodi)}:
+    \begin{center}
+        \texttt{visibilità nome(parametro1: Tipo1, ...) : TipoRitorno}
+    \end{center}
+    Esempi validi: \texttt{+getAge(): int}, \texttt{+setAge(newAge: int): void}, \texttt{+calculate(val: float): float}.
+\end{itemize}
+
+\paragraph{Tipi di Visibilità.}
+La visibilità regola l'accessibilità di attributi e metodi dall'esterno della classe, mappandosi direttamente sui principali modificatori dei linguaggi ad oggetti:
+\begin{itemize}
+    \item \textbf{Public (\texttt{+})}: l'elemento è accessibile da qualsiasi altra entità del sistema in grado di accedere alla classe stessa;
+    \item \textbf{Private (\texttt{-})}: l'elemento è accessibile esclusivamente dalle operazioni interne definite all'interno della classe stessa;
+    \item \textbf{Protected (\texttt{\#})}: l'elemento è accessibile unicamente dalle operazioni della classe stessa o dalle sue classi derivate (discendenti lungo la gerarchia di ereditarietà);
+    \item \textbf{Package (\texttt{\~{})}}: l'elemento è accessibile da qualunque entità allocata nel medesimo package in cui risiede la classe (o nei suoi eventuali sotto-package annidati).
+\end{itemize}
+
+\subsubsection{Notazione degli Oggetti e Relazione di Istanziazione}
+
+\noindent Le istanze concrete delle classi (gli \textbf{oggetti}) adottano una notazione grafica volutamente affine a quella delle classi, ma con differenze visive sostanziali:
+\begin{itemize}
+    \item \textbf{Intestazione sottolineata}: il nome dell'oggetto nello scomparto superiore è \underline{sempre sottolineato} e rispetta il formato:
+    \begin{center}
+        \underline{\texttt{nomeOggetto : NomeClasse}}
+    \end{center}
+    Il nome dell'istanza è opzionale: quando viene omesso (es. \underline{\texttt{: Person}}), si identifica un'istanza anonima della classe.
+    \item \textbf{Assenza di metodi}: gli oggetti non presentano lo slot per le operazioni, poiché il comportamento dinamico è prescritto univocamente dalla classe di appartenenza.
+    \item \textbf{Stato concreto}: lo scomparto degli attributi non dichiara i tipi, bensì riporta i valori specifici assegnati ai campi dell'oggetto (es. \texttt{age = 10}).
+\end{itemize}
+
+\paragraph{Relazione Classe-Oggetto (\guillemotleft instanceOf\guillemotright).}
+Il legame tra un oggetto concreto e la rispettiva classe di derivazione viene formalizzato come una relazione di \textbf{dipendenza orientata}: si traccia una freccia tratteggiata che parte dall'oggetto e punta alla classe, etichettata con lo stereotipo \guillemotleft\textit{instanceOf}\guillemotright. Ciò esprime semanticamente che l'oggetto è un'istanza vivente generata a partire da quel modello.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{uml_object_instanceof.png}
+    \caption{Relazione di dipendenza ed istanziazione tra classe e oggetto con stereotipo \guillemotleft instanceOf\guillemotright.}
+    \label{fig:uml_object_instanceof}
+\end{figure}
+
+\paragraph{Esercizio Applicativo: Modellazione di Bicchieri.}
+\textbf{Testo}: \textit{Rappresentare in UML una classe chiamata ``Glass'', dotata di almeno 3 attributi e 2 metodi. Istanziarne successivamente 2 oggetti: uno pieno di vino, l'altro mezzo pieno di gin tonic.}
+
+\noindent \textbf{Soluzione Proposta}:
+\begin{itemize}
+    \item \textbf{Classe \texttt{Glass}}:
+    \begin{itemize}
+        \item Attributi: \texttt{-capacity: float}, \texttt{-content: string}, \texttt{-level: float};
+        \item Metodi: \texttt{+drink(amount: float): void}, \texttt{+empty(): void}.
+    \end{itemize}
+    \item \textbf{Oggetto \underline{\texttt{wineGlass : Glass}}}: \texttt{capacity = 300.0}, \texttt{content = "wine"}, \texttt{level = 300.0}.
+    \item \textbf{Oggetto \underline{\texttt{ginTonicGlass : Glass}}}: \texttt{capacity = 400.0}, \texttt{content = "gin tonic"}, \texttt{level = 200.0}.
+    \item Entrambe le istanze presentano una freccia tratteggiata verso \texttt{Glass} con stereotipo \guillemotleft\textit{instanceOf}\guillemotright.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{uml_exercise_glass.png}
+    \caption{Soluzione dell'Esercizio 1: classe \texttt{Glass} e istanze con valori e dipendenze.}
+    \label{fig:uml_exercise_glass}
+\end{figure}
+
+\subsubsection{Relazioni Strutturali: Generalizzazione e Realizzazione}
+
+\noindent I legami concettuali ed operativi tra le classi all'interno di un sistema si esprimono attraverso specifiche relazioni standardizzate.
+
+\paragraph{Ereditarietà (Generalizzazione).}
+L'ereditarietà nel paradigma a oggetti viene formalizzata in UML mediante la relazione di \textbf{Generalizzazione} (\textit{Generalization}):
+\begin{itemize}
+    \item \textbf{Notazione grafica}: una linea continua orientata con una punta a forma di \textbf{triangolo vuoto (chiuso)} che parte dall'elemento specifico (\textit{child} o sottoclasse) e punta all'elemento generale (\textit{parent} o superclasse).
+    \item \textbf{Semantica}: tra tutte le relazioni previste da UML, la generalizzazione è la più forte, rigida e vincolante. Indica che la sottoclasse acquisisce integralmente attributi, metodi e associazioni della superclasse, potendoli estendere o specializzare.
+    \item \textbf{Ereditarietà Multipla}: UML supporta nativamente l'ereditarietà multipla. Una classe figlia può derivare simultaneamente da più superclassi indipendenti. Ad esempio, una classe \texttt{automobile} può specializzare congiuntamente la superclasse \texttt{meansOfTransportation} (ereditando \texttt{numOfPass}) e la superclasse \texttt{machine} (ereditando \texttt{typeOfEnergy}).
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{uml_generalization_multiple.png}
+    \caption{Relazione di generalizzazione singola e multipla in UML.}
+    \label{fig:uml_generalization_multiple}
+\end{figure}
+
+\paragraph{Relazione di Realizzazione (Realization).}
+La realizzazione descrive una relazione semantica in cui un elemento fornitore (\textit{supplier}) stabilisce un contratto o specifica funzionale pura, e un elemento client (\textit{client}) si fa carico di realizzarla concretamente, implementandone ed eseguendone il codice.
+\begin{itemize}
+    \item Il caso canonico è rappresentato dall'\textbf{interfaccia} (concetto analogo alle interfacce Java) implementata da una classe concreta.
+    \item \textbf{Notazione grafica}: una linea tratteggiata con punta a forma di \textbf{triangolo vuoto} orientata verso l'interfaccia. L'interfaccia viene tipicamente decorata con lo stereotipo \guillemotleft\textit{interface}\guillemotright.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.35\textwidth]{uml_realization.png}
+    \caption{Relazione di realizzazione tra classe concreta e interfaccia.}
+    \label{fig:uml_realization}
+\end{figure}
+
+\paragraph{Classi e Metodi Astratti.}
+Una classe si definisce astratta quando definisce un'astrazione incompleta e non può essere direttamente istanziata, demandando l'implementazione di uno o più metodi alle sottoclassi:
+\begin{itemize}
+    \item \textbf{Convenzione standard}: in UML, il nome di una classe astratta e dei relativi metodi astratti viene scritto in \textit{corsivo} (\textit{italic}).
+    \item \textbf{Notazioni alternative}: poiché nei diagrammi cartacei o in schemi molto complessi il corsivo risulta difficile da identificare o tracciare con chiarezza, UML ammette convenzioni esplicite equivalenti:
+    \begin{itemize}
+        \item Inserire lo stereotipo \guillemotleft\textit{abstract}\guillemotright{} o la proprietà \texttt{\{abstract\}} in prossimità del nome della classe;
+        \item Dichiarare il costruttore della classe con visibilità protetta (\texttt{\#});
+        \item Annotare i singoli metodi astratti con il tag \texttt{<abstract>} o \texttt{\{abstract\}}.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Esercizio Applicativo: Gerarchia di Armi da Fuoco.}
+\textbf{Testo}: \textit{Modellare in UML un sistema di armi da fuoco. Iniziare con una classe astratta \texttt{Firearm} (attributi: \texttt{caliber}, \texttt{weight}, \texttt{manufacturer}; metodo astratto \texttt{fire()}, metodo concreto \texttt{reload()}). Includere la classe astratta \texttt{TriggerMechanism} (attributo: \texttt{triggerType}; metodo astratto \texttt{pullTrigger()}). Introdurre due interfacce: \texttt{SemiAutomatic} (metodo \texttt{ejectCasing()}) e \texttt{FullyAutomatic} (metodo \texttt{burstFire()}). Modellare la classe \texttt{Pistol} (eredita da \texttt{Firearm}, implementa \texttt{SemiAutomatic}, usa un meccanismo di scatto) e la classe \texttt{AssaultRifle} (eredita da \texttt{Firearm}, implementa entrambe le interfacce e usa un meccanismo di scatto). Infine modellare \texttt{SilencedPistol} come tipo speciale di \texttt{Pistol}.}
+
+\noindent \textbf{Struttura della Soluzione}:
+\begin{itemize}
+    \item \texttt{Firearm} e \texttt{TriggerMechanism} sono definite con etichetta \texttt{\{abstract\}} (o decorate con $\{A\}$);
+    \item \texttt{SemiAutomatic} e \texttt{FullyAutomatic} sono stereotipate come interfacce;
+    \item \texttt{Pistol} e \texttt{AssaultRifle} estendono \texttt{Firearm} (freccia continua con triangolo vuoto), realizzano le rispettive interfacce (freccia tratteggiata con triangolo vuoto) e associano una dipendenza d'uso verso \texttt{TriggerMechanism};
+    \item \texttt{SilencedPistol} estende direttamente \texttt{Pistol} tramite generalizzazione.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{uml_exercise_firearms.png}
+    \caption{Soluzione dell'Esercizio 2: gerarchia con classi astratte, interfacce e specializzazioni.}
+    \label{fig:uml_exercise_firearms}
+\end{figure}
+
+\subsubsection{I Diagrammi dei Casi d'Uso (Use Case Diagrams)}
+
+\noindent Il \textbf{diagramma dei casi d'uso} (\textit{Use Case Diagram}) descrive il comportamento, sia esso desiderato o effettivamente offerto, di un sistema o di un suo sottosistema.
+Si tratta tipicamente del primo modello formale prodotto durante il processo di sviluppo nell'ambito della \textbf{raccolta e analisi dei requisiti funzionali}. Esso consente inoltre di validare l'architettura logica e verificare successivamente il rispetto dei requisiti.
+
+\medskip
+\noindent Il diagramma risponde essenzialmente a due interrogativi fondamentali:
+\begin{enumerate}
+    \item \textbf{Chi o cosa interagisce con il sistema?} $\to$ Gli \textbf{Attori} (\textit{Actors});
+    \item \textbf{Cosa possono compiere tali entità?} $\to$ I \textbf{Casi d'Uso} (\textit{Use Cases}).
+\end{enumerate}
+
+\begin{cbox}{Principio Chiave: Obiettivo del Caso d'Uso}
+\noindent Un caso d'uso specifica \textbf{cosa ci si attende che il sistema faccia}, occultando deliberatamente \textbf{come} tale comportamento verrà implementato all'interno. Rappresenta una sequenza coerente di azioni (comprensiva di flussi primari, alternativi e di gestione degli errori) in grado di produrre un \textbf{risultato osservabile di valore tangibile} per l'attore coinvolto.
+\end{cbox}
+
+\paragraph{Gli Attori (Actors).}
+Un attore specifica un ruolo ricoperto da un'entità esterna che dialoga attivamente con il sistema nell'ambito di un caso d'uso.
+\begin{itemize}
+    \item \textbf{Esternalità assoluta}: gli attori risiedono sempre ed esclusivamente all'\textbf{esterno} del confine di sistema.
+    \item \textbf{Natura eterogenea}: un attore non coincide necessariamente con una persona umana; può trattarsi di un apparato hardware, di un sensore, di un agente software remoto, di un sistema bancario o di un demone interno che innesca compiti schedulati (es. trigger temporale per backup).
+    \item \textbf{Attori Primari e Secondari}: l'attore che fa partire l'interazione viene denominato \textit{attore primario} (in UML ogni evento è causalmente ricondotto all'entità che lo genera). Gli altri attori coinvolti per fornire dati di supporto o ricevere notifiche operative sono definiti \textit{attori secondari}.
+\end{itemize}
+
+\noindent \textbf{Linee Guida per Identificare gli Attori}:
+\begin{itemize}
+    \item Chi o cosa impiega operativamente le funzioni del sistema? Quali ruoli specifici interpreta?
+    \item In quale settore o contesto dell'organizzazione viene adoperato il sistema?
+    \item Chi avvia, arresta, mantiene e supporta tecnicamente il software?
+    \item Quali altri sistemi software scambiano informazioni con esso?
+    \item Esistono funzioni periodiche autonome (es. procedure batch notturne, backup)?
+    \item Uno stesso attore ricopre più ruoli? Lo stesso ruolo è assegnato a molteplici entità distinte?
+\end{itemize}
+
+\paragraph{I Casi d'Uso (Use Cases).}
+Un caso d'uso descrive un'esigenza o un obiettivo che l'attore intende conseguire interagendo con il sistema:
+\begin{itemize}
+    \item \textbf{Innesco}: è sempre attivato dall'azione di un attore.
+    \item \textbf{Nomenclatura}: viene rappresentato graficamente da un'ellisse contenente un'etichetta basata su un \textbf{verbo all'infinito} o su un sostantivo che esprima un'azione compiuta (es. \textit{Select/Delete Courses}, \textit{Print Timetable}, \textit{Pay for Food}).
+    \item \textbf{Classificatore comportamentale}: il caso d'uso è a tutti gli effetti un classificatore provvisto di comportamento (\textit{classifier with behavior}). Può essere descritto analiticamente mediante diagrammi di interazione, diagrammi di sequenza, diagrammi a stati, corredato da formali precondizioni e postcondizioni.
+\end{itemize}
+
+\noindent \textbf{Linee Guida per Identificare i Casi d'Uso}:
+\begin{itemize}
+    \item Quali funzioni e servizi si attende ciascun attore dal sistema?
+    \item Il sistema archivia o fornisce dati consultabili?
+    \item Gli attori devono essere notificati in caso di cambiamenti di stato interni?
+    \item Gli attori devono segnalare al sistema mutamenti imprevisti nel mondo esterno?
+    \item Quali funzionalità presidiano la manutenzione ordinaria e l'amministrazione del sistema?
+    \item Tutti i requisiti funzionali emersi sono coperti da almeno un caso d'uso?
+\end{itemize}
+
+\paragraph{Il Confine del Sistema (System Boundary) e le Associazioni.}
+Nel diagramma dei casi d'uso la delimitazione tra ciò che appartiene all'architettura e ciò che fa parte del contesto circostante viene resa esplicita:
+\begin{itemize}
+    \item \textbf{System Boundary}: rappresentato da un riquadro rettangolare recante in alto il nome del sistema (es. \texttt{Restaurant}). I casi d'uso sono racchiusi all'interno della scatola, mentre le icone stilizzate degli attori (\textit{stickman}) stazionano rigorosamente all'esterno.
+    \item \textbf{Associazioni}: l'interazione tra attore e caso d'uso è tracciata mediante una linea continua. Regola generale: un attore può essere associato a casi d'uso, classi o componenti. Due casi d'uso che insistono sul medesimo soggetto non si collegano direttamente tra loro tramite semplici associazioni generiche.
+    \item \textbf{Caratteristiche facoltative dell'associazione}:
+    \begin{itemize}
+        \item \textbf{Nome}: un'etichetta verbale che qualifica la relazione (es. \texttt{consumes}), eventualmente provvista di un piccolo indicatore di direzione di lettura;
+        \item \textbf{Molteplicità}: indica quanti attori o quante esecuzioni concorrono al legame (es. \texttt{1}, \texttt{0..n});
+        \item \textbf{Ruoli}: descrive il ruolo contestuale assunto lungo la linea (es. \texttt{sommelier}, \texttt{critic}).
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{uml_system_associations.png}
+    \caption{Confine del sistema, casi d'uso e associazioni decorate con nome, molteplicità e ruoli.}
+    \label{fig:uml_system_associations}
+\end{figure}
+
+\paragraph{Esercizio Pratico: Il Sistema ``Stupid Craps''.}
+\textbf{Testo}: \textit{Si consideri la definizione di un gioco di dadi denominato ``Stupid Craps''. Il giocatore piazza una scommessa selezionando un numero compreso tra 1 e 6. Successivamente tira un dado: se compare il numero selezionato, vince cinque volte la posta iniziale. Si disegni un diagramma dei casi d'uso minimale per questo sistema.}
+
+\begin{cbox}{Le Trappole Comuni e l'Errore di Sovra-modellazione (\textit{Overdoing})}
+\noindent Nel modellare un diagramma dei casi d'uso elementare, gli sviluppatori cadono frequentemente nell'errore di voler rappresentare dettagli logici e temporali non pertinenti a questa vista:
+\begin{itemize}
+    \item \textbf{Nessuna sequenzialità temporale}: il diagramma dei casi d'uso fotografa le capacità offerte dal sistema, \textbf{non} è un diagramma di flusso. Non si devono inserire frecce sequenziali tra un'azione e la successiva.
+    \item \textbf{Il dado non è un attore}: il dado è un oggetto interno (o un algoritmo generatore di numeri casuali), non un'entità esterna consapevole che avvia o riceve un servizio.
+    \item \textbf{Nessuna classe né costrutto condizionale}: dettagli algoritmici come ``se il numero coincide allora paga'' appartengono alla logica interna del codice o alle pre/postcondizioni, non alla notazione grafica dei casi d'uso.
+\end{itemize}
+\end{cbox}
+
+\noindent \textbf{Soluzione Minimale ed Esatta}:
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{uml_stupid_craps_solution.png}
+    \caption{Soluzione corretta e minimale del diagramma dei casi d'uso per il sistema \texttt{Stupid Craps}.}
+    \label{fig:uml_stupid_craps_solution}
+\end{figure}
 
 \end{document}
