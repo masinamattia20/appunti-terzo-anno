@@ -44,7 +44,7 @@
     colback=orange!5!white,
     colframe=orange!40!black,
     fonttitle=\bfseries,
-    title=#1,
+    title={#1},
     arc=2mm,
     boxrule=0.5mm,
     left=10pt,
@@ -53,6 +53,22 @@
     bottom=10pt,
     before skip=15pt,
     after skip=15pt,
+    breakable
+}
+
+\newtcolorbox{ibox}[1]{
+    colback=blue!4!white,
+    colframe=blue!50!black,
+    fonttitle=\bfseries,
+    title={#1},
+    arc=2mm,
+    boxrule=0.5mm,
+    left=10pt,
+    right=10pt,
+    top=8pt,
+    bottom=8pt,
+    before skip=12pt,
+    after skip=12pt,
     breakable
 }
 
@@ -113,180 +129,154 @@
 \tableofcontents
 \newpage
 
-\section{Introduzione al Machine Learning e Alberi di Decisione}
+\section{Introduzione all'apprendimento automatico}
 
-\subsection{Fondamenti e Formulazione come Ottimizzazione}
+\subsection{Introduzione al Machine Learning}
 
-\noindent L'informatica tradizionale affronta la risoluzione dei problemi tramite la scrittura esplicita di algoritmi: un programmatore formalizza le regole logico-matematiche necessarie per trasformare i dati in ingresso nell'output desiderato. Tuttavia, per un'ampia classe di problemi complessi del mondo reale, definire regole deterministiche a priori risulta pressoché impossibile. %[cite: 2]
-Rientrano in questo ambito compiti percettivi e decisionali quali la \textbf{classificazione} (filtri anti-spam, analisi del sentiment, rilevamento di frodi finanziarie), la \textbf{visione artificiale} (riconoscimento di immagini e volti), l'elaborazione del linguaggio naturale e del segnale (riconoscimento vocale e musicale), l'\textbf{anomaly detection}, il \textbf{clustering} e l'\textbf{Intelligenza Artificiale Generativa}. %[cite: 2]
+\subsubsection{Che cos'è il Machine Learning}
 
-\noindent I domini trattati tramite Machine Learning condividono caratteristiche peculiari:
+\noindent Nell'informatica classica il programmatore scrive le regole che trasformano l'input nell'output. Per molti problemi reali, però, queste regole sono quasi impossibili da scrivere a mano: pensiamo a riconoscere un volto in una foto o a capire se una mail è spam.
+Sono i problemi tipici del Machine Learning: \textbf{classificazione} (spam, sentiment analysis, frodi), \textbf{riconoscimento di immagini}, riconoscimento vocale e musicale, \textbf{anomaly detection}, \textbf{clustering} e \textbf{AI generativa}.
+
+\noindent Questi domini hanno alcune caratteristiche in comune:
 \begin{itemize}
-    \item \textbf{Bassa conoscenza meta-teorica}: non si dispone di una teoria formale chiusa in grado di descrivere analiticamente il fenomeno indagato. %[cite: 2]
-    \item \textbf{Elevato numero di feature d'ingresso}: le istanze sono descritte da vettori ad altissima dimensionalità. %[cite: 2]
-    \item \textbf{Grandi volumi di dati}: i modelli necessitano di moli imponenti di esempi storici per addestrarsi (ad esempio il dataset ImageNet, composto da oltre 10 milioni di immagini). %[cite: 2]
-    \item \textbf{Adattabilità}: capacità intrinseca del modello di evolvere e ricalibrarsi all'arrivo di nuove distribuzioni di dati. %[cite: 2]
+    \item \textbf{poca conoscenza teorica}: non esiste una teoria che descriva il fenomeno in modo esatto;
+    \item \textbf{tante feature in input}: ogni dato è descritto da moltissimi valori (es.\ i pixel di un'immagine);
+    \item \textbf{tanti dati}: servono moltissimi esempi (ImageNet contiene circa 10 milioni di immagini);
+    \item \textbf{adattabilità}: il modello può essere riaddestrato quando arrivano dati nuovi.
 \end{itemize}
 
-\begin{cbox}{Il Paradigma del Machine Learning come Processo di Ottimizzazione}
-\noindent Formalmente, l'approccio di apprendimento automatico si articola in tre passaggi sequenziali:
+\begin{cbox}{Il Machine Learning come problema di ottimizzazione}
 \begin{enumerate}
-    \item \textbf{Scelta della classe di modelli}: si fissa una famiglia di funzioni parametrizzate dipendenti da un vettore di parametri $\boldsymbol{\theta}$ (ad esempio una retta affine sul piano $y = ax + b$, con parametri $a$ e $b$). %[cite: 2]
-    \item \textbf{Definizione della metrica di errore (\textit{loss function})}: si stabilisce una funzione di costo oggettiva per valutare la discrepanza tra le predizioni e i valori reali (es. l'errore quadratico medio, \textit{Mean Squared Error}). %[cite: 2]
-    \item \textbf{Addestramento (\textit{training})}: si ottimizzano i parametri al fine di minimizzare l'errore cumulativo sull'insieme dei dati osservati. %[cite: 2]
+    \item Si sceglie un \textbf{modello}, che dipende da un insieme di parametri $\boldsymbol{\theta}$.
+    \item Si sceglie una \textbf{metrica di errore} (\textit{loss}) per valutare quanto il modello sbaglia.
+    \item Si \textbf{addestra} il modello: si regolano i parametri $\boldsymbol{\theta}$ per minimizzare l'errore sul \textit{training set}.
 \end{enumerate}
 \end{cbox}
 
-\noindent Nonostante si tratti rigorosamente di una procedura di ottimizzazione matematica, si parla propriamente di \textit{learning} per due ragioni fondamentali:
+\paragraph{Esempio: un problema di regressione}
+Abbiamo dei punti sul piano e vogliamo trovare la retta che li approssima meglio.
 \begin{enumerate}
-    \item La calibrazione dei parametri si fonda sull'evidenza empirica: il sistema impara e trae pattern dall'esperienza pregressa memorizzata nel training set. %[cite: 2]
-    \item Nella maggior parte dei casi non esiste una soluzione analitica in forma chiusa per la minimizzazione dell'errore. Si ricorre quindi a metodi numerici iterativi (come la discesa del gradiente) che raffinano progressivamente l'approssimazione simulando un percorso di apprendimento. %[cite: 2]
+    \item \textit{Modello}: le funzioni lineari $y = ax + b$; i parametri sono $a$ e $b$.
+    \item \textit{Errore}: l'errore quadratico medio (MSE) tra i punti e la retta.
+    \item \textit{Training}: si cercano i valori di $a$ e $b$ che rendono minimo l'MSE.
 \end{enumerate}
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{img/regressione.png}
+\end{center}
 
-\noindent L'obiettivo primario di un modello addestrato è formulare \textbf{predizioni su nuovi dati} non inclusi nel training set (generalizzazione), collocando nuovi input nella corretta classe discreta o stimandone il valore continuo atteso. I modelli possono inoltre essere impiegati per estrarre conoscenza intrinseca dalla struttura dei dati, identificando raggruppamenti naturali (\textit{cluster}) o correlazioni latenti. %[cite: 2]
+\noindent Perché allora si parla di \textit{apprendimento} e non semplicemente di ottimizzazione? Per due motivi: i parametri vengono ricavati dall'\textbf{esperienza} (i dati di training), e quasi mai esiste una soluzione in forma chiusa, per cui si procede per piccoli passi successivi (ad esempio con la discesa del gradiente), in modo simile a un processo di apprendimento.
 
-\subsection{Rappresentazione dei Dati: Il Ruolo Fondamentale delle Feature}
+\noindent Lo scopo finale è fare \textbf{predizioni su dati nuovi}: assegnare una classe a un nuovo input (classificazione) o stimarne un valore numerico (regressione). I modelli servono anche a estrarre conoscenza dai dati, ad esempio trovando gruppi (\textit{cluster}) o correlazioni.
 
-\noindent Nel paradigma dell'apprendimento automatico, si definisce \textbf{feature} (o attributo/caratteristica) qualsiasi informazione, grandezza misurabile o proprietà relativa a un dato utile a descriverne gli aspetti salienti. %
-Le feature costituiscono l'input effettivo fornito al modello di apprendimento induttivo. %
+\paragraph{Tipi di apprendimento}
+\begin{itemize}
+    \item \textbf{Supervisionato}: i dati hanno input e output (etichette). Esempi: classificazione, regressione.
+    \item \textbf{Non supervisionato}: solo input, senza etichette. Esempi: clustering, analisi delle componenti (es.\ PCA), autoencoder.
+    \item \textbf{Per rinforzo}: l'agente compie azioni e riceve ricompense; l'obiettivo è imparare a massimizzare il guadagno a lungo termine, tipicamente con una sorta di pianificazione \textit{model-free} (senza un modello esplicito dell'ambiente).
+\end{itemize}
 
-\noindent L'efficacia, l'accuratezza predittiva e la stabilità dell'apprendimento sono estremamente sensibili alla scelta e alla qualità delle feature adottate. %
-Tuttavia, individuare e isolare feature informative è un compito complesso che richiede storicamente una solida \textbf{conoscenza del dominio applicativo} (\textit{domain knowledge}). %
+\paragraph{Molte tecniche diverse}
+Non esiste un solo modo di fare machine learning: cambia sia il \textbf{modello} sia la \textbf{loss} con cui lo si valuta.
+\begin{itemize}
+    \item \textbf{Modelli} (come si definisce la funzione): alberi di decisione, modelli lineari, reti neurali, \dots
+    \item \textbf{Funzioni di errore} (loss): errore quadratico medio (MSE), logistic loss, cross entropy, distanza coseno, massimo margine (\textit{maximum margin}), \dots
+\end{itemize}
+Scegliere una tecnica vuol dire quindi scegliere una coppia modello + loss adatta al problema.
+
+\subsubsection{Le feature e il Deep Learning}
+
+\noindent Una \textbf{feature} è una qualsiasi proprietà misurabile di un dato, utile a descriverlo. Le feature sono l'input del modello e la loro qualità influenza moltissimo il risultato. Sceglierle bene richiede però \textbf{conoscenza del dominio}.
 
 \begin{center}
 \small
 \begin{tabular}{lll}
     \toprule
-    \multicolumn{3}{c}{\textbf{Esemplificazione di Feature per Dominio Applicativo}} \\
-    \textbf{Diagnosi Medica} & \textbf{Profilazione Utente} & \textbf{Previsioni Meteorologiche} \\
+    \textbf{Diagnosi medica} & \textbf{Profilazione utente} & \textbf{Meteo} \\
     \midrule
-    Sintomi soggettivi & Dati anagrafici & Temperatura al suolo e in quota \\ %
-    Condizioni generali del paziente & Interessi e preferenze personali & Umidità relativa \\ %
-    Cartella clinica pregressa & Community e reti sociali & Pressione barometrica \\ %
-    Esiti di esami e referti strumentali & Stile di vita e abitudini & Intensità del vento, precipitazioni, ecc. \\ %
+    Sintomi & Dati anagrafici & Temperatura \\
+    Condizioni generali & Interessi & Umidità \\
+    Storia clinica & Community & Pressione \\
+    Esami e referti & Stile di vita & Vento, pioggia, \dots \\
     \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{cbox}{Evoluzione della Rappresentazione: Dal Feature Engineering al Deep Learning}
-\noindent Il modo in cui le feature vengono ricavate ed elaborate definisce l'evoluzione storica dell'Intelligenza Artificiale (come formalizzato nel testo di riferimento di Goodfellow, Bengio e Courville): %
-
-\begin{enumerate}
-    \item \textbf{Sistemi basati sulla conoscenza / su regole (\textit{Rule-based / Knowledge-based systems})}:
-    \begin{itemize}
-        \item \textit{Approccio}: ci si rivolge a un esperto di dominio, si analizza come risolve formalmente un problema e si tenta di replicare la sua competenza tramite regole logiche deduttive codificate manualmente (\textit{hand-designed program}). %[cite: 2]
-        \item \textit{Flusso}: $\text{Input} \longrightarrow \text{Programma ad hoc} \longrightarrow \text{Output}$. %[cite: 2]
-        \item \textit{Apprendimento}: totalmente assente; il sistema non impara dall'esperienza, ma esegue regole statiche predeterminate. %[cite: 2]
-    \end{itemize}
-
-    \item \textbf{Machine Learning classico (\textit{Traditional Machine Learning})}:
-    \begin{itemize}
-        \item \textit{Approccio}: si consulta l'esperto umano per comprendere non le regole, ma quali siano le proprietà rilevanti dei dati per discriminare il fenomeno. L'esperto progetta ed estrae manualmente le feature (\textit{feature engineering / hand-designed features}), lasciando alla macchina il solo compito di apprendere la funzione di mappatura verso l'output (\textit{mapping from features}). %[cite: 2]
-        \item \textit{Flusso}: $\text{Input} \longrightarrow \text{Feature ingegnerizzate a mano} \longrightarrow \boxed{\text{Mappatura appresa}} \longrightarrow \text{Output}$. %[cite: 2]
-        \item \textit{Caratteristica}: si impiegano tradizionalmente algoritmi analitici, efficienti e ben compresi (come modelli lineari o alberi di decisione). %[cite: 2]
-    \end{itemize}
-
-    \item \textbf{Apprendimento delle Rappresentazioni (\textit{Representation Learning})}:
-    \begin{itemize}
-        \item \textit{Approccio}: il sistema mitiga il collo di bottiglia dell'ingegnerizzazione manuale imparando in modo supervisionato o non supervisionato a mappare i dati grezzi in una rappresentazione intermedia di feature utili alla classificazione o regressione finale. %[cite: 2]
-        \item \textit{Flusso}: $\text{Input} \longrightarrow \boxed{\text{Feature apprese}} \longrightarrow \boxed{\text{Mappatura appresa}} \longrightarrow \text{Output}$. %[cite: 2]
-        \item \textit{Esempio cardine}: gli \textit{autoencoder}, capaci di ricavare autonomamente spazi latenti non lineari e compatti a partire dall'input. %[cite: 2]
-    \end{itemize}
-
-    \item \textbf{Apprendimento Profondo (\textit{Deep Learning})}:
-    \begin{itemize}
-        \item \textit{Approccio}: l'obiettivo programmatico è superare del tutto la dipendenza dall'esperto umano (\textit{«get rid of the expert»}) nella selezione delle feature. %[cite: 2]
-        Si forniscono direttamente alla macchina i dati grezzi (\textit{raw data}), delegando al modello l'onere di sintetizzare rappresentazioni interne (\textit{internal representations}) ottimali per il compito. %[cite: 2]
-        \item \textit{Architettura}: è implementato tramite Reti Neurali Artificiali (\textit{NN}) dotate di molteplici strati nascosti (\textit{hidden layers}): %[cite: 2]
-        $$\text{Input Layer} \longrightarrow \text{Hidden Layer 1} \longrightarrow \text{Hidden Layer 2} \longrightarrow \dots \longrightarrow \text{Output Layer}$$ %[cite: 2]
-        Ciascun livello nascosto calcola progressivamente nuove feature a partire da quelle elaborate dallo strato precedente, costruendo gerarchie di astrazione crescente (dai dettagli elementari di basso livello a concetti semantici complessi). %[cite: 2]
-        \item \textit{Flusso}: $\text{Input} \longrightarrow \boxed{\text{Feature semplici}} \longrightarrow \boxed{\text{Feature complesse}} \longrightarrow \boxed{\text{Mappatura}} \longrightarrow \text{Output}$. %[cite: 2]
-    \end{itemize}
-\end{enumerate}
-
-\paragraph{Relazioni Insiemistiche tra le Discipline}
-I paradigmi sopra descritti formano una gerarchia di sottoinsiemi concentrici: %[cite: 2]
-$$\text{Artificial Intelligence} \;\supset\; \text{Machine Learning} \;\supset\; \text{Representation Learning} \;\supset\; \text{Deep Learning}$$ %[cite: 2]
-A ciascun livello di inclusione corrispondono modelli e metodologie caratteristiche: %[cite: 2]
+\noindent Il modo in cui si ottengono le feature distingue i vari approcci all'AI. Da sinistra a destra, l'\textbf{esperto} ha sempre meno lavoro:
 \begin{itemize}
-    \item \textbf{Intelligenza Artificiale}: basi di conoscenza e sistemi deduttivi esperti (\textit{Knowledge Bases}). %[cite: 2]
-    \item \textbf{Machine Learning}: modelli parametrici e di separazione lineare (es. \textit{Logistic Regression}). %[cite: 2]
-    \item \textbf{Representation Learning}: tecniche di riduzione della dimensionalità e codifica latente (es. \textit{Autoencoders}). %[cite: 2]
-    \item \textbf{Deep Learning}: reti neurali profonde a strati densi o convoluzionali (es. \textit{Multi-Layer Perceptrons} - MLP). %[cite: 2]
+    \item \textbf{Sistemi a regole} (\textit{knowledge-based}): si interroga un esperto su come risolve il problema e si cerca di imitare il suo ragionamento scrivendo a mano regole logiche. Nessun apprendimento.\\
+    $\text{Input} \to \text{Programma scritto a mano} \to \text{Output}$
+    \item \textbf{ML classico}: all'esperto si chiede solo quali siano le feature rilevanti per il problema (\textit{feature engineering}); è la macchina a imparare la funzione che dalle feature porta all'output (es.\ regressione logistica, alberi di decisione).\\
+    $\text{Input} \to \text{Feature scelte a mano} \to \boxed{\text{Mappatura appresa}} \to \text{Output}$
+    \item \textbf{Representation learning}: la macchina impara anche le feature, non solo la mappatura finale (es.\ autoencoder).\\
+    $\text{Input} \to \boxed{\text{Feature apprese}} \to \boxed{\text{Mappatura appresa}} \to \text{Output}$
+    \item \textbf{Deep learning}: l'esperto sparisce del tutto: si danno alla rete i dati grezzi e si lascia a lei il compito di costruire da sola buone rappresentazioni interne. Una rete neurale è \textit{profonda} se ha più strati nascosti: ogni strato calcola nuove feature, sempre più astratte, a partire da quelle dello strato precedente (es.\ MLP, reti percettive multilinea).\\
+    $\text{Input} \to \boxed{\text{Feature semplici}} \to \boxed{\text{Feature complesse}} \to \boxed{\text{Mappatura}} \to \text{Output}$
+\end{itemize}
+
+\begin{center}
+    \includegraphics[width=0.55\textwidth]{img/rete-neurale.png}
+\end{center}
+
+\noindent Le discipline sono una dentro l'altra: $\text{AI} \supset \text{ML} \supset \text{Representation Learning} \supset \text{Deep Learning}$. Esempi per livello: le basi di conoscenza (\textit{knowledge bases}) stanno nell'AI «classica», la regressione logistica nel ML, gli autoencoder nel representation learning, gli MLP nel deep learning.
+
+\begin{center}
+    \includegraphics[width=0.55\textwidth]{img/venn-ai.png}\\
+    {\small Fonte: \textit{Deep Learning}, Goodfellow, Bengio, Courville.}
+\end{center}
+
+\subsection{Alberi di decisione}
+
+\subsubsection{Apprendimento, struttura ed espressività}
+
+\noindent Supponiamo che esista una funzione sconosciuta $f: X \to Y$ che associa a ogni input l'output corretto. Non conosciamo $f$, ma abbiamo un \textbf{training set} di esempi:
+$$\mathcal{D} = \{\langle \mathbf{x}^{(1)}, y^{(1)} \rangle, \dots, \langle \mathbf{x}^{(N)}, y^{(N)} \rangle\}$$
+dove $\mathbf{x}^{(i)}$ è un vettore di feature e $y^{(i)}$ la sua etichetta.
+L'obiettivo è trovare una funzione che approssimi bene $f$ sui dati noti e che \textbf{generalizzi} su quelli nuovi.
+\begin{itemize}
+    \item Se $Y$ è \textbf{discreto} (es.\ Sì/No, cifre 0--9) si parla di \textbf{classificazione}.
+    \item Se $Y$ è \textbf{continuo} (es.\ un prezzo, una temperatura) si parla di \textbf{regressione}.
+\end{itemize}
+
+\noindent Scegliere una tecnica di ML significa fissare una famiglia di funzioni candidate, lo \textbf{spazio delle ipotesi} $H = \{h \mid h: X \to Y\}$. Il \textbf{modello} è il modo in cui si calcola una specifica $h \in H$; addestrarlo vuol dire cercare in $H$ la $h$ che sbaglia di meno sul training set.
+
+\begin{cbox}{Input e output del task di apprendimento}
+\begin{itemize}
+    \item \textbf{Input}: un insieme di esempi di training $\{\langle \mathbf{x}^{(i)}, y^{(i)} \rangle\}$ relativi alla funzione obiettivo $f$.
+    \item \textbf{Output}: l'ipotesi $h \in H$ che approssima meglio $f$.
+    \item \textbf{Ma $f$ è sconosciuta\,\dots} Non potendo confrontarci con $f$, di fatto cerchiamo la $h$ che approssima meglio il training set, sperando che la cosa valga anche per dati nuovi.
 \end{itemize}
 \end{cbox}
 
-\subsection{Alberi di Decisione ed Espressività}
+\paragraph{Struttura di un albero di decisione}
 
-\subsubsection{L'Apprendimento come Approssimazione di Funzioni}
-
-\noindent L'obiettivo centrale dell'apprendimento supervisionato può essere interpretato come un problema di \textbf{approssimazione funzionale}. %[cite: 2]
-Assumiamo idealmente che esista una legge oggettiva (una funzione obiettivo sconosciuta) in grado di associare a ciascun possibile dato in ingresso il suo risultato esatto: %[cite: 2]
-$$f: X \to Y$$ %[cite: 2]
-Nel mondo reale, tuttavia, la funzione $f$ non è nota a priori né possiamo osservarne il comportamento su tutti gli elementi dello spazio di input $X$. %[cite: 2]
-L'unica informazione a nostra disposizione è un insieme finito di dati storici ed esempi noti, denominato \textbf{training set}: %[cite: 2]
-$$\mathcal{D} = \{\langle \mathbf{x}^{(1)}, y^{(1)} \rangle, \, \langle \mathbf{x}^{(2)}, y^{(2)} \rangle, \, \dots, \, \langle \mathbf{x}^{(N)}, y^{(N)} \rangle\}$$ %[cite: 2]
-dove ciascun campione $\mathbf{x}^{(i)} \in X$ è un vettore di attributi (feature) e $y^{(i)} \in Y$ è la corrispondente etichetta (\textit{label}) o valore reale. %[cite: 2]
-
-\noindent Non potendo risalire direttamente a $f$, l'obiettivo pratico è addestrare un algoritmo che trovi una funzione capace di approssimare al meglio i dati osservati nel training set, così da poter generalizzare con successo su nuovi campioni non ancora visti. %[cite: 2]
-In base alla tipologia di valori assunti dall'output $Y$, distinguiamo due compiti principali: %[cite: 2]
+\noindent Un albero di decisione classifica un dato tramite una sequenza di domande:
 \begin{itemize}
-    \item \textbf{Problemi di Classificazione}: l'output $Y$ assume valori \textbf{discreti} o categorie (ad esempio valori booleani come $\{\text{Yes}, \text{No}\}$, diagnosi mediche o cifre numeriche da 0 a 9). Il sistema deve assegnare l'input alla classe più appropriata. %[cite: 2]
-    \item \textbf{Problemi di Regressione}: l'output $Y$ assume valori \textbf{continui} su scala reale (come una temperatura, un prezzo o una misurazione fisica). Il sistema deve stimare un valore numerico quantitativo. %[cite: 2]
+    \item ogni \textbf{nodo interno} testa un attributo $X_j$ (es.\ «Com'è il tempo?»);
+    \item ogni \textbf{ramo} corrisponde a un valore dell'attributo (es.\ \textit{Sunny}, \textit{Overcast}, \textit{Rain});
+    \item ogni \textbf{foglia} restituisce una classe $y$ (o una distribuzione $P(Y \mid X)$).
 \end{itemize}
 
-\subsubsection{Lo Spazio delle Ipotesi ($H$) e la Definizione di Modello}
+\noindent Nel caso di \textit{Play Tennis} la funzione obiettivo è
+$$f: \text{Outlook} \times \text{Humidity} \times \text{Wind} \times \text{Temp} \to \{\text{Yes}, \text{No}\}.$$
+Lo spazio delle ipotesi è il più libero possibile, $H = \{h \mid h: X \to Y\}$ senza altre restrizioni, e proviamo a rappresentare ogni $h \in H$ con un albero. Ogni esempio $\mathbf{x}$, poi, definisce un \textbf{cammino} nell'albero che termina in una foglia etichettata con la sua classe $y$.
 
-\noindent Prima di avviare la ricerca della funzione migliore, è necessario circoscrivere l'insieme delle soluzioni matematiche ammissibili. %[cite: 2]
-La scelta di una determinata tecnica di Machine Learning fissa un vincolo su una precisa famiglia di funzioni, formalmente definita \textbf{Spazio delle Ipotesi}: %[cite: 2]
-$$H = \{h \mid h: X \to Y\}$$ %[cite: 2]
-Un \textbf{modello} rappresenta il meccanismo algoritmico o la struttura con cui viene calcolata una specifica ipotesi $h \in H$. %[cite: 2]
-Il processo di apprendimento (\textit{training}) si traduce dunque nell'esplorare lo spazio $H$ per individuare la singola funzione $h$ che minimizza l'errore di approssimazione sui dati del training set. %[cite: 2]
-
-\subsubsection{Struttura e Inferenza di un Albero di Decisione}
-
-\noindent Un \textbf{albero di decisione} è un modello predittivo gerarchico particolarmente trasparente, che risolve compiti decisionali decomponendoli in una serie ordinata di test condizionali. %[cite: 2]
-La struttura si sviluppa partendo da un nodo radice verso il basso ed è composta da tre elementi: %[cite: 2]
-\begin{enumerate}
-    \item \textbf{Nodi interni (compresa la radice)}: ciascun nodo esegue un test mirato su un singolo attributo $X_j$ (ad esempio: «Qual è la condizione meteo?»). %[cite: 2]
-    \item \textbf{Rami}: partono da un nodo e corrispondono a uno dei valori discreti ammissibili per quell'attributo (ad esempio: \textit{Sunny}, \textit{Overcast}, \textit{Rain}). %[cite: 2]
-    \item \textbf{Foglie (nodi terminali)}: punti di chiusura dell'albero privi di ramificazioni uscenti. Ciascuna foglia restituisce la classe predetta $y$, oppure una distribuzione di probabilità condizionata $P(Y \mid X)$. %[cite: 2]
-\end{enumerate}
+\noindent Esempio classico, \textit{Play Tennis}: ogni giornata è descritta da $\mathbf{x} = \langle \text{Outlook}, \text{Temperature}, \text{Humidity}, \text{Wind} \rangle$ e vogliamo prevedere se si gioca.
 
 \begin{center}
 \begin{tikzpicture}[
     level 1/.style={sibling distance=4.5cm, level distance=1.8cm},
     level 2/.style={sibling distance=2.2cm, level distance=1.8cm},
-    node_box/.style={
-        draw=blue!75!black,
-        thick,
-        rectangle,
-        inner sep=6pt,
-        font=\bfseries\color{blue!75!black}
-    },
-    leaf_yes/.style={
-        font=\bfseries\color{green!60!black}
-    },
-    leaf_no/.style={
-        font=\bfseries\color{red!75!black}
-    },
-    branch_label/.style={
-        font=\small,
-        color=black
-    }
+    node_box/.style={draw=blue!75!black, thick, rectangle, inner sep=6pt, font=\bfseries\color{blue!75!black}},
+    leaf_yes/.style={font=\bfseries\color{green!60!black}},
+    leaf_no/.style={font=\bfseries\color{red!75!black}},
+    branch_label/.style={font=\small, color=black}
 ]
-
 \node[node_box] {Outlook}
     child {
         node[node_box] {Humidity}
-        child {
-            node[leaf_no] {No}
-            edge from parent node[branch_label, left=2pt] {High}
-        }
-        child {
-            node[leaf_yes] {Yes}
-            edge from parent node[branch_label, right=2pt] {Normal}
-        }
+        child { node[leaf_no] {No} edge from parent node[branch_label, left=2pt] {High} }
+        child { node[leaf_yes] {Yes} edge from parent node[branch_label, right=2pt] {Normal} }
         edge from parent node[branch_label, above left] {Sunny}
     }
     child {
@@ -295,17 +285,10 @@ La struttura si sviluppa partendo da un nodo radice verso il basso ed è compost
     }
     child {
         node[node_box] {Wind}
-        child {
-            node[leaf_no] {No}
-            edge from parent node[branch_label, left=2pt] {Strong}
-        }
-        child {
-            node[leaf_yes] {Yes}
-            edge from parent node[branch_label, right=2pt] {Weak}
-        }
+        child { node[leaf_no] {No} edge from parent node[branch_label, left=2pt] {Strong} }
+        child { node[leaf_yes] {Yes} edge from parent node[branch_label, right=2pt] {Weak} }
         edge from parent node[branch_label, above right] {Rain}
     };
-
 \end{tikzpicture}
 \end{center}
 
@@ -313,652 +296,1523 @@ La struttura si sviluppa partendo da un nodo radice verso il basso ed è compost
 \small
 \begin{tabular}{llllc}
     \toprule
-    \multicolumn{5}{c}{\textbf{Training Set di Esempio: Problema \textit{Play Tennis}}} \\
     \textbf{Outlook} & \textbf{Temperature} & \textbf{Humidity} & \textbf{Wind} & \textbf{Play Tennis?} \\
     \midrule
-    Sunny    & Hot  & High   & Weak   & No  \\ %[cite: 2]
-    Sunny    & Hot  & High   & Strong & No  \\ %[cite: 2]
-    Overcast & Hot  & High   & Weak   & Yes \\ %[cite: 2]
-    Rain     & Mild & High   & Weak   & Yes \\ %[cite: 2]
-    Rain     & Cool & Normal & Weak   & Yes \\ %[cite: 2]
-    Rain     & Cool & Normal & Strong & No  \\ %[cite: 2]
-    Overcast & Cool & Normal & Strong & Yes \\ %[cite: 2]
-    Sunny    & Mild & High   & Weak   & No  \\ %[cite: 2]
-    Sunny    & Cool & Normal & Weak   & Yes \\ %[cite: 2]
-    Rain     & Mild & Normal & Weak   & Yes \\ %[cite: 2]
-    Sunny    & Mild & Normal & Strong & Yes \\ %[cite: 2]
-    Overcast & Mild & High   & Strong & Yes \\ %[cite: 2]
-    Overcast & Hot  & Normal & Weak   & Yes \\ %[cite: 2]
-    Rain     & Mild & High   & Strong & No  \\ %[cite: 2]
+    Sunny    & Hot  & High   & Weak   & No  \\
+    Sunny    & Hot  & High   & Strong & No  \\
+    Overcast & Hot  & High   & Weak   & Yes \\
+    Rain     & Mild & High   & Weak   & Yes \\
+    Rain     & Cool & Normal & Weak   & Yes \\
+    Rain     & Cool & Normal & Strong & No  \\
+    Overcast & Cool & Normal & Strong & Yes \\
+    Sunny    & Mild & High   & Weak   & No  \\
+    Sunny    & Cool & Normal & Weak   & Yes \\
+    Rain     & Mild & Normal & Weak   & Yes \\
+    Sunny    & Mild & Normal & Strong & Yes \\
+    Overcast & Mild & High   & Strong & Yes \\
+    Overcast & Hot  & Normal & Weak   & Yes \\
+    Rain     & Mild & High   & Strong & No  \\
     \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent Nel celebre problema decisionale del \textit{Play Tennis}, ogni istanza è descritta da un vettore di 4 feature meteorologiche: %[cite: 2]
-$$\mathbf{x} = \langle \text{Outlook}, \, \text{Temperature}, \, \text{Humidity}, \, \text{Wind} \rangle$$ %[cite: 2]
+\paragraph{Esempio di classificazione}
+Nuova giornata: $\langle \text{Sunny}, \text{Cool}, \text{High}, \text{Strong} \rangle$. Si parte dalla radice: Outlook = Sunny $\to$ si va su Humidity; Humidity = High $\to$ foglia \textbf{No}. Temperature e Wind non vengono nemmeno guardati: l'albero usa solo le feature che servono lungo quel cammino.
 
-\paragraph{Esempio pratico di classificazione}
-Immaginiamo di dover classificare una nuova giornata caratterizzata dalle seguenti condizioni: %[cite: 2]
-$$\mathbf{x}^{\text{nuovo}} = \langle \text{Outlook}=\text{Sunny}, \, \text{Temperature}=\text{Cool}, \, \text{Humidity}=\text{High}, \, \text{Wind}=\text{Strong} \rangle$$ %[cite: 2]
-Il processo di inferenza percorre un unico sentiero deterministico radice-foglia: %[cite: 2]
-\begin{enumerate}
-    \item Si valuta la radice (\textit{Outlook}): il valore osservato è \textit{Sunny}, per cui si imbocca il ramo sinistro. %[cite: 2]
-    \item Si giunge al nodo di test su \textit{Humidity}: il valore riscontrato è \textit{High}, conducendo al rispettivo ramo discendente. %[cite: 2]
-    \item Si approda alla foglia terminale associata alla classe \textbf{No}: la decisione è di non giocare. %[cite: 2]
-\end{enumerate}
-\noindent Si osservi una proprietà notevole: gli attributi \textit{Temperature} e \textit{Wind} non sono stati consultati durante la decisione. L'albero possiede la naturale capacità di isolare ed esaminare solo le feature strettamente rilevanti per quello specifico cammino logico. %[cite: 2]
+\paragraph{Espressività}
 
-\begin{cbox}{Espressività del Modello ed Equivalenza con la Logica Booleana}
-\noindent Quanto è potente la classe degli alberi di decisione? Quali funzioni logiche è in grado di rappresentare? %[cite: 2]
-
-\noindent Supponiamo che lo spazio di input sia formato da $n$ attributi booleani, $X = X_1 \times X_2 \times \dots \times X_n$, con $X_i \in \{\text{True}, \text{False}\}$. %[cite: 2]
-Un albero di decisione può esprimere qualsiasi combinazione logica fondamentale: %[cite: 2]
+\noindent Con attributi booleani $X_1, \dots, X_n$, un albero può rappresentare qualsiasi funzione logica:
 \begin{itemize}
-    \item \textbf{Congiunzioni logiche (AND)}: ad esempio la regola $Y = X_2 \land X_5$. L'albero interroga inizialmente $X_2$: se Falso, predice subito Falso; se Vero, passa a testare $X_5$ e predice Vero solo se entrambi sono soddisfatti. %[cite: 2]
-    \item \textbf{Disgiunzioni logiche (OR)}: ad esempio la regola $Y = X_4 \lor X_1$. Se il test su $X_4$ ha esito Vero la predizione è immediatamente Vera; altrimenti si prosegue valutando $X_1$. %[cite: 2]
-    \item \textbf{Funzioni logiche complesse}: ad esempio proposizioni articolate della forma: %[cite: 2]
-    $$Y = (X_2 \land X_5) \lor (\neg X_3 \land X_4 \land X_1)$$ %[cite: 2]
+    \item \textbf{AND}, es.\ $Y = X_2 \land X_5$: si testa $X_2$; se è falso si risponde subito Falso, altrimenti si testa $X_5$.
+    \item \textbf{OR}, es.\ $Y = X_4 \lor X_1$: se $X_4$ è vero si risponde Vero, altrimenti si testa $X_1$.
+    \item formule più complesse, es.\ $Y = (X_2 \land X_5) \lor (\neg X_3 \land X_4 \land X_1)$.
 \end{itemize}
+Ogni cammino radice-foglia positiva è un AND di condizioni; l'albero intero è l'OR di questi cammini. Quindi un albero equivale a una formula in \textbf{forma normale disgiuntiva (DNF)}, e su attributi discreti può esprimere \textbf{qualunque} funzione booleana.
 
-\paragraph{Equivalenza con la Forma Normale Disgiuntiva (DNF)}
-Ogni singolo cammino che unisce la radice a una foglia con esito positivo descrive una congiunzione logica ($\land$) di tutte le condizioni soddisfatte lungo il tragitto. %[cite: 2]
-L'albero nel suo complesso assegna classe positiva se l'input rispetta \textit{il primo percorso valido, OPPURE il secondo percorso, OPPURE il terzo}, e così via. %[cite: 2]
-Di conseguenza, ogni albero di decisione equivale formalmente a una \textbf{Forma Normale Disgiuntiva (DNF)}: una disgiunzione (OR, $\lor$) di congiunzioni (AND, $\land$). %[cite: 2]
+\noindent Da qui tre domande:
+\begin{enumerate}
+    \item \textit{Ogni $h \in H$ ha un albero che la rappresenta?} Sì: al limite basta un ramo per ogni riga della tabella di verità.
+    \item \textit{L'albero è unico?} No: cambiando l'ordine dei test si ottengono alberi diversi equivalenti.
+    \item \textit{Quale preferire?} Per il \textbf{rasoio di Occam}, il più semplice (meno nodi, meno profondo). Un albero enorme può non sbagliare mai sul training set ma imparare a memoria il rumore (\textit{overfitting}); uno piccolo cattura solo le regolarità importanti e generalizza meglio.
+\end{enumerate}
 
-\noindent Su attributi discreti, gli alberi di decisione presentano un'\textbf{espressività completa}: non impongono restrizioni a priori sullo spazio delle ipotesi $H$, potendo descrivere in linea teorica qualunque funzione booleana ammissibile. %[cite: 2]
+\subsubsection{Costruzione top-down, entropia e attributi continui}
+
+\noindent Trovare l'albero più piccolo in assoluto è NP-completo. Si usa quindi un algoritmo \textbf{greedy top-down} (ID3): si parte dalla radice e a ogni passo si sceglie l'attributo che sembra migliore \textit{in quel momento}, senza tornare indietro.
+\begin{enumerate}
+    \item Scegli l'attributo «migliore» per il nodo corrente.
+    \item Crea un figlio per ogni suo valore e distribuisci gli esempi tra i figli.
+    \item Per ogni figlio: se tutti gli esempi hanno la stessa classe, è una foglia; altrimenti ripeti dal punto 1.
+\end{enumerate}
+Resta da capire cosa vuol dire «migliore». La risposta viene dalla teoria dell'informazione.
+
+\paragraph{Informazione ed entropia}
+Un evento certo non ci dice nulla di nuovo; un evento raro ci sorprende molto. Si definisce l'\textbf{informazione} (o sorpresa) di un evento di probabilità $p$ come
+$$I(p) = -\log_2 p$$
+Il logaritmo è l'unica scelta che rende additiva l'informazione di eventi indipendenti: $I(p_1 p_2) = I(p_1) + I(p_2)$. L'unità di misura è il \textbf{bit}.
+
+\noindent L'\textbf{entropia} di una variabile $X$ con $n$ valori possibili è la sorpresa media:
+$$H(X) = -\sum_{i=1}^n P(X = i) \log_2 P(X = i)$$
+(il segno meno serve perché $\log_2 p \le 0$ quando $p \le 1$). L'entropia misura quanto un insieme di dati è \textbf{impuro}:
+\begin{itemize}
+    \item $H = 0$ se tutti gli esempi sono della stessa classe (nodo puro);
+    \item $H = \log_2 n$ se le classi sono distribuite in modo uniforme (massima incertezza).
+\end{itemize}
+Nel caso binario la curva vale 1 bit al 50\% e scende a 0 agli estremi:
+\begin{center}
+    \includegraphics[width=0.35\textwidth]{img/entropia.png}
+\end{center}
+
+\noindent L'entropia è anche il \textbf{numero medio minimo di bit} per codificare i messaggi di una sorgente. Con 8 simboli equiprobabili servono $\log_2 8 = 3$ bit; se alcuni simboli sono più frequenti, si danno loro codici più corti (come nella codifica di Huffman) e la lunghezza media scende fino a $H(X)$.
+
+\begin{cbox}{Information Gain}
+Dividendo un nodo con l'attributo $X$, vorremmo figli più puri del padre. L'incertezza residua è l'\textbf{entropia condizionata}, media delle entropie dei figli pesata per la loro dimensione:
+$$H(Y \mid X) = \sum_{v} P(X = v)\, H(Y \mid X = v)$$
+L'\textbf{information gain} è quanto l'entropia si riduce:
+$$I(Y, X) = H(Y) - H(Y \mid X)$$
+A ogni nodo si sceglie l'attributo con information gain \textbf{massimo}.
 \end{cbox}
 
-\subsubsection{Le Tre Domande Cardine e il Rasoio di Occam}
+\paragraph{Esempio: meglio $A$ o $B$?}
+Idea semplice: vogliamo il test che «mette ordine» meglio, cioè che separa i positivi (+) dai negativi (--). Un test è buono se, dopo averlo fatto, i due gruppi che ne escono sono \textbf{più omogenei} (più puri) di quello di partenza.
 
-\noindent A fronte di tale ricchezza espressiva, si pongono tre quesiti fondamentali: %[cite: 2]
+\noindent Siamo in un nodo con 64 esempi, $[29+, 35-]$: quasi 50 e 50, quindi molto confuso. L'entropia di partenza è alta:
+$$H(Y) = -\tfrac{29}{64}\log_2\tfrac{29}{64} - \tfrac{35}{64}\log_2\tfrac{35}{64} \approx 0.994$$
+Abbiamo due attributi booleani candidati, $A$ e $B$. Vediamo come dividerebbero gli stessi 64 esempi:
 
-\begin{enumerate}
-    \item \textbf{Esiste un albero di decisione per ogni possibile ipotesi $h \in H$?} %[cite: 2]
-    \\ \textbf{Sì}. Poiché ogni funzione logica discreta è interamente tabulabile mediante la propria tabella di verità, è sempre possibile costruire un albero che la implementi (nel caso estremo, prevedendo un ramo per ciascuna combinazione di valori). %[cite: 2]
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={draw, rounded corners=2pt, thick, align=center, inner sep=4pt, font=\small},
+    root/.style={box, draw=blue!75!black},
+    good/.style={box, draw=green!50!black, fill=green!8},
+    bad/.style={box, draw=red!60!black, fill=red!6},
+    lab/.style={font=\scriptsize, midway}
+]
+% albero A
+\node[root] (ra) at (-4.2,0) {$[29+, 35-]$\\ $H = 0.994$};
+\node[good] (a1) at (-6.0,-2.4) {$[21+, 5-]$\\ $H \approx 0.71$\\ \scriptsize quasi tutti +};
+\node[good] (a2) at (-2.4,-2.4) {$[8+, 30-]$\\ $H \approx 0.74$\\ \scriptsize quasi tutti --};
+\draw[->, thick] (ra) -- node[lab, above left] {$A = $ True} (a1);
+\draw[->, thick] (ra) -- node[lab, above right] {$A = $ False} (a2);
+\node[font=\bfseries] at (-4.2,1.2) {Test $A$};
+% albero B
+\node[root] (rb) at (4.2,0) {$[29+, 35-]$\\ $H = 0.994$};
+\node[bad] (b1) at (2.4,-2.4) {$[18+, 33-]$\\ $H \approx 0.94$\\ \scriptsize ancora mescolato};
+\node[good] (b2) at (6.0,-2.4) {$[11+, 2-]$\\ $H \approx 0.62$\\ \scriptsize quasi tutti +};
+\draw[->, thick] (rb) -- node[lab, above left] {$B = $ True} (b1);
+\draw[->, thick] (rb) -- node[lab, above right] {$B = $ False} (b2);
+\node[font=\bfseries] at (4.2,1.2) {Test $B$};
+\end{tikzpicture}
+\end{center}
 
-    \item \textbf{L'albero che rappresenta una data funzione è unico?} %[cite: 2]
-    \\ \textbf{No}. La medesima funzione logica (o la corretta classificazione di uno stesso dataset) può essere codificata da molteplici configurazioni di alberi differenti tra loro. Cambiando l'ordine degli attributi testati alla radice e ai livelli intermedi si generano strutture alternative con la stessa semantica complessiva. %[cite: 2]
-
-    \item \textbf{In assenza di unicità, quale albero dobbiamo preferire?} %[cite: 2]
-    \\ Si adotta il principio epistemologico del \textbf{Rasoio di Occam} (\textit{Occam's razor}): \textit{tra più ipotesi coerenti con le osservazioni disponibili, è opportuno privilegiare sempre la più semplice e parsimoniosa}. %[cite: 2]
-    Nel nostro ambito, ciò si traduce nello scegliere \textbf{l'albero con il minor numero di nodi complessivi e la minore profondità}. %[cite: 2]
-\end{enumerate}
-
-\paragraph{Fondamento intuitivo del Rasoio di Occam}
-Un albero molto profondo e ramificato è in grado di azzerare l'errore sul training set, ma rischia di memorizzare le fluttuazioni casuali o il rumore statistico dei campioni noti (\textbf{overfitting} o sovradattamento). %[cite: 2]
-Al contrario, un albero compatto seleziona esclusivamente le regolarità strutturali dominanti del dominio, preservando un'elevata capacità di generalizzazione predittiva su esempi futuri non ancora osservati. %[cite: 2]
-
-\subsection{Costruzione Top-Down, Entropia e Information Gain}
-
-\subsubsection{L'Approccio Induttivo Greedy (Algoritmo ID3)}
-
-\noindent In linea teorica, l'obiettivo ideale sarebbe costruire l'albero di decisione più piccolo in assoluto (in termini di profondità e numero di nodi) capace di classificare perfettamente i dati noti. %[cite: 2]
-Tuttavia, trovare l'albero ottimo globale è un problema computazionalmente intrattabile ($NP$-completo), poiché richiederebbe di esplorare tutte le possibili combinazioni di alberi generabili. %[cite: 2]
-
-\noindent Per questa ragione, nella pratica si ricorre a un algoritmo euristico di tipo \textbf{greedy top-down} (noto storicamente come algoritmo \textbf{ID3} di Quinlan): %[cite: 2]
+\noindent Cosa si vede a occhio:
 \begin{itemize}
-    \item \textbf{Top-down}: la costruzione procede dall'alto verso il basso, partendo dal nodo radice e suddividendo progressivamente i dati in sottoinsiemi sempre più piccoli. %[cite: 2]
-    \item \textbf{Greedy (miope)}: a ogni singolo passo, l'algoritmo sceglie l'attributo che produce il miglior beneficio \textit{immediato}, senza esplorare in anticipo le conseguenze sui livelli successivi e senza possibilità di ritrattare la scelta (\textit{no backtracking}). %[cite: 2]
+    \item \textbf{Con $A$} entrambi i figli sono abbastanza ordinati: a sinistra dominano i +, a destra i --. Il test ha davvero separato le due classi.
+    \item \textbf{Con $B$} il figlio grande (51 esempi su 64) è ancora quasi 50/50, quindi il test ha fatto poco. Il figlio «bello» $[11+, 2-]$ è piccolo e conta poco.
 \end{itemize}
 
-\paragraph{Il ciclo principale dell'algoritmo}
-Dato un insieme di esempi di addestramento associati al nodo corrente: %[cite: 2]
-\begin{enumerate}
-    \item Si valuta ciascun attributo disponibile e si seleziona quello ritenuto \textbf{«migliore»} per discriminare le classi. %[cite: 2]
-    \item Per ogni possibile valore discreto dell'attributo scelto, si genera un \textbf{nodo figlio} collegato tramite un apposito ramo, partizionando gli esempi di conseguenza. %[cite: 2]
-    \item Per ciascun nodo figlio appena creato: %[cite: 2]
-    \begin{itemize}
-        \item Se tutti gli esempi che ricadono nel nodo appartengono alla medesima classe, la partizione è perfettamente omogenea: la costruzione si arresta e il nodo diventa una \textbf{foglia} con quell'etichetta. %[cite: 2]
-        \item Se gli esempi appartengono ancora a classi miste, si ripete ricorsivamente la procedura a partire dal punto 1 sul sottoinsieme di campioni di quel nodo. %[cite: 2]
-    \end{itemize}
-\end{enumerate}
+\noindent Ora i numeri, un passo alla volta. Notazione: $[p+, n-]$ = $p$ esempi positivi e $n$ negativi; l'entropia di un nodo si calcola \textbf{solo} da questi due numeri, con la formula $H = -f_+\log_2 f_+ - f_-\log_2 f_-$ dove $f_+ = \tfrac{p}{p+n}$ e $f_- = \tfrac{n}{p+n}$ sono le frazioni.
 
-\noindent A questo punto sorge la domanda chiave: \textit{su quale base stabiliamo qual è l'attributo «migliore» a ogni biforcazione?} %[cite: 2]
-Per guidare questa scelta in modo rigoroso, ci si affida ai concetti matematici della \textbf{Teoria dell'Informazione di Shannon}. %[cite: 2]
+\paragraph{Passo 1: entropia di ogni nodo}
+Si applica la formula a ciascun nodo dell'albero (padre e figli). Esempio per il figlio $A = \text{True}$, $[21+, 5-]$, che ha 26 esempi:
+$$H(Y \mid A = T) = -\tfrac{21}{26}\log_2\tfrac{21}{26} - \tfrac{5}{26}\log_2\tfrac{5}{26} \approx 0.706$$
+Allo stesso modo $H(Y \mid A = F)$ per $[8+, 30-]$ (38 esempi) e così via per i nodi di $B$.
 
-\subsubsection{La Teoria dell'Informazione: Sorpresa ed Entropia}
+\paragraph{Passo 2: entropia dopo il test (media pesata)}
+Dopo il test $A$ gli esempi si dividono in due gruppi, e l'incertezza che resta è la media delle due entropie, \textbf{pesata} per quanti esempi ha ciascun gruppo: $\tfrac{26}{64}$ vanno a sinistra, $\tfrac{38}{64}$ a destra (i pesi sommano a 1).
+$$H(Y \mid A) = \tfrac{26}{64}\cdot\underbrace{0.706}_{H(Y\mid A=T)} + \tfrac{38}{64}\cdot\underbrace{0.742}_{H(Y\mid A=F)} \approx 0.727$$
+Per $B$ i pesi sono $\tfrac{51}{64}$ e $\tfrac{13}{64}$ (i 51 esempi di $[18+, 33-]$ e i 13 di $[11+, 2-]$):
+$$H(Y \mid B) = \tfrac{51}{64}\cdot 0.936 + \tfrac{13}{64}\cdot 0.619 \approx 0.872$$
 
-\paragraph{1. Quantità di informazione come «sorpresa»}
-Intuitivamente, la quantità di informazione trasportata da un evento è legata al suo grado di imprevedibilità: %[cite: 2]
+\paragraph{Passo 3: information gain}
+Gain = incertezza prima $-$ incertezza dopo:
+$$I(Y, A) = H(Y) - H(Y \mid A) = 0.994 - 0.727 = \mathbf{0.267} \qquad I(Y, B) = 0.994 - 0.872 = 0.122$$
+(Le slide scrivono $0.288$ per $A$, ma $0.994 - 0.726 = 0.268$: è un refuso. Il valore corretto, con più cifre decimali, è $0.266$.)
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lccc}
+    \toprule
+    & \textbf{Figlio True} & \textbf{Figlio False} & \\
+    \midrule
+    \textbf{Test $A$} & $[21+, 5-]$: $H = 0.706$, peso $\tfrac{26}{64}$ & $[8+, 30-]$: $H = 0.742$, peso $\tfrac{38}{64}$ & $H(Y \mid A) = 0.727$, \textbf{gain 0.267} \\
+    \textbf{Test $B$} & $[18+, 33-]$: $H = 0.936$, peso $\tfrac{51}{64}$ & $[11+, 2-]$: $H = 0.619$, peso $\tfrac{13}{64}$ & $H(Y \mid B) = 0.872$, gain 0.122 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Da dove vengono i valori: i numeri dentro le parentesi quadre ($[29+, 35-]$, $[21+, 5-]$, \dots) sono \textbf{dati} dell'esercizio (conteggi sul training set); tutto il resto (frazioni, entropie, pesi, gain) si calcola da lì. Si sceglie $A$: toglie più del doppio di incertezza. Il peso conta: il ramo $B = \text{False}$ è pulito ($H = 0.619$), ma ha solo 13 esempi su 64, quindi non compensa l'altro ramo ancora confuso ($H = 0.936$ su 51 esempi).
+
+\paragraph{Attributi continui}
+
+\noindent Se un attributo è continuo (temperatura, umidità, \dots) non ha senso creare un ramo per ogni valore: ogni ramo avrebbe un solo esempio e l'albero imparerebbe a memoria i dati. Si usa invece una \textbf{soglia} $\Theta$ e un test binario $A < \Theta$.
+
+\noindent La soglia si sceglie confrontando l'information gain di più candidati:
 \begin{itemize}
-    \item Se un evento è certo ($P = 1$), il fatto che si verifichi non ci comunica nulla di nuovo (sorpresa nulla): $I(1) = 0$. %[cite: 2]
-    \item Se un evento è molto raro ($P \approx 0$), il suo accadimento ci fornisce un'informazione elevatissima (grande sorpresa). %[cite: 2]
-\end{itemize}
-Inoltre, se consideriamo due eventi indipendenti con probabilità $p_1$ e $p_2$, la probabilità congiunta è data dal loro prodotto $p_1 \cdot p_2$, ma l'informazione complessiva acquisita dall'osservazione di entrambi deve sommarsi in modo naturale: $I(p_1 \cdot p_2) = I(p_1) + I(p_2)$. %[cite: 2]
-L'unica funzione matematica che trasforma un prodotto in una somma garantendo queste proprietà è il logaritmo. Si definisce quindi l'\textbf{informazione (o sorpresa)} generata da un evento con probabilità $p$ come: %[cite: 2]
-$$I(p) = -\log_2(p) = \log_2\left(\frac{1}{p}\right)$$ %[cite: 2]
-La scelta della base 2 misura l'informazione in \textbf{bit} (detti anche \textit{Shannon}). %[cite: 2]
-
-\paragraph{2. Entropia di Shannon: misura di impurità e incertezza}
-L'\textbf{Entropia} $H(X)$ di una variabile aleatoria discreta $X$ (che assume valori tra $n$ possibili esiti) è definita formalmente come il \textbf{valore atteso della sorpresa}, ossia la media ponderata dell'informazione prodotta da ciascun esito: %[cite: 2]
-$$H(X) = -\sum_{i=1}^n P(X = i) \log_2 P(X = i)$$ %[cite: 2]
-Nel contesto dell'apprendimento automatico, l'entropia quantifica il grado di \textbf{disordine}, \textbf{incertezza} o \textbf{impurità} presente in un gruppo di dati: %[cite: 2]
-\begin{itemize}
-    \item \textbf{Entropia minima ($H = 0$)}: si ottiene quando tutti gli esempi appartengono a una sola categoria ($P=1$ per una classe e $0$ per le altre). Il nodo è \textit{puro}: non c'è incertezza sulla risposta. %[cite: 2]
-    \item \textbf{Entropia massima ($H = \log_2(n)$)}: si ottiene quando gli esempi sono distribuiti in modo perfettamente uniforme tra tutte le $n$ categorie ammissibili. Il nodo è massimamente \textit{impuro}: l'incertezza sulla classe è totale. %[cite: 2]
-    \item \textbf{Caso binario}: per una variabile booleana (es. classi Yes/No), l'entropia tocca il valore massimo di $1 \text{ bit}$ quando la distribuzione è bilanciata al 50\% e scende simmetricamente a $0$ agli estremi (100\% Yes oppure 100\% No). %[cite: 2]
-\end{itemize}
-
-\noindent Nota: perché il segno meno? La risposta è che la probabilità è compresa tra 0 e 1, quindi il logaritmo è negativo. L'aggiunta del segno meno garantisce che l'entropia sia sempre un numero positivo.
-
-\paragraph{3. Collegamento con la Teoria dei Codici}
-Shannon ha dimostrato che l'entropia rappresenta anche il \textbf{numero medio minimo di bit} necessari per trasmettere o codificare senza perdita di informazione i messaggi prodotti da una sorgente casuale. %[cite: 2]
-Se abbiamo $n$ messaggi equiprobabili, occorrono $\log_2(n)$ bit per codificarli tutti (ad esempio con 8 simboli equiprobabili servono $\log_2(8) = 3 \text{ bit}$). %[cite: 2]
-Tuttavia, se gli eventi non hanno tutti la stessa probabilità, è possibile assegnare codici binari più brevi agli eventi frequenti e più lunghi a quelli rari (come accade nei codici di Huffman): in questo caso il numero medio di bit necessari scende al di sotto di $\log_2(n)$, tendendo esattamente al valore dell'entropia $H(X)$. %[cite: 2]
-
-\begin{cbox}{Guadagno di Informazione (\textit{Information Gain})}
-\noindent Quando decidiamo di suddividere un nodo usando un attributo predittivo $X$, vorremmo che i nodi figli risultanti fossero \textit{più puri e ordinati} rispetto al nodo genitore di partenza. %[cite: 2]
-
-\paragraph{Definizione di Entropia Condizionata}
-Sia $Y$ la classe target da predire. Dopo aver partizionato i dati in base ai valori assunti dall'attributo $X$, l'incertezza residua media su $Y$ è data dall'\textbf{entropia condizionata} $H(Y \mid X)$, calcolata come media ponderata delle entropie di ciascun nodo figlio: %[cite: 2]
-$$H(Y \mid X) = \sum_{v \in \text{Valori}(X)} P(X = v) \, H(Y \mid X = v)$$ %[cite: 2]
-dove $P(X = v)$ rappresenta la frazione di esempi del nodo genitore che finiscono nel ramo in cui l'attributo $X$ vale $v$. %[cite: 2]
-
-\paragraph{Definizione di Information Gain}
-L'\textbf{Information Gain} (o Guadagno di Informazione) $I(Y, X)$ misura l'effettiva \textbf{riduzione di entropia} (cioè l'aumento di purezza) ottenuta partizionando i dati attraverso l'attributo $X$: %[cite: 2]
-$$I(Y, X) = H(Y) - H(Y \mid X)$$ %[cite: 2]
-\begin{itemize}
-    \item $H(Y)$ è l'incertezza iniziale prima della diramazione. %[cite: 2]
-    \item $H(Y \mid X)$ è l'incertezza media residua dopo aver effettuato il test su $X$. %[cite: 2]
-\end{itemize}
-\textbf{Regola di decisione}: a ogni nodo dell'albero, l'algoritmo calcola l'Information Gain per tutti gli attributi candidati e seleziona come test l'attributo che \textbf{massimizza} $I(Y, X)$. %[cite: 2]
-\end{cbox}
-
-\subsubsection{Esempio Numerico Guidato: Confronto tra Due Attributi ($A$ e $B$)}
-
-\noindent Per comprendere a fondo come opera l'algoritmo di selezione, ripercorriamo passo dopo passo l'esempio classico presentato nelle slide. %[cite: 2]
-
-\noindent Immaginiamo di trovarci in un nodo che contiene un insieme di $64$ esempi, di cui $29$ con etichetta positiva e $35$ con etichetta negativa, notazione $[29+, 35-]$. %[cite: 2]
-
-\paragraph{Passo 1: Calcolo dell'entropia iniziale del nodo genitore}
-La probabilità a priori delle classi nel nodo è $P(+) = \frac{29}{64}$ e $P(-) = \frac{35}{64}$. %[cite: 2]
-L'entropia iniziale $H(Y)$ è: %[cite: 2]
-$$H(Y) = -\frac{29}{64}\log_2\left(\frac{29}{64}\right) - \frac{35}{64}\log_2\left(\frac{35}{64}\right) \approx 0.994 \text{ bit}$$ %[cite: 2]
-Il nodo presenta un'incertezza vicina a $1 \text{ bit}$, risultando fortemente impuro. %[cite: 2]
-
-\paragraph{Passo 2: Valutazione dell'attributo candidato $A$}
-L'attributo booleano $A$ divide i $64$ campioni in due rami: %[cite: 2]
-\begin{itemize}
-    \item Ramo $A = \text{True}$ ($26$ campioni su $64$): contiene $21$ positivi e $5$ negativi, denotato $[21+, 5-]$. %[cite: 2]
-    $$H(Y \mid A = \text{True}) = -\frac{21}{26}\log_2\left(\frac{21}{26}\right) - \frac{5}{26}\log_2\left(\frac{5}{26}\right) \approx 0.706 \text{ bit}$$ %[cite: 2]
-    \item Ramo $A = \text{False}$ ($38$ campioni su $64$): contiene $8$ positivi e $30$ negativi, denotato $[8+, 30-]$. %[cite: 2]
-    $$H(Y \mid A = \text{False}) = -\frac{8}{38}\log_2\left(\frac{8}{38}\right) - \frac{30}{38}\log_2\left(\frac{30}{38}\right) \approx 0.742 \text{ bit}$$ %[cite: 2]
-\end{itemize}
-Calcoliamo l'entropia condizionata ponderando le impurità dei due nodi figli per le relative dimensioni: %[cite: 2]
-$$H(Y \mid A) = \frac{26}{64} \cdot (0.706) + \frac{38}{64} \cdot (0.742) \approx 0.287 + 0.440 = 0.727 \text{ bit}$$ %[cite: 2]
-Il guadagno di informazione prodotto dalla scelta di $A$ è dunque: %[cite: 2]
-$$I(Y, A) = H(Y) - H(Y \mid A) = 0.994 - 0.727 = \mathbf{0.267 \text{ bit}}$$ %[cite: 2]
-
-\paragraph{Passo 3: Valutazione dell'attributo candidato $B$}
-L'attributo booleano alternativo $B$ divide invece i $64$ campioni in modo diverso: %[cite: 2]
-\begin{itemize}
-    \item Ramo $B = \text{True}$ ($51$ campioni su $64$): contiene $18$ positivi e $33$ negativi, denotato $[18+, 33-]$. %[cite: 2]
-    $$H(Y \mid B = \text{True}) = -\frac{18}{51}\log_2\left(\frac{18}{51}\right) - \frac{33}{51}\log_2\left(\frac{33}{51}\right) \approx 0.936 \text{ bit}$$ %[cite: 2]
-    \item Ramo $B = \text{False}$ ($13$ campioni su $64$): contiene $11$ positivi e $2$ negativi, denotato $[11+, 2-]$. %[cite: 2]
-    $$H(Y \mid B = \text{False}) = -\frac{11}{13}\log_2\left(\frac{11}{13}\right) - \frac{2}{13}\log_2\left(\frac{2}{13}\right) \approx 0.619 \text{ bit}$$ %[cite: 2]
-\end{itemize}
-Calcoliamo l'entropia condizionata per $B$: %[cite: 2]
-$$H(Y \mid B) = \frac{51}{64} \cdot (0.936) + \frac{13}{64} \cdot (0.619) \approx 0.746 + 0.126 = 0.872 \text{ bit}$$ %[cite: 2]
-Il guadagno di informazione prodotto da $B$ è: %[cite: 2]
-$$I(Y, B) = H(Y) - H(Y \mid B) = 0.994 - 0.872 = \mathbf{0.122 \text{ bit}}$$ %[cite: 2]
-
-\paragraph{Passo 4: Confronto e decisione}
-Mettendo a confronto i due guadagni di informazione ottenuti: %[cite: 2]
-$$I(Y, A) \approx 0.267 \text{ bit} \quad > \quad I(Y, B) \approx 0.122 \text{ bit}$$ %[cite: 2]
-L'algoritmo sceglie indiscutibilmente l'\textbf{attributo $A$} per effettuare la diramazione del nodo corrente. %[cite: 2]
-Anche se il ramo $B = \text{False}$ produce una foglia abbastanza pura ($0.619 \text{ bit}$), essa coinvolge soltanto $13$ esempi; l'attributo $A$, al contrario, riduce in maniera consistente l'incertezza su entrambi i sottoinsiemi, ottenendo un'entropia media residua notevolmente più bassa ($0.727$ contro $0.872$). %[cite: 2]
-
-\subsection{Attributi Continui e Gestione delle Soglie}
-
-\subsubsection{Dalle Variabili Discrete alle Variabili Continue}
-
-\noindent Negli alberi di decisione tradizionali (come nell'algoritmo ID3 standard), a ogni valore discreto dell'attributo testato corrisponde un ramo uscente. %[cite: 2]
-Tuttavia, nella maggior parte dei problemi reali molti attributi assumono valori continui su scala reale ($X_j \in \mathbb{R}$), come la temperatura in gradi, l'umidità in percentuale o la pressione atmosferica. %[cite: 2]
-
-\noindent In questo contesto, non è praticabile né sensato creare un ramo distinto per ciascun valore osservato: %[cite: 2]
-se lo facessimo, ogni ramo finirebbe per contenere un singolo campione, azzerando banalmente l'entropia ma frammentando il dataset e portando a un sovradattamento totale (\textit{overfitting}) con nulla capacità di generalizzazione. %[cite: 2]
-
-\noindent La soluzione consiste nel \textbf{discretizzare dinamicamente} l'attributo continuo trasformandolo in un test binario mediante una \textbf{soglia di decisione} (\textit{threshold}) $\Theta$: %[cite: 2]
-$$A < \Theta \quad \lor \quad A \ge \Theta$$ %[cite: 2]
-In questo modo, il nodo continuo genera sempre e soltanto due rami dicotomici (Vero/Falso), preservando la struttura gerarchica dell'albero. %[cite: 2]
-
-\subsubsection{Strategie di Selezione della Soglia Ottima}
-
-\noindent Il problema si sposta quindi sulla scelta del valore migliore per la soglia $\Theta$. %[cite: 2]
-L'algoritmo affronta il problema confrontando l'\textit{Information Gain} generato da diverse soglie candidate e selezionando quella che massimizza la riduzione di entropia: %[cite: 2]
-\begin{itemize}
-    \item \textbf{Campionamento a intervalli discreti (griglia)}: si suddivide l'intervallo compreso tra il valore minimo e massimo dell'attributo in un insieme prefissato di intervalli equispaziati, valutando solo quei punti specifici. È una strategia computazionalmente rapida ma approssimata. %[cite: 2]
-    \item \textbf{Punti medi tra campioni consecutivi}: si ordinano tutti gli esempi del nodo corrente in modo crescente rispetto all'attributo continuo considerato ($x_{(1)} \le x_{(2)} \le \dots \le x_{(N)}$). %[cite: 2]
-    Come soglie candidate si valutano le medie aritmetiche tra coppie di valori adiacenti: %[cite: 2]
-    $$\Theta_k = \frac{x_{(k)} + x_{(k+1)}}{2}$$ %[cite: 2]
-    Per ridurre drasticamente i calcoli inutili, nella pratica si considerano unicamente i punti medi tra campioni consecutivi che presentano \textbf{classi target differenti} ($y^{(k)} \neq y^{(k+1)}$), poiché una soglia collocata tra due esempi appartenenti alla medesima classe non può produrre un punto di massimo per l'Information Gain. %[cite: 2]
+    \item punti a intervalli regolari tra minimo e massimo (veloce ma approssimato);
+    \item oppure si ordinano gli esempi per quell'attributo e si provano i \textbf{punti medi tra valori consecutivi}; basta considerare quelli in cui la classe cambia.
 \end{itemize}
 
-\paragraph{Esempio intuitivo di calcolo della soglia}
-Immaginiamo di voler individuare la miglior soglia per l'attributo continuo \textit{Umidità} su un campione ridotto di 4 giornate: %[cite: 2]
+\paragraph{Esempio}
 \begin{center}
 \small
 \begin{tabular}{lcccc}
     \toprule
-    \textbf{Campione} & $\mathbf{x}_1$ & $\mathbf{x}_2$ & $\mathbf{x}_3$ & $\mathbf{x}_4$ \\
-    \midrule
-    \textbf{Umidità (\%)} & $65$ & $70$ & $80$ & $85$ \\ %[cite: 2]
-    \textbf{Play Tennis} & Yes & Yes & No & No \\ %[cite: 2]
+    \textbf{Umidità (\%)} & 65 & 70 & 80 & 85 \\
+    \textbf{Play Tennis} & Yes & Yes & No & No \\
     \bottomrule
 \end{tabular}
 \end{center}
-\noindent Ordinando i campioni, notiamo che la classe cambia unicamente passando da $\mathbf{x}_2$ ($70\%$, Yes) a $\mathbf{x}_3$ ($80\%$, No). %[cite: 2]
-La soglia candidata ideale è la media tra i due valori: %[cite: 2]
-$$\Theta = \frac{70 + 80}{2} = 75\%$$ %[cite: 2]
-Il test risultante sarà $\text{Umidità} < 75$: tutti i campioni a sinistra avranno classe pura \textit{Yes}, mentre tutti quelli a destra avranno classe pura \textit{No}, portando l'entropia residua a zero e massimizzando l'Information Gain. %[cite: 2]
+La classe cambia solo tra 70 e 80, quindi l'unica soglia candidata è $\Theta = 75$. Il test $\text{Umidità} < 75$ separa perfettamente le due classi.
 
-\subsubsection{Limiti della Scelta Greedy Univariata: Il Caso dello XOR}
-
-\noindent La procedura descritta seleziona la partizione valutando \textbf{una sola feature alla volta} (\textit{approccio univariato}). %[cite: 2]
-Questo schema euristico miope (\textit{greedy}) mostra limiti evidenti quando la classe obiettivo dipende da \textbf{relazioni composite o non lineari tra più attributi contemporaneamente}, come nella funzione logica \textbf{XOR} (or esclusivo). %[cite: 2]
-
-\noindent Si consideri il seguente esempio pratico implementato in Python tramite \texttt{scikit-learn}: %[cite: 2]
+\paragraph{Limite della scelta greedy: lo XOR}
+L'algoritmo valuta \textbf{una feature alla volta}. Se la classe dipende da una combinazione di feature, può sbagliare. Esempio con \texttt{scikit-learn}, dove $Y = 1$ se e solo se $X_2 \neq X_3$:
 
 \begin{lstlisting}[language=Python]
 from sklearn import tree
-
-# 10 campioni descritti da 4 feature (booleane/continue 0 e 1)
 X = [[0,0,0,0], [1,0,0,0], [0,0,0,1], [0,0,1,0], [0,0,1,1],
      [0,1,0,0], [0,1,0,1], [1,1,0,1], [0,1,1,0], [0,1,1,1]]
-
-# Target: Y = 1 se e solo se X[2] != X[3] (funzione XOR tra feature 2 e 3)
-Y = [0, 0, 1, 1, 0, 0, 1, 1, 1, 0]
+Y = [0, 0, 1, 1, 0, 0, 1, 1, 1, 0]   # Y = X[2] xor X[3]
 
 clf = tree.DecisionTreeClassifier(criterion='entropy', random_state=0)
 clf = clf.fit(X, Y)
+print(clf.predict([[1, 1, 1, 1]]))   # [1]
+print(clf.feature_importances_)      # [0.17, 0.029, 0.4, 0.4]
+\end{lstlisting}
 
-print("Predizione per [1, 1, 1, 1]:", clf.predict([[1, 1, 1, 1]]))
-print("Feature importances:", clf.feature_importances_)
-# Output: [0.170, 0.029, 0.400, 0.400]
-\end{lstlisting} %[cite: 2]
+\noindent Preso da solo, $X_2$ non dice nulla su $Y$: sapendo che $X_2 = 1$, $Y$ vale 0 o 1 a seconda di $X_3$. Lo stesso vale per $X_3$. Il loro information gain alla radice è quasi nullo, quindi l'algoritmo sceglie per prima una feature irrilevante e l'albero diventa più profondo del necessario:
+\begin{center}
+    \includegraphics[width=0.85\textwidth]{img/albero-xor.png}
+\end{center}
 
-\paragraph{Perché l'Information Gain fallisce alla radice?}
-Nel dataset sopra riportato, l'output $Y$ dipende in modo deterministico unicamente dalla disuguaglianza tra la feature $X_2$ e la feature $X_3$ ($X_2 \neq X_3$). %[cite: 2]
-Le feature $X_0$ e $X_1$ rappresentano puro rumore irrilevante. %[cite: 2]
+\noindent La \textbf{feature importance}, però, si calcola \textit{a posteriori}: per ogni feature si sommano le riduzioni di impurità di tutti i nodi in cui viene usata, pesate per la frazione di esempi che passano da quel nodo, e poi si normalizza:
+$$\text{Importance}(X_j) = \sum_{t \in \text{split}(X_j)} \frac{N_t}{N}\, \Delta\text{Impurità}(t)$$
+Nell'esempio $X_2$ e $X_3$ ottengono il 40\% ciascuna: a albero finito sono proprio loro a risolvere il problema.
 
-\noindent Tuttavia, se valutiamo $X_2$ (o $X_3$) \textit{da sola} alla radice, essa non fornisce alcun vantaggio informativo immediato: sapendo solo che $X_2 = 1$, la probabilità che $Y$ sia 1 o 0 rimane perfettamente bilanciata al 50\%, poiché l'esito finale dipende dal valore che assume $X_3$. %[cite: 2]
-Di conseguenza, l'Information Gain univariato per $X_2$ e $X_3$ alla radice risulta nullo. %[cite: 2]
-L'algoritmo greedy, non trovando un segnale informativo immediato sulle feature determinanti, può essere ingannato da correlazioni spurie dovute al ristretto numero di campioni, finendo per scegliere come primo split una feature irrilevante (come $X_1$ o $X_0$). %[cite: 2]
-Ciò costringe l'albero a crescere più in profondità per recuperare l'informazione corretta nei sotto-nodi. %[cite: 2]
+\subsubsection{Overfitting, potatura e impurità di Gini}
 
-\subsubsection{La Metrica di Feature Importance Calcolata Ex-Post}
+\noindent Se l'albero cresce finché ogni foglia è pura, sul training set avrà accuratezza del 100\%, ma rischia di imparare a memoria anche il rumore. Questo è l'\textbf{overfitting}.
 
-\noindent Anche se l'euristica greedy può compiere scelte sub-ottimali a monte, la metrica finale di \textbf{Feature Importance} (detta anche \textit{Gini Importance} o riduzione media di impurità) permette di quantificare l'effettiva utilità di ciascun attributo una volta che l'albero è stato interamente sviluppato (\textit{ex-post}). %[cite: 2]
+\noindent Formalmente, $h$ va in overfitting se esiste un'altra ipotesi $h'$ tale che
+$$error_{train}(h) < error_{train}(h') \quad \text{ma} \quad error_{\mathcal{D}}(h) > error_{\mathcal{D}}(h')$$
+dove $error_{\mathcal{D}}$ è l'errore sull'intera distribuzione dei dati: $h$ sembra migliore sui dati noti, ma è peggiore nella realtà.
 
-\noindent L'importanza di una feature $X_j$ viene calcolata sommando la riduzione di impurità (in termini di entropia o indice di Gini) prodotta in tutti i nodi interni $t$ in cui $X_j$ è stata utilizzata come criterio di split, ponderata per la frazione di campioni del dataset che attraversano quel nodo: %[cite: 2]
-$$\text{Importance}(X_j) = \sum_{t \in \text{split}(X_j)} \frac{N_t}{N} \, \Delta \text{Impurità}(t)$$ %[cite: 2]
-dove $N_t$ è il numero di campioni presenti nel nodo $t$, $N$ è il totale dei campioni e $\Delta \text{Impurità}(t) = I(Y, X_j)_t$. %[cite: 2]
-I valori ottenuti vengono infine normalizzati in modo che la loro somma su tutte le feature risulti pari a $1$ (o $100\%$). %[cite: 2]
-
-\paragraph{Interpretazione del risultato}
-Tornando all'output dell'esempio in Python: %[cite: 2]
-$$\text{clf.feature\_importances\_} = [0.170, \; 0.029, \; \mathbf{0.400}, \; \mathbf{0.400}]$$ %[cite: 2]
-Nonostante l'algoritmo non abbia isolato $X_2$ e $X_3$ al primo passo, il calcolo \textit{ex-post} assegna loro un'importanza predominante ($40\%$ ciascuna, contro il marginale contributo di $X_0$ e $X_1$). %[cite: 2]
-La misura riflette fedelmente il fatto che, una volta completata la ramificazione, sono proprio $X_2$ e $X_3$ a risolvere quasi la totalità dell'incertezza residua del problema. %[cite: 2]
-
-\subsection{Overfitting, Compromesso Bias-Varianza e Tecniche di Potatura}
-
-\subsubsection{Il Problema del Sovradattamento (Overfitting)}
-
-\noindent Negli alberi di decisione, l'approccio costruttivo visto in precedenza prosegue la suddivisione ricorsiva finché ogni foglia contiene campioni appartenenti a una sola classe, oppure fino all'esaurimento degli attributi disponibili. %[cite: 2]
-Sebbene questo garantisca un'accuratezza del $100\%$ sui dati utilizzati per l'addestramento, un albero così dettagliato rischia di fallire clamorosamente quando viene applicato a nuovi dati. %[cite: 2]
-
-\noindent Questo fenomeno prende il nome di \textbf{overfitting} (o sovradattamento): il modello non apprende le regole generali che governano il fenomeno, ma finisce per «imparare a memoria» le particolarità, le anomalie e il rumore statistico presenti nel campione di addestramento. %[cite: 2]
-
-\paragraph{Definizione formale}
-Sia data un'ipotesi $h \in H$ (nel nostro caso un albero di decisione). %[cite: 2]
-Definiamo due misure di errore: %[cite: 2]
+\noindent L'errore dipende dalla \textbf{complessità} del modello:
 \begin{itemize}
-    \item $error_{train}(h)$: l'errore empirico calcolato sul campione limitato di addestramento (\textit{training set}). %[cite: 2]
-    \item $error_{\mathcal{D}}(h)$: l'errore reale calcolato sull'intera popolazione (o distribuzione teorica) $\mathcal{D}$ di tutti i possibili dati del mondo reale. %[cite: 2]
+    \item modello troppo semplice $\to$ \textbf{alto bias}, bassa varianza: sbaglia anche sul training set (\textbf{underfitting});
+    \item modello troppo complesso $\to$ basso bias, \textbf{alta varianza}: segue ogni oscillazione dei dati, e con un training set leggermente diverso darebbe un modello molto diverso (\textbf{overfitting}).
 \end{itemize}
-Diciamo formalmente che l'ipotesi $h$ soffre di \textbf{overfitting} rispetto a un'ipotesi alternativa $h' \in H$ se si verifica la seguente condizione: %[cite: 2]
-$$error_{train}(h) < error_{train}(h') \quad \text{ma contemporaneamente} \quad error_{\mathcal{D}}(h) > error_{\mathcal{D}}(h')$$ %[cite: 2]
-In altre parole, l'ipotesi $h$ sembra preferibile basandosi unicamente sui dati già noti, ma una volta messa alla prova sulla realtà commette più errori dell'ipotesi $h'$, più semplice o meno aderente al training set. %[cite: 2]
+Al crescere della complessità l'errore sul training scende sempre, mentre quello sui dati nuovi ha un andamento a U. Cerchiamo il punto di minimo.
 
-\subsubsection{Il Compromesso tra Bias e Varianza (\textit{Bias-Variance Trade-off})}
+\begin{center}
+    \includegraphics[width=0.55\textwidth]{img/overfitting.png}
+\end{center}
 
-\noindent La tendenza di un modello a compiere errori dipende in larga misura dalla sua \textbf{complessità strutturale} (nel caso degli alberi, il numero complessivo di nodi e la loro profondità). %[cite: 2]
-L'errore di predizione su nuovi campioni può essere idealmente scomposto in due componenti contrapposte: %[cite: 2]
+\noindent Poiché $error_{\mathcal{D}}$ non è calcolabile, si dividono i dati in due parti disgiunte: il \textbf{training set}, usato per costruire l'albero, e il \textbf{validation set}, usato solo dopo per stimare l'errore su dati mai visti.
 
+\paragraph{Come evitare l'overfitting}
 \begin{itemize}
-    \item \textbf{Bias (Pregiudizio o Distorsione)}: misura l'errore dovuto ad assunzioni a priori troppo rigide o semplificate sulla natura dei dati. %[cite: 2]
-    \begin{itemize}
-        \item Un modello con \textbf{alta distorsione (High Bias)} e \textbf{bassa varianza} è un modello troppo rigido o poco profondo (ad esempio un albero con un solo livello di decisione, detto \textit{decision stump}). %[cite: 2]
-        \item Non avendo sufficiente flessibilità per catturare i pattern dei dati, commette molti errori sia sul training set sia sui dati futuri. Questa situazione è detta \textbf{underfitting} (sottoadattamento). %[cite: 2]
-    \end{itemize}
-
-    \item \textbf{Varianza}: quantifica la sensibilità del modello alle specifiche fluttuazioni casuali del dataset utilizzato per addestrarlo. %[cite: 2]
-    \begin{itemize}
-        \item Un modello con \textbf{basso bias} ed \textbf{elevata varianza (High Variance)} è un modello estremamente complesso ed elastico (come un albero sviluppato fino alla massima profondità possibile). %[cite: 2]
-        \item Questo modello si adatta perfettamente a qualsiasi oscillazione locale del training set, annullando l'errore di addestramento; tuttavia, addestrato su un campione di dati leggermente diverso genererebbe regole decisionali completamente differenti, portando a prestazioni scadenti su dati nuovi (\textbf{overfitting}). %[cite: 2]
-    \end{itemize}
+    \item \textbf{Early stopping}: si smette di dividere un nodo se il gain è troppo basso, se ha pochi esempi o se si è raggiunta una profondità massima. Problema: è una scelta miope, e può fermarsi prima di split che sarebbero utili solo più in basso (come nello XOR).
+    \item \textbf{Post-pruning}: si costruisce l'albero completo e poi lo si pota. In genere funziona meglio.
 \end{itemize}
 
-\paragraph{L'andamento dell'errore al variare della complessità}
-Aumentando la complessità del modello, l'errore sul training set decresce in modo monotono, tendendo idealmente a zero. %[cite: 2]
-L'errore sui dati futuri (test set), invece, segue una curva a U: %[cite: 2]
-inizialmente scende al crescere dell'espressività del modello, tocca un punto di minimo ottimale (\textit{punto di compromesso bias-varianza}) e poi risale bruscamente a causa della varianza fuori controllo. %[cite: 2]
-Il nostro obiettivo pratico è individuare la complessità che corrisponde a questo punto di minimo reale. %[cite: 2]
-
-\subsubsection{Rilevare l'Overfitting: Training Set e Validation Set}
-
-\noindent Una difficoltà centrale del Machine Learning risiede nel fatto che non possiamo conoscere né campionare direttamente l'intera distribuzione del mondo reale $\mathcal{D}$. %[cite: 2]
-Di conseguenza, non possiamo calcolare analiticamente $error_{\mathcal{D}}(h)$. %[cite: 2]
-
-\noindent Per aggirare questo problema, si partiziona l'insieme di dati etichettati a disposizione in due sottoinsiemi rigorosamente disgiunti: %[cite: 2]
+\paragraph{Reduced-error post-pruning}
 \begin{enumerate}
-    \item \textbf{Training Set}: impiegato dall'algoritmo per far crescere l'albero e determinare la sequenza di split migliori. %[cite: 2]
-    \item \textbf{Validation Set}: tenuto nascosto durante la costruzione dell'albero e utilizzato esclusivamente \textit{dopo} come banco di prova imparziale per stimare l'accuratezza del modello su dati non visti e guidare la regolazione della sua complessità. %[cite: 2]
+    \item Costruisci l'albero completo sul training set.
+    \item Per ogni nodo interno, prova a sostituire il suo sottoalbero con una foglia etichettata con la classe più frequente, e misura l'accuratezza sul validation set.
+    \item Esegui la potatura che migliora di più l'accuratezza.
+    \item Ripeti finché nessuna potatura migliora l'accuratezza.
 \end{enumerate}
+\textit{Esempio}: un sottoalbero con tre foglie da 2 esempi l'una serve solo a gestire un'eccezione rumorosa. Con il sottoalbero l'accuratezza sul validation set è del 78\%; sostituendolo con una foglia \textit{Yes} sale all'84\%. La potatura viene accettata.
 
-\subsubsection{Strategie di Controllo: Early Stopping e Post-Pruning}
+\paragraph{Impurità di Gini}
 
-\noindent Per impedire a un albero di decisione di crescere a dismisura e cadere nell'overfitting si utilizzano due filosofie complementari: %[cite: 2]
+\noindent Al posto dell'entropia si può usare l'\textbf{impurità di Gini} (default in \texttt{scikit-learn}). Si pesca a caso un esempio dal nodo e gli si assegna una classe a caso, rispettando le proporzioni del nodo: Gini è la \textbf{probabilità di sbagliare}. Con $f_i$ frazione di esempi della classe $i$:
+$$I_G = \sum_{i=1}^m f_i (1 - f_i) = 1 - \sum_{i=1}^m f_i^2$$
+Vale 0 per un nodo puro e 0.5 nel caso binario bilanciato. Di solito porta agli stessi split dell'entropia, ma è più veloce perché non usa logaritmi.
 
+\paragraph{Esempio: di nuovo $A$ o $B$}
+\begin{center}
+\small
+\begin{tabular}{lccc}
+    \toprule
+    & \textbf{Ramo True} & \textbf{Ramo False} & \textbf{Media pesata} \\
+    \midrule
+    $A$ & $[21+, 5-]$: $0.310$ & $[8+, 30-]$: $0.332$ & $\mathbf{0.323}$ \\
+    $B$ & $[18+, 33-]$: $0.456$ & $[11+, 2-]$: $0.260$ & $0.416$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Ad esempio $I_G(A = \text{True}) = 1 - (21/26)^2 - (5/26)^2 \approx 0.310$. L'impurità residua più bassa è quella di $A$: stessa scelta fatta con l'entropia.
+
+\subsubsection{Pregi, difetti, Random Forest e riepilogo}
+
+\paragraph{Pregi}
 \begin{itemize}
-    \item \textbf{Early Stopping (Arresto Anticipato o Pre-potatura)}: %[cite: 2]
-    consiste nel bloccare la ramificazione di un nodo prima che l'albero sia completo, trasformandolo direttamente in foglia se non sussistono determinate condizioni statistiche. %[cite: 2]
-    Tipici criteri di arresto sono:
-    \begin{itemize}
-        \item Fermarsi se il guadagno di informazione ($\text{Information Gain}$) prodotto dal miglior split disponibile è inferiore a una soglia prefissata. %[cite: 2]
-        \item Fermarsi se il numero di campioni presenti nel nodo è inferiore a una quantità minima prestabilita (ad esempio meno di 5 campioni). %[cite: 2]
-        \item Fissare a priori una profondità massima ammissibile dell'albero (\textit{max depth}). %[cite: 2]
-    \end{itemize}
-    \textit{Limite dell'Early Stopping}: è una decisione miope (\textit{greedy}). Se impostiamo un criterio troppo rigido, l'algoritmo rischia di fermarsi prematuramente ignorando combinazioni promettenti di feature che avrebbero prodotto benefici solo ai livelli successivi (come nel problema dello XOR). %[cite: 2]
-
-    \item \textbf{Post-Pruning (Potatura Retrograda)}: %[cite: 2]
-    rappresenta la strategia di gran lunga preferibile e più solida. Consiste nel lasciare crescere l'albero liberamente fino alla sua massima estensione (ottenendo un albero completo che classifica perfettamente il training set) e successivamente procedere a potarlo a ritroso, eliminando rami e sottoalberi che non dimostrano un beneficio effettivo su dati non visti. %[cite: 2]
+    \item \textbf{Interpretabili}: ogni predizione si spiega con la sequenza di test lungo il cammino.
+    \item Gestiscono feature numeriche e categoriche senza bisogno di normalizzarle.
+    \item Predizione velocissima: costo proporzionale alla profondità.
 \end{itemize}
 
-\subsubsection{L'Algoritmo di Reduced-Error Post-Pruning}
+\paragraph{Difetti}
+\begin{itemize}
+    \item \textbf{Instabili}: piccole variazioni dei dati possono cambiare tutto l'albero (alta varianza).
+    \item Tendono all'overfitting.
+    \item Soffrono con classi sbilanciate: conviene bilanciare il dataset prima.
+\end{itemize}
 
-\noindent Tra le tecniche di potatura retrograda, il metodo \textbf{Reduced-Error Post-Pruning} sfrutta esplicitamente il validation set per decidere quali rami tagliare. %[cite: 2]
+\paragraph{Random Forest}
+Si addestrano molti alberi \textit{diversi} e si fa votare il gruppo: la combinazione di modelli poco correlati è più affidabile del singolo modello. Gli alberi vengono resi diversi in due modi:
+\begin{itemize}
+    \item \textbf{Bagging}: ogni albero è addestrato su un campione estratto con reinserimento dal training set (contiene in media circa il 63\% degli esempi originali).
+    \item \textbf{Feature casuali}: a ogni split si considera solo un sottoinsieme casuale di feature (tipicamente $\sqrt{d}$ su $d$), così le feature dominanti non finiscono sempre alla radice.
+\end{itemize}
+La predizione finale è il \textbf{voto di maggioranza} (classificazione) o la \textbf{media} (regressione). Il risultato ha varianza molto più bassa di un singolo albero.
 
-\paragraph{Procedimento operativo}
+\paragraph{Uso con scikit-learn}
+Tutte le tecniche viste nella prima parte del corso si possono provare in poche righe con \texttt{scikit-learn}:
+\begin{lstlisting}[language=Python]
+from sklearn import tree
+X = [[0,0], [1,1]]
+Y = [0, 1]
+clf = tree.DecisionTreeClassifier()
+clf = clf.fit(X, Y)
+print(clf.predict([[0,1]]))   # [0]
+\end{lstlisting}
+Conviente sperimentare in prima persona con questi strumenti, senza però essere troppo naivi nel progetto d'esame.
+
+\paragraph{Riepilogo}
+
+\begin{itemize}
+    \item Il problema: dato un training set $\{\langle \mathbf{x}^{(i)}, y^{(i)} \rangle\}$, cercare la miglior $h$ nello spazio delle ipotesi $H$.
+    \item L'apprendimento è una \textbf{ricerca/ottimizzazione} in $H$. Gli obiettivi possibili sono diversi: minimizzare l'errore sul training set (loss 0-1), oppure tra le soluzioni che sbagliano uguale preferire la più semplice (rasoio di Occam), \dots
+    \item Non basta minimizzare l'errore sul training: bisogna \textbf{generalizzare} su dati mai visti.
+    \item \textbf{No Free Lunch}: nessun algoritmo è migliore di tutti gli altri su ogni problema. Senza un \textbf{bias induttivo} (assunzioni su ciò che ci aspettiamo dai dati) non è possibile imparare affatto; un algoritmo funziona bene solo se le sue assunzioni si adattano al problema.
+\end{itemize}
+
+\subsection{Il paradigma probabilistico}
+
+\subsubsection{Basi di probabilità}
+
+\noindent Finora abbiamo cercato una funzione $f: X \to Y$ che restituisce una sola risposta. I dati reali però sono rumorosi e ambigui. L'approccio probabilistico stima invece la distribuzione
+$$P(Y \mid X)$$
+cioè quanto è probabile ciascuna classe dato l'input. Così il modello dice anche \textbf{quanto è sicuro} (una diagnosi al 99\% non è come una al 51\%) e gestisce casi in cui lo stesso input ha esiti diversi.
+
+\paragraph{Concetti di base}
+\begin{itemize}
+    \item \textbf{Spazio campionario} $\Omega$: l'insieme di tutti i possibili esiti di un esperimento. Esempio: tutti gli studenti presenti in un'aula.
+    \item \textbf{Variabile aleatoria}: una funzione $X: \Omega \to \text{Valori}$ che assegna a ogni esito un valore; serve a misurare un esito del quale siamo incerti. Può essere \textit{discreta} (es.\ «lo studente estratto a caso è maschio?» $\to$ True/False; il primo nome; «due studenti estratti a caso hanno lo stesso compleanno?») o \textit{continua} (altezza: $\Omega \to \mathbb{R}$).
+    \item \textbf{Evento}: un sottoinsieme $A \subseteq \Omega$, es.\ $A = \{x \in \Omega \mid \text{altezza}(x) \le 175\}$.
+\end{itemize}
+
+\noindent $P(X)$ (la probabilità di $X$) è la \textbf{frazione di volte} in cui $X$ si verifica, ripetendo lo stesso esperimento molte volte. Graficamente, per un evento $A$, è il rapporto tra l'area di $A$ e l'area dell'intero $\Omega$:
+\begin{center}
+    \includegraphics[width=0.45\textwidth]{img/spazio-campionario.png}
+\end{center}
+
+\noindent Ci interessano sia le probabilità di eventi singoli ($P(\text{gender} = m)$) sia quelle \textbf{condizionate} ad altri eventi ($P(\text{gender} = m \mid \text{height} \le 175)$).
+
+\paragraph{Attenzione a come si sceglie $\Omega$}
+Il ragionamento funziona se tutti gli esiti di $\Omega$ sono \textbf{equiprobabili}. Lanciando due dadi, non conviene prendere $\Omega = \{2, \dots, 12\}$ (la somma): ottenere 2 richiede solo $(1,1)$, mentre 7 si ottiene in 6 modi. Meglio prendere le 36 coppie $\Omega = \{1..6\} \times \{1..6\}$, tutte con probabilità $1/36$, e definire la somma come variabile aleatoria $S$:
+$$P(S = 7) = \tfrac{6}{36}, \qquad P(S = 2) = \tfrac{1}{36}$$
+
+\paragraph{Assiomi}
 \begin{enumerate}
-    \item Si costruisce l'albero di decisione completo sul solo \textit{training set}, fino a raggiungere foglie pure (errore nullo sul training set). %[cite: 2]
-    \item Si misura l'accuratezza di partenza dell'albero completo valutandola sul \textit{validation set}. %[cite: 2]
-    \item Si itera la seguente procedura finché l'accuratezza sul validation set continua a migliorare: %[cite: 2]
-    \begin{enumerate}
-        \item Per ciascun sottoalbero interno non fogliare, si simula la sua potatura provvisoria: il sottoalbero viene rimosso e sostituito con una singola foglia, a cui viene assegnata l'etichetta di classe maggioritaria tra gli esempi del training set che raggiungono quel nodo. %[cite: 2]
-        \item Si valuta l'impatto di ciascuna potatura candidata sull'accuratezza misurata sul \textit{validation set}. %[cite: 2]
-        \item Si rende definitiva la potatura del sottoalbero la cui rimozione produce il massimo incremento di accuratezza (o la minor perdita di accuratezza entro un margine di tolleranza, privilegiando la parsimonia). %[cite: 2]
-    \end{enumerate}
-    \item L'algoritmo termina non appena nessuna ulteriore potatura apporta miglioramenti misurabili sul validation set. %[cite: 2]
+    \item $0 \le P(A) \le 1$
+    \item $P(\text{True}) = 1$, $P(\text{False}) = 0$
+    \item $P(A \lor B) = P(A) + P(B) - P(A \land B)$
 \end{enumerate}
-
-\paragraph{Esempio intuitivo del meccanismo di potatura}
-Immaginiamo che un sottoalbero profondo contenga alla sua base tre nodi foglia che distinguono sottogruppi microscopici con 2 campioni ciascuno, generati per catturare una singola eccezione rumorosa nel training set. %[cite: 2]
-Quando valutiamo l'albero completo sul validation set, la presenza di questi rami iper-specifici causa errori di predizione, portando ad esempio a un'accuratezza del $78\%$. %[cite: 2]
-Sostituendo l'intero sottoalbero con una foglia generica etichettata con la classe maggioritaria (ad esempio \textit{Yes}), le predizioni su casi non visti diventano più robuste e l'accuratezza sul validation set sale all'$84\%$. %[cite: 2]
-L'algoritmo convalida la potatura, ottenendo un albero non solo più piccolo e computazionalmente più rapido, ma dotato di una capacità di generalizzazione nettamente superiore. %[cite: 2]
-
-\subsection{Criteri Alternativi di Impurità ed Ensemble Learning}
-
-\subsubsection{L'Impurità di Gini come Alternativa all'Entropia}
-
-\noindent Nella costruzione degli alberi di decisione, l'entropia di Shannon non è l'unica metrica utilizzabile per valutare la purezza di un nodo. %[cite: 2]
-Un'alternativa diffusissima (adottata di default da librerie come \texttt{scikit-learn} nell'algoritmo CART) è l'\textbf{Impurità di Gini} ($I_G$). %[cite: 2]
-
-\paragraph{Significato probabilistico dell'indice di Gini}
-Immaginiamo di trovarci in un nodo e di voler eseguire il seguente esperimento concettuale: %[cite: 2]
-\begin{enumerate}
-    \item Peschiamo a caso un campione dal nodo. %[cite: 2]
-    \item Gli assegniamo un'etichetta di classe tirando a indovinare, ma rispettando fedelmente le proporzioni delle classi presenti nel nodo stesso. %[cite: 2]
-\end{enumerate}
-L'Impurità di Gini misura esattamente la \textbf{probabilità che il campione venga etichettato in modo errato}. %[cite: 2]
-
-\paragraph{Derivazione matematica}
-Sia $m$ il numero totale di categorie distinte e sia $f_i$ la frazione di elementi nel nodo appartenenti alla classe $i$ (ossia la probabilità empirica che un elemento estratto appartenga alla classe $i$): %[cite: 2]
+Da questi si ricavano due teoremi utili.
 \begin{itemize}
-    \item La probabilità di estrarre un elemento di classe $i$ è $f_i$. %[cite: 2]
-    \item La probabilità di assegnargli un'etichetta diversa da $i$ (commettendo un errore) è pari alla somma delle probabilità di tutte le altre classi, ossia $(1 - f_i)$. %[cite: 2]
-\end{itemize}
-Calcolando la probabilità di errore complessiva come media ponderata su tutte le $m$ classi disponibili, ricaviamo: %[cite: 2]
-$$I_G(f) = \sum_{i=1}^m f_i \, (1 - f_i) = \sum_{i=1}^m \left(f_i - f_i^2\right) = \sum_{i=1}^m f_i - \sum_{i=1}^m f_i^2$$ %[cite: 2]
-Poiché la somma di tutte le frazioni di classe deve dare $1$ ($\sum_{i=1}^m f_i = 1$), l'espressione si semplifica nella forma canonica: %[cite: 2]
-$$I_G(f) = 1 - \sum_{i=1}^m f_i^2$$ %[cite: 2]
-
-\paragraph{Proprietà della metrica di Gini}
-\begin{itemize}
-    \item \textbf{Minimo ($I_G = 0$)}: si ottiene quando il nodo è perfettamente puro, ovvero tutti i campioni appartengono a una sola classe ($f_1 = 1$, le altre $0$). %[cite: 2]
-    \item \textbf{Massimo nel caso binario ($I_G = 0.5$)}: si verifica quando gli esempi sono distribuiti al $50\%$ tra due classi ($1 - (0.5^2 + 0.5^2) = 1 - 0.5 = 0.5$). %[cite: 2]
-    \item \textbf{Vantaggio computazionale rispetto all'Entropia}: dal punto di vista pratico, l'indice di Gini e l'entropia portano quasi sempre a selezionare gli stessi split. %[cite: 2]
-    Tuttavia, l'indice di Gini non richiede il calcolo di logaritmi, risultando computazionalmente più veloce e leggero da calcolare durante l'addestramento. %[cite: 2]
+    \item \textbf{Complemento:} $P(\neg A) = 1 - P(A)$. Dimostrazione: applico il terzo assioma con $B = \neg A$:
+    $$P(A \lor \neg A) = P(A) + P(\neg A) - P(A \land \neg A)$$
+    ma $A \lor \neg A = \text{True}$ e $A \land \neg A = \text{False}$, quindi $1 = P(A) + P(\neg A) - 0$.
+    \item \textbf{Partizione in due:} $P(A) = P(A \land B) + P(A \land \neg B)$. Dimostrazione: $A = A \land (B \lor \neg B) = (A \land B) \lor (A \land \neg B)$, e i due pezzi sono disgiunti, per cui le loro probabilità si sommano (l'intersezione è $\text{False}$, che vale 0).
 \end{itemize}
 
-\subsubsection{Esempio di Selezione dello Split tramite Indice di Gini}
+\paragraph{Variabili con più valori}
+Se $A$ assume uno tra $k$ valori $\nu_1, \dots, \nu_k$, questi sono mutuamente esclusivi ($P(A = \nu_i \land A = \nu_j) = 0$ per $i \neq j$) ed esaustivi ($P(A = \nu_1 \lor \dots \lor A = \nu_k) = 1$, cioè $\sum_i P(A = \nu_i) = 1$). In generale, se $B_1, \dots, B_k$ sono una partizione di $\Omega$ (sono disgiunti e la loro unione è $\Omega$):
+$$P(A) = \sum_{i=1}^k P(A \land B_i)$$
+(\textbf{probabilità totale}): per calcolare la probabilità di $A$ si può «spezzettare» $A$ secondo ogni pezzo della partizione e sommare.
 
-\noindent Riprendiamo il nodo genitore contenente $64$ campioni ($29$ positivi e $35$ negativi, denotato $[29+, 35-]$) e valutiamo quale tra i due attributi $A$ e $B$ produca la partizione migliore. %[cite: 2]
+\subsubsection{Probabilità condizionata e indipendenza}
 
-\paragraph{Valutazione dell'Attributo $A$}
-L'attributo $A$ suddivide i campioni in: %[cite: 2]
+\noindent La probabilità di $A$ \textbf{sapendo} che si è verificato $B$ è
+$$P(A \mid B) = \frac{P(A \land B)}{P(B)}$$
+Intuitivamente: non considero più tutto $\Omega$, ma solo la parte occupata da $B$, e mi chiedo quanta di quella parte è occupata da $A$. In termini di frequenze è esattamente il rapporto tra le volte in cui valgono insieme $A$ e $B$ e le volte in cui vale $B$.
+
+\noindent Riordinando la definizione si ottiene la \textbf{chain rule} (regola del prodotto):
+$$P(A \land B) = P(A \mid B)\,P(B) = P(B \mid A)\,P(A)$$
+cioè la probabilità che valgano entrambi si calcola come la probabilità dell'uno per la probabilità dell'altro «visto» l'uno.
+
+\noindent $A$ e $B$ sono \textbf{indipendenti} se sapere che $B$ si è verificato non cambia la probabilità di $A$:
+$$P(A \mid B) = P(A)$$
+Equivalentemente, sostituendo nella chain rule:
+$$P(A \land B) = P(A)\,P(B)$$
+Dato che la chain rule vale anche scambiando i ruoli, vale anche $P(B \mid A) = P(B)$: l'indipendenza è \textbf{simmetrica}, nessuno dei due eventi influenza l'altro.
+
+\noindent Graficamente, due eventi indipendenti sono «ortogonali»: $B$ occupa la stessa frazione di $A$ che occupa dell'intero $\Omega$.
+\begin{center}
+    \includegraphics[width=0.45\textwidth]{graphical_intuition.png}
+\end{center}
+
+\subsubsection{Teorema di Bayes}
+
+\noindent La chain rule scritta in due modi uguaglia lo stesso oggetto:
+$$P(A \land B) = P(A \mid B)\,P(B) = P(B \mid A)\,P(A)$$
+Dividendo entrambi i membri per $P(B)$ si ottiene il \textbf{teorema di Bayes}:
+$$P(A \mid B) = \frac{P(B \mid A)\,P(A)}{P(B)}$$
+Bayes permette di «invertire» il condizionamento: conoscendo quanto spesso una causa $A$ produce un effetto $B$, si ricava quanto è probabile la causa $A$ dato che l'effetto $B$ si è verificato.
+
+\paragraph{Esempio: pantaloni o gonna?}
+In una scuola il 60\% sono ragazzi e il 40\% ragazze. Le ragazze portano pantaloni o gonna in egual misura, i ragazzi sempre pantaloni. Vediamo da lontano qualcuno con i pantaloni: qual è la probabilità che sia una ragazza?
+
+\noindent Dati: $P(G) = 0.4$, $P(B) = 0.6$, $P(T \mid G) = 0.5$, $P(T \mid B) = 1$. Per la probabilità totale:
+$$P(T) = P(T \mid G)P(G) + P(T \mid B)P(B) = 0.2 + 0.6 = 0.8$$
+Quindi
+$$P(G \mid T) = \frac{P(T \mid G)\,P(G)}{P(T)} = \frac{0.2}{0.8} = 0.25$$
+Vedere i pantaloni abbassa la probabilità che sia una ragazza dal 40\% al 25\%.
+
+\paragraph{Bayes per la classificazione}
+Vogliamo la classe $Y = y_i$ dato l'input $X = x_j$. La formula di Bayes dice
+$$P(Y = y_i \mid X = x_j) = \frac{P(Y = y_i)\,P(X = x_j \mid Y = y_i)}{P(X = x_j)}$$
+Il denominatore $P(X = x_j)$ si può espandere con la probabilità totale, sommando su tutte le classi:
+$$P(X = x_j) = \sum_i P(X = x_j, Y = y_i) = \sum_i P(Y = y_i)\,P(X = x_j \mid Y = y_i)$$
+e quindi
+$$P(Y = y_i \mid X = x_j) = \frac{P(X = x_j \mid Y = y_i)\,P(Y = y_i)}{\sum_k P(X = x_j \mid Y = y_k)\,P(Y = y_k)}$$
+
+\begin{cbox}{I quattro termini della formula di Bayes}
+\[
+\underbrace{P(Y \mid X)}_{\textbf{\color{blue!80!black}posterior}}
+\;=\; \frac{\overbrace{P(X \mid Y)}^{\textbf{\color{red!70!black}likelihood}} \;\cdot\; \overbrace{P(Y)}^{\textbf{\color{green!60!black}prior}}}{\underbrace{\sum_{Y'} P(X \mid Y')\, P(Y')}_{\textbf{\color{orange!80!black}marginal likelihood}}}
+\]
 \begin{itemize}
-    \item Ramo $A = \text{True}$ ($26$ campioni su $64$: $[21+, 5-]$): %[cite: 2]
-    $$I_G(A = \text{True}) = 1 - \left(\frac{21}{26}\right)^2 - \left(\frac{5}{26}\right)^2 \approx 1 - 0.652 - 0.037 \approx 0.310$$ %[cite: 2]
-    \item Ramo $A = \text{False}$ ($38$ campioni su $64$: $[8+, 30-]$): %[cite: 2]
-    $$I_G(A = \text{False}) = 1 - \left(\frac{8}{38}\right)^2 - \left(\frac{30}{38}\right)^2 \approx 1 - 0.044 - 0.623 \approx 0.332$$ %[cite: 2]
+    \item \textbf{Posterior}: probabilità della classe \textbf{dopo} aver visto i dati. È ciò che vogliamo calcolare.
+    \item \textbf{Likelihood}: quanto è probabile osservare $X$ se la classe è $Y$.
+    \item \textbf{Prior}: probabilità della classe \textbf{prima} di vedere i dati.
+    \item \textbf{Marginal likelihood}: $P(X)$, ottenuta sommando su tutte le classi; serve a normalizzare, cioè a far sommare a 1 le posterior. Si dice «marginal» perché si è \textbf{marginalizzata} la $Y$, cioè si è sommata (in generale integrata) via.
 \end{itemize}
-L'impurità media residua ponderata per le dimensioni dei rami è: %[cite: 2]
-$$I_G(A) = \frac{26}{64} \cdot (0.310) + \frac{38}{64} \cdot (0.332) \approx 0.126 + 0.197 = \mathbf{0.323}$$ %[cite: 2]
-
-\paragraph{Valutazione dell'Attributo $B$}
-L'attributo $B$ suddivide i campioni in: %[cite: 2]
-\begin{itemize}
-    \item Ramo $B = \text{True}$ ($51$ campioni su $64$: $[18+, 33-]$): %[cite: 2]
-    $$I_G(B = \text{True}) = 1 - \left(\frac{18}{51}\right)^2 - \left(\frac{33}{51}\right)^2 \approx 1 - 0.124 - 0.419 \approx 0.456$$ %[cite: 2]
-    \item Ramo $B = \text{False}$ ($13$ campioni su $64$: $[11+, 2-]$): %[cite: 2]
-    $$I_G(B = \text{False}) = 1 - \left(\frac{11}{13}\right)^2 - \left(\frac{2}{13}\right)^2 \approx 1 - 0.716 - 0.024 \approx 0.260$$ %[cite: 2]
-\end{itemize}
-L'impurità media residua ponderata per $B$ è: %[cite: 2]
-$$I_G(B) = \frac{51}{64} \cdot (0.456) + \frac{13}{64} \cdot (0.260) \approx 0.363 + 0.053 = \mathbf{0.416}$$ %[cite: 2]
-
-\paragraph{Decisione finale}
-Poiché un valore più basso indica un minor disordine medio nei nodi risultanti: %[cite: 2]
-$$I_G(A) = 0.323 \quad < \quad I_G(B) = 0.416$$ %[cite: 2]
-L'algoritmo sceglie senza esitazione l'\textbf{attributo $A$}, giungendo alla medesima conclusione ottenuta in precedenza con l'Information Gain basato sull'entropia. %[cite: 2]
-
-\subsubsection{Bilancio Operativo: Pregi e Limiti degli Alberi Singoli}
-
-\noindent Gli alberi di decisione offrono qualità uniche nel panorama del Machine Learning, accompagnate però da criticità strutturali severe: %[cite: 2]
-
-\paragraph{Punti di forza}
-\begin{itemize}
-    \item \textbf{Interpretabilità diretta (modelli «White-Box»)}: ogni predizione può essere spiegata chiaramente ripercorrendo la catena logica di condizioni $se\dots allora$ che conducono dalla radice alla foglia. %[cite: 2]
-    \item \textbf{Nessun pre-processamento invasivo}: gestiscono con naturalezza sia feature numeriche continue che feature categoriche discrete, senza richiedere normalizzazione o standardizzazione delle scale dei valori. %[cite: 2]
-    \item \textbf{Basso costo di inferenza}: classificare un nuovo dato richiede unicamente di percorrere un sentiero radice-foglia, con una complessità computazionale logaritmica $O(\text{profondità})$ estremamente rapida. %[cite: 2]
-\end{itemize}
-
-\paragraph{Limiti e criticità}
-\begin{itemize}
-    \item \textbf{Instabilità strutturale e alta varianza}: una minima variazione nei dati di addestramento può stravolgere la scelta del primo split alla radice, producendo un albero finale con una struttura radicalmente diversa. %[cite: 2]
-    \item \textbf{Forte tendenza al sovradattamento}: se lasciati crescere senza vincoli, memorizzano il rumore statistico del training set perdendo capacità di generalizzazione. %[cite: 2]
-    \item \textbf{Sensibilità allo sbilanciamento delle classi}: se una categoria è dominante nel dataset, l'albero tenderà a sviluppare rami fortemente sbilanciati che favoriscono la classe maggioritaria; in questi casi è opportuno riequilibrare preventivamente il dataset. %[cite: 2]
-\end{itemize}
-
-\begin{cbox}{Il Salto di Qualità: Metodi Ensemble e Random Forests}
-\noindent Per superare l'instabilità e l'alta varianza dell'albero singolo, si adotta il paradigma dell'\textbf{Ensemble Learning} (apprendimento di insieme). %[cite: 2]
-Il principio di fondo (noto come «saggezza della folla») stabilisce che:
-\begin{quote}
-\textit{Un insieme numeroso di modelli predittivi debolmente correlati tra loro, che collaborano come un comitato, supera quasi sempre l'accuratezza del miglior singolo modello costituente.} %[cite: 2]
-\end{quote}
-
-\noindent L'algoritmo principe di questa categoria è la \textbf{Random Forest} (foresta casuale), che costruisce un comitato di decine o centinaia di alberi di decisione indipendenti. %[cite: 2]
-Affinché il comitato sia davvero efficace, è fondamentale che i singoli alberi \textbf{non siano duplicati identici}, ma formulino errori scorrelati tra loro. %[cite: 2]
-Questa diversificazione viene garantita da due meccanismi di casualità: %[cite: 2]
-
-\begin{enumerate}
-    \item \textbf{Bagging (\textit{Bootstrap Aggregating})}: %[cite: 2]
-    invece di addestrare tutti gli alberi sullo stesso dataset, ciascun albero viene addestrato su una copia campionata casualmente con reinserimento (\textit{bootstrap}) dal training set originale. %[cite: 2]
-    In media, ogni albero osserva circa il $63.2\%$ dei dati unici originali, mentre i restanti fungono da campioni non visti (\textit{Out-Of-Bag}). %[cite: 2]
-
-    \item \textbf{Feature Randomness (Scelta Casuale degli Attributi)}: %[cite: 2]
-    in un albero classico, a ogni nodo si esplorano tutte le feature per trovare la migliore. %[cite: 2]
-    Nelle Random Forest, invece, a ogni singolo split l'algoritmo è costretto a scegliere il miglior criterio di divisione all'interno di un \textbf{sottoinsieme ristretto di feature estratte a caso} (tipicamente $\sqrt{d}$ feature su un totale di $d$). %[cite: 2]
-    Questo impedisce alle feature dominanti di comparire sistematicamente alla radice di tutti gli alberi, forzando la creazione di strutture decisionali variegate e scorrelate. %[cite: 2]
-\end{enumerate}
-
-\paragraph{Fase di predizione}
-Dato un nuovo campione in ingresso, lo si fa valutare individualmente a tutti gli alberi della foresta: %[cite: 2]
-la predizione finale viene assegnata tramite \textbf{voto a maggioranza} (\textit{majority voting}) per i compiti di classificazione, oppure calcolando la \textbf{media aritmetica} dei valori predetti nel caso della regressione. %[cite: 2]
-Questo processo di aggregazione abbatte drasticamente la varianza senza aumentare il bias, rendendo le Random Forest uno dei modelli più robusti e affidabili del Machine Learning classico. %[cite: 2]
 \end{cbox}
 
-\subsubsection{Sintesi dei Principi Cardine e il Teorema No Free Lunch}
+\subsubsection{La distribuzione congiunta}
 
-\noindent L'analisi degli alberi di decisione introduce concetti che rimangono validi per l'intero spettro dell'apprendimento automatico: %[cite: 2]
+\noindent Un altro modo di fare inferenza è costruire la \textbf{distribuzione congiunta}: una tabella con tutte le combinazioni di valori delle variabili, e per ognuna la sua probabilità (stimata contando le frequenze nei dati).
 
+\begin{center}
+\small
+\begin{tabular}{lllc}
+    \toprule
+    \textbf{Gender} & \textbf{Hours} & \textbf{Wealth} & \textbf{Prob.} \\
+    \midrule
+    F & $< 40$   & poor & 0.25 \\
+    F & $< 40$   & rich & 0.03 \\
+    F & $\ge 40$ & poor & 0.04 \\
+    F & $\ge 40$ & rich & 0.01 \\
+    M & $< 40$   & poor & 0.33 \\
+    M & $< 40$   & rich & 0.10 \\
+    M & $\ge 40$ & poor & 0.13 \\
+    M & $\ge 40$ & rich & 0.11 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Le probabilità sommano a 1. Con $n$ variabili booleane la tabella ha $2^n$ righe, quindi $2^n - 1$ parametri liberi.
+
+\paragraph{Inferenza}
+La distribuzione congiunta permette di calcolare la probabilità di \textbf{qualsiasi evento} esprimibile come combinazione logica delle feature: basta sommare le righe che lo soddisfano:
+$$P(E) = \sum_{\text{riga} \in E} P(\text{riga})$$
+e una probabilità condizionata è un rapporto tra due somme:
+$$P(E_1 \mid E_2) = \frac{P(E_1 \land E_2)}{P(E_2)} = \frac{\sum_{\text{riga} \in E_1 \land E_2} P(\text{riga})}{\sum_{\text{riga} \in E_2} P(\text{riga})}$$
+\textit{Esempio}: $P(M \land \text{poor}) = 0.33 + 0.13 = 0.46$ e $P(\text{poor}) = 0.25 + 0.04 + 0.33 + 0.13 = 0.75$, quindi
+$$P(M \mid \text{poor}) = \frac{0.46}{0.75} \approx 0.61$$
+\textit{Altro esempio} (una posterior ricavata dalla congiunta): $P(M) = 0.46$ e $P(M \land \text{rich}) = 0.10 + 0.11 = 0.21$, quindi
+$$P(\text{rich} \mid M) = \frac{0.21}{0.46} \approx 0.46$$
+
+\paragraph{Fine della storia?}
+In teoria, con la congiunta $P(X_1, \dots, X_n, Y)$ possiamo calcolare qualsiasi $P(Y \mid X)$, e quindi risolvere qualsiasi problema di classificazione. In pratica no:
 \begin{itemize}
-    \item \textbf{Definizione formale del compito}: partendo da uno spazio di input descritto da feature $X$ e uno spazio di etichette $Y$, si sfrutta il training set $\{\langle \mathbf{x}^{(i)}, y^{(i)} \rangle\}$ per ricercare la migliore funzione predittiva dentro uno spazio delle ipotesi $H = \{h \mid h: X \to Y\}$. %[cite: 2]
-    \item \textbf{Apprendimento come ottimizzazione vincolata}: addestrare un modello non significa soltanto minimizzare l'errore empirico sui campioni osservati, ma imporre una ricerca parsimoniosa (Rasoio di Occam) volta a garantire la generalizzazione futura. %[cite: 2]
-    \item \textbf{Il Teorema No Free Lunch (NFL)}: %[cite: 2]
-    stabilisce una verità matematica fondamentale: \textit{non esiste alcun algoritmo di apprendimento che sia universalmente superiore a tutti gli altri su qualunque classe di problemi possibili}. %[cite: 2]
-    Se un modello ottiene prestazioni eccellenti su determinati compiti, è unicamente perché fa affidamento su assunzioni a priori adatte alla struttura di quel dominio, definite formalmente come \textbf{bias induttivo}. %[cite: 2]
-    Senza un opportuno bias induttivo, nessun algoritmo è in grado di generalizzare razionalmente su dati non ancora osservati. %[cite: 2]
+    \item i parametri crescono come $2^n$: con 30 feature booleane sono già più di un miliardo;
+    \item per stimarli servirebbero quantità enormi di dati; con dati realistici quasi tutte le righe resterebbero vuote.
+\end{itemize}
+Servono quindi ipotesi semplificative sulla struttura dei dati: è l'idea alla base del \textbf{Naïve Bayes}.
+
+\noindent Esempio: la tabella di $P(\text{Wealth} \mid \text{Gender}, \text{Hours})$ ha già $4 = 2^2$ parametri da stimare.
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \textbf{Gender} & \textbf{Hours} & $P(\text{rich} \mid X_1, X_2)$ & $P(\text{poor} \mid X_1, X_2)$ \\
+    \midrule
+    F & $\le 40$ & 0.09 & 0.91 \\
+    F & $> 40$   & 0.21 & 0.79 \\
+    M & $\le 40$ & 0.23 & 0.77 \\
+    M & $> 40$   & 0.38 & 0.62 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Con $n$ feature booleane i parametri diventano $2^n$, e sono probabilità: per stimarle in modo affidabile serve un'enorme quantità di dati.
+
+\subsection{Naïve Bayes}
+
+\begin{ibox}{Idea in una riga}
+Per classificare, confronta per ogni classe: \textbf{quanto è frequente la classe} $\times$ \textbf{quanto sono tipiche le feature osservate per quella classe}. La classe col punteggio più alto vince. Il trucco «naïve» è stimare ogni feature \textit{separatamente}.
+\end{ibox}
+
+\subsubsection{Ipotesi di indipendenza, classificazione ed esempio}
+
+\noindent Vogliamo $P(Y \mid X_1, \dots, X_n)$. Con Bayes basta stimare due cose:
+$$P(Y = y_i \mid \mathbf{x}) = \frac{P(Y = y_i)\,P(\mathbf{x} \mid Y = y_i)}{\sum_k P(Y = y_k)\,P(\mathbf{x} \mid Y = y_k)}$$
+\begin{itemize}
+    \item $P(Y)$: con $Y$ booleana serve \textbf{1} parametro;
+    \item $P(X_1, \dots, X_n \mid Y)$: una tabella congiunta per ogni valore di $Y$, cioè $2(2^n - 1)$ parametri. Il problema resta \textbf{esponenziale}.
 \end{itemize}
 
-\subsection{Il Paradigma Probabilistico e Fondamenti Assiomatici}
+\noindent Il \textbf{Naïve Bayes} fa un'ipotesi forte: \textbf{data la classe $Y$, le feature sono indipendenti tra loro}:
+$$P(X_1, \dots, X_n \mid Y) = \prod_{i=1}^n P(X_i \mid Y)$$
 
-\subsubsection{Dal Paradigma Deterministico a Quello Probabilistico}
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={circle, draw, minimum size=7mm, inner sep=0pt, font=\small}]
+    % Naive
+    \node[fill=orange!20] (y) at (0,1.8) {$Y$};
+    \node (a1) at (-1.6,0) {$X_1$};
+    \node (a2) at (-0.55,0) {$X_2$};
+    \node[draw=none] at (0.5,0) {$\cdots$};
+    \node (a3) at (1.6,0) {$X_n$};
+    \draw[->, thick] (y) -- (a1);
+    \draw[->, thick] (y) -- (a2);
+    \draw[->, thick] (y) -- (a3);
+    \node[draw=none, font=\small\bfseries, align=center] at (0,-1.5) {Naïve: le $X_i$ dipendono\\solo da $Y$};
+    % Generale
+    \node[fill=orange!20] (y2) at (7,1.8) {$Y$};
+    \node (b1) at (5.4,0) {$X_1$};
+    \node (b2) at (6.45,0) {$X_2$};
+    \node[draw=none] at (7.5,0) {$\cdots$};
+    \node (b3) at (8.6,0) {$X_n$};
+    \draw[->, thick] (y2) -- (b1);
+    \draw[->, thick] (y2) -- (b2);
+    \draw[->, thick] (y2) -- (b3);
+    \draw[<->, red!70!black, bend right=45] (b1) to (b2);
+    \draw[<->, red!70!black, bend right=45] (b2) to (b3);
+    \draw[<->, red!70!black, bend right=60] (b1) to (b3);
+    \node[draw=none, font=\small\bfseries, align=center] at (7,-1.5) {Caso generale: servono anche\\le dipendenze tra le $X_i$};
+\end{tikzpicture}
+\end{center}
 
-\noindent Fino a questo punto abbiamo trattato l'apprendimento automatico in chiave prettamente deterministica: data un'istanza $\mathbf{x} \in X$, l'obiettivo era stimare una funzione esplicita: %[cite: 2]
-$$f: X \to Y$$ %[cite: 2]
-che assegna a ogni input una singola etichetta rigida e definitiva. %[cite: 2]
-
-\noindent Nei problemi del mondo reale, tuttavia, i dati sono quasi sempre affetti da rumore, ambiguità intrinseca o parziale incompletezza delle feature osservate. %[cite: 2]
-Il \textbf{paradigma probabilistico} affronta l'apprendimento riformulando il problema: invece di predire direttamente la classe esatta, si stima la \textbf{distribuzione di probabilità condizionata}: %[cite: 2]
-$$P(Y \mid X)$$ %[cite: 2]
-ovvero la probabilità che l'etichetta sia $Y$ una volta acquisita l'evidenza delle caratteristiche $X$. %[cite: 2]
-
-\paragraph{Vantaggi dell'approccio probabilistico}
+\paragraph{Indipendenza condizionata}
+$X_i$ e $X_j$ sono indipendenti dato $Y$ se
+$$P(X_i \mid X_j, Y) = P(X_i \mid Y)$$
+cioè, una volta nota $Y$, conoscere $X_j$ non aggiunge nulla su $X_i$. Due eventi possono essere dipendenti ma diventare indipendenti dato un terzo.
 \begin{itemize}
-    \item \textbf{Quantificazione dell'incertezza}: il modello non si limita a formulare una decisione, ma fornisce un grado di confidenza numerico (ad esempio, distinguere una diagnosi medica formulata con il $99\%$ di sicurezza da una con il $51\%$). %[cite: 2]
-    \item \textbf{Gestione del rumore}: permette di modellare in modo matematicamente fondato osservazioni contrastanti (ossia casi in cui lo stesso vettore di feature produce in rari casi esiti differenti). %[cite: 2]
-    \item \textbf{Ponte verso modelli generativi}: consente sia di classificare nuovi dati, sia di comprendere come i dati stessi si distribuiscono nello spazio delle feature. %[cite: 2]
-\end{itemize}
-
-\subsubsection{Elementi Costitutivi: Spazio Campionario, Variabili Aleatorie ed Eventi}
-
-\noindent Per costruire un quadro matematico rigoroso dell'incertezza, è necessario formalizzare i concetti fondamentali della teoria della probabilità: %[cite: 2]
-
-\begin{itemize}
-    \item \textbf{Spazio Campionario ($\Omega$)}: è l'insieme di tutti i possibili esiti elementari associati a un esperimento aleatorio. %[cite: 2]
-    Ad esempio, se l'esperimento consiste nel selezionare una persona a caso tra quelle presenti in un'aula universitaria, lo spazio $\Omega$ è l'insieme finito di tutti gli studenti presenti. %[cite: 2]
-
-    \item \textbf{Variabile Aleatoria ($X$)}: è una funzione a valori reali definita sullo spazio campionario, che associa a ciascun esito elementare una proprietà misurabile: %[cite: 2]
-    $$X: \Omega \to \text{Valori}$$ %[cite: 2]
-    A seconda del dominio di arrivo distinguiamo:
+    \item \textit{Esempio 1 (monete)}: una scatola contiene una moneta normale e una con due teste. Se ne sceglie una a caso e la si lancia due volte. $A$ = «primo lancio testa», $B$ = «secondo lancio testa», $C$ = «moneta normale».
     \begin{itemize}
-        \item \textbf{Variabili discrete}: assumono valori in un insieme finito o numerabile (ad esempio il sesso biologico $\Omega \to \{\text{maschio}, \text{femmina}\}$, il nome proprio dello studente, o la predizione binaria $Y \in \{0, 1\}$). %[cite: 2]
-        \item \textbf{Variabili continue}: assumono valori su scala reale continua (ad esempio l'altezza di uno studente in centimetri $\Omega \to \mathbb{R}^+$). %[cite: 2]
+        \item $A$ e $B$ \textbf{non} sono indipendenti: se il primo lancio dà testa, la moneta è probabilmente truccata, quindi anche il secondo darà testa. Infatti $P(A) = P(B) = \tfrac{1}{2}\cdot\tfrac{1}{2} + \tfrac{1}{2}\cdot 1 = \tfrac{3}{4}$ ma $P(A \land B) = \tfrac{1}{2}\cdot\tfrac{1}{4} + \tfrac{1}{2}\cdot 1 = \tfrac{5}{8} \neq \tfrac{9}{16} = P(A)P(B)$.
+        \item Dato $C$ (sappiamo quale moneta è): i lanci sono indipendenti. Con la moneta normale $P(B \mid A, C) = \tfrac12 = P(B \mid C)$.
     \end{itemize}
-
-    \item \textbf{Evento ($A$)}: è un qualsiasi sottoinsieme misurabile dello spazio campionario ($A \subseteq \Omega$). %[cite: 2]
-    Un evento identifica una proprietà logica soddisfatta da una frazione dei campioni, come ad esempio:
-    $$A = \{x \in \Omega \mid \text{altezza}(x) \le 175\text{ cm}\}$$ %[cite: 2]
+    \item \textit{Esempio 2}: altezza e ricchezza di vocabolario non sono indipendenti (i bambini sono bassi e conoscono poche parole), ma lo diventano se conosciamo l'\textbf{età}: l'età è la causa comune che li lega.
 \end{itemize}
 
-\paragraph{Interpretazione frequentista e geometrica}
-La probabilità di un evento $P(A)$ può essere interpretata in due modi equivalenti: %[cite: 2]
-\begin{enumerate}
-    \item \textbf{Frequentista}: è la frazione di volte in cui l'evento risulta verificato ripetendo l'esperimento un numero teoricamente infinito di volte nelle medesime condizioni. %[cite: 2]
-    \item \textbf{Geometrica}: se immaginiamo lo spazio campionario $\Omega$ come una superficie di area unitaria, la probabilità $P(A)$ corrisponde esattamente al rapporto tra l'area occupata dal sottoinsieme $A$ e l'area totale dello spazio $\Omega$. %[cite: 2]
-\end{enumerate}
+\noindent Con due feature, per la chain rule e poi l'indipendenza condizionata:
+$$P(X_1, X_2 \mid Y) = P(X_1 \mid X_2, Y)\,P(X_2 \mid Y) = P(X_1 \mid Y)\,P(X_2 \mid Y)$$
+e in generale si ottiene il prodotto visto sopra.
 
-\paragraph{Attenzione alla definizione dello Spazio Campionario: L'Esempio dei Dadi}
-L'intuizione probabilistica classica si basa sul principio che tutti i punti dello spazio campionario $\Omega$ abbiano la stessa probabilità di verificarsi (\textit{eventi elementari equiprobabili}). %[cite: 2]
-Definire $\Omega$ in modo superficiale può condurre a conclusioni gravemente errate: %[cite: 2]
+\paragraph{Quanti parametri servono?}
+Con $n$ feature booleane e $Y$ booleana, per $P(X_1, \dots, X_n \mid Y)$:
+\begin{center}
+\small
+\begin{tabular}{lccc}
+    \toprule
+    & \textbf{formula} & $n = 10$ & $n = 30$ \\
+    \midrule
+    Senza ipotesi (congiunta) & $2(2^n - 1)$ & 2\,046 & $\approx 2{,}1 \cdot 10^9$ \\
+    Naïve Bayes & $2n$ & 20 & 60 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Per ogni feature e ogni classe basta $P(X_i = 1 \mid Y)$: si passa da \textbf{esponenziale a lineare}. Meno parametri significa anche che bastano pochi dati per stimarli bene.
 
-\begin{quote}
-\textit{Esempio.} Si consideri il lancio simultaneo di due dadi regolari a 6 facce. %[cite: 2]
-Se definissimo lo spazio campionario come l'insieme dei possibili punteggi somma:
-$$\Omega_{\text{errato}} = \{2, 3, 4, \dots, 11, 12\}$$ %[cite: 2]
-commetteremmo un errore concettuale: questi 11 esiti \textbf{non sono equiprobabili}. %[cite: 2]
-Ottenere come somma $2$ richiede la combinazione unica $(1, 1)$, mentre ottenere $7$ è molto più probabile poiché realizzabile tramite 6 combinazioni distinte: $(1,6), (2,5), (3,4), (4,3), (5,2), (6,1)$. %[cite: 2]
-\end{quote}
+\paragraph{Classificazione e training}
 
-\noindent La formulazione rigorosa impone di scegliere come spazio campionario l'insieme delle 36 coppie ordinate di esiti, tutte perfettamente equiprobabili con probabilità $1/36$: %[cite: 2]
-$$\Omega = \{1, 2, 3, 4, 5, 6\} \times \{1, 2, 3, 4, 5, 6\}$$ %[cite: 2]
-La somma dei punteggi non è lo spazio campionario, ma una specifica \textbf{variabile aleatoria} $S: \Omega \to \{2, \dots, 12\}$ calcolata su di esso: %[cite: 2]
-$$P(S = 7) = \frac{6}{36} = \frac{1}{6}, \quad P(S = 2) = \frac{1}{36}$$ %[cite: 2]
+\noindent Sostituendo l'ipotesi nella formula di Bayes:
+$$P(Y = y_i \mid X_1, \dots, X_n) = \frac{P(Y = y_i) \prod_j P(X_j \mid Y = y_i)}{P(X_1, \dots, X_n)}$$
+Il denominatore è uguale per tutte le classi: per classificare $\mathbf{x}^{new} = \langle x_1, \dots, x_n \rangle$ basta confrontare i numeratori:
+$$Y^{new} = \arg\max_{y_i} \; \underbrace{P(Y = y_i)}_{\text{prior}} \; \underbrace{\prod_j P(X_j = x_j \mid Y = y_i)}_{\text{likelihood}}$$
 
-\begin{cbox}{Gli Assiomi della Teoria della Probabilità (Kolmogorov)}
-\noindent La formalizzazione moderna della probabilità poggia su tre assiomi fondamentali definiti dal matematico Andrei Kolmogorov. %[cite: 2]
-Sia $\Omega$ lo spazio campionario e $P$ una funzione che assegna a ciascun evento $A \subseteq \Omega$ un numero reale: %[cite: 2]
-
-\begin{enumerate}
-    \item \textbf{Non-negatività e Limite Superiore}: %[cite: 2]
-    $$0 \le P(A) \le 1 \quad \forall A \subseteq \Omega$$ %[cite: 2]
-    La misura di probabilità è compresa tra l'impossibilità assoluta ($0$) e la certezza ($1$). %[cite: 2]
-
-    \item \textbf{Certezza dello Spazio Campionario}: %[cite: 2]
-    $$P(\Omega) = P(\text{True}) = 1, \qquad P(\emptyset) = P(\text{False}) = 0$$ %[cite: 2]
-    L'esperimento aleatorio produce sempre e sicuramente un esito appartenente allo spazio campionario. %[cite: 2]
-
-    \item \textbf{Principio di Additività (o di Inclusione-Esclusione)}: %[cite: 2]
-    Dati due eventi generici $A$ e $B$: %[cite: 2]
-    $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$ %[cite: 2]
-    La probabilità che si verifichi $A$ oppure $B$ è data dalla somma delle loro probabilità individuali, sottraendo la probabilità della loro intersezione per evitare di conteggiare due volte la regione comune. %[cite: 2]
-    Se i due eventi sono mutualmente esclusivi (disgiunti, ossia $A \cap B = \emptyset$), il termine di intersezione si annulla e si ottiene la semplice somma: $P(A \cup B) = P(A) + P(B)$. %[cite: 2]
-\end{enumerate}
-
-\paragraph{Teorema dell'Evento Complementare}
-La probabilità che l'evento $A$ \textbf{non} si verifichi (evento negato $\neg A$) è: %[cite: 2]
-$$P(\neg A) = 1 - P(A)$$ %[cite: 2]
-\textit{Dimostrazione.} Applichiamo il terzo assioma considerando $B = \neg A$: %[cite: 2]
-$$P(A \cup \neg A) = P(A) + P(\neg A) - P(A \cap \neg A)$$ %[cite: 2]
-Poiché un evento e il suo opposto coprono l'intero spazio campionario ($A \cup \neg A = \Omega \implies P(\Omega) = 1$) e non possono verificarsi contemporaneamente ($A \cap \neg A = \emptyset \implies P(\emptyset) = 0$), otteniamo: %[cite: 2]
-$$1 = P(A) + P(\neg A) - 0 \implies P(\neg A) = 1 - P(A) \quad \square$$ %[cite: 2]
-
-\paragraph{Teorema della Probabilità Totale (Formulazione Binaria)}
-Dati due eventi $A$ e $B$, la probabilità di $A$ può sempre essere decomposta rispetto al verificarsi o meno di $B$: %[cite: 2]
-$$P(A) = P(A \cap B) + P(A \cap \neg B)$$ %[cite: 2]
-\textit{Dimostrazione.} Possiamo riscrivere l'insieme $A$ sfruttando l'identità insiemistica $A = A \cap \Omega = A \cap (B \cup \neg B) = (A \cap B) \cup (A \cap \neg B)$. %[cite: 2]
-Gli insiemi $(A \cap B)$ e $(A \cap \neg B)$ sono disgiunti per costruzione, poiché $B \cap \neg B = \emptyset$. %[cite: 2]
-Applicando il terzo assioma di additività: %[cite: 2]
-$$P(A) = P((A \cap B) \cup (A \cap \neg B)) = P(A \cap B) + P(A \cap \neg B) - P((A \cap B) \cap (A \cap \neg B))$$ %[cite: 2]
-Essendo l'intersezione vuota, $P(\emptyset) = 0$, da cui: %[cite: 2]
-$$P(A) = P(A \cap B) + P(A \cap \neg B) \quad \square$$ %[cite: 2]
+\begin{cbox}{Algoritmo Naïve Bayes (variabili discrete)}
+\textbf{Training}: stimare
+\begin{itemize}
+    \item per ogni classe $y_k$: $\pi_k = P(Y = y_k)$;
+    \item per ogni feature $X_i$, ogni suo valore $x_{ij}$ e ogni classe $y_k$: $\theta_{ijk} = P(X_i = x_{ij} \mid Y = y_k)$.
+\end{itemize}
+Le stime di massima verosimiglianza (\textbf{MLE}) sono semplici \textbf{conteggi} sul dataset $\mathcal{D}$:
+$$\pi_k = \frac{\#\mathcal{D}\{Y = y_k\}}{|\mathcal{D}|} \qquad \theta_{ijk} = \frac{\#\mathcal{D}\{X_i = x_{ij} \land Y = y_k\}}{\#\mathcal{D}\{Y = y_k\}}$$
+\textbf{Classificazione} di $\mathbf{a}^{new} = \langle a_1, \dots, a_n \rangle$, dove $a_i = x_{ij}$:
+$$Y^{new} = \arg\max_k \; \pi_k \prod_i \theta_{ijk}$$
 \end{cbox}
 
-\subsubsection{Estensione a Variabili Discrete Multivalore}
+\noindent In pratica: \textit{training} = contare e dividere (nessuna ottimizzazione iterativa); \textit{classificazione} = moltiplicare le probabilità lette dalle tabelle. Per questo Naïve Bayes è velocissimo.
 
-\noindent I teoremi visti sul caso binario si generalizzano a variabili discrete che possono assumere un numero arbitrario $k$ di valori distinti. %[cite: 2]
-Diciamo che $A$ è una variabile aleatoria discreta a $k$ stati se assume esattamente uno dei valori nell'insieme $\{\nu_1, \nu_2, \dots, \nu_k\}$. %[cite: 2]
+\paragraph{Esempio: Play Tennis}
 
-\noindent Gli stati costituiscono una \textbf{partizione} dello spazio campionario, garantendo due proprietà formali: %[cite: 2]
+\noindent Training set di 14 giornate (9 \textit{Yes}, 5 \textit{No}). Priors:
+$$\pi_{Yes} = \tfrac{9}{14} \approx 0.64 \qquad \pi_{No} = \tfrac{5}{14} \approx 0.36$$
+Per ogni classe contiamo quante volte compare ciascun valore, tra le sole giornate di quella classe (es.\ \textit{Sunny} compare in 2 dei 9 \textit{Yes}: $\theta_{Sunny,Yes} = 2/9$):
+
+\begin{center}
+\small
+\begin{tabular}{lcc|lcc}
+    \toprule
+    \textbf{Valore} & $\theta_{\cdot, Yes}$ & $\theta_{\cdot, No}$ & \textbf{Valore} & $\theta_{\cdot, Yes}$ & $\theta_{\cdot, No}$ \\
+    \midrule
+    Sunny    & 2/9 & 3/5 & High   & 3/9 & 4/5 \\
+    Overcast & 4/9 & 0   & Normal & 6/9 & 1/5 \\
+    Rain     & 3/9 & 2/5 & Weak   & 6/9 & 2/5 \\
+    Hot      & 2/9 & 2/5 & Strong & 3/9 & 3/5 \\
+    Mild     & 4/9 & 2/5 & & & \\
+    Cool     & 3/9 & 1/5 & & & \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Controllo utile: per ogni feature e classe le probabilità sommano a 1 (es.\ Outlook per \textit{Yes}: $\tfrac29+\tfrac49+\tfrac39 = 1$).
+
+\paragraph{Predizione}
+Nuova giornata: $\langle \text{Sunny}, \text{Cool}, \text{High}, \text{Strong} \rangle$. Per ogni classe moltiplichiamo prior e quattro $\theta$:
+$$\text{Yes}: \; \tfrac{9}{14}\cdot\tfrac{2}{9}\cdot\tfrac{3}{9}\cdot\tfrac{3}{9}\cdot\tfrac{3}{9} \approx 0.0053 \qquad \text{No}: \; \tfrac{5}{14}\cdot\tfrac{3}{5}\cdot\tfrac{1}{5}\cdot\tfrac{4}{5}\cdot\tfrac{3}{5} \approx 0.0206$$
+
+\begin{center}
+\begin{tikzpicture}[x=1cm, y=1cm]
+    \draw[->] (0,0) -- (0,2.6) node[above, font=\small] {punteggio};
+    \draw (0,0) -- (5,0);
+    \fill[green!55!black!70] (0.8,0) rectangle (1.8,0.0053*100);
+    \fill[red!70!black!70]   (2.8,0) rectangle (3.8,0.0206*100);
+    \node[below, font=\small] at (1.3,0) {Yes};
+    \node[below, font=\small] at (3.3,0) {No};
+    \node[above, font=\small] at (1.3,0.53) {0.0053};
+    \node[above, font=\small] at (3.3,2.06) {0.0206};
+    \node[font=\small\bfseries, red!70!black] at (3.3,2.75) {vince};
+\end{tikzpicture}
+\end{center}
+
+\noindent Vince \textbf{No}: non si gioca. I due numeri \textbf{non} sono probabilità (non sommano a 1). Per ottenerle si normalizza (si divide per la somma, che è $P(\mathbf{x})$):
+$$P(No \mid \mathbf{x}) = \frac{0.0206}{0.0206 + 0.0053} \approx 0.80 \qquad P(Yes \mid \mathbf{x}) \approx 0.20$$
+
+\subsubsection{Natura generativa, limiti e stima MLE}
+
+\noindent Vogliamo $P(Y \mid X_1, \dots, X_n)$, ma Bayes ci permette di \textbf{rovesciare il problema}: studiamo invece come sono distribuiti i dati \textit{all'interno di ciascuna classe}, cioè $P(X_1, \dots, X_n \mid Y = y_i)$. Per questo Naïve Bayes è un modello \textbf{generativo}: impara come «sono fatti» i dati di ogni classe, e potrebbe anche \textit{generarne} di nuovi.
+
+\noindent Esempio con MNIST (cifre scritte a mano): per ogni cifra $0, \dots, 9$ si impara la distribuzione delle immagini di quella cifra. Un nuovo dato si classifica chiedendosi \textbf{a quale distribuzione è più probabile che appartenga}:
+\begin{center}
+    \includegraphics[width=0.3\textwidth]{img/nb-mnist.png}
+\end{center}
+
+\noindent Le distribuzioni davvero interessanti sarebbero le congiunte $P(X_1, \dots, X_n \mid Y = y_i)$: per MNIST, distribuzioni di immagini in uno spazio a 784 dimensioni (28$\times$28 pixel), impossibili da stimare. L'ipotesi naïve tratta ogni pixel come indipendente dagli altri, riducendo il problema a stimare le singole $P(X_j \mid Y = y_i)$ per $j = 1, \dots, n$: in pratica, per ogni cifra, «quanto spesso è acceso il pixel $j$».
+
+\noindent Confronto che riprenderemo con la regressione logistica:
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    & \textbf{Generativo} (Naïve Bayes) & \textbf{Discriminativo} (reg.\ logistica) \\
+    \midrule
+    Cosa stima & $P(X \mid Y)$ e $P(Y)$ & direttamente $P(Y \mid X)$ \\
+    Poi & applica Bayes & niente da invertire \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Attenzioni e limiti}
+
+\paragraph{Il problema della probabilità zero}
+Le stime MLE di alcune probabilità possono valere \textbf{zero}. In Play Tennis, tra le giornate in cui \textit{non} si gioca non compare mai \textit{Overcast}:
+$$\theta_{Overcast,No} = P(\text{Outlook} = \text{Overcast} \mid \text{Play} = \text{No}) = 0$$
+Perché è un problema? La classificazione è un \textbf{prodotto}: un solo fattore nullo azzera tutto, qualunque cosa dicano gli altri. Con \textit{Outlook = Overcast} il punteggio di \textit{No} è sempre 0 e il modello risponde sempre \textit{Yes}, anche se temperatura, umidità e vento gridano \textit{No}. Ha imparato «Overcast $\to$ Yes» solo perché nel training non ha mai visto il contrario: un caso di mancanza di dati scambiata per impossibilità.
+
+\noindent Rimedio: lo \textbf{smoothing} (addizione di Laplace). Si aggiunge $\alpha > 0$ (tipicamente $\alpha = 1$) ai conteggi, come se avessimo visto ogni valore almeno $\alpha$ volte:
+$$\theta_{ijk} = \frac{\#\mathcal{D}\{X_i = x_{ij} \land Y = y_k\} + \alpha}{\#\mathcal{D}\{Y = y_k\} + \alpha \cdot |\text{valori}(X_i)|}$$
+Nessun termine è più zero e i $\theta_{\cdot jk}$ sommano ancora a 1.
+
+\begin{ibox}{Esempio: Play Tennis con smoothing ($\alpha = 1$)}
+Outlook ha 3 valori, quindi $\theta_{Overcast,No} = \frac{0 + 1}{5 + 3} = \frac18$ invece di $0$. Applichiamo lo smoothing a tutte le feature e classifichiamo $\langle \text{Overcast}, \text{Hot}, \text{High}, \text{Strong} \rangle$ (Temp ha 3 valori, Humidity e Wind 2):
+\begin{center}
+\small
+\begin{tabular}{lcc}
+    \toprule
+    & \textbf{Yes} & \textbf{No} \\
+    \midrule
+    Overcast & $\frac{4+1}{9+3} = \frac{5}{12}$ & $\frac{0+1}{5+3} = \frac{1}{8}$ \\
+    Hot & $\frac{2+1}{9+3} = \frac{3}{12}$ & $\frac{2+1}{5+3} = \frac{3}{8}$ \\
+    High & $\frac{3+1}{9+2} = \frac{4}{11}$ & $\frac{4+1}{5+2} = \frac{5}{7}$ \\
+    Strong & $\frac{3+1}{9+2} = \frac{4}{11}$ & $\frac{3+1}{5+2} = \frac{4}{7}$ \\
+    \midrule
+    punteggio (con prior) & $\approx 0.0089$ & $\approx 0.0068$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Senza smoothing \textit{No} varrebbe esattamente 0. Ora le altre feature hanno voce: \textit{Yes} vince ancora, ma di poco ($P(Yes \mid \mathbf{x}) \approx 0.56$), che è la risposta onesta per un caso davvero incerto.
+\end{ibox}
+
+\paragraph{E se l'indipendenza non vale?}
+Quasi mai vale: i pixel vicini sono correlati, i sintomi di una malattia dipendono l'uno dall'altro. Le probabilità stimate sono quindi \textbf{sbagliate} in senso assoluto. Eppure il classificatore spesso funziona, perché:
+\begin{itemize}
+    \item all'$\arg\max$ non servono probabilità esatte: basta che vinca la classe giusta;
+    \item gli errori dovuti alla dipendenza colpiscono tutte le classi in modo simile e si «smorzano» nel confronto.
+\end{itemize}
+Un effetto collaterale: Naïve Bayes tende a essere \textbf{troppo sicuro} (probabilità vicine a 0 o 1), perché conta più volte la stessa informazione (due feature correlate valgono come due prove indipendenti). Per decidere vale la sua classifica, meno il valore numerico delle probabilità.
+
+\paragraph{Limite: quando è la relazione a fare la classe}
+Immagini casuali con 2 pixel $p_1, p_2 \in \{0,1\}$. Classe $A$ se $p_1 = p_2$, classe $B$ altrimenti. I quattro possibili esempi:
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+    \draw[->] (-0.3,0) -- (2.1,0) node[right] {$p_1$};
+    \draw[->] (0,-0.3) -- (0,2.1) node[above] {$p_2$};
+    \node[draw, circle, fill=green!50!black!60, inner sep=2pt, label={[font=\scriptsize]below right:$A$}] at (0,0) {};
+    \node[draw, circle, fill=green!50!black!60, inner sep=2pt, label={[font=\scriptsize]above right:$A$}] at (1.7,1.7) {};
+    \node[draw, rectangle, fill=red!70!black!60, inner sep=2.2pt, label={[font=\scriptsize]above right:$B$}] at (0,1.7) {};
+    \node[draw, rectangle, fill=red!70!black!60, inner sep=2.2pt, label={[font=\scriptsize]below right:$B$}] at (1.7,0) {};
+    \node[below, font=\scriptsize] at (1.7,-0.05) {1};
+    \node[left, font=\scriptsize] at (-0.05,1.7) {1};
+\end{tikzpicture}
+\end{center}
+Sotto $A$ i pixel valgono insieme 0 o insieme 1, sotto $B$ sono diversi, quindi per \textit{ogni} pixel e \textit{ogni} classe
+$$P(p_1 = 1 \mid A) = P(p_2 = 1 \mid A) = P(p_1 = 1 \mid B) = P(p_2 = 1 \mid B) = 0.5$$
+Per qualunque immagine Naïve Bayes confronta $\underbrace{0.5 \cdot 0.5}_{A} = \underbrace{0.5 \cdot 0.5}_{B}$: pareggio sempre. Ogni pixel, da solo, non dice nulla; l'informazione sta nella \textbf{relazione} tra i due, e un modello che li tratta come indipendenti la butta via.
+\noindent Collegamento con la geometria: i punti $A$ e $B$ stanno agli angoli opposti di un quadrato (problema \textbf{XOR}). Nessuna retta li separa, e Naïve Bayes booleano è un classificatore \textbf{lineare} (vedi sotto): coerente col fallimento.
+
+\paragraph{Stima di massima verosimiglianza (MLE)}
+
+\noindent Finora abbiamo ricavato $\pi_k$ e $\theta_{ijk}$ \textbf{contando} (frequenze relative). Perché proprio questi numeri? Perché sono la scelta che rende \textbf{massima la probabilità di aver osservato proprio i dati che abbiamo}: è la \textbf{stima di massima verosimiglianza} (\textit{Maximum Likelihood Estimation}, MLE).
+
+\paragraph{Esempio: una moneta truccata?}
+10 lanci: 6 Teste ($T$) e 4 Croci ($C$). Intuitivamente $P(T) = 0.6$. Supponiamo due sole ipotesi: moneta \textbf{onesta} ($\theta = 0.5$) o \textbf{truccata} ($\theta = 0.7$). Quale rende i dati più probabili?
+
+\paragraph{Bernoulli e Binomiale}
+Ogni lancio è una variabile di \textbf{Bernoulli} con probabilità $\theta$ di testa. Il numero di teste in $n$ lanci indipendenti segue la \textbf{binomiale}; con $\alpha_0$ teste e $\alpha_1 = n - \alpha_0$ croci:
+$$P(X_n = \alpha_0 \mid \theta) = \binom{n}{\alpha_0} \theta^{\alpha_0} (1 - \theta)^{\alpha_1}$$
+Il coefficiente $\binom{n}{\alpha_0} = \frac{n!}{\alpha_0!\,\alpha_1!}$ conta gli \textit{ordini} possibili delle teste: non dipende da $\theta$.
+
+\paragraph{Confronto numerico} Con $n = 10$, $\alpha_0 = 6$, $\alpha_1 = 4$:
+$$\theta = 0.5:\quad \binom{10}{6} (0.5)^{10} = 210 \cdot 0.00098 \approx \mathbf{0.205}$$
+$$\theta = 0.7:\quad \binom{10}{6} (0.7)^6 (0.3)^4 = 210 \cdot 0.117649 \cdot 0.0081 \approx \mathbf{0.200}$$
+Vince di poco $\theta = 0.5$. Ma tra \textit{tutti} i $\theta \in [0,1]$, qual è il migliore? Disegniamo la verosimiglianza in funzione di $\theta$:
+
+\begin{center}
+\begin{tikzpicture}[x=10cm, y=12cm]
+    \draw[->] (0,0) -- (1.05,0) node[right, font=\small] {$\theta$};
+    \draw[->] (0,0) -- (0,0.31) node[above, font=\small] {$P(\text{dati} \mid \theta)$};
+    \draw[very thick, blue!75!black, domain=0:1, samples=80] plot (\x, {210*\x^6*(1-\x)^4});
+    \foreach \t/\l in {0.5/0.5, 0.6/0.6, 0.7/0.7} {
+        \draw (\t,0) -- (\t,-0.008) node[below, font=\small] {\l};
+    }
+    \draw[dashed, red!70!black] (0.6,0) -- (0.6,0.2508);
+    \fill[red!70!black] (0.6,0.2508) circle (1.5pt);
+    \node[right, font=\small, red!70!black] at (0.6,0.2508) {$\hat\theta = 0.6$ (max)};
+    \fill (0.5,0.205) circle (1.5pt);
+    \fill (0.7,0.200) circle (1.5pt);
+\end{tikzpicture}
+\end{center}
+\noindent Il picco sta esattamente nella frequenza osservata, $6/10$.
+
+\begin{cbox}{Calcolo formale della stima MLE}
+Cerchiamo $\hat{\theta} = \arg\max_\theta \binom{n}{\alpha_0} \theta^{\alpha_0} (1 - \theta)^{\alpha_1}$.
+Il logaritmo è crescente: massimizzare la funzione equivale a massimizzare la \textbf{log-verosimiglianza} (il termine binomiale è costante in $\theta$, lo togliamo):
+$$\ell(\theta) = \alpha_0 \ln\theta + \alpha_1 \ln(1 - \theta)$$
+Derivata uguale a zero:
+$$\frac{\alpha_0}{\theta} - \frac{\alpha_1}{1 - \theta} = 0 \iff \alpha_0 (1 - \theta) = \alpha_1 \theta \iff \hat{\theta} = \frac{\alpha_0}{\alpha_0 + \alpha_1} = \frac{\alpha_0}{n}$$
+La stima MLE è la \textbf{frequenza empirica} osservata.
+\end{cbox}
+
+\paragraph{Caso con $k$ valori: distribuzione multinomiale}
+Se la variabile ha $k$ valori con probabilità $\theta_1, \dots, \theta_k$ ($\sum_i \theta_i = 1$, come un dado a $k$ facce), la probabilità di osservare $\alpha_i$ occorrenze del valore $i$ in $n$ prove è
+$$P(X_n = \boldsymbol{\alpha} \mid \boldsymbol{\theta}) = c_{\boldsymbol{\alpha}} \prod_{i=1}^k \theta_i^{\alpha_i}, \qquad c_{\boldsymbol{\alpha}} = \frac{n!}{\alpha_1! \cdots \alpha_k!}$$
+Massimizzando la log-verosimiglianza col vincolo $\sum_i \theta_i = 1$ (moltiplicatori di Lagrange) si ottiene ancora
+$$\hat{\theta}_i = \frac{\alpha_i}{n}$$
+Ecco perché $\pi_k$ e $\theta_{ijk}$ di Naïve Bayes si ricavano con semplici conteggi: sono MLE di distribuzioni categoriali.
+
+\begin{ibox}{Legame con lo smoothing}
+MLE si fida ciecamente dei dati: con 0 occorrenze stima probabilità 0. Lo smoothing di Laplace corrisponde a partire da un'idea a priori («ogni valore è possibile») e correggerla con i dati. Se i dati sono tanti, le due stime quasi coincidono.
+\end{ibox}
+
+\subsubsection{Testi, prodotto scalare e linearità di Naïve Bayes}
+
+\noindent Applicazione classica: \textbf{classificare testi} (spam/non spam, argomento di un articolo).
+
+\paragraph{Rappresentazione del testo}
+Un documento è una sequenza di parole. Modelliamo la posizione $i$ con una variabile $X_i$ che assume valori nel vocabolario, e
+$$\theta_{i, w, \ell} = P(X_i = w \mid Y = \ell)$$
+è la probabilità che nella posizione $i$ di un documento della classe $\ell$ compaia la parola $w$. Due assunzioni forti:
 \begin{enumerate}
-    \item \textbf{Mutua esclusività}: due valori differenti non possono verificarsi simultaneamente: %[cite: 2]
-    $$P(A = \nu_i \land A = \nu_j) = 0 \quad \forall i \neq j$$ %[cite: 2]
-    \item \textbf{Esaustività}: la variabile deve assumere per forza almeno uno dei valori ammessi; la somma delle probabilità associate a tutti i possibili esiti è pari alla certezza: %[cite: 2]
-    $$\sum_{i=1}^k P(A = \nu_i) = P\left(\bigvee_{i=1}^k (A = \nu_i)\right) = 1$$ %[cite: 2]
+    \item \textbf{Indipendenza} tra le posizioni (l'ipotesi naïve);
+    \item \textbf{Stazionarietà}: la probabilità di una parola non dipende da \textit{dove} compare:
+    $$\theta_{i, w, \ell} = \theta_{j, w, \ell} = \theta_{w, \ell}$$
 \end{enumerate}
+Il testo diventa un «sacchetto di parole» (\textit{Bag of Words}): ordine e sintassi sono ignorati, conta solo \textit{quante volte} compare ogni parola. «cane morde uomo» e «uomo morde cane» sono lo stesso documento.
 
-\paragraph{Formulazione generale della Probabilità Totale}
-Data una partizione dello spazio campionario formata da $k$ eventi esaustivi e disgiunti $\{B_1, B_2, \dots, B_k\}$, la probabilità di un qualunque evento $A$ è ricavabile sommando i contributi di $A$ con ciascun componente della partizione: %[cite: 2]
-$$P(A) = \sum_{i=1}^k P(A \cap B_i)$$ %[cite: 2]
-Questo principio costituisce la base matematica su cui poggiano la regola di Bayes, l'inferenza probabilistica e la marginalizzazione delle distribuzioni congiunte. %[cite: 2]
+\paragraph{Training e classificazione}
+\begin{itemize}
+    \item prior $\pi_k$: frazione di documenti del training set di classe $y_k$;
+    \item $\theta_{w, k}$: frequenza di $w$ rispetto a \textit{tutte} le parole dei documenti di classe $y_k$ (si concatenano i documenti della classe).
+\end{itemize}
+Per un nuovo documento $\mathbf{a}^{new} = \langle a_1, \dots, a_n \rangle$:
+$$Y^{new} = \arg\max_k \; \pi_k \prod_{i=1}^n \theta_{a_i, k}$$
 
-\subsection{Probabilità Condizionata, Regola della Catena e Indipendenza Stocastica}
+\paragraph{Log-likelihood e raggruppamento delle parole}
+Moltiplicare centinaia di probabilità minuscole produce \textbf{underflow} (il numero diventa 0 per il calcolatore). Si usa il logaritmo, che trasforma prodotti in somme e non cambia l'$\arg\max$:
+$$Y^{new} = \arg\max_k \left[ \log \pi_k + \sum_{i=1}^n \log \theta_{a_i, k} \right]$$
+Poiché $\theta$ non dipende dalla posizione, si raggruppano le parole uguali:
+$$\sum_{i=1}^n \log \theta_{a_i, k} = \sum_{j \in \text{vocabolario}} n_j \log \theta_{j, k}$$
+con $n_j$ = numero di volte in cui la parola $w_j$ compare nel documento.
 
-\noindent Dati due eventi $A$ e $B$ con $P(B) > 0$, la \textbf{probabilità condizionata} di $A$ dato il verificarsi di $B$ è definita analiticamente come:
-$$P(A \mid B) = \frac{P(A \cap B)}{P(B)}$$ %[cite: 2]
-Geometricamente, corrisponde alla normalizzazione dell'area di intersezione $A \cap B$ rispetto all'area del nuovo spazio campionario ridotto all'evento condizionante $B$. %[cite: 2]
+\begin{ibox}{Esempio: spam o no? (con smoothing $\alpha = 1$)}
+Training con 4 email, vocabolario di $|V| = 7$ parole.
+\begin{center}
+\small
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Classe} & \textbf{Documenti} \\
+    \midrule
+    Spam & «offerta soldi ora», «soldi soldi gratis» \\
+    Ham & «ciao ora riunione», «riunione domani ciao» \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Priors: $\pi_{spam} = \pi_{ham} = \frac12$. Ogni classe ha 6 parole in totale, quindi $\theta_{w,k} = \frac{n_{w,k} + 1}{6 + 7}$:
+\begin{center}
+\small
+\begin{tabular}{lccccccc}
+    \toprule
+    & offerta & soldi & ora & gratis & ciao & riunione & domani \\
+    \midrule
+    $\theta_{\cdot,spam}$ & $\frac{2}{13}$ & $\frac{4}{13}$ & $\frac{2}{13}$ & $\frac{2}{13}$ & $\frac{1}{13}$ & $\frac{1}{13}$ & $\frac{1}{13}$ \\[2mm]
+    $\theta_{\cdot,ham}$ & $\frac{1}{13}$ & $\frac{1}{13}$ & $\frac{2}{13}$ & $\frac{1}{13}$ & $\frac{3}{13}$ & $\frac{3}{13}$ & $\frac{2}{13}$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Nuovo documento: «soldi gratis ora ora», cioè $n_{soldi} = 1$, $n_{gratis} = 1$, $n_{ora} = 2$.
+$$\text{spam}: \; \tfrac12 \cdot \tfrac{4}{13}\cdot\tfrac{2}{13}\cdot\left(\tfrac{2}{13}\right)^2 \propto 4 \cdot 2 \cdot 4 = 32 \qquad \text{ham}: \; \tfrac12 \cdot \tfrac{1}{13}\cdot\tfrac{1}{13}\cdot\left(\tfrac{2}{13}\right)^2 \propto 1 \cdot 1 \cdot 4 = 4$$
+Spam vince 8 a 1 (circa 89\% in probabilità). Si noti che «ora» appare in entrambe le classi con lo stesso peso e non cambia il rapporto: contano le parole che \textit{discriminano}.
+\end{ibox}
 
-\noindent Riordinando i termini si ricava la \textbf{regola della catena} (\textit{chain rule}):
-$$P(A \cap B) = P(B) \, P(A \mid B) = P(A) \, P(B \mid A)$$ %[cite: 2]
+\paragraph{Interpretazione come prodotto scalare}
+Immaginiamo uno spazio con una dimensione per ogni parola del vocabolario:
+\begin{itemize}
+    \item per ogni classe $k$, un \textbf{vettore dei pesi} $\mathbf{s}_k = \langle \log \theta_{j, k} \rangle_{j \in V}$ (nelle slide: vettore «spettrale»);
+    \item per il documento, il \textbf{vettore dei conteggi} $\mathbf{d} = \langle n_j \rangle_{j \in V}$.
+\end{itemize}
+Tolta la prior, il punteggio è un prodotto scalare:
+$$\sum_j n_j \log \theta_{j, k} = \mathbf{d} \cdot \mathbf{s}_k$$
+Classificare = scegliere la classe il cui profilo di parole è più «allineato» al documento.
 
-\noindent Due eventi $A$ e $B$ sono \textbf{stocasticamente indipendenti} se la conoscenza dell'esito di $B$ non altera la probabilità di $A$:
-$$P(A \mid B) = P(A)$$ %[cite: 2]
-Ne consegue immediatamente l'espressione fattorizzata della probabilità congiunta:
-$$P(A \cap B) = P(A) \, P(B)$$ %[cite: 2]
-da cui deriva reciprocamente che $P(B \mid A) = P(B)$. %[cite: 2]
+\paragraph{Geometria del prodotto scalare e Cosine Similarity}
 
+\noindent Il prodotto scalare ha due definizioni equivalenti:
+\begin{itemize}
+    \item \textbf{analitica}: $\mathbf{a} \cdot \mathbf{b} = \sum_{i=1}^n a_i b_i$ (si moltiplicano le componenti e si somma);
+    \item \textbf{geometrica}: $\mathbf{a} \cdot \mathbf{b} = \|\mathbf{a}\| \|\mathbf{b}\| \cos\theta$, con $\theta$ angolo tra i vettori e $\|\mathbf{a}\| = \sqrt{\sum_i a_i^2}$.
+\end{itemize}
+Interpretazione: il prodotto scalare misura quanto $\mathbf{a}$ «va nella direzione» di $\mathbf{b}$: è la lunghezza della proiezione di $\mathbf{a}$ su $\mathbf{b}$ ($\|\mathbf{a}\|\cos\theta$) per $\|\mathbf{b}\|$.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1.2]
+    \draw[->, thick, blue!80!black] (0,0) -- (3,2.2) node[above left] {$\mathbf{a}$};
+    \draw[->, thick, green!50!black] (0,0) -- (4.2,0) node[right] {$\mathbf{b}$};
+    \draw[dashed, gray] (3,2.2) -- (3,0);
+    \draw (0.8,0) arc (0:36.25:0.8);
+    \node at (1.1,0.3) {$\theta$};
+    \draw[thick, red!70!black] (0,-0.15) -- (3,-0.15);
+    \node[below, font=\small, red!70!black] at (1.5,-0.2) {$\|\mathbf{a}\|\cos\theta$ (proiezione)};
+\end{tikzpicture}
+\end{center}
+
+\noindent Tre casi da ricordare:
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    $\theta$ & $\cos\theta$ & significato \\
+    \midrule
+    $0^\circ$ (stessa direzione) & $1$ & massima somiglianza \\
+    $90^\circ$ (ortogonali) & $0$ & nessuna relazione (prodotto scalare nullo) \\
+    $180^\circ$ (opposti) & $-1$ & somiglianza opposta \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Esempio numerico: $\mathbf{a} = (3, 4)$, $\mathbf{b} = (4, 0)$. Analitico: $3\cdot4 + 4\cdot0 = 12$. Geometrico: $\|\mathbf{a}\| = 5$, $\|\mathbf{b}\| = 4$, $\cos\theta = 12/20 = 0.6$ ($\theta \approx 53^\circ$).
+
+\paragraph{Dimostrazione dell'equivalenza}
+Sul triangolo di lati $\mathbf{a}$, $\mathbf{b}$, $\mathbf{a} - \mathbf{b}$, la legge dei coseni (Carnot) dà
+$$\|\mathbf{a} - \mathbf{b}\|^2 = \|\mathbf{a}\|^2 + \|\mathbf{b}\|^2 - 2\|\mathbf{a}\|\|\mathbf{b}\|\cos\theta
+\;\Longrightarrow\;
+\|\mathbf{a}\|\|\mathbf{b}\|\cos\theta = \frac{\|\mathbf{a}\|^2 + \|\mathbf{b}\|^2 - \|\mathbf{a} - \mathbf{b}\|^2}{2}$$
+In coordinate piane, con $\mathbf{a} = [a_1, a_2]$ e $\mathbf{b} = [b_1, b_2]$:
+\begin{align*}
+&\frac{(a_1^2 + a_2^2) + (b_1^2 + b_2^2) - \big((a_1 - b_1)^2 + (a_2 - b_2)^2\big)}{2} \\
+&= \frac{a_1^2 + a_2^2 + b_1^2 + b_2^2 - a_1^2 + 2a_1b_1 - b_1^2 - a_2^2 + 2a_2b_2 - b_2^2}{2} = a_1b_1 + a_2b_2
+\end{align*}
+Lo stesso vale in qualsiasi dimensione $n$.
+
+\paragraph{Similarità coseno}
+Il prodotto scalare da solo premia i testi lunghi (vettori $\mathbf{d}$ con norma maggiore). Per confrontare solo la \textbf{direzione} si normalizza:
+$$S_C(\mathbf{a}, \mathbf{b}) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\| \|\mathbf{b}\|} = \cos\theta \in [-1, 1]$$
+Esempio: un tweet e un lungo saggio che parlano dello stesso argomento con le stesse frequenze relative di parole hanno vettori paralleli ($\cos\theta = 1$), anche se il saggio ha conteggi 100 volte più grandi. Per i conteggi di parole, che sono $\ge 0$, il coseno sta in $[0,1]$.
+
+\paragraph{La natura lineare di Naïve Bayes (caso booleano)}
+
+\noindent Risultato importante: con feature booleane, \textbf{Naïve Bayes è un classificatore lineare}. La frontiera tra le classi è un iperpiano.
+
+\paragraph{Punto di partenza: il rapporto tra le posteriori}
+Con $Y, X_i \in \{0,1\}$, assegniamo $\mathbf{x}$ a $Y = 1$ se
+$$\frac{P(Y = 1 \mid \mathbf{x})}{P(Y = 0 \mid \mathbf{x})} \ge 1$$
+Con Bayes e indipendenza condizionata (il denominatore $P(\mathbf{x})$ si semplifica), poi il logaritmo:
+$$\ln\frac{P(Y = 1)}{P(Y = 0)} + \sum_{i=1}^n \ln\frac{P(X_i = x_i \mid Y = 1)}{P(X_i = x_i \mid Y = 0)} \ge 0$$
+
+\paragraph{Come far comparire $x_i$ in modo lineare}
+Per $x \in \{0,1\}$ vale $f(x) = x\,f(1) + (1 - x)\,f(0)$ (se $x = 1$ resta $f(1)$, se $x = 0$ resta $f(0)$). Poniamo
+$$\theta_{i1} = P(X_i = 1 \mid Y = 1), \qquad \theta_{i0} = P(X_i = 1 \mid Y = 0)$$
+da cui
+$$\ln\frac{P(X_i = x_i \mid Y = 1)}{P(X_i = x_i \mid Y = 0)} = x_i \ln\frac{\theta_{i1}}{\theta_{i0}} + (1 - x_i) \ln\frac{1 - \theta_{i1}}{1 - \theta_{i0}}$$
+
+\begin{cbox}{Forma canonica di iperpiano}
+Raccogliamo i termini costanti e quelli che moltiplicano $x_i$:
+$$\underbrace{\ln\frac{P(Y = 1)}{P(Y = 0)} + \sum_{i=1}^n \ln\frac{1 - \theta_{i1}}{1 - \theta_{i0}}}_{w_0} \; + \; \sum_{i=1}^n x_i \underbrace{\left[ \ln\frac{\theta_{i1}}{\theta_{i0}} - \ln\frac{1 - \theta_{i1}}{1 - \theta_{i0}} \right]}_{w_i} \ge 0$$
+Con $w_i = \ln\frac{\theta_{i1}(1 - \theta_{i0})}{\theta_{i0}(1 - \theta_{i1})}$ la regola diventa
+$$w_0 + \sum_{i=1}^n w_i x_i \ge 0$$
+\end{cbox}
+
+\noindent La frontiera è $w_0 + \sum_i w_i x_i = 0$: un \textbf{iperpiano} (in 2D una retta).
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=0.9]
+    \draw[->] (0,0) -- (6.5,0) node[right] {$x_1$};
+    \draw[->] (0,0) -- (0,5) node[above] {$x_2$};
+    \draw[very thick, black] (0.3,4.5) -- (6,0.7);
+    \node[font=\small] at (3.2,5.2) {$w_0 + w_1x_1 + w_2x_2 = 0$};
+    \draw[->, thick, orange!80!black] (3,2.5) -- (3.8,3.7) node[above] {$\mathbf{w}$};
+    \foreach \x/\y in {1/1.5, 1.6/0.7, 2/2, 0.8/2.6, 2.6/0.9, 1.5/3} \fill[red!70!black] (\x,\y) circle (2.2pt);
+    \foreach \x/\y in {4/4, 5/3.5, 4.5/2.5, 5.6/4.3, 3.4/4.4, 5.8/2.4} \fill[blue!75!black] (\x,\y) circle (2.2pt);
+    \node[red!70!black, font=\small] at (1.2,0.4) {classe 0};
+    \node[blue!75!black, font=\small] at (6.3,3.2) {classe 1};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Significato dei pesi}
+\begin{itemize}
+    \item Ogni feature contribuisce al punteggio con un peso \textbf{additivo} $w_i$, indipendente dalle altre: come un sistema di voti.
+    \item $w_i > 0$ se $\theta_{i1} > \theta_{i0}$: la presenza di $x_i$ spinge verso la classe 1; $w_i < 0$ nel caso opposto; $w_i = 0$ se la feature non distingue le classi.
+    \item Esempio: se $\theta_{i1} = 0.8$ e $\theta_{i0} = 0.2$, allora $w_i = \ln\frac{0.8\cdot0.8}{0.2\cdot0.2} = \ln 16 \approx 2.77$: feature fortemente indicativa della classe 1.
+    \item $w_0$ raccoglie la prior e i contributi delle feature quando valgono 0 (il «bias»).
+\end{itemize}
+
+\paragraph{Perché la linearità non è un limite}
+Un separatore lineare sembra rigido. Ma con tante feature (migliaia di parole, centinaia di pixel) i campioni sono molto \textbf{sparsi} nello spazio, e le classi risultano spesso separabili da un iperpiano: i classificatori lineari diventano sorprendentemente efficaci.
+
+\subsubsection{Attributi continui e valutazione del modello}
+
+\noindent Altezza, età, reddito, temperatura, luminosità di un pixel: molte feature sono \textbf{continue}.
+
+\paragraph{Il limite delle probabilità puntuali}
+Per una variabile continua $P(X_i = x) = 0$ per ogni $x$: non possiamo contare quante volte compare un valore (ogni valore appare una volta o mai). Serve un \textbf{bias induttivo}: assumiamo che, data la classe $y_k$, i valori di $X_i$ seguano una distribuzione nota, di solito la \textbf{Gaussiana} (o Normale).
+
+\paragraph{Ripasso: la distribuzione Gaussiana}
+Una variabile $X \sim \mathcal{N}(\mu, \sigma^2)$ ha densità
+$$p(x \mid \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
+\begin{itemize}
+    \item $\mu$ = \textbf{media}: posizione del centro della campana;
+    \item $\sigma^2$ = \textbf{varianza} ($\sigma$ = deviazione standard): quanto è larga la campana.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+    \draw[->, thick] (-3.5,0) -- (3.5,0) node[right] {$x$};
+    \draw[->, thick] (0,0) -- (0,2.8) node[above] {$p(x)$};
+    \draw[very thick, blue!75!black, domain=-3.2:3.2, samples=60]
+        plot (\x, {2.4*exp(-\x*\x/2)});
+    \draw[very thick, orange!80!black, domain=-3.2:3.2, samples=60]
+        plot (\x, {1.2*exp(-\x*\x/8)});
+    \draw[dashed, red!70!black] (0,0) -- (0,2.4);
+    \node[below, font=\small] at (0,-0.1) {$\mu$};
+    \node[blue!75!black, font=\small] at (1.8,2.1) {$\sigma$ piccolo};
+    \node[orange!80!black, font=\small] at (2.6,0.9) {$\sigma$ grande};
+\end{tikzpicture}
+\end{center}
+\noindent Attenzione: $p(x)$ è una \textbf{densità}, non una probabilità: può superare 1 se $\sigma$ è piccolo. Si confrontano però densità tra classi, ed è lecito perché il fattore di scala è lo stesso per tutte.
+
+\paragraph{Esempio: genere dall'altezza}
+$Y \in \{F, M\}$, $X$ = altezza. Si assume $X \mid F \sim \mathcal{N}(\mu_F, \sigma_F^2)$ e $X \mid M \sim \mathcal{N}(\mu_M, \sigma_M^2)$, con $\mu_F < \mu_M$.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+    \draw[->, thick] (-4,0) -- (5,0) node[right] {Altezza (cm)};
+    \draw[->, thick] (-4,0) -- (-4,3) node[above] {Densità};
+    \draw[very thick, red!70!black, domain=-3.8:1.8, samples=50]
+        plot (\x, {2.5*exp(-(\x+1.2)*(\x+1.2)/(2*1.0))});
+    \node[red!70!black, font=\bfseries] at (-1.2, 2.7) {Femmine};
+    \draw[very thick, blue!75!black, domain=-0.8:4.6, samples=50]
+        plot (\x, {2.5*exp(-(\x-1.8)*(\x-1.8)/(2*1.0))});
+    \node[blue!75!black, font=\bfseries] at (1.8, 2.7) {Maschi};
+    \draw[dashed, thick, black] (0.3, 0) -- (0.3, 2.5);
+    \node[below, font=\small\bfseries] at (0.3, -0.1) {soglia di decisione};
+    \node[font=\small, red!70!black] at (-2.5,-0.7) {$\to$ predico F};
+    \node[font=\small, blue!75!black] at (3,-0.7) {predico M $\leftarrow$};
+\end{tikzpicture}
+\end{center}
+\noindent La soglia (\textit{decision boundary}) è dove le due curve, pesate con le prior, si incrociano. Con prior uguali e stessa $\sigma$ sta a metà tra $\mu_F$ e $\mu_M$.
+
+\begin{ibox}{Esempio numerico}
+$F$: $\mu = 162$, $\sigma = 6$; $M$: $\mu = 175$, $\sigma = 7$; prior $\frac12$ ciascuna. Nuova persona alta $x = 170$ cm:
+$$p(170 \mid F) = \frac{e^{-\frac{(170-162)^2}{2\cdot36}}}{6\sqrt{2\pi}} = \frac{e^{-0.889}}{15.04} \approx 0.0273 \qquad p(170 \mid M) = \frac{e^{-\frac{(170-175)^2}{2\cdot49}}}{7\sqrt{2\pi}} = \frac{e^{-0.255}}{17.55} \approx 0.0442$$
+Con prior uguali vince $M$: $P(M \mid x) \approx \frac{0.0442}{0.0442 + 0.0273} \approx 0.62$. Per 170 cm è una scelta quasi indifferente, come ci si aspetta vicino alla soglia.
+\end{ibox}
+
+\paragraph{Formulazione generale e stima dei parametri}
+
+\paragraph{Modello}
+Con $n$ feature continue $X_1, \dots, X_n$:
+\begin{enumerate}
+    \item data la classe $y_k$, ogni $X_i$ è gaussiana e indipendente dalle altre:
+    $$P(X_i = x \mid Y = y_k) = \mathcal{N}(x \mid \mu_{ik}, \sigma_{ik}^2) = \frac{1}{\sigma_{ik}\sqrt{2\pi}} \exp\left(-\frac{(x - \mu_{ik})^2}{2\sigma_{ik}^2}\right)$$
+    \item la classe ha prior $\pi_k = P(Y = y_k)$.
+\end{enumerate}
+Ogni coppia (feature, classe) ha una \textbf{propria} media e varianza: $\mu_{ik}$, $\sigma_{ik}^2$.
+
+\paragraph{Classificazione}
+$$Y^{new} = \arg\max_k \; \pi_k \prod_{i=1}^n \mathcal{N}(a_i \mid \mu_{ik}, \sigma_{ik}^2)$$
+
+\paragraph{Stime MLE dai dati}
+Per ogni classe si guardano solo gli esempi di quella classe ($\delta$ = funzione indicatrice, 1 se vero e 0 altrimenti):
+$$\mu_{ik} = \frac{\sum_{j=1}^N x_i^{(j)} \delta(y^{(j)} = y_k)}{\sum_{j=1}^N \delta(y^{(j)} = y_k)} \qquad \sigma_{ik}^2 = \frac{\sum_{j=1}^N (x_i^{(j)} - \mu_{ik})^2 \, \delta(y^{(j)} = y_k)}{\sum_{j=1}^N \delta(y^{(j)} = y_k)}$$
+Cioè: \textbf{media e varianza campionarie} della feature $X_i$ calcolate sugli esempi della classe $y_k$ (la varianza MLE divide per $N_k$ e non per $N_k - 1$).
+
+\noindent Parametri: $2n$ per classe (una media e una varianza per feature), quindi complessità \textbf{lineare} in $n$.
+
+\noindent Nota pratica: se in una classe una feature ha varianza (quasi) nulla la densità esplode. In pratica si somma una piccola costante alla varianza (equivalente allo smoothing del caso discreto).
+
+\paragraph{Valutazione del modello: matrice di confusione e metriche}
+
+\noindent In una classificazione binaria ogni predizione ricade in uno di quattro casi:
+
+\begin{center}
+\small
+\begin{tabular}{cc|cc}
+    \multicolumn{2}{c}{} & \multicolumn{2}{c}{\textbf{Classe reale}} \\
+    \multicolumn{2}{c}{} & \textbf{Positivo} & \textbf{Negativo} \\
+    \hline
+    \textbf{Predizione} & \textbf{Positivo} & \textbf{TP} (vero positivo) & \textbf{FP} (falso allarme) \\
+    \textbf{del modello} & \textbf{Negativo} & \textbf{FN} (caso mancato) & \textbf{TN} (vero negativo) \\
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+    \item \textbf{TP}: positivo riconosciuto come positivo.
+    \item \textbf{FP}: negativo scambiato per positivo (falso allarme, errore di tipo I).
+    \item \textbf{FN}: positivo che il modello si è lasciato sfuggire (errore di tipo II).
+    \item \textbf{TN}: negativo riconosciuto come negativo.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+    \fill[green!10] (-3.5,-2) rectangle (0.5,2);
+    \draw[thick, dashed, green!60!black] (-3.5,-2) rectangle (0.5,2);
+    \node[above, font=\small\bfseries, green!60!black] at (-1.5,2.1) {Positivi reali};
+    \fill[red!5] (0.5,-2) rectangle (4.5,2);
+    \draw[thick, dashed, red!60!black] (0.5,-2) rectangle (4.5,2);
+    \node[above, font=\small\bfseries, red!60!black] at (2.5,2.1) {Negativi reali};
+    \draw[very thick, blue!80!black, fill=blue!15, fill opacity=0.3] (0.5,0) circle (1.8);
+    \node[below, font=\small\bfseries, blue!80!black] at (0.5,-1.9) {Predetti positivi};
+    \node[font=\small] at (-0.8,0.2) {\textbf{TP}};
+    \node[font=\small] at (1.7,0.2) {\textbf{FP}};
+    \node[font=\small] at (-2.3,-0.5) {\textbf{FN}};
+    \node[font=\small] at (3.3,-0.5) {\textbf{TN}};
+\end{tikzpicture}
+\end{center}
+
+\begin{cbox}{Metriche di valutazione}
+\begin{itemize}
+    \item \textbf{Accuracy}: frazione di predizioni corrette.
+    $$\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}$$
+    \textit{Attenzione}: ingannevole con classi sbilanciate (se il 99\% è negativo, dire sempre «negativo» dà 99\% di accuracy e utilità nulla).
+
+    \item \textbf{Precision}: tra quelli che il modello dice positivi, quanti lo sono davvero.
+    $$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}$$
+    Alta precision $\implies$ pochi falsi allarmi.
+
+    \item \textbf{Recall} (sensibilità): tra i positivi reali, quanti ne trova il modello.
+    $$\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}$$
+    Alto recall $\implies$ pochi casi persi.
+
+    \item \textbf{F1-score}: media armonica di Precision e Recall.
+    $$F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
+    La media armonica è bassa se anche uno solo dei due valori è basso: non si può «barare» con un solo ottimo.
+\end{itemize}
+\end{cbox}
+
+\begin{ibox}{Esempio: filtro antispam su 100 email}
+10 email sono spam (positivi), 90 normali. Il filtro ne segnala 9 come spam: ne becca 6 e ne sbaglia 3.
+\begin{center}
+\small
+\begin{tabular}{cc|cc}
+    \multicolumn{2}{c}{} & \multicolumn{2}{c}{\textbf{Reale}} \\
+    \multicolumn{2}{c}{} & \textbf{Spam} & \textbf{Normale} \\
+    \hline
+    \textbf{Predetto} & \textbf{Spam} & TP = 6 & FP = 3 \\
+    & \textbf{Normale} & FN = 4 & TN = 87 \\
+\end{tabular}
+\end{center}
+$$\text{Accuracy} = \frac{6 + 87}{100} = 0.93 \qquad \text{Precision} = \frac{6}{6 + 3} \approx 0.67 \qquad \text{Recall} = \frac{6}{6 + 4} = 0.60$$
+$$F_1 = 2 \cdot \frac{0.67 \cdot 0.60}{0.67 + 0.60} \approx 0.63$$
+L'accuracy sembra ottima, ma un filtro che dice sempre «normale» avrebbe già 90\% di accuracy e recall 0: Precision, Recall e $F_1$ raccontano la verità.
+
+\textit{Quale errore costa di più?} Per lo spam un FP (mail importante persa) è peggio di un FN: conviene alta precision. In una diagnosi medica un FN (malato non riconosciuto) è peggio: conviene alto recall.
+\end{ibox}
+
+\begin{cbox}{Riepilogo: Naïve Bayes}
+\begin{itemize}
+    \item \textbf{Idea}: $\arg\max_k\ \pi_k \prod_i P(X_i \mid y_k)$, assumendo le feature indipendenti data la classe.
+    \item \textbf{Training}: solo conteggi (MLE); per feature continue, media e varianza per classe (Gaussian NB).
+    \item \textbf{Parametri}: $O(n)$ invece di $O(2^n)$.
+    \item \textbf{Cautele}: smoothing per evitare probabilità 0; logaritmi per evitare underflow.
+    \item \textbf{Natura}: generativo; con feature booleane è un classificatore \textbf{lineare}.
+    \item \textbf{Limite}: non vede le relazioni tra feature (es.\ XOR), e le probabilità che produce sono poco affidabili in senso assoluto.
+    \item \textbf{Valutazione}: matrice di confusione, Precision, Recall, $F_1$ (non solo accuracy).
+\end{itemize}
+\end{cbox}
+
+\subsection{Regressione Logistica}
+
+\begin{ibox}{Idea in una riga}
+Calcola un punteggio lineare $z = w_0 + \sum_i w_i x_i$ e lo trasforma in probabilità con la \textbf{sigmoide}. I pesi $\mathbf{w}$ non si ricavano da conteggi (come in Naïve Bayes) ma si \textbf{apprendono per discesa del gradiente}, massimizzando la verosimiglianza dei dati.
+\end{ibox}
+
+\begin{cbox}{BIG PICTURE: cosa stiamo facendo e perché}
+\textbf{Il problema.} Abbiamo una variabile da prevedere $Y \in \{0, 1\}$ (es.\ spam / non spam) e un vettore di feature $X = \langle x_1, \dots, x_n \rangle$. Per decidere ci basta conoscere $P(Y \mid X)$: si sceglie la classe più probabile.
+
+\medskip
+\textbf{La strada di Naïve Bayes (indiretta).} Si stimano $P(Y)$ e $P(X \mid Y)$ e poi si inverte con Bayes. Costo: bisogna modellare \emph{come sono fatte le feature} ($P(X \mid Y)$ per ogni classe), e per farlo si fanno ipotesi forti (indipendenza condizionata) che spesso sono false.
+
+\medskip
+\textbf{L'idea della regressione logistica (diretta).} Il nostro scopo è solo classificare, quindi perché non stimare \emph{direttamente} $P(Y \mid X)$? (slide: \textit{«Why not directly learn $P(Y \mid X)$?»}). Ma stimare $P(Y\mid X)$ senza struttura è impossibile: avremmo un valore diverso per ogni possibile $X$. Serve quindi una \textbf{forma funzionale} con pochi parametri $w_0, w_1, \dots, w_n$.
+
+\medskip
+\textbf{Il filo logico, in 5 passi:}
+\begin{enumerate}
+    \item \textbf{Quale forma scegliere?} Non la inventiamo: la \emph{deduciamo} da Naïve Bayes gaussiano. Dimostriamo che, se $P(X_i \mid Y = k)$ sono gaussiane con stessa varianza nelle due classi, allora automaticamente
+    $P(Y = 1 \mid X) = \dfrac{1}{1 + \exp(-w_0 - \sum_i w_i x_i)}$, cioè una \textbf{sigmoide di una combinazione lineare}.
+    \item \textbf{Cambio di prospettiva.} Una volta ottenuta la forma, la prendiamo \emph{come ipotesi} e lasciamo i pesi $w_i$ \textbf{liberi}, senza più legarli a medie e varianze. Così il modello funziona anche se le gaussiane non valgono.
+    \item \textbf{Come scegliere i pesi?} Massima verosimiglianza (MLE): i pesi migliori sono quelli che rendono più probabili le etichette $y^\ell$ osservate nel training set.
+    \item \textbf{Come calcolarli?} Il problema di ottimizzazione non ha soluzione in forma chiusa: si procede per \textbf{discesa del gradiente}, a piccoli passi. Calcoliamo il gradiente con precisione e scopriamo che è semplicissimo: $\sum_\ell x_i^\ell (y^\ell - \alpha^\ell)$.
+    \item \textbf{Come evitare l'overfitting?} Si aggiunge una penalità sui pesi (\textbf{regolarizzazione}).
+\end{enumerate}
+\textbf{Obiettivo finale}: ottenere un classificatore con frontiera lineare, ma i cui pesi sono scelti per imparare \emph{direttamente} a classificare bene, non a descrivere i dati.
+\end{cbox}
+
+\subsubsection{Dall'approccio generativo a quello discriminativo e funzione logistica}
+
+\noindent Con Naïve Bayes abbiamo seguito un approccio \textbf{generativo}: per ottenere $P(Y \mid X)$ abbiamo prima modellato $P(Y)$ e $P(X \mid Y)$, poi usato Bayes.
+
+\noindent Ma se lo scopo è classificare, \textbf{perché non stimare direttamente $P(Y \mid X)$}, senza spendere parametri e dati per modellare come sono distribuite le feature? È l'approccio \textbf{discriminativo}, di cui la \textbf{regressione logistica} è il modello fondamentale.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, node distance=2.2cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=orange!15, minimum height=8mm, minimum width=22mm] (g1) at (0,0) {$P(X \mid Y),\ P(Y)$};
+    \node[draw, rounded corners, fill=orange!15, minimum height=8mm, minimum width=22mm] (g2) at (4.2,0) {Bayes};
+    \node[draw, rounded corners, fill=orange!15, minimum height=8mm, minimum width=22mm] (g3) at (8,0) {$P(Y \mid X)$};
+    \draw[->, thick] (g1) -- (g2);
+    \draw[->, thick] (g2) -- (g3);
+    \node[anchor=east, font=\small\bfseries] at (-1.7,0) {Generativo};
+    \node[draw, rounded corners, fill=blue!10, minimum height=8mm, minimum width=22mm] (d1) at (0,-1.5) {dati $(\mathbf{x}, y)$};
+    \node[draw, rounded corners, fill=blue!10, minimum height=8mm, minimum width=22mm] (d3) at (8,-1.5) {$P(Y \mid X)$};
+    \draw[->, thick] (d1) -- node[above] {si stimano direttamente i pesi $\mathbf{w}$} (d3);
+    \node[anchor=east, font=\small\bfseries] at (-1.7,-1.5) {Discriminativo};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Passo 1 della big picture: da dove viene la forma di $P(Y \mid X)$}
+
+\noindent Dimostriamo che la forma logistica \emph{non è arbitraria}: è la conseguenza esatta di un Naïve Bayes gaussiano.
+
+\begin{cbox}{Ipotesi (come nelle slide)}
+\begin{itemize}
+    \item $Y$ variabile booleana con distribuzione di Bernoulli di parametro $\pi$: $P(Y = 1) = \pi$, \ $P(Y = 0) = 1 - \pi$;
+    \item le $X_i$ sono variabili continue, \textbf{condizionatamente indipendenti} data $Y$;
+    \item $P(X_i \mid Y = k) = \mathcal{N}(X_i; \mu_{ik}, \sigma_i)$, cioè
+    $$P(X_i \mid Y = k) = \frac{1}{\sigma_i \sqrt{2\pi}}\, e^{-\frac{(X_i - \mu_{ik})^2}{2\sigma_i^2}}$$
+    \textbf{Attenzione} (\emph{«Warning: not $\sigma_{ik}$!»} nelle slide): la deviazione standard $\sigma_i$ dipende solo da $i$, \textbf{non dalla classe $k$}. La media $\mu_{ik}$ invece dipende da entrambe.
+\end{itemize}
+\textbf{Tesi}: $\displaystyle P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(w_0 + \sum_i w_i x_i\big)}$ per opportuni $w_0, w_i$.
+\end{cbox}
+
+\noindent \textbf{Dimostrazione.} Seguiamo ogni passaggio.
+
+\medskip
+\noindent \textbf{(1) Teorema di Bayes.} Il denominatore $P(X)$ si espande con la formula della probabilità totale sulle due classi:
+$$P(Y = 1 \mid X) = \frac{P(Y = 1)\,P(X \mid Y = 1)}{P(Y = 1)\,P(X \mid Y = 1) + P(Y = 0)\,P(X \mid Y = 0)}$$
+
+\noindent \textbf{(2) Dividiamo numeratore e denominatore per il numeratore.} Poniamo $A = P(Y = 1)P(X \mid Y = 1)$ e $B = P(Y = 0)P(X \mid Y = 0)$ (entrambi $> 0$). Allora $P(Y=1\mid X) = \frac{A}{A + B} = \frac{1}{1 + B/A}$, cioè
+$$P(Y = 1 \mid X) = \frac{1}{1 + \dfrac{P(Y = 0)\,P(X \mid Y = 0)}{P(Y = 1)\,P(X \mid Y = 1)}}$$
+
+\noindent \textbf{(3) Scriviamo il rapporto come esponenziale.} Per ogni $a > 0$ vale $a = \exp(\ln a)$; con $a = B/A$:
+$$P(Y = 1 \mid X) = \frac{1}{1 + \exp\!\Big(\ln \dfrac{P(Y = 0)\,P(X \mid Y = 0)}{P(Y = 1)\,P(X \mid Y = 1)}\Big)}$$
+\emph{Perché lo facciamo}: il logaritmo trasforma prodotti e rapporti in somme, e le gaussiane (che sono esponenziali) in polinomi.
+
+\noindent \textbf{(4) Scomponiamo il logaritmo.} Usiamo $\ln\frac{ab}{cd} = \ln\frac{a}{c} + \ln\frac{b}{d}$, i valori $P(Y = 0) = 1 - \pi$, $P(Y = 1) = \pi$, e l'\textbf{indipendenza condizionata} $P(X \mid Y = k) = \prod_i P(X_i \mid Y = k)$:
+$$\ln \frac{P(Y = 0)\,P(X \mid Y = 0)}{P(Y = 1)\,P(X \mid Y = 1)} = \ln\frac{1 - \pi}{\pi} + \ln \frac{\prod_i P(X_i \mid Y = 0)}{\prod_i P(X_i \mid Y = 1)} = \ln\frac{1 - \pi}{\pi} + \sum_i \ln\frac{P(X_i \mid Y = 0)}{P(X_i \mid Y = 1)}$$
+(l'ultimo passo è $\ln\prod = \sum\ln$, applicato al rapporto dei due prodotti, che è il prodotto dei rapporti).
+
+\noindent \textbf{(5) Rapporto di gaussiane.} Sostituiamo la densità. Il fattore $\frac{1}{\sigma_i\sqrt{2\pi}}$ è \textbf{identico} al numeratore e al denominatore, quindi si semplifica: \emph{è qui che serve avere la stessa $\sigma_i$ nelle due classi}. Resta
+$$\ln\frac{P(X_i \mid Y = 0)}{P(X_i \mid Y = 1)} = \ln\frac{e^{-\frac{(X_i - \mu_{i0})^2}{2\sigma_i^2}}}{e^{-\frac{(X_i - \mu_{i1})^2}{2\sigma_i^2}}} = \frac{-(X_i - \mu_{i0})^2 + (X_i - \mu_{i1})^2}{2\sigma_i^2}$$
+(si è usato $\ln(e^a / e^b) = a - b$).
+
+\noindent \textbf{(6) Sviluppiamo i quadrati.} Con $(X_i - \mu_{ik})^2 = X_i^2 - 2\mu_{ik}X_i + \mu_{ik}^2$ il numeratore diventa
+$$-X_i^2 + 2\mu_{i0}X_i - \mu_{i0}^2 + X_i^2 - 2\mu_{i1}X_i + \mu_{i1}^2 = 2(\mu_{i0} - \mu_{i1})X_i + (\mu_{i1}^2 - \mu_{i0}^2)$$
+I termini $X_i^2$ \textbf{si elidono} (ancora grazie alla stessa $\sigma_i$): il risultato è \emph{lineare} in $X_i$. Dividendo per $2\sigma_i^2$:
+$$\ln\frac{P(X_i \mid Y = 0)}{P(X_i \mid Y = 1)} = \frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}\,X_i + \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}$$
+
+\noindent \textbf{(7) Sommiamo su $i$ e raccogliamo.} Dal passo (4):
+$$\ln \frac{P(Y = 0)\,P(X \mid Y = 0)}{P(Y = 1)\,P(X \mid Y = 1)} = \underbrace{\ln\frac{1 - \pi}{\pi} + \sum_{i=1}^n \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}}_{w_0} + \sum_{i=1}^n \underbrace{\frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}}_{w_i}\, X_i = w_0 + \sum_i w_i X_i$$
+Inserendo nel passo (3) otteniamo la tesi:
+\begin{cbox}{Risultato (formula delle slide)}
+$$P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(w_0 + \sum_i w_i x_i\big)}, \quad w_0 = \ln\frac{1 - \pi}{\pi} + \sum_i \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}, \quad w_i = \frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}$$
+\end{cbox}
+\hfill $\blacksquare$
+
+\paragraph{Conseguenze (slide «Very useful!»)}
+Poniamo $s = w_0 + \sum_i w_i x_i$. Dal risultato, $P(Y = 0 \mid X) = 1 - P(Y = 1 \mid X) = 1 - \frac{1}{1 + e^s} = \frac{e^s}{1 + e^s}$. Dividendo le due probabilità:
+$$\frac{P(Y = 0 \mid X)}{P(Y = 1 \mid X)} = \frac{\frac{e^s}{1 + e^s}}{\frac{1}{1 + e^s}} = e^s \quad \Longrightarrow \quad \ln\frac{P(Y = 0 \mid X)}{P(Y = 1 \mid X)} = w_0 + \sum_i w_i x_i$$
+Con questa convenzione di segno, si sceglie la classe $0$ se $w_0 + \sum_i w_i x_i > 0$ (log-rapporto positivo: $Y=0$ è più probabile).
+
+\paragraph{Cambio di segno e definizione della regressione logistica}
+La regressione logistica assume la forma con il segno meno (slide: \textit{«the change in sign is inessential»}):
+$$P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(-w_0 - \sum_i w_i x_i\big)}$$
+Il cambio di segno equivale a sostituire ogni peso $w$ con $-w$ (cioè $w_0 = \ln\frac{\pi}{1-\pi} - \sum_i \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}$ e $w_i = \frac{\mu_{i1} - \mu_{i0}}{\sigma_i^2}$): è solo convenzione, ma ha il vantaggio che ora $w_0 + \sum_i w_i x_i > 0$ significa \textbf{classe 1}, e un peso positivo spinge verso la classe 1 (infatti $w_i > 0 \iff \mu_{i1} > \mu_{i0}$: se la media della feature è più alta nella classe 1, valori alti di $x_i$ indicano la classe 1).
+
+\begin{cbox}{La funzione sigmoide (o logistica)}
+$$P(Y = 1 \mid \mathbf{x}) = \frac{1}{1 + \exp\left( -\big(w_0 + \sum_{i=1}^n w_i x_i\big) \right)} = \sigma\left(w_0 + \sum_{i=1}^n w_i x_i\right), \qquad \sigma(z) = \frac{1}{1 + e^{-z}}$$
+\end{cbox}
+
+\noindent \textbf{Passo 2 della big picture.} Sotto le ipotesi gaussiane di Naïve Bayes, $P(Y \mid X)$ \textit{è} una sigmoide di una combinazione lineare. La regressione logistica \textbf{prende questa forma come ipotesi} e lascia i pesi $\mathbf{w}$ liberi (non più legati a $\mu_{ik}, \sigma_i, \pi$): è per questo che funziona anche quando le ipotesi gaussiane non valgono, ed è più robusta.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+    \draw[->, thick] (-5,0) -- (5.3,0) node[right] {$z = w_0 + \mathbf{w}^T\mathbf{x}$};
+    \draw[->, thick] (0,-0.2) -- (0,2.6) node[above] {$\sigma(z)$};
+    \draw[dashed, gray] (-5,2) -- (5,2) node[right, black, font=\small] {$1$};
+    \draw[dashed, gray] (-5,1) -- (5,1) node[right, black, font=\small] {$0{,}5$};
+    \draw[very thick, blue!80!black, domain=-4.8:4.8, samples=60]
+        plot (\x, {2/(1 + exp(-\x))});
+    \filldraw[red!70!black] (0,1) circle (2pt);
+    \node[above left, font=\small, red!70!black] at (0,1) {$z=0$};
+    \node[font=\scriptsize, blue!80!black] at (3.2,1.55) {predico classe 1};
+    \node[font=\scriptsize, blue!80!black] at (-3.2,0.45) {predico classe 0};
+    \foreach \x/\l in {-4/-4, -2/-2, 2/2, 4/4} \draw (\x,0.05) -- (\x,-0.05) node[below, font=\scriptsize] {\l};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Proprietà della sigmoide}
+\begin{itemize}
+    \item Trasforma qualsiasi $z \in (-\infty, +\infty)$ in un numero in $(0, 1)$: interpretabile come probabilità.
+    \item È strettamente crescente e simmetrica rispetto a $(0, 0.5)$: $\sigma(-z) = 1 - \sigma(z)$.
+    \item Per $z \to +\infty$ tende a 1, per $z \to -\infty$ a 0.
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{c|ccccccc}
+    \toprule
+    $z$ & $-4$ & $-2$ & $-1$ & $0$ & $1$ & $2$ & $4$ \\
+    \midrule
+    $\sigma(z)$ & 0.018 & 0.119 & 0.269 & 0.5 & 0.731 & 0.881 & 0.982 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Odds e log-odds}
+Poiché $P(Y = 0 \mid \mathbf{x}) = 1 - P(Y = 1 \mid \mathbf{x})$:
+$$\frac{P(Y = 1 \mid \mathbf{x})}{P(Y = 0 \mid \mathbf{x})} = \frac{\frac{1}{1 + e^{-z}}}{\frac{e^{-z}}{1 + e^{-z}}} = e^z \qquad \Longrightarrow \qquad \ln\frac{P(Y = 1 \mid \mathbf{x})}{P(Y = 0 \mid \mathbf{x})} = z = w_0 + \sum_{i=1}^n w_i x_i$$
+Il rapporto è detto \textit{odds} e il suo logaritmo \textit{log-odds} (o \textit{logit}): \textbf{la regressione logistica assume che i log-odds siano lineari nelle feature}. Interpretazione: aumentare $x_i$ di 1 somma $w_i$ ai log-odds, cioè moltiplica gli odds per $e^{w_i}$.
+
+\paragraph{Regola di decisione}
+$$P(Y = 1 \mid \mathbf{x}) \ge P(Y = 0 \mid \mathbf{x}) \iff z \ge 0 \iff w_0 + \sum_{i=1}^n w_i x_i \ge 0$$
+La frontiera è l'iperpiano $w_0 + \sum_i w_i x_i = 0$. Allontanandosi dalla frontiera $|z|$ cresce e la probabilità si avvicina a 0 o 1: la sigmoide misura la \textit{confidenza}.
+
+\begin{ibox}{Esempio: ore di studio e promozione}
+Una sola feature $x$ = ore di studio, pesi $w_0 = -4$, $w_1 = 1$, quindi $z = x - 4$.
+\begin{center}
+\small
+\begin{tabular}{c|ccccc}
+    \toprule
+    $x$ (ore) & 0 & 2 & 4 & 6 & 8 \\
+    $z = x - 4$ & $-4$ & $-2$ & $0$ & $2$ & $4$ \\
+    $P(\text{promosso} \mid x)$ & 0.02 & 0.12 & 0.50 & 0.88 & 0.98 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+La frontiera è $x = 4$ ore. Ogni ora in più moltiplica gli odds per $e^{1} \approx 2.7$.
+\end{ibox}
+
+\subsubsection{Addestramento e discesa del gradiente}
+
+\noindent Qui i pesi non si ottengono da medie e varianze: si \textbf{ottimizzano direttamente sul dataset}.
+
+\paragraph{La funzione di verosimiglianza}
+Dato $\mathcal{D} = \{(\mathbf{x}^{(\ell)}, y^{(\ell)})\}_{\ell=1}^N$ con $y^{(\ell)} \in \{0, 1\}$, poniamo
+$$\alpha^{(\ell)} = P(Y = 1 \mid \mathbf{x}^{(\ell)}, \mathbf{w}) = \sigma\left(w_0 + \sum_{i=1}^n w_i x_i^{(\ell)}\right)$$
+La probabilità che il modello assegna all'etichetta osservata è una Bernoulli:
+$$P(y^{(\ell)} \mid \mathbf{x}^{(\ell)}, \mathbf{w}) = (\alpha^{(\ell)})^{y^{(\ell)}} (1 - \alpha^{(\ell)})^{1 - y^{(\ell)}}$$
+(se $y = 1$ resta $\alpha$, se $y = 0$ resta $1 - \alpha$). Per esempi indipendenti:
+$$L(\mathbf{w}) = \prod_{\ell=1}^N (\alpha^{(\ell)})^{y^{(\ell)}} (1 - \alpha^{(\ell)})^{1 - y^{(\ell)}} \qquad
+\ell(\mathbf{w}) = \ln L(\mathbf{w}) = \sum_{\ell=1}^N \Big[ y^{(\ell)} \ln\alpha^{(\ell)} + (1 - y^{(\ell)}) \ln(1 - \alpha^{(\ell)}) \Big]$$
+Cerchiamo $\mathbf{w}^*$ che massimizza $\ell(\mathbf{w})$. Equivalente: minimizzare la \textbf{cross-entropy} $E(\mathbf{w}) = -\ell(\mathbf{w})$, che è la \textit{loss} della regressione logistica.
+
+\paragraph{Intuizione sulla loss}
+Per un singolo esempio la perdita è $-\ln\alpha$ se $y = 1$ e $-\ln(1 - \alpha)$ se $y = 0$: è piccola quando il modello è sicuro e ha ragione, \textbf{enorme} quando è sicuro e ha torto.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+    \draw[->] (0,0) -- (5.3,0) node[right, font=\small] {$\alpha = P(Y{=}1 \mid \mathbf{x})$};
+    \draw[->] (0,0) -- (0,3.2) node[above, font=\small] {perdita};
+    \draw[very thick, blue!75!black, domain=0.05:1, samples=60] plot ({5*\x}, {-ln(\x)});
+    \draw[very thick, red!70!black, domain=0:0.95, samples=60] plot ({5*\x}, {-ln(1-\x)});
+    \node[blue!75!black, font=\small] at (2.2,2.9) {$y = 1$: $-\ln\alpha$};
+    \node[red!70!black, font=\small] at (3.3,1.9) {$y = 0$: $-\ln(1-\alpha)$};
+    \draw (0,0.05) -- (0,-0.05) node[below, font=\scriptsize] {0};
+    \draw (5,0.05) -- (5,-0.05) node[below, font=\scriptsize] {1};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Assenza di soluzione analitica}
+Ponendo a zero le derivate di $\ell(\mathbf{w})$ si ottiene un sistema di equazioni non lineari \textbf{senza soluzione in forma chiusa} (a differenza della regressione lineare ai minimi quadrati). Serve un metodo numerico iterativo: la \textbf{discesa del gradiente}.
+
+\paragraph{La tecnica del gradiente (Gradient Descent)}
+
+\noindent Immaginiamo lo spazio dei pesi con un asse per ogni $w_i$ e un asse verticale per l'errore $E(\mathbf{w}) = -\ell(\mathbf{w})$: la \textbf{superficie d'errore}, una specie di paesaggio. Vogliamo scendere fino al punto più basso. Il \textbf{gradiente}
+$$\nabla_\mathbf{w} E = \left[ \frac{\partial E}{\partial w_0}, \frac{\partial E}{\partial w_1}, \dots, \frac{\partial E}{\partial w_n} \right]^T$$
+punta nella direzione di \textbf{massima salita}: si fanno quindi piccoli passi nella direzione \textbf{opposta}:
+$$\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla_\mathbf{w} E \qquad \Big(\text{equivalente a } \mathbf{w} \leftarrow \mathbf{w} + \eta \nabla_\mathbf{w} \ell\Big)$$
+con $\eta > 0$ \textbf{learning rate} (lunghezza del passo).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+    \draw[thick, gray!60] (0,0) ellipse (3.5cm and 2.2cm);
+    \draw[thick, gray!75] (0,0) ellipse (2.5cm and 1.5cm);
+    \draw[thick, gray!90] (0,0) ellipse (1.5cm and 0.9cm);
+    \draw[thick, black] (0,0) ellipse (0.6cm and 0.35cm);
+    \filldraw[red!70!black] (0,0) circle (2pt) node[below right=2pt, font=\small\bfseries] {minimo $\mathbf{w}^*$};
+    \filldraw[blue!75!black] (3.0, 1.8) circle (2pt) node[above right, font=\small] {$\mathbf{w}^{(0)}$};
+    \draw[->, very thick, blue!75!black] (3.0, 1.8) -- (2.0, 1.0);
+    \draw[->, very thick, blue!75!black] (2.0, 1.0) -- (1.2, 0.4);
+    \draw[->, very thick, blue!75!black] (1.2, 0.4) -- (0.5, 0.1);
+    \draw[->, very thick, blue!75!black] (0.5, 0.1) -- (0.1, 0.02);
+    \node[above, font=\footnotesize, blue!75!black] at (2.3, 1.45) {$-\eta \nabla E$};
+    \node[font=\scriptsize, gray] at (-2.8,2.0) {curve di livello di $E$};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Effetto del learning rate}
+Vista in una sola dimensione ($E(w) = w^2$, derivata $2w$): con $w = 4$ e diversi $\eta$, dopo un passo $w \leftarrow w - \eta\cdot 2w$:
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    $\eta$ & nuovo $w$ & comportamento \\
+    \midrule
+    $0.05$ & $3.6$ & troppo piccolo: converge, ma lentissimo \\
+    $0.4$ & $0.8$ & buono: si avvicina rapidamente al minimo \\
+    $1.1$ & $-4.8$ & troppo grande: supera il minimo e \textbf{diverge} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Convessità}
+La loss della regressione logistica è \textbf{convessa}: una «coppa» senza minimi locali, quindi il gradiente scende verso il minimo globale da qualunque punto iniziale (con $\eta$ adeguato). Non è vero per le reti neurali, che hanno superfici molto più irregolari.
+
+\paragraph{Quanti esempi per ogni passo?}
+\begin{itemize}
+    \item \textbf{Batch}: gradiente esatto su tutti gli $N$ esempi; preciso ma lento con molti dati.
+    \item \textbf{Online / stocastico (SGD)}: un esempio alla volta; veloce ma la traiettoria è rumorosa (zig-zag).
+    \item \textbf{Mini-batch}: piccoli gruppi (32--128 esempi); compromesso e standard nella pratica.
+\end{itemize}
+
+\paragraph{Calcolo esplicito del gradiente (dimostrazione completa)}
+
+\noindent \textbf{Obiettivo.} Calcolare $\dfrac{\partial \ell(\mathbf{w})}{\partial w_i}$ per la log-verosimiglianza $\ell(\mathbf{w}) = \sum_\ell \big[ y^\ell \ln\alpha^\ell + (1 - y^\ell)\ln(1 - \alpha^\ell) \big]$.
+
+\noindent \textbf{Notazione (come nelle slide).} Per ogni esempio $\ell$: $z^\ell = w_0 + \sum_i w_i x_i^\ell$ e $\alpha^\ell = \sigma(z^\ell) = \dfrac{1}{1 + e^{-z^\ell}}$. Convenzione $x_0^\ell = 1$, così $z^\ell = \sum_{i=0}^n w_i x_i^\ell$. Nei calcoli seguenti si fissa un esempio e si scrive $z, \alpha, y$ omettendo l'apice $\ell$.
+
+\medskip
+\noindent \textbf{Strategia.} $\ell(\mathbf{w})$ dipende da $w_i$ solo attraverso $z$, che a sua volta dipende da $w_i$. Quindi si usa la regola della catena: $\dfrac{\partial}{\partial w_i} = \dfrac{\partial}{\partial z}\cdot\dfrac{\partial z}{\partial w_i}$. Calcoliamo i pezzi uno alla volta.
+
+\noindent \textbf{(a) Derivata della sigmoide.} Scriviamo $\sigma(z) = (1 + e^{-z})^{-1}$ e deriviamo (regola della potenza e della catena):
+$$\frac{\partial \sigma}{\partial z} = -(1 + e^{-z})^{-2}\cdot(-e^{-z}) = \frac{e^{-z}}{(1 + e^{-z})^2} = \underbrace{\frac{1}{1 + e^{-z}}}_{\sigma(z)}\cdot\underbrace{\frac{e^{-z}}{1 + e^{-z}}}_{?}$$
+Il secondo fattore vale $\frac{e^{-z}}{1 + e^{-z}} = \frac{(1 + e^{-z}) - 1}{1 + e^{-z}} = 1 - \frac{1}{1 + e^{-z}} = 1 - \sigma(z)$. Dunque
+$$\boxed{\frac{\partial \sigma}{\partial z} = \sigma(z)\big(1 - \sigma(z)\big)}$$
+(slide: «the derivative of the logistic function is very flat!»: vale al massimo $\frac14$ per $z = 0$ e tende a 0 per $|z|$ grande.)
+
+\noindent \textbf{(b) Derivata di $\ln\alpha$.} Con $\alpha = \sigma(z)$ e il risultato (a):
+$$\frac{\partial \ln\alpha}{\partial z} = \frac{1}{\alpha}\cdot\frac{\partial \alpha}{\partial z} = \frac{1}{\alpha}\cdot\alpha(1 - \alpha) = 1 - \alpha$$
+(equivalente alla forma delle slide $\frac{e^{-z}}{1 + e^{-z}} = 1 - \alpha$).
+
+\noindent \textbf{(c) Derivata di $\ln(1 - \alpha)$.} Prima semplifichiamo l'argomento: $1 - \alpha = 1 - \frac{1}{1 + e^{-z}} = \frac{e^{-z}}{1 + e^{-z}}$. Allora
+$$\ln(1 - \alpha) = \ln e^{-z} - \ln(1 + e^{-z}) = -z + \ln\frac{1}{1 + e^{-z}} = -z + \ln\alpha$$
+e usando (b):
+$$\frac{\partial \ln(1 - \alpha)}{\partial z} = -1 + (1 - \alpha) = -\alpha$$
+(Stesso risultato per via diretta: $\frac{1}{1-\alpha}\cdot\left(-\alpha(1-\alpha)\right) = -\alpha$.)
+
+\noindent \textbf{(d) Derivata di $z$ rispetto al peso.} $z = w_0 x_0 + w_1 x_1 + \dots + w_n x_n$ è lineare nei pesi; nella derivata rispetto a $w_i$ sopravvive solo il termine $w_i x_i$:
+$$\frac{\partial z}{\partial w_i} = x_i$$
+
+\noindent \textbf{(e) Un solo esempio.} Sia $\ell_\ell = y\ln\alpha + (1 - y)\ln(1 - \alpha)$ il contributo dell'esempio $\ell$. Per la regola della catena e (b), (c), (d):
+\begin{align*}
+\frac{\partial \ell_\ell}{\partial w_i} &= \frac{\partial \ell_\ell}{\partial z}\cdot\frac{\partial z}{\partial w_i} = \Big[ y(1 - \alpha) + (1 - y)(-\alpha) \Big] x_i \\
+&= \big[ y - y\alpha - \alpha + y\alpha \big] x_i = (y - \alpha)\, x_i
+\end{align*}
+(i due termini $\pm y\alpha$ si cancellano).
+
+\noindent \textbf{(f) Somma su tutti gli esempi.} La derivata di una somma è la somma delle derivate:
+\begin{cbox}{Gradiente della log-verosimiglianza (formula delle slide)}
+$$\frac{\partial \ell(\mathbf{w})}{\partial w_i} = \sum_{\ell=1}^N x_i^\ell\,\big( y^\ell - \alpha^\ell \big) \qquad \Big(\text{in forma vettoriale: } \nabla_\mathbf{w}\ell = X^T(\mathbf{y} - \boldsymbol{\alpha})\Big)$$
+\end{cbox}
+\hfill $\blacksquare$
+
+\noindent \textbf{Come leggerlo}: ogni esempio contribuisce con (\textbf{valore della feature}) $\times$ (\textbf{errore} = etichetta vera $-$ probabilità prevista). Se il modello è già corretto ($y \approx \alpha$) il contributo è nullo; altrimenti il peso viene spinto nella direzione che riduce l'errore. Si noti la semplicità: la derivata della sigmoide $\alpha(1-\alpha)$ si semplifica completamente con quella del logaritmo $\frac{1}{\alpha}$, ed è per questo che la cross-entropy è la loss «giusta» per la sigmoide.
+
+\subsubsection{Regolarizzazione e confronto con i modelli generativi}
+
+\paragraph{Algoritmo}
+Si parte da pesi nulli (o casuali) e si ripete fino a convergenza (es.\ finché l'accuracy sul test è soddisfacente):
+$$w_i \leftarrow w_i + \eta \sum_{\ell=1}^N x_i^{(\ell)} \big(y^{(\ell)} - P(Y = 1 \mid \mathbf{x}^{(\ell)}, \mathbf{w})\big)$$
+\begin{itemize}
+    \item modello corretto ($y \approx \alpha$): errore $\approx 0$, il peso resta fermo;
+    \item positivo sottostimato ($y = 1$, $\alpha \approx 0$): il peso cresce se $x_i > 0$, aumentando la probabilità;
+    \item negativo sovrastimato ($y = 0$, $\alpha \approx 1$): il peso diminuisce.
+\end{itemize}
+
+\begin{ibox}{Esempio: un passo di gradiente}
+Un solo esempio $x = 2$, $y = 1$, pesi iniziali $w_0 = w_1 = 0$, $\eta = 0.1$.
+\begin{itemize}
+    \item $z = 0 \Rightarrow \alpha = \sigma(0) = 0.5$, errore $y - \alpha = 0.5$.
+    \item $\Delta w_0 = \eta \cdot 1 \cdot 0.5 = 0.05$, \quad $\Delta w_1 = \eta \cdot x \cdot 0.5 = 0.1 \cdot 2 \cdot 0.5 = 0.1$.
+    \item Nuovi pesi $(0.05, 0.1)$: $z = 0.05 + 0.1\cdot 2 = 0.25 \Rightarrow \alpha = \sigma(0.25) \approx 0.56$.
+\end{itemize}
+La probabilità della classe corretta è salita da $0.50$ a $0.56$. Ripetendo il passo continua a crescere.
+\end{ibox}
+
+\paragraph{Regolarizzazione}
+Se i dati sono perfettamente separabili da un iperpiano, la verosimiglianza continua a crescere aumentando i pesi: l'ottimizzatore li spinge a $\pm\infty$ per rendere la sigmoide un gradino e le probabilità esattamente 0 o 1. Pesi enormi = modello fragile e in \textbf{overfitting}.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    \draw[->] (-4,0) -- (4.3,0) node[right, font=\small] {$x$};
+    \draw[->] (0,-0.1) -- (0,2.4) node[above, font=\small] {$P(Y{=}1 \mid x)$};
+    \draw[dashed, gray] (-4,2) -- (4,2);
+    \draw[very thick, red!70!black] (-4,0) -- (-1,0);
+    \draw[very thick, red!70!black] (1,2) -- (4,2);
+    \draw[very thick, red!70!black, domain=-1:1, samples=80] plot (\x, {2/(1+exp(-8*\x))});
+    \draw[very thick, blue!75!black, domain=-4:4, samples=60] plot (\x, {2/(1+exp(-0.9*\x))});
+    \node[red!70!black, font=\small, align=center] at (-2.7,1.25) {$w$ enorme\\(quasi gradino)};
+    \node[blue!75!black, font=\small, align=center] at (2.9,0.8) {$w$ moderato};
+\end{tikzpicture}
+\end{center}
+
+\noindent Si aggiunge allora alla funzione obiettivo una \textbf{penalità} sui pesi (equivalente a una prior sui pesi), con $\lambda > 0$:
+\begin{align*}
+L_2\ (\text{weight decay}):&\quad w_i \leftarrow w_i - \eta\lambda w_i + \eta \sum_{\ell} x_i^{(\ell)} (y^{(\ell)} - \alpha^{(\ell)}) \\
+L_1\ (\text{Lasso}):&\quad w_i \leftarrow w_i - \eta\lambda\,\mathrm{sign}(w_i) + \eta \sum_{\ell} x_i^{(\ell)} (y^{(\ell)} - \alpha^{(\ell)})
+\end{align*}
+\begin{itemize}
+    \item $L_2$ tiene i pesi \textbf{piccoli}; $L_1$ ne porta molti \textbf{esattamente a zero} (modello sparso, feature selezionate automaticamente);
+    \item riduce la varianza e migliora la generalizzazione sui dati mai visti;
+    \item $\lambda$ regola il compromesso: troppo alto $\to$ underfitting, troppo basso $\to$ overfitting.
+\end{itemize}
+
+\paragraph{Modelli generativi vs discriminativi}
+
+\noindent Entrambi stimano $f: X \to Y$ o $P(Y \mid X)$, con filosofie opposte:
+
+\begin{cbox}{Confronto concettuale}
+\begin{itemize}
+    \item \textbf{Discriminativi} (es.\ regressione logistica): apprendono direttamente la \textbf{frontiera di decisione}; assumono una forma parametrica per $P(Y \mid X)$ e ne stimano i parametri.
+    \item \textbf{Generativi} (es.\ Naïve Bayes): modellano la \textbf{distribuzione dei dati} ($P(X \mid Y)$ e $P(Y)$) e ricavano $P(Y \mid X)$ con Bayes. Possono anche \textit{generare} campioni sintetici e rilevare anomalie (dati con $P(X)$ bassa).
+\end{itemize}
+\end{cbox}
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{6.1cm}p{6.1cm}}
+    \toprule
+    & \textbf{Generativo (Naïve Bayes)} & \textbf{Discriminativo (Reg.\ logistica)} \\
+    \midrule
+    \textbf{Modella} & $P(X, Y) = P(X \mid Y)P(Y)$ & direttamente $P(Y \mid X)$ \\
+    \textbf{Training} & conteggi, \textbf{immediato} & ottimizzazione iterativa (gradiente) \\
+    \textbf{Ipotesi} & forti (indipendenza condizionata) & deboli: nessuna su come sono distribuite le $X$ \\
+    \textbf{Feature correlate} & le «conta due volte» e sbaglia le probabilità & i pesi si adattano alle correlazioni \\
+    \textbf{Pochi dati} & spesso migliore (meno parametri, converge prima) & rischia overfitting \\
+    \textbf{Molti dati} & limitato dalle ipotesi sbagliate & di solito migliore \\
+    \textbf{Usi extra} & generazione, anomaly detection & solo predizione \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Modelli lineari in alta dimensione e multiclasse}
+
+\noindent Si può pensare che i modelli lineari siano «troppo deboli». In realtà diventano molto efficaci con \textbf{molte feature}: in alta dimensione i punti sono \textbf{radi} (sparsi) e separare le classi con un iperpiano diventa facile. Intuizione: in 2D tre punti in posizione generica si separano in ogni modo possibile con una retta (tranne casi come XOR con 4 punti); con più dimensioni, aumentano i casi separabili.
+
+\paragraph{Il caso di studio: MNIST}
+\begin{itemize}
+    \item Immagini in scala di grigio $28 \times 28$ di cifre manoscritte $0, \dots, 9$.
+    \item 60\,000 immagini di training e 10\,000 di test.
+    \item Ogni pixel è una feature: $28 \times 28 = \textbf{784}$ feature.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+    \draw[step=0.25cm, gray!40, very thin] (0,0) grid (2.8,2.8);
+    \draw[thick, black] (0,0) rectangle (2.8,2.8);
+    \fill[black!80] (0.5,2.3) rectangle (2.3,2.55);
+    \fill[black!80] (1.8,1.6) rectangle (2.15,2.3);
+    \fill[black!80] (1.4,0.9) rectangle (1.75,1.6);
+    \fill[black!80] (1.0,0.2) rectangle (1.35,0.9);
+    \draw[<->, thick] (-0.3,0) -- (-0.3,2.8) node[midway, left, font=\footnotesize] {28 px};
+    \draw[<->, thick] (0,-0.3) -- (2.8,-0.3) node[midway, below, font=\footnotesize] {28 px};
+    \node[right, font=\small] at (3.5, 1.4) {$\implies \mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_{784} \end{bmatrix} \in \mathbb{R}^{784}$};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Classificazione multiclasse e interpretazione visiva dei pesi}
+
+\paragraph{Regressione logistica multinomiale (Softmax)}
+Con 10 classi si impara un vettore di pesi $\mathbf{w}_k \in \mathbb{R}^{784}$ (più un bias) per ogni classe $k$. Ogni classe ha il suo punteggio $z_k = w_{k0} + \mathbf{w}_k \cdot \mathbf{x}$ e la \textbf{softmax} li trasforma in probabilità che sommano a 1:
+$$P(Y = k \mid \mathbf{x}) = \frac{e^{z_k}}{\sum_{j} e^{z_j}}$$
+Con due classi si ritrova la sigmoide. Esempio con tre classi e punteggi $\mathbf{z} = (2, 1, 0.1)$:
+$$e^{z} = (7.39,\ 2.72,\ 1.11), \quad \text{somma} = 11.21 \quad \Longrightarrow \quad P = (0.66,\ 0.24,\ 0.10)$$
+Si predice la classe col punteggio più alto, come in Naïve Bayes. La softmax amplifica le differenze (l'esponenziale premia il punteggio massimo) ma conserva l'ordine.
+
+\noindent Con penalità $L_1$ molti pesi vanno esattamente a zero (sparsità). Risultati su MNIST:
+\begin{itemize}
+    \item \textbf{sparsità}: 25.18\% dei pesi azzerati;
+    \item \textbf{accuratezza sul test set}: 92.57\%;
+    \item \textbf{tempo di addestramento}: circa 22.4 secondi.
+\end{itemize}
+Un modello lineare semplice, veloce e compatto supera il 92\% su 10 classi.
+
+\paragraph{I pesi come immagini}
+Il vettore $\mathbf{w}_k$ ha 784 componenti, una per pixel: può essere rimodellato in una griglia $28 \times 28$ e \textbf{visualizzato come immagine}. È una «maschera» della cifra $k$:
+
+\begin{cbox}{Come leggere le immagini dei pesi}
+\begin{itemize}
+    \item \textbf{Pesi positivi}: pixel che, se accesi, \textit{aumentano} la probabilità della classe; tracciano la sagoma tipica della cifra (l'anello per lo «0», il tratto verticale per l'«1»).
+    \item \textbf{Pesi negativi}: pixel che, se accesi, \textit{riducono} la probabilità della classe (tratti incompatibili con quella cifra).
+    \item \textbf{Pesi quasi nulli}: pixel irrilevanti (es.\ i bordi dell'immagine, sempre vuoti).
+\end{itemize}
+\end{cbox}
+
+\noindent Classificare = confrontare l'immagine con ogni maschera (prodotto scalare) e scegliere quella con cui c'è maggior \textbf{correlazione}: è la stessa idea del prodotto scalare tra documento e profilo di classe vista in Naïve Bayes.
+
+\begin{cbox}{Riepilogo: Regressione Logistica}
+\begin{itemize}
+    \item \textbf{Modello}: $P(Y = 1 \mid \mathbf{x}) = \sigma(w_0 + \mathbf{w}\cdot\mathbf{x})$; log-odds lineari, frontiera = iperpiano.
+    \item \textbf{Training}: massimizzare la log-verosimiglianza (minimizzare la cross-entropy) per discesa del gradiente.
+    \item \textbf{Gradiente}: $\partial\ell/\partial w_i = \sum_\ell x_i^{(\ell)}(y^{(\ell)} - \alpha^{(\ell)})$: feature $\times$ errore.
+    \item \textbf{Loss convessa}: nessun minimo locale; il learning rate $\eta$ va scelto con cura.
+    \item \textbf{Regolarizzazione} $L_1/L_2$ contro l'overfitting e pesi esplosivi.
+    \item \textbf{Multiclasse}: softmax, un vettore di pesi per classe.
+    \item \textbf{Discriminativo}: modella $P(Y \mid X)$ senza assunzioni su $X$, a differenza di Naïve Bayes.
+\end{itemize}
+\end{cbox}
 
 \end{document}

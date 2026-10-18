@@ -1340,4 +1340,872 @@ In entrambi i casi, l'infrazione punterebbe al vuoto (\textit{dangling reference
 \end{itemize}
 \end{cbox}
 
+\newpage
+
+\section{Algebra Relazionale}
+
+\subsection{Linguaggi per Interrogare una Base di Dati}
+\noindent Su una base di dati si fanno due tipi di operazioni:
+\begin{itemize}
+    \item \textbf{operazioni sullo schema}, con il \textbf{DDL} (\textit{Data Definition Language}): servono a creare o modificare la struttura delle tabelle;
+    \item \textbf{operazioni sui dati}, con il \textbf{DML} (\textit{Data Manipulation Language}): comprendono le \textbf{interrogazioni} (\textit{query}, cioè leggere i dati) e gli \textbf{aggiornamenti} (inserire nuovi dati o modificare quelli esistenti).
+\end{itemize}
+
+\medskip
+\noindent I linguaggi di interrogazione si dividono in due famiglie:
+\begin{itemize}
+    \item \textbf{Dichiarativi}: dicono \textbf{cosa} vogliamo ottenere, cioè le proprietà del risultato.
+    \item \textbf{Procedurali}: dicono \textbf{come} ottenere il risultato, passo dopo passo.
+\end{itemize}
+
+\noindent I principali linguaggi per le basi di dati relazionali sono:
+\begin{itemize}
+    \item \textbf{Algebra relazionale}: procedurale;
+    \item \textbf{Calcolo relazionale}: dichiarativo (teorico, non implementato nei DBMS);
+    \item \textbf{SQL} (\textit{Structured Query Language}): parzialmente dichiarativo, è quello usato davvero;
+    \item \textbf{QBE} (\textit{Query By Example}): dichiarativo, implementato.
+\end{itemize}
+
+\medskip
+\noindent L'\textbf{algebra relazionale} è definita da un insieme di \textbf{operatori} che:
+\begin{itemize}
+    \item lavorano su relazioni;
+    \item producono come risultato \textbf{altre relazioni};
+    \item possono quindi essere \textbf{composti} tra loro (l'output di uno diventa l'input di un altro).
+\end{itemize}
+Gli operatori che vedremo sono: unione, intersezione, differenza, ridenominazione, selezione, proiezione e join (naturale, prodotto cartesiano, theta-join).
+
+\subsection{Operatori Insiemistici e Ridenominazione}
+\noindent Le relazioni sono \textbf{insiemi} di tuple, e anche i risultati devono essere insiemi. Possiamo quindi usare le classiche operazioni sugli insiemi: \textbf{unione} ($\cup$), \textbf{intersezione} ($\cap$) e \textbf{differenza} ($-$). C'è però un vincolo: le due relazioni coinvolte devono avere \textbf{lo stesso schema} (stessi attributi).
+
+\medskip
+\noindent Prendiamo come esempio le relazioni \textbf{Laureati} e \textbf{Tecnici}, entrambe con schema (Matricola, Nome, Età):
+\begin{center}
+\small
+\begin{tabular}{clc}
+    \toprule
+    \multicolumn{3}{c}{\textbf{Laureati}} \\
+    \midrule
+    \textbf{Matricola} & \textbf{Nome} & \textbf{Età} \\
+    \midrule
+    7274 & Rossi & 42 \\
+    7432 & Neri & 54 \\
+    9824 & Verdi & 45 \\
+    \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{clc}
+    \toprule
+    \multicolumn{3}{c}{\textbf{Tecnici}} \\
+    \midrule
+    \textbf{Matricola} & \textbf{Nome} & \textbf{Età} \\
+    \midrule
+    9297 & Neri & 33 \\
+    7432 & Neri & 54 \\
+    9824 & Verdi & 45 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+    \item \textbf{Laureati $\cup$ Tecnici}: tutte le tuple che stanno in almeno una delle due (7274, 7432, 9824, 9297). Le tuple comuni compaiono una sola volta.
+    \item \textbf{Laureati $\cap$ Tecnici}: solo le tuple presenti in entrambe (7432 Neri, 9824 Verdi).
+    \item \textbf{Laureati $-$ Tecnici}: le tuple dei laureati che non sono tecnici (solo 7274 Rossi).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il problema degli schemi diversi.} Consideriamo $\text{Paternità}(\text{Padre}, \text{Figlio})$ e $\text{Maternità}(\text{Madre}, \text{Figlio})$. Vorremmo unirle per ottenere tutte le coppie genitore--figlio, ma l'unione non è ammessa perché gli schemi sono diversi (\textit{Padre} $\neq$ \textit{Madre}). Ha senso, ma non si può fare direttamente: serve la ridenominazione.
+
+\medskip
+\noindent \textbf{Ridenominazione ($\rho$).} È un operatore \textbf{unario} (ha un solo argomento) che \textbf{cambia il nome degli attributi} lasciando i dati invariati:
+\[
+\rho_{\text{NuovoNome} \leftarrow \text{VecchioNome}}(\text{Relazione})
+\]
+Con la ridenominazione il problema di prima si risolve:
+\[
+\rho_{\text{Genitore} \leftarrow \text{Padre}}(\text{Paternità}) \;\cup\; \rho_{\text{Genitore} \leftarrow \text{Madre}}(\text{Maternità})
+\]
+Ora entrambe le relazioni hanno schema (Genitore, Figlio) e l'unione è lecita.
+
+\medskip
+\noindent Si possono rinominare più attributi alla volta, rispettando l'ordine posizionale. Ad esempio, date $\text{Impiegati}(\text{Cognome}, \text{Ufficio}, \text{Stipendio})$ e $\text{Operai}(\text{Cognome}, \text{Fabbrica}, \text{Salario})$:
+\[
+\rho_{\text{Sede}, \text{Paga} \leftarrow \text{Ufficio}, \text{Stipendio}}(\text{Impiegati}) \;\cup\; \rho_{\text{Sede}, \text{Paga} \leftarrow \text{Fabbrica}, \text{Salario}}(\text{Operai})
+\]
+produce un'unica relazione con schema (Cognome, Sede, Paga).
+
+\subsection{Selezione e Proiezione}
+\noindent \textbf{Selezione ($\sigma$).} Operatore unario che \textbf{filtra le righe}:
+\[
+\sigma_{\text{Predicato}}(\text{Relazione})
+\]
+\begin{itemize}
+    \item il risultato ha \textbf{lo stesso schema} dell'input;
+    \item contiene solo le tuple che \textbf{soddisfano il predicato}, cioè un sottoinsieme delle tuple di partenza;
+    \item il predicato è un'espressione booleana sugli attributi (confronti con $=, \neq, <, >, \leq, \geq$, combinati con AND, OR, NOT).
+\end{itemize}
+
+\noindent Esempio, sulla relazione \textbf{Impiegati}:
+\begin{center}
+\small
+\begin{tabular}{cllc}
+    \toprule
+    \textbf{Matricola} & \textbf{Cognome} & \textbf{Filiale} & \textbf{Stipendio} \\
+    \midrule
+    7309 & Rossi & Roma & 55 \\
+    5998 & Neri & Milano & 64 \\
+    9553 & Milano & Milano & 44 \\
+    5698 & Neri & Napoli & 64 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+    \item Impiegati che guadagnano più di 50: $\sigma_{\text{Stipendio} > 50}(\text{Impiegati})$ $\Rightarrow$ 7309, 5998, 5698.
+    \item Che guadagnano più di 50 \textbf{e} lavorano a Milano: $\sigma_{\text{Stipendio} > 50 \,\wedge\, \text{Filiale} = \text{'Milano'}}(\text{Impiegati})$ $\Rightarrow$ solo 5998.
+    \item Che hanno cognome uguale alla città della filiale: $\sigma_{\text{Cognome} = \text{Filiale}}(\text{Impiegati})$ $\Rightarrow$ solo 9553. Qui si confrontano due attributi della stessa tupla, non un attributo con una costante.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Proiezione ($\pi$).} Operatore unario che \textbf{tiene solo alcune colonne}:
+\[
+\pi_{\text{ListaAttributi}}(\text{Relazione})
+\]
+\begin{itemize}
+    \item lo schema del risultato è un \textbf{sottoinsieme} di quello di partenza;
+    \item vengono considerate \textbf{tutte} le tuple dell'input, ma solo sugli attributi indicati.
+\end{itemize}
+
+\noindent Supponiamo ora che Impiegati contenga: (7309, Neri, Napoli, 55), (5998, Neri, Milano, 64), (9553, Rossi, Roma, 44), (5698, Rossi, Roma, 64).
+\begin{itemize}
+    \item $\pi_{\text{Matricola}, \text{Cognome}}(\text{Impiegati})$ restituisce 4 tuple, una per impiegato.
+    \item $\pi_{\text{Cognome}, \text{Filiale}}(\text{Impiegati})$ restituisce solo \textbf{3} tuple: (Neri, Napoli), (Neri, Milano), (Rossi, Roma). La coppia (Rossi, Roma) comparirebbe due volte, ma una relazione è un insieme e i duplicati vengono eliminati.
+\end{itemize}
+
+\begin{cbox}{Cardinalità della Proiezione}
+\noindent Il risultato di una proiezione ha \textbf{al più} tante tuple quante l'input, e può averne meno perché le tuple ripetute vengono scartate.
+
+\medskip
+\noindent Se la lista di attributi $X$ è una \textbf{superchiave} di $R$, allora $\pi_X(R)$ ha \textbf{esattamente} lo stesso numero di tuple di $R$: i valori su $X$ sono tutti distinti, quindi non possono nascere duplicati.
+\end{cbox}
+
+\noindent Selezione e proiezione sono operatori \textbf{ortogonali}: la selezione taglia la tabella \textbf{orizzontalmente} (toglie righe), la proiezione \textbf{verticalmente} (toglie colonne). Combinandoli si estrae solo l'informazione che interessa. Ad esempio, matricola e cognome degli impiegati che guadagnano più di 50:
+\[
+\pi_{\text{Matricola}, \text{Cognome}}\big(\sigma_{\text{Stipendio} > 50}(\text{Impiegati})\big)
+\]
+
+\medskip
+\noindent \textbf{Limite.} Con selezione e proiezione si lavora su \textbf{una sola relazione}: non si possono mettere in relazione tuple di tabelle diverse, né tuple diverse della stessa tabella. Per questo serve il join.
+
+\subsection{Join}
+\noindent Il \textbf{join} è l'operatore più importante dell'algebra relazionale: permette di \textbf{collegare tuple di relazioni diverse}.
+
+\medskip
+\noindent \textbf{Un esempio intuitivo.} In un concorso pubblico ogni compito è anonimo e ha associata una busta chiusa con il nome del candidato; compito e busta hanno lo stesso numero identificativo. Abbiamo quindi due tabelle, $(\text{ID}, \text{Voto})$ e $(\text{ID}, \text{Candidato})$. Per sapere il voto di ciascun candidato basta accoppiare le righe con lo stesso ID, ottenendo $(\text{ID}, \text{Candidato}, \text{Voto})$. Questo è proprio un join.
+
+\medskip
+\noindent \textbf{Join naturale ($\bowtie$).} È un operatore binario (si estende a più relazioni perché è associativo). Il risultato:
+\begin{itemize}
+    \item ha come schema l'\textbf{unione degli attributi} delle due relazioni;
+    \item contiene le tuple ottenute combinando una tupla della prima e una della seconda che hanno \textbf{gli stessi valori sugli attributi in comune}.
+\end{itemize}
+Formalmente, date $R_1(X_1)$ e $R_2(X_2)$:
+\[
+R_1 \bowtie R_2 = \{\, t \text{ su } X_1 X_2 \mid \exists\, t_1 \in R_1,\ t_2 \in R_2 \text{ con } t[X_1] = t_1 \text{ e } t[X_2] = t_2 \,\}
+\]
+
+\noindent Esempio, con Impiegati(Impiegato, Reparto) e Reparti(Reparto, Capo):
+\begin{center}
+\small
+\begin{tabular}{lc}
+    \toprule
+    \textbf{Impiegato} & \textbf{Reparto} \\
+    \midrule
+    Rossi & A \\
+    Neri & B \\
+    Bianchi & B \\
+    \bottomrule
+\end{tabular}
+\quad $\bowtie$ \quad
+\begin{tabular}{cl}
+    \toprule
+    \textbf{Reparto} & \textbf{Capo} \\
+    \midrule
+    A & Mori \\
+    B & Bruni \\
+    \bottomrule
+\end{tabular}
+\quad $=$ \quad
+\begin{tabular}{lcl}
+    \toprule
+    \textbf{Impiegato} & \textbf{Reparto} & \textbf{Capo} \\
+    \midrule
+    Rossi & A & Mori \\
+    Neri & B & Bruni \\
+    Bianchi & B & Bruni \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Qui ogni tupla di entrambe le relazioni contribuisce al risultato: si parla di join \textbf{completo}. Non è sempre così:
+\begin{itemize}
+    \item \textbf{Join non completo}: se Reparti contiene solo B e C, la tupla di Rossi (reparto A) e quella del reparto C non trovano corrispondenza e vengono \textbf{escluse} dal risultato.
+    \item \textbf{Join vuoto}: se nessun valore di Reparto è in comune, il risultato non ha tuple (ma ha comunque lo schema Impiegato, Reparto, Capo).
+    \item \textbf{Join con $n \times m$ tuple}: se tutte le tuple hanno lo stesso valore (es. tutti nel reparto B, e B compare due volte in Reparti), ogni tupla si combina con tutte le altre.
+\end{itemize}
+
+\begin{cbox}{Quante tuple produce un join?}
+\noindent In generale:
+\[
+0 \leq |R_1 \bowtie R_2| \leq |R_1| \times |R_2|
+\]
+\begin{itemize}
+    \item Se il join coinvolge una \textbf{chiave} di $R_2$, ogni tupla di $R_1$ può combinarsi con \textbf{al più una} tupla di $R_2$ (i valori della chiave sono unici), quindi:
+    \[
+    0 \leq |R_1 \bowtie R_2| \leq |R_1|
+    \]
+    \item Se in più c'è un \textbf{vincolo di integrità referenziale} da $R_1$ verso quella chiave di $R_2$, ogni tupla di $R_1$ trova \textbf{esattamente una} corrispondenza, quindi:
+    \[
+    |R_1 \bowtie R_2| = |R_1|
+    \]
+\end{itemize}
+\end{cbox}
+
+\noindent \textbf{Outer join.} Il join ``normale'' (detto \textbf{inner join}) scarta le tuple senza corrispondenza, e quindi si perde informazione. L'\textbf{outer join} invece le mantiene, completandole con valori \textbf{NULL}. Ne esistono tre versioni:
+\begin{itemize}
+    \item \textbf{Left} ($R_1 \mathbin{=\!\!\!\bowtie} R_2$): mantiene tutte le tuple del \textbf{primo} operando; dove manca la corrispondenza a destra mette NULL.
+    \item \textbf{Right} ($R_1 \mathbin{\bowtie\!\!\!=} R_2$): mantiene tutte le tuple del \textbf{secondo} operando. È definito come $R_2 \mathbin{=\!\!\!\bowtie} R_1$.
+    \item \textbf{Full} ($R_1 \mathbin{=\!\!\!\bowtie\!\!\!=} R_2$): mantiene tutte le tuple di \textbf{entrambi}; è l'unione dei due precedenti.
+\end{itemize}
+
+\noindent Con Impiegati = \{(Rossi, A), (Neri, B), (Bianchi, B)\} e Reparti = \{(B, Mori), (C, Bruni)\}:
+\begin{center}
+\small
+\begin{tabular}{lcl}
+    \toprule
+    \multicolumn{3}{c}{\textbf{Full outer join}} \\
+    \midrule
+    \textbf{Impiegato} & \textbf{Reparto} & \textbf{Capo} \\
+    \midrule
+    Neri & B & Mori \\
+    Bianchi & B & Mori \\
+    Rossi & A & NULL \\
+    NULL & C & Bruni \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Il left outer join contiene le prime tre righe, il right outer join la prima, la seconda e la quarta.
+
+\medskip
+\noindent \textbf{Prodotto cartesiano.} È un join naturale tra due relazioni \textbf{senza attributi in comune}: non c'è nessuna condizione da rispettare, quindi ogni tupla della prima si combina con ogni tupla della seconda. Il risultato ha esattamente $|R_1| \times |R_2|$ tuple. Ad esempio, Impiegati(Impiegato, Reparto) $\bowtie$ Reparti(Codice, Capo) dà 3 $\times$ 2 = 6 tuple, la maggior parte senza senso (Rossi del reparto A abbinato al capo del reparto B\dots). Per questo il prodotto cartesiano è utile solo se seguito da una selezione:
+\[
+\sigma_{\text{condizione}}(R_1 \bowtie R_2)
+\]
+
+\medskip
+\noindent \textbf{Theta-join.} La combinazione ``prodotto cartesiano + selezione'' è così comune da avere un nome e un simbolo propri:
+\[
+R_1 \bowtie_{\text{condizione}} R_2 \;=\; \sigma_{\text{condizione}}(R_1 \bowtie R_2)
+\]
+La condizione è di solito una congiunzione (AND) di confronti del tipo $A_1 \,\theta\, A_2$, dove $\theta$ è un operatore di confronto ($=, >, <, \dots$) e $A_1$, $A_2$ sono attributi delle due relazioni.
+
+\medskip
+\noindent \textbf{Equi-join.} È un theta-join in cui tutti i confronti sono \textbf{uguaglianze}. È molto più usato del theta-join generico perché permette di dire su quali attributi fare il join senza doverli rinominare:
+\[
+\text{Impiegati} \bowtie_{\text{Reparto} = \text{Codice}} \text{Reparti}
+\]
+Il risultato ha schema (Impiegato, Reparto, Codice, Capo), con Reparto e Codice sempre uguali. Si ottiene quasi lo stesso risultato con un join naturale dopo aver rinominato l'attributo:
+\[
+\text{Impiegati} \bowtie \rho_{\text{Reparto} \leftarrow \text{Codice}}(\text{Reparti})
+\]
+che però ha una colonna in meno (Reparto compare una sola volta).
+
+\subsection{Esempi di Interrogazioni}
+\noindent Consideriamo le relazioni:
+\begin{center}
+\small
+\begin{tabular}{clcc}
+    \toprule
+    \multicolumn{4}{c}{\textbf{Impiegati}} \\
+    \midrule
+    \textbf{Matricola} & \textbf{Nome} & \textbf{Età} & \textbf{Stipendio} \\
+    \midrule
+    7309 & Rossi & 34 & 45 \\
+    5998 & Bianchi & 37 & 38 \\
+    9553 & Neri & 42 & 35 \\
+    5698 & Bruni & 43 & 42 \\
+    4076 & Mori & 45 & 50 \\
+    8123 & Lupi & 46 & 60 \\
+    \bottomrule
+\end{tabular}
+\qquad
+\begin{tabular}{cc}
+    \toprule
+    \multicolumn{2}{c}{\textbf{Supervisione}} \\
+    \midrule
+    \textbf{Impiegato} & \textbf{Capo} \\
+    \midrule
+    7309 & 5698 \\
+    5998 & 5698 \\
+    9553 & 4076 \\
+    5698 & 4076 \\
+    4076 & 8123 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+In Supervisione sia Impiegato sia Capo sono matricole di Impiegati.
+
+\tikzset{
+    op/.style={align=center, font=\small, inner sep=2pt},
+    rel/.style={align=center, font=\small\itshape, inner sep=2pt, draw, rounded corners=2pt},
+    every tree node/.style={},
+    level distance=1.1cm,
+    edge from parent/.style={draw, -latex}
+}
+
+\begin{enumerate}
+    \item \textbf{Tutti i dati degli impiegati che guadagnano più di 40:}
+    \[
+    \sigma_{\text{Stipendio} > 40}(\text{Impiegati})
+    \]
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north)]
+        \node[op] (root) {$\sigma_{\text{Stipendio} > 40}$}
+            child {node[rel] {Impiegati}};
+    \end{tikzpicture}
+    \qquad
+    \small
+    \begin{tabular}{clcc}
+        \toprule
+        \textbf{Matricola} & \textbf{Nome} & \textbf{Età} & \textbf{Stipendio} \\
+        \midrule
+        7309 & Rossi & 34 & 45 \\
+        5698 & Bruni & 43 & 42 \\
+        4076 & Mori & 45 & 50 \\
+        8123 & Lupi & 46 & 60 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{Matricola, nome ed età degli impiegati che guadagnano più di 40:}
+    \[
+    \pi_{\text{Matricola}, \text{Nome}, \text{Età}}\big(\sigma_{\text{Stipendio} > 40}(\text{Impiegati})\big)
+    \]
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north)]
+        \node[op] (root) {$\pi_{\text{Matricola, Nome, Età}}$}
+            child {node[op] {$\sigma_{\text{Stipendio} > 40}$}
+                child {node[rel] {Impiegati}}};
+    \end{tikzpicture}
+    \qquad
+    \small
+    \begin{tabular}{clc}
+        \toprule
+        \textbf{Matricola} & \textbf{Nome} & \textbf{Età} \\
+        \midrule
+        7309 & Rossi & 34 \\
+        5698 & Bruni & 43 \\
+        4076 & Mori & 45 \\
+        8123 & Lupi & 46 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{I capi di impiegati che guadagnano più di 40:} si selezionano gli impiegati che guadagnano più di 40, si collegano a Supervisione tramite la matricola e si tiene solo il capo.
+    \[
+    \begin{aligned}
+    & \pi_{\text{Capo}}\big(\text{Supervisione} \\
+    & \quad \bowtie_{\text{Impiegato} = \text{Matricola}} \sigma_{\text{Stipendio} > 40}(\text{Impiegati})\big)
+    \end{aligned}
+    \]
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north), sibling distance=3.4cm]
+        \node[op] (root) {$\pi_{\text{Capo}}$}
+            child {node[op] {$\bowtie_{\text{Impiegato} = \text{Matricola}}$}
+                child {node[rel] {Supervisione}}
+                child {node[op] {$\sigma_{\text{Stipendio} > 40}$}
+                    child {node[rel] {Impiegati}}}};
+    \end{tikzpicture}
+    \qquad
+    \small
+    \begin{tabular}{c}
+        \toprule
+        \textbf{Capo} \\
+        \midrule
+        5698 \\
+        4076 \\
+        8123 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{Nome e stipendio di quei capi:} serve un secondo join con Impiegati, questa volta sulla matricola del capo.
+    \[
+    \begin{aligned}
+    & \pi_{\text{Nome}, \text{Stipendio}}\Big(\text{Impiegati} \bowtie_{\text{Matricola} = \text{Capo}} \\
+    & \quad \pi_{\text{Capo}}\big(\text{Supervisione} \bowtie_{\text{Impiegato} = \text{Matricola}} \sigma_{\text{Stipendio} > 40}(\text{Impiegati})\big)\Big)
+    \end{aligned}
+    \]
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north),
+        level 1/.style={sibling distance=6cm},
+        level 2/.style={sibling distance=4cm},
+        level 3/.style={sibling distance=3.4cm}]
+        \node[op] (root) {$\pi_{\text{Nome, Stipendio}}$}
+            child {node[op] {$\bowtie_{\text{Matricola} = \text{Capo}}$}
+                child {node[rel] {Impiegati}}
+                child {node[op] {$\pi_{\text{Capo}}$}
+                    child {node[op] {$\bowtie_{\text{Impiegato} = \text{Matricola}}$}
+                        child {node[rel] {Supervisione}}
+                        child {node[op] {$\sigma_{\text{Stipendio} > 40}$}
+                            child {node[rel] {Impiegati}}}}}};
+    \end{tikzpicture}
+
+    \medskip
+    \small
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Nome} & \textbf{Stipendio} \\
+        \midrule
+        Bruni & 42 \\
+        Mori & 50 \\
+        Lupi & 60 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \item \textbf{Impiegati che guadagnano più del proprio capo}, con matricola, nome e stipendio di entrambi. Bisogna usare Impiegati \textbf{due volte}: una per l'impiegato e una per il capo. Per non confondere gli attributi, la seconda copia viene rinominata (MatrC, NomeC, StipC, EtàC):
+    \[
+    \begin{aligned}
+    & \pi_{\text{Matricola}, \text{Nome}, \text{Stipendio}, \text{MatrC}, \text{NomeC}, \text{StipC}}\Big( \\
+    & \quad \sigma_{\text{Stipendio} > \text{StipC}}\Big( \\
+    & \qquad \rho_{\substack{\text{MatrC}, \text{NomeC}, \text{StipC}, \text{EtàC} \\ \leftarrow \text{Matricola}, \text{Nome}, \text{Stipendio}, \text{Età}}}(\text{Impiegati}) \\
+    & \qquad \bowtie_{\text{MatrC} = \text{Capo}} (\text{Supervisione} \bowtie_{\text{Impiegato} = \text{Matricola}} \text{Impiegati})
+    \Big)\Big)
+    \end{aligned}
+    \]
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north),
+        level 1/.style={sibling distance=7cm},
+        level 2/.style={sibling distance=7cm},
+        level 3/.style={sibling distance=8cm},
+        level 4/.style={sibling distance=3.4cm}]
+        \node[op] (root) {$\pi_{\text{Matricola, Nome, Stipendio,}}$\\[-2pt]$_{\text{MatrC, NomeC, StipC}}$}
+            child {node[op] {$\sigma_{\text{Stipendio} > \text{StipC}}$}
+                child {node[op] {$\bowtie_{\text{MatrC} = \text{Capo}}$}
+                    child {node[op] {$\rho_{\text{MatrC, NomeC, StipC, EtàC}}$\\[-2pt]$_{\leftarrow \text{Matricola, Nome, Stipendio, Età}}$}
+                        child {node[rel] {Impiegati}}}
+                    child {node[op] {$\bowtie_{\text{Impiegato} = \text{Matricola}}$}
+                        child {node[rel] {Supervisione}}
+                        child {node[rel] {Impiegati}}}}};
+    \end{tikzpicture}
+
+    \medskip
+    \small
+    \begin{tabular}{clcclc}
+        \toprule
+        \textbf{Matricola} & \textbf{Nome} & \textbf{Stipendio} & \textbf{MatrC} & \textbf{NomeC} & \textbf{StipC} \\
+        \midrule
+        7309 & Rossi & 45 & 5698 & Bruni & 42 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+    Gli altri impiegati guadagnano meno del capo (o quanto lui): ad esempio Bianchi (38) ha come capo Bruni (42).
+
+    \item \textbf{Matricole dei capi i cui impiegati guadagnano \underline{tutti} più di 40.} Il ``tutti'' non si esprime direttamente: si prendono tutti i capi e si \textbf{tolgono} quelli che hanno almeno un impiegato che guadagna 40 o meno.
+    \[
+    \begin{aligned}
+    & \pi_{\text{Capo}}(\text{Supervisione}) \; - \\
+    & \quad \pi_{\text{Capo}}\big(\text{Supervisione} \bowtie_{\text{Impiegato} = \text{Matricola}} \sigma_{\text{Stipendio} \leq 40}(\text{Impiegati})\big)
+    \end{aligned}
+    \]
+    Questo schema (``tutti'' = ``tutti meno quelli che violano la condizione'') con la differenza è molto ricorrente.
+    \begin{center}
+    \begin{tikzpicture}[baseline=(root.north),
+        level 1/.style={sibling distance=6.5cm},
+        level 2/.style={sibling distance=3.4cm},
+        level 3/.style={sibling distance=3.4cm}]
+        \node[op] (root) {$-$}
+            child {node[op] {$\pi_{\text{Capo}}$}
+                child {node[rel] {Supervisione}}}
+            child {node[op] {$\pi_{\text{Capo}}$}
+                child {node[op] {$\bowtie_{\text{Impiegato} = \text{Matricola}}$}
+                    child {node[rel] {Supervisione}}
+                    child {node[op] {$\sigma_{\text{Stipendio} \leq 40}$}
+                        child {node[rel] {Impiegati}}}}};
+    \end{tikzpicture}
+    \end{center}
+    Passo per passo:
+    \begin{center}
+    \small
+    \begin{tabular}{c}
+        \toprule
+        $\pi_{\text{Capo}}(\text{Supervisione})$ \\
+        \midrule
+        5698 \\
+        4076 \\
+        8123 \\
+        \bottomrule
+    \end{tabular}
+    \quad $-$ \quad
+    \begin{tabular}{cl}
+        \toprule
+        \multicolumn{2}{c}{capi con un impiegato $\leq 40$} \\
+        \midrule
+        5698 & (Bianchi, 38) \\
+        4076 & (Neri, 35) \\
+        \bottomrule
+    \end{tabular}
+    \quad $=$ \quad
+    \begin{tabular}{c}
+        \toprule
+        \textbf{Capo} \\
+        \midrule
+        8123 \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+\end{enumerate}
+\subsection{Equivalenza di Espressioni}
+\noindent Due espressioni dell'algebra relazionale $E_1$ ed $E_2$ sono \textbf{equivalenti} se producono lo stesso risultato \textbf{qualunque sia lo stato} della base di dati. Le regole di equivalenza sono importanti perché i DBMS le usano per riscrivere le query in forme equivalenti ma \textbf{più efficienti}.
+
+\medskip
+\noindent Le principali regole (con $A$, $B$ attributi e $X$, $Y$ insiemi di attributi):
+\begin{enumerate}
+    \item \textbf{Atomizzazione delle selezioni}: una cascata di selezioni equivale a una selezione con AND.
+    \[
+    \sigma_{A > 20}\big(\sigma_{B = \text{'Rossi'}}(R)\big) = \sigma_{A > 20 \,\wedge\, B = \text{'Rossi'}}(R)
+    \]
+    \item \textbf{Idempotenza della proiezione}: proiettare prima su più attributi e poi su meno non cambia nulla.
+    \[
+    \pi_X(R) = \pi_X\big(\pi_{XY}(R)\big)
+    \]
+    \item \textbf{Anticipazione della selezione} rispetto al join (se $A$ è un attributo di $R_2$):
+    \[
+    \sigma_{A = 10}(R_1 \bowtie R_2) = R_1 \bowtie \sigma_{A = 10}(R_2)
+    \]
+    È la regola più utile: filtrando \textbf{prima} del join si riducono molto i risultati intermedi, e quindi il costo.
+    \item \textbf{Anticipazione della proiezione}: se $R_1$ ha schema $X_1$, $R_2$ ha schema $X_2$ e $Y_2 \subseteq X_2$ contiene tutti gli attributi comuni ($X_1 \cap X_2 \subseteq Y_2$), gli attributi di $X_2 - Y_2$ non servono al join e si possono eliminare subito:
+    \[
+    \pi_{X_1 Y_2}(R_1 \bowtie R_2) = R_1 \bowtie \pi_{Y_2}(R_2)
+    \]
+    \item \textbf{Inglobamento della selezione nel theta-join}:
+    \[
+    \sigma_{A = 10}(R_1 \bowtie R_2) = R_1 \bowtie_{A = 10} R_2
+    \]
+    \item \textbf{Proprietà distributive}:
+    \[
+    \sigma_{A=10}(R_1 \cup R_2) = \sigma_{A=10}(R_1) \cup \sigma_{A=10}(R_2)
+    \qquad
+    \sigma_{A=10}(R_1 - R_2) = \sigma_{A=10}(R_1) - \sigma_{A=10}(R_2)
+    \]
+    \[
+    \pi_X(R_1 \cup R_2) = \pi_X(R_1) \cup \pi_X(R_2)
+    \qquad
+    R \bowtie (R_1 \cup R_2) = (R \bowtie R_1) \cup (R \bowtie R_2)
+    \]
+    Attenzione: la proiezione \textbf{non} è distributiva rispetto alla differenza.
+    \item \textbf{Selezioni e operatori insiemistici}:
+    \[
+    \sigma_{A=10 \,\vee\, B=\text{'Rossi'}}(R) = \sigma_{A=10}(R) \cup \sigma_{B=\text{'Rossi'}}(R)
+    \qquad
+    \sigma_{A=10 \,\wedge\, B=\text{'Rossi'}}(R) = \sigma_{A=10}(R) \cap \sigma_{B=\text{'Rossi'}}(R)
+    \]
+    \[
+    \sigma_{A=10 \,\wedge\, \neg(B=\text{'Rossi'})}(R) = \sigma_{A=10}(R) - \sigma_{B=\text{'Rossi'}}(R)
+    \]
+\end{enumerate}
+
+\noindent \textbf{Esempio di ottimizzazione.} Capi degli impiegati con meno di 30 anni:
+\[
+\pi_{\text{Capo}}\big(\sigma_{\text{Matricola} = \text{Impiegato} \,\wedge\, \text{Età} < 30}(\text{Impiegati} \bowtie \text{Supervisione})\big)
+\]
+Con la regola 1 si spezza la selezione; con la 5 la condizione $\text{Matricola} = \text{Impiegato}$ diventa un theta-join; con la 3 la selezione sull'età viene anticipata; con la 4 si tiene solo la matricola prima del join:
+\[
+\pi_{\text{Capo}}\Big(\pi_{\text{Matricola}}\big(\sigma_{\text{Età} < 30}(\text{Impiegati})\big) \bowtie_{\text{Matricola} = \text{Impiegato}} \text{Supervisione}\Big)
+\]
+Nel corso non è richiesto scrivere query efficienti (meglio corrette e chiare): l'ottimizzazione la fa il DBMS.
+
+\subsection{Selezione e Valori NULL}
+\noindent Se un attributo vale NULL, una condizione atomica su di esso (es. $\text{Età} > 40$) \textbf{non è soddisfatta}: la tupla viene esclusa. Questo porta a risultati poco intuitivi:
+\[
+\sigma_{\text{Età} > 30}(\text{Persone}) \cup \sigma_{\text{Età} \leq 30}(\text{Persone}) \neq \text{Persone}
+\qquad
+\sigma_{\text{Età} > 30 \,\vee\, \text{Età} \leq 30}(\text{Persone}) \neq \text{Persone}
+\]
+perché le persone con età NULL non rientrano in nessuna delle due condizioni.
+
+\medskip
+\noindent Per gestire i NULL esistono due condizioni atomiche apposite: \textbf{IS NULL} e \textbf{IS NOT NULL}. Così:
+\[
+\sigma_{\text{Età} > 30 \,\vee\, \text{Età} \leq 30 \,\vee\, \text{Età IS NULL}}(\text{Persone}) = \text{Persone}
+\]
+e, ad esempio, $\sigma_{(\text{Età} > 40) \,\vee\, (\text{Età IS NULL})}(\text{Impiegati})$ restituisce sia chi ha più di 40 anni sia chi ha età sconosciuta. Si potrebbe definire una logica a tre valori (vero, falso, \textit{sconosciuto}), ma qui non è necessario.
+
+\subsection{Viste}
+\noindent Le \textbf{viste} sono rappresentazioni diverse degli stessi dati. Si distinguono:
+\begin{itemize}
+    \item \textbf{relazioni di base}: hanno un contenuto proprio, memorizzato;
+    \item \textbf{relazioni derivate} (viste): il loro contenuto è definito da una \textbf{query} sulle altre relazioni (anche su altre viste).
+\end{itemize}
+Le viste corrispondono agli \textbf{schemi esterni} dell'architettura ANSI/SPARC: ogni gruppo di utenti vede la base di dati attraverso le proprie viste, costruite sopra lo schema logico.
+
+\medskip
+\noindent Esempio, date Afferenza(Impiegato, Reparto) e Direzione(Reparto, Capo):
+\[
+\text{Supervisione} = \pi_{\text{Impiegato}, \text{Capo}}(\text{Afferenza} \bowtie \text{Direzione})
+\]
+
+\noindent Una vista può essere realizzata in due modi:
+\begin{itemize}
+    \item \textbf{Vista materializzata}: il risultato viene salvato fisicamente. È subito disponibile per altre query, ma è ridondante, rallenta gli aggiornamenti (va tenuta allineata) ed è supportata da pochi DBMS.
+    \item \textbf{Relazione virtuale}: viene salvata solo la definizione. Supportata da tutti i DBMS: quando una query usa la vista, il suo nome viene \textbf{sostituito dalla query che la definisce}. Ad esempio $\sigma_{\text{Capo}=\text{'Leoni'}}(\text{Supervisione})$ viene eseguita come $\sigma_{\text{Capo}=\text{'Leoni'}}\big(\pi_{\text{Impiegato}, \text{Capo}}(\text{Afferenza} \bowtie \text{Direzione})\big)$.
+\end{itemize}
+
+\noindent \textbf{Perché usare le viste.}
+\begin{itemize}
+    \item Ogni utente vede solo ciò che gli interessa, nel formato che preferisce, e solo ciò che è \textbf{autorizzato} a vedere.
+    \item Semplificano la scrittura di query complesse in cui una sotto-espressione si ripete. Ad esempio, gli impiegati che hanno lo stesso capo di Rossi:
+    \[
+    \pi_{\text{Impiegato}}\Big(\text{Supervisione} \bowtie \rho_{\text{ImpR} \leftarrow \text{Impiegato}}\big(\sigma_{\text{Impiegato} = \text{'Rossi'}}(\text{Supervisione})\big)\Big)
+    \]
+    Senza vista bisognerebbe scrivere due volte $\text{Afferenza} \bowtie \text{Direzione}$.
+    \item Permettono di usare programmi già esistenti su schemi ristrutturati.
+\end{itemize}
+Le viste però \textbf{non migliorano l'efficienza} delle query.
+
+\medskip
+\noindent \textbf{Aggiornare una vista.} Significa modificare le relazioni di base in modo che la vista rifletta la modifica. Il problema è che la traduzione può essere \textbf{ambigua}: se nella vista Supervisione voglio inserire ``Lupi ha come capo Bruni'', in quale reparto va Lupi? Bruni dirige sia B sia C. E se voglio inserire ``Belli ha come capo Falchi'', Falchi non dirige alcun reparto. Per questo sulle viste sono ammessi solo pochi tipi di aggiornamento.
+
+\subsection{Una Notazione Alternativa per i Join}
+\noindent Nella pratica (ed è l'approccio usato da SQL) si adotta spesso una notazione diversa:
+\begin{itemize}
+    \item si \textbf{ignora il join naturale}: non si assume nessuna condizione implicita sugli attributi con lo stesso nome, ogni join è un theta-join esplicito;
+    \item gli attributi con lo stesso nome in relazioni diverse si distinguono con la sintassi \textbf{Relazione.Attributo};
+    \item per usare due volte la stessa relazione si crea una \textbf{vista} con un nuovo nome (es. $\text{Capi} := \text{Impiegati}$); la ridenominazione degli attributi serve solo per l'unione.
+\end{itemize}
+L'esempio degli impiegati che guadagnano più del capo diventa molto più leggibile:
+\[
+\begin{aligned}
+& \pi_{\substack{\text{Impiegati.Matricola}, \text{Impiegati.Nome}, \text{Impiegati.Stipendio}, \\ \text{Capi.Matricola}, \text{Capi.Nome}, \text{Capi.Stipendio}}}\Big( \\
+& \quad \sigma_{\text{Impiegati.Stipendio} > \text{Capi.Stipendio}}\Big( \\
+& \qquad \text{Capi} \bowtie_{\text{Capi.Matricola} = \text{Capo}} \\
+& \qquad\quad (\text{Supervisione} \bowtie_{\text{Impiegato} = \text{Impiegati.Matricola}} \text{Impiegati})
+\Big)\Big)
+\end{aligned}
+\]
+
+\newpage
+
+\section{Calcolo Relazionale e Datalog}
+
+\subsection{Calcolo Relazionale su Domini}
+\noindent Il \textbf{calcolo relazionale} è una famiglia di linguaggi \textbf{dichiarativi} basati sulla logica del primo ordine: si descrivono le proprietà del risultato, non i passi per ottenerlo. Ne vediamo due versioni: il \textbf{calcolo sui domini} e il \textbf{calcolo su tuple con dichiarazioni di range}.
+
+\medskip
+\noindent Nel calcolo sui domini un'espressione ha la forma:
+\[
+\{\, A_1 : x_1, \dots, A_k : x_k \mid f \,\}
+\]
+\begin{itemize}
+    \item $A_1 : x_1, \dots, A_k : x_k$ è la \textbf{target list}: $A_i$ sono attributi distinti (lo schema del risultato), $x_i$ variabili distinte;
+    \item $f$ è una \textbf{formula} con connettivi logici ($\wedge, \vee, \neg$) e quantificatori ($\exists, \forall$).
+\end{itemize}
+Il risultato è una relazione su $A_1, \dots, A_k$ che contiene le tuple di valori per $x_1, \dots, x_k$ che rendono vera $f$.
+
+\medskip
+\noindent Rispetto alla logica dei predicati: i simboli di predicato sono le \textbf{relazioni} della base di dati e i predicati standard ($=, >, \dots$); non ci sono simboli di funzione; la notazione è \textbf{non posizionale} (si scrive il nome dell'attributo, non la posizione).
+
+\medskip
+\noindent Usiamo $\text{Impiegati}(\underline{\text{Matricola}}, \text{Nome}, \text{Età}, \text{Stipendio})$ e $\text{Supervisione}(\text{Capo}, \underline{\text{Impiegato}})$.
+\begin{itemize}
+    \item Impiegati che guadagnano più di 40 (equivale a $\sigma_{\text{Stipendio} > 40}(\text{Impiegati})$):
+    \[
+    \begin{aligned}
+    \{ & \text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s \mid \\
+    & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \wedge s > 40 \}
+    \end{aligned}
+    \]
+    \item Matricola, nome ed età di tutti gli impiegati (una proiezione): basta togliere $s$ dalla target list.
+    \[
+    \begin{aligned}
+    \{ & \text{Matricola}: m, \text{Nome}: n, \text{Età}: e \mid \\
+    & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \}
+    \end{aligned}
+    \]
+    Le variabili che non compaiono nella target list sono implicitamente quantificate con $\exists$.
+    \item Capi di impiegati che guadagnano più di 40 (il join si ottiene usando \textbf{la stessa variabile} $m$ in due predicati):
+    \[
+    \begin{aligned}
+    \{ \text{Capo}: c \mid {} & \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m) \wedge {} \\
+    & \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \wedge s > 40 \}
+    \end{aligned}
+    \]
+    \item Impiegati che guadagnano più del proprio capo, con matricola, nome e stipendio di entrambi:
+    \[
+    \begin{aligned}
+    \{ & \text{Matr}: m, \text{Nome}: n, \text{Stip}: s, \text{MatrC}: c, \text{NomeC}: nc, \text{StipC}: sc \mid \\
+    & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \wedge {} \\
+    & \quad \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m) \wedge {} \\
+    & \quad \text{Impiegati}(\text{Matricola}: c, \text{Nome}: nc, \text{Età}: ec, \text{Stipendio}: sc) \wedge s > sc \}
+    \end{aligned}
+    \]
+    \item Matricola e nome dei capi i cui impiegati guadagnano \textbf{tutti} più di 40: serve la negazione (``non esiste un impiegato di $c$ che guadagna $\leq 40$''):
+    \[
+    \begin{aligned}
+    \{ & \text{Matricola}: c, \text{Nome}: n \mid \\
+    & \quad \text{Impiegati}(\text{Matricola}: c, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \wedge {} \\
+    & \quad \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m) \wedge {} \\
+    & \quad \neg \exists m' \exists n' \exists e' \exists s' \big( \\
+    & \qquad \text{Impiegati}(\text{Matricola}: m', \text{Nome}: n', \text{Età}: e', \text{Stipendio}: s') \wedge {} \\
+    & \qquad \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m') \wedge s' \leq 40\big) \}
+    \end{aligned}
+    \]
+\end{itemize}
+
+\noindent \textbf{Quale quantificatore usare?} È indifferente: $\exists$ e $\forall$ sono intercambiabili grazie alle leggi di De Morgan:
+\[
+\begin{aligned}
+\neg(A \wedge B) &= \neg A \vee \neg B & \qquad \neg(A \vee B) &= \neg A \wedge \neg B \\
+\neg \exists x\, A &= \forall x\, \neg A & \qquad \exists x\, A &= \neg \forall x\, \neg A
+\end{aligned}
+\]
+Nell'ultimo esempio, $\neg \exists m' \dots (P \wedge Q \wedge s' \leq 40)$ si può riscrivere come $\forall m' \dots (\neg(P \wedge Q) \vee s' > 40)$.
+
+\medskip
+\noindent \textbf{Pregi e difetti.} Il calcolo sui domini è dichiarativo, ma:
+\begin{itemize}
+    \item è \textbf{verboso}: servono moltissime variabili;
+    \item permette espressioni \textbf{senza senso}, come
+    \[
+    \begin{aligned}
+    & \{ A: x \mid \neg R(A: x) \} \qquad\quad \{ A: x, B: y \mid R(A: x) \} \\
+    & \{ A: x, B: y \mid R(A: x) \wedge y = y \}
+    \end{aligned}
+    \]
+    Il loro risultato dipende dal dominio (es. tutti i valori che \textbf{non} stanno in $R$, potenzialmente infiniti): si dicono \textbf{dipendenti dal dominio} e vanno evitate. L'algebra relazionale invece è \textbf{indipendente dal dominio}, quindi non può esprimerle.
+\end{itemize}
+
+\begin{cbox}{Calcolo sui Domini e Algebra Relazionale}
+\noindent I due linguaggi sono \textbf{equivalenti}:
+\begin{itemize}
+    \item per ogni espressione del calcolo sui domini indipendente dal dominio esiste un'espressione equivalente dell'algebra;
+    \item per ogni espressione dell'algebra esiste un'espressione equivalente del calcolo sui domini (indipendente dal dominio).
+\end{itemize}
+\end{cbox}
+
+\subsection{Calcolo su Tuple con Dichiarazioni di Range}
+\noindent Questa versione nasce per superare i limiti del calcolo sui domini:
+\begin{itemize}
+    \item meno variabili: \textbf{una variabile per ogni tupla}, non una per ogni attributo;
+    \item tutti i valori devono provenire dalla base di dati: ogni variabile ha un \textbf{range}, cioè la relazione da cui prende le tuple.
+\end{itemize}
+Le espressioni hanno la forma:
+\[
+\{\, \text{TargetList} \mid \text{RangeList} \mid \text{Formula} \,\}
+\]
+\begin{itemize}
+    \item \textbf{RangeList}: elenca le variabili libere e la relazione da cui provengono, es. $i(\text{Impiegati})$;
+    \item \textbf{TargetList}: elementi del tipo $Y : x.Z$ (attributi $Z$ della variabile $x$, rinominati in $Y$), oppure $x.Z$, oppure $x.*$ (tutti gli attributi);
+    \item \textbf{Formula}: confronti $x.A \,\theta\, c$ o $x.A \,\theta\, y.B$, connettivi logici e quantificatori con range: $\exists x(R)(\dots)$, $\forall x(R)(\dots)$.
+\end{itemize}
+
+\noindent Gli stessi esempi di prima diventano molto più compatti:
+\begin{itemize}
+    \item Impiegati che guadagnano più di 40:
+    \[
+    \{ i.* \mid i(\text{Impiegati}) \mid i.\text{Stipendio} > 40 \}
+    \]
+    \item Matricola, nome ed età di tutti:
+    \[
+    \{ i.(\text{Matricola}, \text{Nome}, \text{Età}) \mid i(\text{Impiegati}) \mid \}
+    \]
+    \item Capi di impiegati che guadagnano più di 40:
+    \[
+    \begin{aligned}
+    \{ & s.\text{Capo} \mid i(\text{Impiegati}), s(\text{Supervisione}) \mid \\
+    & \quad i.\text{Matricola} = s.\text{Impiegato} \wedge i.\text{Stipendio} > 40 \}
+    \end{aligned}
+    \]
+    \item Nome e stipendio di quei capi (servono due variabili su Impiegati, $i$ e $i'$):
+    \[
+    \begin{aligned}
+    \{ & \text{NomeC}, \text{StipC} : i'.(\text{Nome}, \text{Stipendio}) \mid \\
+    & \quad i'(\text{Impiegati}), s(\text{Supervisione}), i(\text{Impiegati}) \mid \\
+    & \quad i'.\text{Matricola} = s.\text{Capo} \wedge i.\text{Matricola} = s.\text{Impiegato} \wedge i.\text{Stipendio} > 40 \}
+    \end{aligned}
+    \]
+    \item Impiegati che guadagnano più del capo: come sopra, con target list $i.(\text{Matricola}, \text{Nome}, \text{Stipendio}), \text{MatrC}, \text{NomeC}, \text{StipC} : i'.(\text{Matricola}, \text{Nome}, \text{Stipendio})$ e condizione finale $i.\text{Stipendio} > i'.\text{Stipendio}$.
+    \item Capi i cui impiegati guadagnano tutti più di 40:
+    \[
+    \begin{aligned}
+    \{ & i.(\text{Matricola}, \text{Nome}) \mid s(\text{Supervisione}), i(\text{Impiegati}) \mid \\
+    & \quad i.\text{Matricola} = s.\text{Capo} \wedge {} \\
+    & \quad \neg \big(\exists i'(\text{Impiegati}) \big(\exists s'(\text{Supervisione}) \big( \\
+    & \qquad s.\text{Capo} = s'.\text{Capo} \wedge s'.\text{Impiegato} = i'.\text{Matricola} \wedge {} \\
+    & \qquad i'.\text{Stipendio} \leq 40\big)\big)\big) \}
+    \end{aligned}
+    \]
+\end{itemize}
+
+\noindent \textbf{Limite: l'unione.} Questo calcolo \textbf{non può esprimere l'unione} $R_1(AB) \cup R_2(AB)$: ogni variabile ha un solo range, quindi una tupla del risultato non può provenire ``o da $R_1$ o da $R_2$''. Intersezione e differenza invece si esprimono. Per questo SQL, che si basa su questo calcolo, ha un operatore esplicito \texttt{UNION}.
+
+\subsection{Limiti di Algebra e Calcolo: la Chiusura Transitiva}
+\noindent Algebra e calcolo sono sostanzialmente equivalenti ed esprimono un insieme significativo di interrogazioni, ma alcune query utili restano fuori:
+\begin{itemize}
+    \item si possono solo \textbf{estrarre} valori, non \textbf{calcolarne} di nuovi: né sulla singola tupla (conversioni, somme, differenze\dots) né su insiemi di tuple (somme, medie\dots). SQL aggiunge queste estensioni;
+    \item non si possono esprimere \textbf{query ricorsive}, come la chiusura transitiva.
+\end{itemize}
+
+\noindent \textbf{Chiusura transitiva.} Data $\text{Supervisione}(\underline{\text{Impiegato}}, \text{Capo})$, vogliamo per ogni impiegato \textbf{tutti i superiori}: il capo, il capo del capo, e così via. Se Rossi ha come capo Lupi e Lupi ha come capo Falchi, allora (Rossi, Falchi) fa parte del risultato.
+
+\medskip
+\noindent Si possono trovare i superiori di secondo livello con un join della relazione con se stessa (più una ridenominazione), quelli di terzo livello con due join, e così via. Ma il numero di livelli dipende dai dati: \textbf{non c'è un limite} al numero di join necessari, quindi nessuna espressione fissa dell'algebra calcola la chiusura transitiva per qualunque istanza.
+
+\subsection{Datalog}
+\noindent \textbf{Datalog} è un linguaggio di programmazione logica orientato alle basi di dati, derivato dal Prolog. Usa due tipi di predicati:
+\begin{itemize}
+    \item \textbf{estensionali}: le relazioni della base di dati;
+    \item \textbf{intensionali}: corrispondono alle viste, e sono definiti tramite \textbf{regole}.
+\end{itemize}
+Una regola ha la forma
+\[
+\textit{testa} \leftarrow \textit{corpo}
+\]
+dove la testa è un predicato atomico intensionale e il corpo è una lista di predicati atomici in AND (separati da virgole). Le interrogazioni sono predicati atomici preceduti da \textbf{?}.
+
+\medskip
+\noindent Esempi:
+\begin{itemize}
+    \item Impiegati di 30 anni (basta una costante nel predicato):
+    \[
+    ?\ \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: 30, \text{Stipendio}: s)
+    \]
+    \item Impiegati che guadagnano più di 40: serve un predicato intensionale.
+    \[
+    \begin{aligned}
+    & \text{Ricchi}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s) \leftarrow \\
+    & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s),\ s > 40 \\[4pt]
+    & ?\ \text{Ricchi}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s)
+    \end{aligned}
+    \]
+    \item Capi di impiegati che guadagnano più di 40:
+    \[
+    \begin{aligned}
+    & \text{CapiDiRicchi}(\text{Capo}: c) \leftarrow \\
+    & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s), \\
+    & \quad s > 40,\ \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m)
+    \end{aligned}
+    \]
+    \item Capi i cui impiegati guadagnano tutti più di 40: serve la \textbf{negazione}. Prima si definiscono i capi che hanno almeno un impiegato ``povero'', poi si escludono:
+    \[\begin{aligned}     & \text{CapiDiNonRicchi}(\text{Capo}: c) \leftarrow \\     & \quad \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m), \\     & \quad \text{Impiegati}(\text{Matricola}: m, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s),\ s \leq 40 \\     & \text{CapiSoloDiRicchi}(\text{Matricola}: c, \text{Nome}: n) \leftarrow \\     & \quad \text{Impiegati}(\text{Matricola}: c, \text{Nome}: n, \text{Età}: e, \text{Stipendio}: s), \\     & \quad \text{Supervisione}(\text{Capo}: c, \text{Impiegato}: m), \\     & \quad \textbf{not}\ \text{CapiDiNonRicchi}(\text{Capo}: c)     \end{aligned}\]
+    \item Per ogni impiegato, tutti i superiori: serve la \textbf{ricorsione}, che Datalog permette.
+    \[\begin{aligned}     & \text{Superiore}(\text{Impiegato}: i, \text{SuperCapo}: c) \leftarrow \\     & \quad \text{Supervisione}(\text{Impiegato}: i, \text{Capo}: c) \\     & \text{Superiore}(\text{Impiegato}: i, \text{SuperCapo}: c) \leftarrow \\     & \quad \text{Supervisione}(\text{Impiegato}: i, \text{Capo}: c'), \\     & \quad \text{Superiore}(\text{Impiegato}: c', \text{SuperCapo}: c)     \end{aligned}\]
+    La prima regola dice che il capo diretto è un superiore; la seconda che un superiore del mio capo è anche un mio superiore.
+\end{itemize}
+
+\noindent \textbf{Potere espressivo.} La semantica delle query ricorsive è delicata, soprattutto con la negazione. In sintesi:
+\begin{itemize}
+    \item Datalog \textbf{non ricorsivo senza negazione} equivale al calcolo senza negazione e senza quantificatore universale;
+    \item Datalog \textbf{non ricorsivo con negazione} equivale a calcolo e algebra;
+    \item Datalog \textbf{ricorsivo senza negazione} non è confrontabile con il calcolo;
+    \item Datalog \textbf{ricorsivo con negazione} è \textbf{più espressivo} di calcolo e algebra.
+\end{itemize}
 \end{document}
