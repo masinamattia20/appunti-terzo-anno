@@ -16,7 +16,7 @@
 \usepackage{gensymb}
 \usepackage{centernot}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
+\usetikzlibrary{arrows.meta, positioning}
 \usepackage{mdframed}
 \usepackage{listings}
 \usepackage[T1]{fontenc}
@@ -103,7 +103,8 @@
 
 \section{Basi di Dati e Sistemi di Gestione dei Dati (DBMS)}
 
-\subsection{Metodologia di Studio e Sistemi Informativi}
+\subsection{Sistemi Informativi, Dati e Informazione}
+\subsubsection{Metodologia di Studio e Sistemi Informativi}
 \noindent \textbf{Studio Individuale e Concetti Fondamentali.} Per imparare a gestire le basi di dati non basta mandare a memoria definizioni astratte. È fondamentale sviluppare una forma mentale rigorosa: capire come rappresentare la realtà in modo formale e collegare sempre la teoria a problemi pratici e casi d'uso concreti.
 
 \medskip
@@ -164,7 +165,7 @@
 \noindent Tutti gli informatici vorrebbero che il sistema informativo e quello informatico fossero perfettamente allineati. Il problema è che in certi casi non conviene o non ha senso informatizzare alcune informazioni.
 \end{cbox}
 
-\subsection{Dati, Informazione e Codifica}
+\subsubsection{Dati, Informazione e Codifica}
 \noindent \textbf{Distinzione Concettuale e Necessità di Interpretazione.} Nella vita di tutti i giorni esprimiamo concetti in molti modi: parole parlate, testo scritto, disegni, numeri o gesti. Tali informazioni possono essere salvate nella nostra memoria biologica (il cervello), su carta oppure su supporti digitali. Nei calcolatori, però, tutta questa varietà deve essere ridotta e formalizzata sotto forma di \textbf{dati}.
 
 \medskip
@@ -213,7 +214,8 @@ $\implies$ \textbf{Regola chiave}: $\text{Dato} + \text{Contesto / Chiave Interp
     \item \textbf{I dati invece restano stabili nel tempo}: un contratto, uno storico di bonifici bancari o un registro delle nascite mantengono la propria validità e struttura invariate per decenni. I dati sono quindi il patrimonio più durevole dell'azienda.
 \end{itemize}
 
-\subsection{Basi di Dati, DBMS e Confronto con i File System}
+\subsection{DBMS: Modelli, Architettura e Linguaggi}
+\subsubsection{Basi di Dati, DBMS e Confronto con i File System}
 \noindent \textbf{Definizione di Base di Dati.} L'espressione \textbf{base di dati} (\textit{database}) viene usata con due significati:
 \begin{itemize}
     \item \textbf{Significato Generico}: qualsiasi archivio strutturato di dati usato per supportare le attività di un'organizzazione o di un individuo (anche una rubrica telefonica cartacea).
@@ -329,7 +331,7 @@ Il limite principale dei file system è la \textbf{grana grossa}: un file va gen
     \item \textbf{Nei DBMS}: la struttura dei dati è definita in un solo posto centrale chiamato \textbf{catalogo} (o \textbf{dizionario dei dati}). I programmi non devono conoscere i dettagli fisici di memorizzazione: chiedono semplicemente le informazioni per nome al DBMS.
 \end{itemize}
 
-\subsection{Modelli dei Dati, Architettura e Indipendenza}
+\subsubsection{Modelli dei Dati, Architettura e Indipendenza}
 \noindent \textbf{Il Modello dei Dati.} Un \textbf{modello dei dati} è una collezione di concetti usati per organizzare e descrivere i dati. \\
 Ogni modello offre specifici \textbf{costruttori di tipo}, simili a quelli usati nella programmazione (come array o struct). Nel \textbf{modello relazionale}, il costruttore principale è la \textbf{relazione} (comunemente vista come una \textbf{tabella}), composta da righe omogenee (tuple).
 
@@ -484,7 +486,7 @@ Ogni modello offre specifici \textbf{costruttori di tipo}, simili a quelli usati
     \item \textbf{Indipendenza Logica}: possiamo aggiungere nuove tabelle o nuove colonne al database \textbf{senza rompere} i programmi preesistenti, che continuano a funzionare interagendo con le loro viste abituali.
 \end{itemize}
 
-\subsection{Linguaggi per Basi di Dati e Modalità di Utilizzo}
+\subsubsection{Linguaggi per Basi di Dati e Modalità di Utilizzo}
 \noindent \textbf{Classificazione Funzionale: DDL vs DML.} Nei database si usano due categorie distinte di comandi:
 \begin{itemize}
     \item \textbf{DDL (Data Definition Language)}: comandi per creare o modificare la struttura delle tabelle (lo schema). \\
@@ -563,7 +565,7 @@ END;
 
 \noindent \textbf{4. Interfacce Grafiche (GUI e Maschere a Schermo).} Gli utenti non tecnici (es. operatori di sportello, cassieri) non scrivono comandi SQL: usano maschere grafiche con campi da compilare, pulsanti e menu a tendina (es. Microsoft Access o pagine web gestionali). Dietro le quinte, il software genera ed esegue i comandi SQL corrispondenti.
 
-\subsection{Attori, Ruoli, Transazioni e Valutazione dei DBMS}
+\subsubsection{Attori, Ruoli, Transazioni e Valutazione dei DBMS}
 \noindent \textbf{I Quattro Gruppi di Ruoli Operativi.} Nel mondo delle basi di dati lavorano quattro figure principali:
 \begin{enumerate}
     \item \textbf{Costruttori del DBMS}: gli ingegneri informatici che scrivono il motore del DBMS (progettano gli ottimizzatori di query, la gestione della memoria su disco e i compilatori interni).
@@ -612,7 +614,8 @@ END;
 
 \section{Il Modello Relazionale dei Dati}
 
-\subsection{Origine, Modelli Logici e Paradigma Basato su Valori}
+\subsection{Struttura del Modello Relazionale}
+\subsubsection{Origine, Modelli Logici e Paradigma Basato su Valori}
 \noindent \textbf{Evoluzione dei Modelli Logici Tradizionali.} Prima dell'avvento del modello relazionale, la gestione dei dati nelle applicazioni aziendali si basava su due grandi modelli logici:
 \begin{itemize}
     \item \textbf{Modello Gerarchico}: organizza i record secondo strutture ad albero piramidali; ogni record figlio possiede un unico record genitore, replicando fedelmente le gerarchie rigide ma rendendo complessa la gestione di relazioni molti-a-molti.
@@ -653,7 +656,7 @@ Entrambi questi modelli presentano un limite strutturale insidioso: le associazi
     \item \textbf{Simmetria e navigazione bidirezionale}: mentre un puntatore impone una traiettoria prefissata, l'uguaglianza sui valori consente di navigare la correlazione con pari facilità in entrambi i versi (trovare tutti gli esami sostenuti dallo studente $X$ oppure risalire all'anagrafica dello studente che ha superato l'esame $Y$).
 \end{itemize}
 
-\subsection{Dalla Relazione Matematica alla Relazione Tabellare}
+\subsubsection{Dalla Relazione Matematica alla Relazione Tabellare}
 \noindent \textbf{Chiarimento Terminologico Fondamentale.} L'uso del termine ``relazione'' genera spesso equivoci tra mondi contigui:
 \begin{itemize}
     \item \textbf{Relazione logico-matematica (Teoria degli Insiemi)}: sottoinsieme del prodotto cartesiano tra insiemi di elementi.
@@ -750,7 +753,7 @@ Entrambe le tabelle rappresentano la medesima informazione logica: la struttura 
     \item I valori all'interno di ciascuna colonna sono omogenei rispetto al dominio dell'attributo.
 \end{enumerate}
 
-\subsection{Formalizzazione: Schemi, Istanze e Tuple}
+\subsubsection{Formalizzazione: Schemi, Istanze e Tuple}
 \noindent \textbf{Schema di Relazione.} Uno \textbf{schema di relazione} $R(X)$ è costituito da:
 \begin{itemize}
     \item Un nome simbolico $R$ (es. \texttt{STUDENTI}).
@@ -820,7 +823,7 @@ $$t_1[\text{Matricola}] = 6554, \quad t_1[\text{Cognome}] = \text{'Rossi'}, \qua
 \end{center}
 La presenza del valore indica l'appartenenza dello studente alla categoria dei lavoratori.
 
-\subsection{Strutture Dati Annidate e Appiattimento (\textit{Unnesting})}
+\subsubsection{Strutture Dati Annidate e Appiattimento (\textit{Unnesting})}
 \noindent \textbf{La Complessità dei Dati del Mondo Reale.} Nei documenti cartacei e nelle ricevute contabili i dati si presentano spesso in forma gerarchica e ricorsiva. Si pensi a uno scontrino rilasciato da un ristorante:
 \begin{itemize}
     \item Informazioni di testata generali: nome del locale, indirizzo, data, numero scontrino fiscale e conto totale.
@@ -870,7 +873,7 @@ La presenza del valore indica l'appartenenza dello studente alla categoria dei l
 \end{itemize}
 \end{cbox}
 
-\subsection{Informazione Parziale e Gestione del Valore NULL}
+\subsubsection{Informazione Parziale e Gestione del Valore NULL}
 \noindent \textbf{La Rigidità dello Schema e il Problema dei Valori Mancanti.} Il modello relazionale impone una struttura stretta: ogni tupla conforme a uno schema $R(A_1, \dots, A_n)$ deve possedere un valore per ciascuno degli attributi previsti. Nella realtà dei fatti, tuttavia, le informazioni raccolte possono essere incomplete o temporaneamente non disponibili.
 
 \medskip
@@ -947,7 +950,8 @@ Franklin D. Roosevelt possiede effettivamente un secondo nome, mentre gli altri 
 \medskip
 \noindent Come evidenziato nell'ultima riga, se il valore NULL si presenta su un attributo deputato a identificare la riga (la matricola), il record non può più essere collegato in modo univoco agli esami sostenuti o ad altre tabelle del database. Nasce così la necessità di regole strutturali rigide: i \textbf{vincoli di integrità}.
 
-\subsection{Vincoli di Integrità e Loro Classificazione}
+\subsection{Vincoli di Integrità}
+\subsubsection{Vincoli di Integrità e Loro Classificazione}
 \noindent \textbf{Limiti della Correttezza Sintattica.} Non tutte le istanze di basi di dati sintatticamente conformi a uno schema descrivono una realtà plausibile o corretta per l'applicazione. Si consideri la seguente istanza di prova:
 \begin{center}
 \small
@@ -1018,7 +1022,7 @@ $$\mathcal{C}: \text{Istanze}(R) \longrightarrow \{\text{True}, \text{False}\}$$
     \item \textbf{Vincoli Inter-relazionali}: il predicato coinvolge tuple appartenenti a relazioni distinte (o alla stessa relazione esaminata su istanze diverse), coordinando la coerenza complessiva della base di dati.
 \end{enumerate}
 
-\subsection{Vincoli Intra-relazionali: Dominio e Tupla}
+\subsubsection{Vincoli Intra-relazionali: Dominio e Tupla}
 \noindent \textbf{Vincoli di Dominio.} Un \textbf{vincolo di dominio} è una condizione imposta sul singolo attributo di una relazione, limitando l'insieme dei valori ammissibili a un sottoinsieme proprio del dominio di tipo:
 $$t[A] \in D' \subseteq \text{dom}(A)$$
 \textit{Esempi}: imporre che il voto di un esame sia compreso nell'intervallo $[18, 30]$, che l'età di un dipendente sia strettamente positiva o che il campo \texttt{Genere} ammetta unicamente i caratteri \texttt{'M'}, \texttt{'F'} o \texttt{'N'}.
@@ -1071,7 +1075,7 @@ Tutte le tuple dell'istanza sopra riportata soddisfano il vincolo:
 Poiché $11.000 + 36.000 = 47.000 \ne 50.000$, la tupla viola il vincolo di integrità di tupla; il DBMS deve respingere la modifica lasciando inalterato lo stato della base di dati.
 \end{cbox}
 
-\subsection{Identificazione delle Tuple: Superchiavi e Chiavi}
+\subsubsection{Identificazione delle Tuple: Superchiavi e Chiavi}
 \noindent \textbf{Il Problema dell'Identificazione Univoca.} Nel paradigma relazionale basato su valori, non esistono puntatori fisici o numeri di riga impliciti. L'unico modo per individuare una specifica tupla, accedere alle sue informazioni e collegarla ad altre relazioni consiste nel fare leva sui valori dei suoi attributi.
 
 \begin{cbox}{Definizioni Formali: Superchiave e Chiave}
@@ -1145,7 +1149,7 @@ $\implies$ \textbf{Ogni relazione possiede sempre almeno una chiave}.
     \item \textbf{Fondamento delle relazioni per valore}: le chiavi costituiscono l'ancora logica per connettere relazioni distinte senza ambiguità.
 \end{itemize}
 
-\subsection{Chiavi, Valori NULL e la Chiave Primaria}
+\subsubsection{Chiavi, Valori NULL e la Chiave Primaria}
 \noindent \textbf{L'Incompatibilità tra Valori NULL e Chiavi.} Se gli attributi appartenenti a una chiave contenessero valori NULL, la funzione stessa della chiave verrebbe irrimediabilmente compromessa:
 \begin{itemize}
     \item \textbf{Perdita di identificazione}: due tuple con un valore NULL sulla chiave non possono essere confrontate (NULL non è uguale a NULL nella logica a tre valori), rendendo impossibile verificare se rappresentino la stessa entità o entità distinte.
@@ -1188,7 +1192,7 @@ Negli schemi testuali e nelle tabelle relazionali, la chiave primaria viene evid
 $$\text{STUDENTI}(\underline{\text{Matricola}}, \text{Cognome}, \text{Nome}, \text{CorsoDiStudi}, \text{DataNascita})$$
 \end{cbox}
 
-\subsection{Integrità Referenziale e Chiavi Esterne (\textit{Foreign Key})}
+\subsubsection{Integrità Referenziale e Chiavi Esterne (\textit{Foreign Key})}
 \noindent \textbf{Il Collegamento Inter-relazionale per Valore.} Nel modello relazionale, informazioni memorizzate in tabelle distinte vengono poste in correlazione mediante la sovrapposizione di valori condivisi. In particolare, una tabella referenziante include tra i propri attributi i valori della chiave primaria della tabella referenziata.
 
 \medskip
@@ -1263,7 +1267,7 @@ $$\text{STUDENTI}(\underline{\text{Matricola}}, \text{Cognome}, \text{Nome}, \te
 \end{itemize}
 In entrambi i casi, l'infrazione punterebbe al vuoto (\textit{dangling reference}), compromettendo la qualità e l'affidabilità della base di dati.
 
-\subsection{Politiche di Reazione alle Violazioni e Vincoli Multipli}
+\subsubsection{Politiche di Reazione alle Violazioni e Vincoli Multipli}
 \noindent \textbf{Integrità Referenziale e Valori NULL.} Il vincolo di chiave esterna non impone necessariamente che il riferimento esista: ammette che l'attributo assuma il valore NULL, a patto che la colonna non sia marcata con il vincolo aggiuntivo \texttt{NOT NULL}.
 
 \begin{cbox}{Esempio: Partecipazione Opzionale a Progetti}
@@ -1342,9 +1346,10 @@ In entrambi i casi, l'infrazione punterebbe al vuoto (\textit{dangling reference
 
 \newpage
 
-\section{Algebra Relazionale}
+\section{Linguaggi Formali di Interrogazione}
+\subsection{Algebra Relazionale}
 
-\subsection{Linguaggi per Interrogare una Base di Dati}
+\subsubsection{Linguaggi per Interrogare una Base di Dati}
 \noindent Su una base di dati si fanno due tipi di operazioni:
 \begin{itemize}
     \item \textbf{operazioni sullo schema}, con il \textbf{DDL} (\textit{Data Definition Language}): servono a creare o modificare la struttura delle tabelle;
@@ -1375,7 +1380,7 @@ In entrambi i casi, l'infrazione punterebbe al vuoto (\textit{dangling reference
 \end{itemize}
 Gli operatori che vedremo sono: unione, intersezione, differenza, ridenominazione, selezione, proiezione e join (naturale, prodotto cartesiano, theta-join).
 
-\subsection{Operatori Insiemistici e Ridenominazione}
+\subsubsection{Operatori Insiemistici e Ridenominazione}
 \noindent Le relazioni sono \textbf{insiemi} di tuple, e anche i risultati devono essere insiemi. Possiamo quindi usare le classiche operazioni sugli insiemi: \textbf{unione} ($\cup$), \textbf{intersezione} ($\cap$) e \textbf{differenza} ($-$). C'è però un vincolo: le due relazioni coinvolte devono avere \textbf{lo stesso schema} (stessi attributi).
 
 \medskip
@@ -1433,7 +1438,7 @@ Ora entrambe le relazioni hanno schema (Genitore, Figlio) e l'unione è lecita.
 \]
 produce un'unica relazione con schema (Cognome, Sede, Paga).
 
-\subsection{Selezione e Proiezione}
+\subsubsection{Selezione e Proiezione}
 \noindent \textbf{Selezione ($\sigma$).} Operatore unario che \textbf{filtra le righe}:
 \[
 \sigma_{\text{Predicato}}(\text{Relazione})
@@ -1495,7 +1500,7 @@ produce un'unica relazione con schema (Cognome, Sede, Paga).
 \medskip
 \noindent \textbf{Limite.} Con selezione e proiezione si lavora su \textbf{una sola relazione}: non si possono mettere in relazione tuple di tabelle diverse, né tuple diverse della stessa tabella. Per questo serve il join.
 
-\subsection{Join}
+\subsubsection{Join}
 \noindent Il \textbf{join} è l'operatore più importante dell'algebra relazionale: permette di \textbf{collegare tuple di relazioni diverse}.
 
 \medskip
@@ -1617,7 +1622,7 @@ Il risultato ha schema (Impiegato, Reparto, Codice, Capo), con Reparto e Codice 
 \]
 che però ha una colonna in meno (Reparto compare una sola volta).
 
-\subsection{Esempi di Interrogazioni}
+\subsubsection{Esempi di Interrogazioni}
 \noindent Consideriamo le relazioni:
 \begin{center}
 \small
@@ -1863,7 +1868,7 @@ In Supervisione sia Impiegato sia Capo sono matricole di Impiegati.
     \end{tabular}
     \end{center}
 \end{enumerate}
-\subsection{Equivalenza di Espressioni}
+\subsubsection{Equivalenza di Espressioni}
 \noindent Due espressioni dell'algebra relazionale $E_1$ ed $E_2$ sono \textbf{equivalenti} se producono lo stesso risultato \textbf{qualunque sia lo stato} della base di dati. Le regole di equivalenza sono importanti perché i DBMS le usano per riscrivere le query in forme equivalenti ma \textbf{più efficienti}.
 
 \medskip
@@ -1923,7 +1928,7 @@ Con la regola 1 si spezza la selezione; con la 5 la condizione $\text{Matricola}
 \]
 Nel corso non è richiesto scrivere query efficienti (meglio corrette e chiare): l'ottimizzazione la fa il DBMS.
 
-\subsection{Selezione e Valori NULL}
+\subsubsection{Selezione e Valori NULL}
 \noindent Se un attributo vale NULL, una condizione atomica su di esso (es. $\text{Età} > 40$) \textbf{non è soddisfatta}: la tupla viene esclusa. Questo porta a risultati poco intuitivi:
 \[
 \sigma_{\text{Età} > 30}(\text{Persone}) \cup \sigma_{\text{Età} \leq 30}(\text{Persone}) \neq \text{Persone}
@@ -1939,7 +1944,7 @@ perché le persone con età NULL non rientrano in nessuna delle due condizioni.
 \]
 e, ad esempio, $\sigma_{(\text{Età} > 40) \,\vee\, (\text{Età IS NULL})}(\text{Impiegati})$ restituisce sia chi ha più di 40 anni sia chi ha età sconosciuta. Si potrebbe definire una logica a tre valori (vero, falso, \textit{sconosciuto}), ma qui non è necessario.
 
-\subsection{Viste}
+\subsubsection{Viste}
 \noindent Le \textbf{viste} sono rappresentazioni diverse degli stessi dati. Si distinguono:
 \begin{itemize}
     \item \textbf{relazioni di base}: hanno un contenuto proprio, memorizzato;
@@ -1974,7 +1979,7 @@ Le viste però \textbf{non migliorano l'efficienza} delle query.
 \medskip
 \noindent \textbf{Aggiornare una vista.} Significa modificare le relazioni di base in modo che la vista rifletta la modifica. Il problema è che la traduzione può essere \textbf{ambigua}: se nella vista Supervisione voglio inserire ``Lupi ha come capo Bruni'', in quale reparto va Lupi? Bruni dirige sia B sia C. E se voglio inserire ``Belli ha come capo Falchi'', Falchi non dirige alcun reparto. Per questo sulle viste sono ammessi solo pochi tipi di aggiornamento.
 
-\subsection{Una Notazione Alternativa per i Join}
+\subsubsection{Una Notazione Alternativa per i Join}
 \noindent Nella pratica (ed è l'approccio usato da SQL) si adotta spesso una notazione diversa:
 \begin{itemize}
     \item si \textbf{ignora il join naturale}: non si assume nessuna condizione implicita sugli attributi con lo stesso nome, ogni join è un theta-join esplicito;
@@ -1994,9 +1999,9 @@ L'esempio degli impiegati che guadagnano più del capo diventa molto più leggib
 
 \newpage
 
-\section{Calcolo Relazionale e Datalog}
+\subsection{Calcolo Relazionale e Datalog}
 
-\subsection{Calcolo Relazionale su Domini}
+\subsubsection{Calcolo Relazionale su Domini}
 \noindent Il \textbf{calcolo relazionale} è una famiglia di linguaggi \textbf{dichiarativi} basati sulla logica del primo ordine: si descrivono le proprietà del risultato, non i passi per ottenerlo. Ne vediamo due versioni: il \textbf{calcolo sui domini} e il \textbf{calcolo su tuple con dichiarazioni di range}.
 
 \medskip
@@ -2091,7 +2096,7 @@ Nell'ultimo esempio, $\neg \exists m' \dots (P \wedge Q \wedge s' \leq 40)$ si p
 \end{itemize}
 \end{cbox}
 
-\subsection{Calcolo su Tuple con Dichiarazioni di Range}
+\subsubsection{Calcolo su Tuple con Dichiarazioni di Range}
 \noindent Questa versione nasce per superare i limiti del calcolo sui domini:
 \begin{itemize}
     \item meno variabili: \textbf{una variabile per ogni tupla}, non una per ogni attributo;
@@ -2147,7 +2152,7 @@ Le espressioni hanno la forma:
 
 \noindent \textbf{Limite: l'unione.} Questo calcolo \textbf{non può esprimere l'unione} $R_1(AB) \cup R_2(AB)$: ogni variabile ha un solo range, quindi una tupla del risultato non può provenire ``o da $R_1$ o da $R_2$''. Intersezione e differenza invece si esprimono. Per questo SQL, che si basa su questo calcolo, ha un operatore esplicito \texttt{UNION}.
 
-\subsection{Limiti di Algebra e Calcolo: la Chiusura Transitiva}
+\subsubsection{Limiti di Algebra e Calcolo: la Chiusura Transitiva}
 \noindent Algebra e calcolo sono sostanzialmente equivalenti ed esprimono un insieme significativo di interrogazioni, ma alcune query utili restano fuori:
 \begin{itemize}
     \item si possono solo \textbf{estrarre} valori, non \textbf{calcolarne} di nuovi: né sulla singola tupla (conversioni, somme, differenze\dots) né su insiemi di tuple (somme, medie\dots). SQL aggiunge queste estensioni;
@@ -2159,7 +2164,7 @@ Le espressioni hanno la forma:
 \medskip
 \noindent Si possono trovare i superiori di secondo livello con un join della relazione con se stessa (più una ridenominazione), quelli di terzo livello con due join, e così via. Ma il numero di livelli dipende dai dati: \textbf{non c'è un limite} al numero di join necessari, quindi nessuna espressione fissa dell'algebra calcola la chiusura transitiva per qualunque istanza.
 
-\subsection{Datalog}
+\subsubsection{Datalog}
 \noindent \textbf{Datalog} è un linguaggio di programmazione logica orientato alle basi di dati, derivato dal Prolog. Usa due tipi di predicati:
 \begin{itemize}
     \item \textbf{estensionali}: le relazioni della base di dati;
@@ -2208,4 +2213,1317 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
     \item Datalog \textbf{ricorsivo senza negazione} non è confrontabile con il calcolo;
     \item Datalog \textbf{ricorsivo con negazione} è \textbf{più espressivo} di calcolo e algebra.
 \end{itemize}
+
+\newpage
+
+\section{SQL}
+
+\subsection{Definizione dei Dati (DDL)}
+\subsubsection{Origine, Standardizzazione ed Evoluzione del Linguaggio}
+\noindent \textbf{Definizione e Natura di SQL.} La sigla \textbf{SQL} nasceva originariamente come acronimo di \textit{Structured Query Language}; nel tempo è divenuta un nome proprio a tutti gli effetti. Rappresenta il linguaggio standard per l'interazione con i database relazionali ed è un linguaggio completo: integra sia comandi di definizione della struttura (\textbf{DDL}, \textit{Data Definition Language}) sia comandi di manipolazione e interrogazione dei dati (\textbf{DML}, \textit{Data Manipulation Language}).
+
+\medskip
+\noindent \textbf{Cenni Storici.} Le radici di SQL risalgono al \textbf{1974}, quando nei laboratori IBM venne sviluppato \textbf{SEQUEL} all'interno del progetto pionieristico \textit{System R}. Le prime implementazioni commerciali apparvero all'inizio degli anni '80 con Oracle (1981) e SQL/DS di IBM. A partire dal \textbf{1983} il linguaggio si impose come standard \textit{de facto} nel panorama industriale, portando gli enti di standardizzazione ANSI e ISO a formalizzarne le specifiche ufficiali.
+
+\medskip
+\noindent \textbf{L'Evoluzione degli Standard ISO/ANSI.} Nel corso degli anni lo standard è stato costantemente arricchito per rispondere alle crescenti esigenze applicative:
+\begin{itemize}
+    \item \textbf{SQL-86 (SQL-base)}: primo standard ufficiale. Conteneva le parole chiave fondamentali per l'interrogazione, ma offriva un supporto ancora rudimentale per la modifica degli schemi.
+    \item \textbf{SQL-89}: estese lo standard introducendo formalmente il supporto nativo ai \textbf{vincoli di integrità referenziale} (chiavi esterne).
+    \item \textbf{SQL-92 (SQL-2)}: consolidò il modello relazionale, introdusse funzioni condizionali avanzate (\texttt{CASE}, \texttt{COALESCE}, \texttt{NULLIF}) e definì tre livelli formali di conformità per i produttori (\textit{entry}, \textit{intermediate}, \textit{full}).
+    \item \textbf{SQL:1999 (SQL-3)}: segnò il passaggio all'approccio oggetto-relazionale, introducendo tipi composti, trigger e funzioni esterne.
+    \item \textbf{SQL:2003 e versioni successive}: integrarono l'interoperabilità con linguaggi a oggetti (come Java mediante SQL/JRT), la gestione di dati semistrutturati (\textbf{SQL/XML}), linguaggi di interrogazione gerarchica come \textbf{XQuery} (SQL:2006) e raffinamenti sintattici sui trigger (SQL:2008).
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.7cm and 0.5cm,
+    stepnode/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.9cm},
+    arrow/.style={thick, -{Latex[length=2mm]}, draw=blue-violet}
+]
+    % Prima riga
+    \node[stepnode] (s1) {\textbf{1974: SEQUEL}\\Prototipo IBM};
+    \node[stepnode, right=0.6cm of s1] (s2) {\textbf{1986: SQL-86}\\Primo standard ISO};
+    \node[stepnode, right=0.6cm of s2] (s3) {\textbf{1989: SQL-89}\\Integrità referenziale};
+    \node[stepnode, right=0.6cm of s3] (s4) {\textbf{1992: SQL-92}\\Modello completo (SQL-2)};
+
+    % Seconda riga (sotto)
+    \node[stepnode, below=0.8cm of s4] (s5) {\textbf{1999: SQL:1999}\\Trigger e Oggetti (SQL-3)};
+    \node[stepnode, left=0.6cm of s5] (s6) {\textbf{2003: SQL:2003}\\Supporto XML e Java};
+    \node[stepnode, left=0.6cm of s6] (s7) {\textbf{2006/2008}\\XQuery ed estensioni};
+
+    % Frecce di collegamento
+    \draw[arrow] (s1) -- (s2);
+    \draw[arrow] (s2) -- (s3);
+    \draw[arrow] (s3) -- (s4);
+    \draw[arrow] (s4.south) -- ++(0,-0.4) -| (s5.north);
+    \draw[arrow] (s5) -- (s6);
+    \draw[arrow] (s6) -- (s7);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Standard Ufficiale vs Dialetti Reali.} Sebbene esista uno standard internazionale rigoroso, nella pratica ogni DBMS commerciale o open source (PostgreSQL, Oracle, MySQL, SQL Server, SQLite) implementa una propria grammatica proprietaria (dialetto). Piccole differenze sintattiche o funzioni aggiuntive rendono spesso necessaria la consultazione della documentazione specifica del motore adottato.
+
+\begin{center}
+\small
+\begin{tabular}{llp{9.2cm}}
+    \toprule
+    \textbf{Nome Ufficioso} & \textbf{Nome Ufficiale} & \textbf{Caratteristiche Principali Introdottesi} \\
+    \midrule
+    SQL-Base & SQL-86 & Sintassi fondamentale di selezione; creazione schemi embrionale. \\
+    & SQL-89 & Supporto completo all'integrità referenziale (\textit{Foreign Key}). \\
+    \addlinespace
+    SQL-2 & SQL-92 & Modello relazionale completo, 3 livelli di conformità (\textit{entry, intermediate, full}), costrutto \texttt{CASE}. \\
+    \addlinespace
+    SQL-3 & SQL:1999 & Modello oggetto-relazionale, trigger nativi, funzioni esterne. \\
+    & SQL:2003 & Estensioni per dati semistrutturati (\texttt{SQL/XML}) e integrazione Java. \\
+    & SQL:2006 & Supporto a XQuery per interrogare documenti XML. \\
+    & SQL:2008 & Ritocchi sintattici (ad es. clausola \texttt{INSTEAD OF} per i trigger). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Definizione dei Dati: Database, Schemi e Tabelle}
+\noindent \textbf{Il Livello DDL.} Il \textbf{Data Definition Language} comprende tutte le istruzioni con cui si creano, modificano o cancellano le strutture logiche della base di dati (database, schemi, tabelle, domini e indici).
+
+\medskip
+\noindent \textbf{Creazione di un Database.} L'ambiente di livello più alto è il database fisico, contenente l'insieme di tabelle, viste e procedure:
+\begin{lstlisting}[language=SQL]
+CREATE DATABASE nome_database;
+\end{lstlisting}
+In ambienti embedded o specializzati la sintassi può variare: ad esempio, in SQLite la creazione avviene aprendo la connessione al file con \texttt{sqlite3\_open\_v2()}, mentre in DBMS come Mimer si usa la dicitura \texttt{CREATE DATABANK}.
+
+\medskip
+\noindent \textbf{Lo Schema Logico (\texttt{CREATE SCHEMA}).} Uno schema SQL raccoglie e qualifica un insieme omogeneo di tabelle, domini e vincoli appartenenti a un contesto applicativo o a un utente:
+\begin{lstlisting}[language=SQL]
+CREATE SCHEMA anagrafica_aziendale;
+\end{lstlisting}
+È possibile legare direttamente la titolarità dello schema a un utente autorizzato specificando la clausola \texttt{AUTHORIZATION}:
+\begin{lstlisting}[language=SQL]
+CREATE SCHEMA anagrafica_aziendale AUTHORIZATION 'responsabile_hr';
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Creazione delle Tabelle (\texttt{CREATE TABLE}).} È l'istruzione cardine del DDL: alloca una nuova relazione logica, ne istanzia una struttura inizialmente priva di tuple e ne definisce attributi, tipi di dato e vincoli di integrità:
+\begin{lstlisting}[language=SQL]
+CREATE TABLE Impiegato (
+    Matricola CHAR(6) PRIMARY KEY,
+    Nome      CHAR(20) NOT NULL,
+    Cognome   CHAR(20) NOT NULL,
+    Dipart    CHAR(15),
+    Stipendio NUMERIC(9) DEFAULT 0,
+    FOREIGN KEY (Dipart) REFERENCES Dipartimento(NomeDipart),
+    UNIQUE (Cognome, Nome)
+);
+\end{lstlisting}
+Questa dichiarazione stabilisce in modo compatto:
+\begin{itemize}
+    \item La chiave primaria (\texttt{Matricola}), garantita automaticamente univoca e non nulla.
+    \item L'obbligatorietà dei campi \texttt{Nome} e \texttt{Cognome} (\texttt{NOT NULL}).
+    \item Un valore predefinito (\texttt{DEFAULT 0}) assegnato allo stipendio qualora non venga indicato in fase di inserimento.
+    \item Un vincolo di integrità referenziale verso la tabella \texttt{Dipartimento}.
+    \item Un vincolo di unicità composito sulla coppia (\texttt{Cognome}, \texttt{Nome}).
+\end{itemize}
+
+\subsubsection{Tipi di Dato di Base e Domini Utente}
+\noindent \textbf{Tipi di Dato Elementari.} In SQL i tipi di dato corrispondono ai domini dell'algebra relazionale. Lo standard mette a disposizione diversi tipi predefiniti:
+\begin{itemize}
+    \item \textbf{Stringhe di caratteri}:
+    \begin{itemize}
+        \item \texttt{CHAR(n)}: stringa a lunghezza fissa di $n$ caratteri (eventuali spazi mancanti vengono aggiunti automaticamente a destra).
+        \item \texttt{VARCHAR(n)}: stringa a lunghezza variabile, con limite massimo pari a $n$ caratteri (occupa solo i byte effettivi del testo).
+    \end{itemize}
+    \item \textbf{Tipi numerici}:
+    \begin{itemize}
+        \item Interi: \texttt{SMALLINT}, \texttt{INTEGER}, \texttt{BIGINT}.
+        \item Numeri con virgola fissa o esatti: \texttt{NUMERIC(precisione, scala)} o \texttt{DECIMAL(p, s)}, ideali per importi monetari e contabilità.
+        \item Numeri in virgola mobile approssimati: \texttt{FLOAT}, \texttt{REAL}, \texttt{DOUBLE PRECISION}.
+    \end{itemize}
+    \item \textbf{Date e intervalli temporali}:
+    \begin{itemize}
+        \item \texttt{DATE}: memorizza anno, mese e giorno (es. \texttt{'2026-10-18'}).
+        \item \texttt{TIME}: memorizza ore, minuti e secondi.
+        \item \texttt{INTERVAL}: rappresenta una durata temporale (es. 30 giorni).
+    \end{itemize}
+    \item \textbf{Estensioni di SQL-3}:
+    \begin{itemize}
+        \item \texttt{BOOLEAN}: ammette i valori di verità \texttt{TRUE}, \texttt{FALSE} e l'indeterminato \texttt{UNKNOWN}.
+        \item \texttt{BLOB} (\textit{Binary Large Object}) e \texttt{CLOB} (\textit{Character Large Object}): pensati per memorizzare grandi volumi di dati binari non strutturati (immagini, video) o lunghi testi documentali.
+    \end{itemize}
+\end{itemize}
+
+\medskip
+\noindent \textbf{I Domini Personalizzati (\texttt{CREATE DOMAIN}).} Spesso i tipi elementari sono troppo generici per modellare i vincoli del mondo reale. Per evitare di riscrivere le medesime condizioni su molte colonne, SQL consente di definire tipi di dato personalizzati (\textbf{domini}):
+\begin{lstlisting}[language=SQL]
+CREATE DOMAIN VotoAccademico AS SMALLINT
+    DEFAULT NULL
+    CHECK (VALUE >= 18 AND VALUE <= 30);
+\end{lstlisting}
+Una volta definito, \texttt{VotoAccademico} può essere usato come tipo in qualsiasi tabella: il controllo di validità compreso tra 18 e 30 sarà applicato in modo uniforme e centralizzato dal DBMS.
+
+\subsubsection{Definizione dei Vincoli di Tabella}
+\noindent \textbf{Collocazione Sintattica dei Vincoli.} I vincoli possono essere dichiarati in due modalità equivalenti:
+\begin{itemize}
+    \item \textbf{Vincolo di colonna (in-line)}: scritto immediatamente a fianco della definizione dell'attributo. Si usa se il vincolo riguarda quel singolo campo.
+    \item \textbf{Vincolo di tabella (stand-alone)}: scritto come elemento separato dopo la lista degli attributi. È obbligatorio quando il vincolo coinvolge due o più colonne insieme.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Le Clausole di Integrità Principali.}
+\begin{itemize}
+    \item \texttt{NOT NULL}: impedisce che l'attributo assuma il valore nullo. Si definisce sempre come vincolo di colonna.
+    \item \texttt{UNIQUE}: impone che non esistano due righe con lo stesso valore non nullo per gli attributi indicati. Definisce una chiave candidata.
+    \item \texttt{PRIMARY KEY}: specifica la chiave primaria della tabella. Implica sia l'unicità sia l'assoluto divieto di valori \texttt{NULL}. Può esistere \textbf{una sola} chiave primaria per relazione.
+    \item \texttt{CHECK (condizione)}: impone un predicato booleano che ogni riga deve soddisfare per essere inserita o modificata.
+\end{itemize}
+
+\medskip
+\noindent Le due seguenti formulazioni per la chiave primaria sono del tutto equivalenti quando la chiave è composta da un solo attributo:
+\begin{lstlisting}[language=SQL]
+-- Sintassi a livello di colonna:
+Matricola CHAR(6) PRIMARY KEY
+
+-- Sintassi a livello di tabella:
+Matricola CHAR(6),
+PRIMARY KEY (Matricola)
+\end{lstlisting}
+
+\begin{cbox}{Attenzione: Unicità Singola vs Unicità Composita}
+\noindent Esiste una differenza cruciale tra dichiarare il vincolo \texttt{UNIQUE} sulle singole colonne e dichiararlo su una tupla di colonne:
+\begin{lstlisting}[language=SQL]
+-- Caso 1: Vincolo composito di tabella
+Nome    CHAR(20) NOT NULL,
+Cognome CHAR(20) NOT NULL,
+UNIQUE (Cognome, Nome)
+\end{lstlisting}
+\textit{Significato}: la combinazione di cognome e nome deve essere univoca. Possono coesistere due persone che si chiamano ``Mario Rossi'' e ``Paolo Rossi'' (stesso cognome) o ``Mario Bianchi'' (stesso nome).
+
+\begin{lstlisting}[language=SQL]
+-- Caso 2: Due vincoli separati a livello di colonna
+Nome    CHAR(20) NOT NULL UNIQUE,
+Cognome CHAR(20) NOT NULL UNIQUE
+\end{lstlisting}
+\textit{Significato}: in tutta la tabella non potrà \textbf{mai} ripetersi il nome ``Mario'' (anche con cognome diverso), né potrà mai ripetersi il cognome ``Rossi''. Sono due vincoli completamente differenti.
+\end{cbox}
+
+\subsubsection{Integrità Referenziale e Azioni Reattive}
+\noindent \textbf{Definizione delle Chiavi Esterne.} Il vincolo di integrità referenziale stabilisce che i valori presenti in una o più colonne di una tabella (\textit{tabella referenziante}) debbano corrispondere a valori già esistenti nella chiave primaria di un'altra tabella (\textit{tabella referenziata}).
+\begin{lstlisting}[language=SQL]
+CREATE TABLE Infrazioni (
+    CodiceVerbale CHAR(6) PRIMARY KEY,
+    Giorno        DATE NOT NULL,
+    Agente        INTEGER NOT NULL REFERENCES Vigile(Matricola),
+    StatoAuto     CHAR(2),
+    TargaAuto     CHAR(7),
+    FOREIGN KEY (StatoAuto, TargaAuto) 
+        REFERENCES Auto(Stato, Targa)
+);
+\end{lstlisting}
+In questo esempio:
+\begin{itemize}
+    \item L'attributo singolo \texttt{Agente} referenzia direttamente la chiave primaria della tabella \texttt{Vigile} (sintassi in-line).
+    \item La coppia di attributi (\texttt{StatoAuto}, \texttt{TargaAuto}) referenzia la chiave primaria composita della tabella \texttt{Auto} (sintassi di tabella).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Politiche di Reazione alle Violazioni.} Se un utente tenta di \textbf{cancellare} o \textbf{aggiornare} un record genitore che ha delle righe collegate nella tabella figlia, il DBMS interviene applicando una politica definita con le clausole:
+\begin{center}
+\texttt{ON [DELETE | UPDATE] [CASCADE | SET NULL | SET DEFAULT | NO ACTION]}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{lp{6.2cm}p{6.2cm}}
+    \toprule
+    \textbf{Azione} & \textbf{Effetto in Caso di DELETE} & \textbf{Effetto in Caso di UPDATE} \\
+    \midrule
+    \textbf{CASCADE} & Elimina automaticamente tutte le righe figlie collegate al record rimosso. & Aggiorna la chiave esterna nelle righe figlie con il nuovo valore del padre. \\
+    \addlinespace
+    \textbf{SET NULL} & Pone a \texttt{NULL} il campo della chiave esterna nelle righe figlie (richiede che il campo ammetta NULL). & Pone a \texttt{NULL} il campo della chiave esterna nelle righe figlie. \\
+    \addlinespace
+    \textbf{SET DEFAULT} & Imposta la chiave esterna al valore predefinito definito nello schema per quella colonna. & Imposta la chiave esterna al valore predefinito definito nello schema. \\
+    \addlinespace
+    \textbf{NO ACTION} & \textbf{Blocca l'operazione}: la cancellazione del padre è rifiutata se esistono figli collegati. & \textbf{Blocca l'operazione}: l'aggiornamento del padre è rifiutato se esistono figli collegati. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textit{Esempio di dichiarazione completa con politiche reattive}:
+\begin{lstlisting}[language=SQL]
+CREATE TABLE Infrazioni (
+    CodiceVerbale CHAR(6) PRIMARY KEY,
+    Giorno        DATE NOT NULL,
+    Agente        INTEGER REFERENCES Vigile(Matricola)
+                  ON DELETE SET NULL
+                  ON UPDATE CASCADE
+);
+\end{lstlisting}
+Se un agente viene rimosso dal personale, i suoi verbali passano ad agente \texttt{NULL}; se la sua matricola viene modificata, i verbali vengono aggiornati a cascata.
+
+\subsubsection{Evoluzione dello Schema: Comandi ALTER e DROP}
+\noindent \textbf{Modifica Dinamica dello Schema.} Non è quasi mai possibile prevedere a priori tutte le necessità future di una base di dati. SQL mette a disposizione istruzioni DDL per alterare strutture preesistenti senza perdere i dati già registrati.
+
+\medskip
+\noindent \textbf{Modifica dei Domini (\texttt{ALTER DOMAIN}).} Consente di modificare valori di default o vincoli su un dominio:
+\begin{lstlisting}[language=SQL]
+-- Impostare un nuovo valore predefinito:
+ALTER DOMAIN VotoAccademico SET DEFAULT 30;
+
+-- Rimuovere il valore predefinito:
+ALTER DOMAIN VotoAccademico DROP DEFAULT;
+
+-- Aggiungere un vincolo con un nome specifico:
+ALTER DOMAIN VotoAccademico 
+    ADD CONSTRAINT ControlloLode CHECK (VALUE <= 30);
+
+-- Rimuovere un vincolo esistente:
+ALTER DOMAIN VotoAccademico DROP CONSTRAINT ControlloLode;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Modifica delle Tabelle (\texttt{ALTER TABLE}).} Permette di aggiungere colonne, modificare attributi o gestire i vincoli:
+\begin{lstlisting}[language=SQL]
+-- Aggiungere una nuova colonna allo schema:
+ALTER TABLE Impiegato ADD COLUMN LivelloQualifica VARCHAR(10);
+
+-- Modificare una colonna esistente (es. imporre NOT NULL):
+ALTER TABLE Impiegato ALTER COLUMN Matricola SET NOT NULL;
+
+-- Aggiungere un vincolo di integrita con nome:
+ALTER TABLE Impiegato 
+    ADD CONSTRAINT LunghMatricola CHECK (CHAR_LENGTH(Matricola) = 6);
+
+-- Rimuovere un vincolo:
+ALTER TABLE Impiegato DROP CONSTRAINT LunghMatricola;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Eliminazione di Colonne: RESTRICT vs CASCADE.} Quando si cancella una colonna da una tabella con \texttt{DROP COLUMN}, è fondamentale specificare l'impatto sugli altri oggetti del database:
+\begin{lstlisting}[language=SQL]
+-- Rimuove la colonna solo se nessun altro oggetto (viste, vincoli) dipende da essa:
+ALTER TABLE Impiegato DROP COLUMN LivelloQualifica RESTRICT;
+
+-- Rimuove la colonna ed elimina a cascata tutte le viste o i vincoli correlati:
+ALTER TABLE Impiegato DROP COLUMN LivelloQualifica CASCADE;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Eliminazione Definitiva: Comandi \texttt{DROP}.} Per cancellare definitivamente uno schema, un dominio o un'intera tabella:
+\begin{lstlisting}[language=SQL]
+-- Elimina il dominio se non piu utilizzato da alcuna colonna:
+DROP DOMAIN VotoAccademico;
+
+-- Rimuove interamente la tabella: cancella sia lo schema sia tutte le tuple contenute:
+DROP TABLE Infrazioni;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Indici Fisici (\texttt{CREATE INDEX}).} Per velocizzare le operazioni di ricerca e join, il DDL consente di definire indici su uno o più attributi:
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_CognomeAgente ON Vigile (Cognome);
+\end{lstlisting}
+L'indice opera a \textbf{livello fisico}: non altera la semantica logica dei dati né il risultato delle query, ma riduce i tempi di accesso al disco da una scansione sequenziale $\mathcal{O}(n)$ a una ricerca su albero $\mathcal{O}(\log n)$.
+
+\medskip
+\noindent \textbf{Il DDL nella Pratica Professionale.} Nei progetti industriali moderni, sebbene la progettazione avvenga spesso attraverso strumenti grafici (GUI come pgAdmin, MySQL Workbench, DBeaver) o tramite migrazioni automatiche nei framework software (ORM), la comprensione puntuale del DDL testuale resta fondamentale per garantire il controllo e l'ottimizzazione dell'architettura dati.
+
+\subsection{Interrogazioni in SQL}
+\subsubsection{La Struttura del Comando SELECT e il Flusso di Valutazione}
+\noindent \textbf{Natura Dichiarativa delle Interrogazioni.} A differenza dell'algebra relazionale, che richiede di specificare l'esatta sequenza procedurale di operazioni per ricavare un risultato, SQL adotta un approccio prevalentemente \textbf{dichiarativo}: chi interroga il sistema specifica \textit{cosa} intende estrarre, lasciando al motore interno del DBMS il compito di stabilire \textit{come} procedere.
+
+\medskip
+\noindent \textbf{Sintassi Fondamentale.} L'istruzione per l'interrogazione dei dati è il blocco \texttt{SELECT-FROM-WHERE}:
+\begin{lstlisting}[language=SQL]
+SELECT <ListaAttributi>
+FROM   <ListaTabelle>
+[ WHERE  <Condizione> ];
+\end{lstlisting}
+Le tre clausole assolvono compiti distinti:
+\begin{itemize}
+    \item \texttt{SELECT} (\textit{Target List}): specifica quali colonne devono comparire nel risultato finale (corrisponde concettualmente alla proiezione $\pi$).
+    \item \texttt{FROM}: indica le tabelle sorgente da cui prelevare i record. Se sono presenti più relazioni, ne determina il prodotto cartesiano o il join.
+    \item \texttt{WHERE} (\textit{opzionale}): definisce il predicato logico di filtraggio che ogni tupla combinata deve soddisfare (corrisponde alla selezione $\sigma$).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Ordine Lessicale vs Ordine Semantico di Esecuzione.} Un errore comune consiste nel confondere l'ordine in cui si scrive la query con l'ordine con cui il motore la elabora concettualmente. Sebbene la parola chiave \texttt{SELECT} compaia per prima nella stringa, essa viene valutata logicamente \textbf{dopo} le altre clausole:
+
+\begin{lstlisting}[language=SQL]
+3 SELECT Matricola, Nome
+1 FROM   Agente
+2 WHERE  Cognome = 'Rossi';
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[
+    stepnode/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=left, font=\footnotesize, minimum width=12.5cm, inner sep=6pt},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[stepnode] (from) {\textbf{1. Clausola FROM}: identifica le relazioni di partenza e genera l'universo delle tuple.};
+    \node[stepnode, below=0.45cm of from] (where) {\textbf{2. Clausola WHERE}: valuta il predicato riga per riga, scartando i record che non lo soddisfano.};
+    \node[stepnode, below=0.45cm of where] (select) {\textbf{3. Clausola SELECT}: isola gli attributi specificati nella target list ed esegue i calcoli.};
+    \node[stepnode, below=0.45cm of select] (distinct) {\textbf{4. Clausola DISTINCT} \textit{(se presente)}: filtra le righe proiettate rimuovendo i duplicati.};
+
+    \draw[arrow] (from) -- (where);
+    \draw[arrow] (where) -- (select);
+    \draw[arrow] (select) -- (distinct);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{L'Ottimizzatore di Interrogazioni (\textit{Query Planner}).} Sapere che concettualmente la clausola \texttt{FROM} calcola un prodotto cartesiano non significa che il DBMS lo esegua davvero fisicamente. I DBMS moderni integrano un \textbf{ottimizzatore di query}:
+\begin{itemize}
+    \item Le selezioni (\texttt{WHERE}) vengono spinte ed eseguite il più presto possibile (\textit{push-down}), riducendo le dimensioni dei dati intermedi prima di effettuare confronti complessi.
+    \item I prodotti cartesiani associati a filtri di uguaglianza vengono commutati in algoritmi di join efficienti (sfruttando indici fisici, tabelle hash o ordinamenti preventivi).
+    \item L'utente non deve preoccuparsi di ``scrivere una query efficiente a basso livello'', ma deve concentrarsi sulla \textbf{leggibilità} e sulla \textbf{correttezza semantica} della formulazione logica.
+\end{itemize}
+
+\subsubsection{Proiezione, Selezione e Ridenominazione}
+\noindent Per comprendere operativamente il comportamento di SQL, faremo riferimento a una relazione campione denominata \textbf{Persone}:
+
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \multicolumn{4}{c}{\textbf{Relazione Persone}} \\
+    \midrule
+    \textbf{Nome} & \textbf{Cognome} & \textbf{Età} & \textbf{Reddito} \\
+    \midrule
+    Mario   & Rossi   & 27 & 21 \\
+    Giacomo & Bianchi & 25 & 15 \\
+    Luisa   & Verdi   & 55 & 42 \\
+    Filippo & Neri    & 26 & 30 \\
+    Luigi   & Ferrari & 50 & 40 \\
+    Stefano & Rossi   & 85 & 35 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Selezione Pura.} Equivale all'operatore di selezione dell'algebra relazionale $\sigma_{\text{Età} < 30}(\text{Persone})$. Tutte le colonne vengono mantenute inalterate:
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM   Persone
+WHERE  Eta' < 30;
+\end{lstlisting}
+Il simbolo asterisco (\texttt{*}) è una scorciatoia sintattica per indicare la totalità degli attributi definiti nello schema della relazione sorgente.
+
+\medskip
+\noindent \textbf{Proiezione Pura.} Corrisponde all'operatore di proiezione $\pi_{\text{Nome}, \text{Reddito}}(\text{Persone})$. Non viene imposta alcuna clausola di filtraggio:
+\begin{lstlisting}[language=SQL]
+SELECT Nome, Reddito
+FROM   Persone;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Composizione di Selezione e Proiezione.} Quando si estraggono solo determinati campi da un sottoinsieme mirato di tuple, si realizza la combinazione $\pi_{\text{Nome}, \text{Reddito}}\big(\sigma_{\text{Età} < 30}(\text{Persone})\big)$:
+\begin{lstlisting}[language=SQL]
+SELECT Nome, Reddito
+FROM   Persone
+WHERE  Eta' < 30;
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+    \toprule
+    \multicolumn{2}{c}{\textbf{Risultato Proiezione e Selezione}} \\
+    \midrule
+    \textbf{Nome} & \textbf{Reddito} \\
+    \midrule
+    Mario   & 21 \\
+    Giacomo & 15 \\
+    Filippo & 30 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Ridenominazione con la Parola Chiave \texttt{AS}.} È possibile rinominare le colonne del risultato o assegnare un alias compatto alle tabelle nella clausola \texttt{FROM}:
+\begin{lstlisting}[language=SQL]
+SELECT p.Nome    AS NomeDipendente,
+       p.Reddito AS CompensoAnnuo
+FROM   Persone AS p
+WHERE  p.Eta' < 30;
+\end{lstlisting}
+L'assegnazione di alias tramite \texttt{AS} non muta lo schema salvato su disco; si limita a etichettare le colonne nella vista generata a video, facilitando la lettura o evitando ambiguità quando più tabelle condividono attributi con lo stesso nome.
+
+\subsubsection{Condizioni Booleane, Predicato LIKE e Valori NULL}
+\noindent \textbf{Espressioni di Filtraggio Composte.} All'interno della clausola \texttt{WHERE} i confronti atomici ($=, <>, <, >, <=, >=$) possono essere concatenati mediante i connettivi logici \texttt{AND}, \texttt{OR} e \texttt{NOT}. L'uso delle parentesi tonde è fondamentale per esplicitare l'ordine di valutazione ed evitare ambiguità di precedenza:
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM   Persone
+WHERE  Reddito > 25 
+  AND (Eta' < 30 OR Eta' > 60);
+\end{lstlisting}
+Questa interrogazione estrae le persone con reddito superiore a 25 che siano contemporaneamente o molto giovani (sotto i 30 anni) oppure anziane (sopra i 60).
+
+\medskip
+\noindent \textbf{Pattern Matching sulle Stringhe: Il Predicato \texttt{LIKE}.} Per effettuare ricerche flessibili su colonne testuali senza richiedere un'uguaglianza esatta, SQL fornisce l'operatore \texttt{LIKE}, che riconosce due caratteri speciali (\textit{wildcard}):
+\begin{itemize}
+    \item \textbf{Trattino basso (\texttt{\_})}: rappresenta esattamente un singolo carattere arbitrario.
+    \item \textbf{Percentuale (\texttt{\%})}: rappresenta una sequenza qualsiasi di caratteri (compresa la stringa vuota di zero caratteri).
+\end{itemize}
+
+\begin{lstlisting}[language=SQL]
+-- Cerca chi ha un nome che inizia per 'J', 
+-- ha un carattere intermedio qualunque, seguito da 'm' e poi altri caratteri:
+SELECT *
+FROM   Persone
+WHERE  Nome LIKE 'J_m%';
+\end{lstlisting}
+Questo pattern identifica con successo nomi come \texttt{Jim} o \texttt{James}, mentre scarterebbe \texttt{John} o \texttt{Jack}.
+
+\medskip
+\noindent \textbf{Gestione del Valore Mancante: \texttt{IS NULL} e \texttt{IS NOT NULL}.} Poiché il valore speciale \texttt{NULL} rappresenta l'assenza di dato (o un'informazione sconosciuta), non appartiene al dominio ordinario dei valori. Di conseguenza:
+\begin{itemize}
+    \item Il confronto convenzionale \texttt{Età = NULL} oppure \texttt{Età <> NULL} non è valido: in SQL restituisce sempre \texttt{UNKNOWN} (indeterminato), con il risultato che la riga viene sistematicamente scartata.
+    \item Per verificare formalmente l'assenza o la presenza del dato si devono impiegare unicamente i costrutti dedicati \texttt{IS NULL} e \texttt{IS NOT NULL}.
+\end{itemize}
+
+\begin{lstlisting}[language=SQL]
+-- Dipendenti con eta superiore a 40 anni oppure con eta ignota:
+SELECT *
+FROM   Dipendenti
+WHERE  Eta' > 40 
+   OR  Eta' IS NULL;
+\end{lstlisting}
+
+\subsubsection{Duplicati e la Clausola DISTINCT}
+\noindent \textbf{Insiemi vs Multinsiemi (\textit{Bags}).} Nella teoria pura dell'algebra relazionale, ogni relazione è formalizzata come un insieme matematico di tuple: non possono mai esistere due righe duplicate all'interno del medesimo risultato. 
+
+\medskip
+\noindent In SQL commerciale, per motivi di pura \textbf{efficienza computazionale}, la clausola \texttt{SELECT} opera per impostazione predefinita su \textbf{multinsiemi}: se una query proietta solo alcuni attributi e più righe assumono gli stessi valori, tali righe vengono restituite duplicate tante volte quante figuravano nell'origine, poiché eliminare i duplicati richiederebbe un costoso algoritmo di ordinamento o hashing su disco.
+
+\begin{cbox}{Controllo dei Duplicati: Clausola DISTINCT}
+\noindent Per imporre che il risultato contenga unicamente tuple distinte (ristabilendo la semantica dell'algebra relazionale), si posiziona la parola chiave \textbf{\texttt{DISTINCT}} subito dopo \texttt{SELECT}:
+\begin{lstlisting}[language=SQL]
+SELECT DISTINCT Cognome, Filiale
+FROM   Dipendenti;
+\end{lstlisting}
+Se \texttt{DISTINCT} viene omesso (comportamento equivalente alla parola chiave implicita \texttt{ALL}), eventuali righe identiche vengono preservate nel risultato.
+\end{cbox}
+
+\begin{center}
+\small
+\textbf{Output con \texttt{SELECT} predefinito} \qquad \qquad \textbf{Output con \texttt{SELECT DISTINCT}} \\[1ex]
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Cognome} & \textbf{Filiale} \\
+    \midrule
+    Neri  & Napoli \\
+    Neri  & Milano \\
+    Rossi & Roma \\
+    Rossi & Roma \\
+    \bottomrule
+\end{tabular}
+\qquad \qquad
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Cognome} & \textbf{Filiale} \\
+    \midrule
+    Neri  & Napoli \\
+    Neri  & Milano \\
+    Rossi & Roma \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Interrogazioni su Più Relazioni e Join Implicito}
+\noindent \textbf{Prodotto Cartesiano e Selezione.} Quando l'informazione desiderata è distribuita su più tabelle, è sufficiente elencare i rispettivi nomi separandoli da virgole all'interno della clausola \texttt{FROM}. In assenza di filtri, questa formulazione produce il pieno \textbf{prodotto cartesiano}:
+\begin{lstlisting}[language=SQL]
+SELECT *
+FROM   TabellaA, TabellaB;
+\end{lstlisting}
+Se \texttt{TabellaA} possiede $N$ righe e \texttt{TabellaB} contiene $M$ righe, il risultato restituirà $N \times M$ tuple complessive.
+
+\medskip
+\noindent \textbf{Il Join Implicito in SQL.} Per collegare i dati coerentemente, si affianca all'elenco delle tabelle nella clausola \texttt{FROM} un predicato di uguaglianza inserito nella clausola \texttt{WHERE}. Questa combinazione traduce l'equi-join o join naturale dell'algebra:
+\begin{lstlisting}[language=SQL]
+SELECT DISTINCT R1.A1, R2.A4
+FROM   R1, R2
+WHERE  R1.A2 = R2.A3;
+\end{lstlisting}
+
+\medskip
+\noindent Il legame formale tra le due notazioni si scompone in tre fasi sequenziali:
+\begin{enumerate}
+    \item \textbf{FROM \texttt{R1, R2}}: calcola il prodotto cartesiano $R_1 \times R_2$.
+    \item \textbf{WHERE \texttt{R1.A2 = R2.A3}}: applica la selezione $\sigma_{R_1.A2 = R_2.A3}$.
+    \item \textbf{SELECT DISTINCT \texttt{R1.A1, R2.A4}}: conclude con la proiezione $\pi_{A1, A4}$.
+\end{enumerate}
+L'espressione algebrica globale equivalente è quindi:
+\[
+\pi_{A_1, A_4}\big(\sigma_{A_2 = A_3}(R_1 \times R_2)\big)
+\]
+
+\subsubsection{Auto-Join (Self-Join) ed Esempi Completi}
+\noindent \textbf{Lavorare con Relazioni Ricorsive o Replicate.} Quando una query richiede di confrontare una riga con altre righe della \textbf{stessa tabella}, occorre includere la tabella più volte nella clausola \texttt{FROM}. Per evitare ambiguità, è obbligatorio assegnare alle singole istanze nomi di variabile distinti (\textit{alias di correlazione}).
+
+\medskip
+\noindent Si considerino due relazioni: \textbf{Persone}(\underline{Nome}, Età, Reddito) e \textbf{Paternità}(Padre, \underline{Figlio}), dove \texttt{Padre} e \texttt{Figlio} fanno riferimento a nomi registrati in \texttt{Persone}.
+
+\medskip
+\noindent \textbf{Esempio 1: Padri di persone che guadagnano più di 20.}
+Vogliamo estrarre i nomi dei padri i cui figli hanno un reddito superiore a 20. In algebra relazionale:
+\[
+\pi_{\text{Padre}}\big(\text{Paternità} \bowtie_{\text{Figlio} = \text{Nome}} \sigma_{\text{Reddito} > 20}(\text{Persone})\big)
+\]
+In SQL, combinando \texttt{Persone} e \texttt{Paternità}:
+\begin{lstlisting}[language=SQL]
+SELECT DISTINCT p.Padre
+FROM   Persone pe, Paternita' p
+WHERE  p.Figlio = pe.Nome
+  AND  pe.Reddito > 20;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Esempio 2: Individui che guadagnano più del proprio padre.}
+La query richiede di visualizzare il nome della persona, il suo reddito e il reddito di suo padre, selezionando solo i casi in cui il reddito del figlio sia strettamente maggiore di quello paterno. 
+
+\medskip
+\noindent Per risolvere l'interrogazione, la relazione \textbf{Persone} deve essere consultata due volte con ruoli distinti:
+\begin{itemize}
+    \item Un'istanza con alias \texttt{c} (\textit{child}, il figlio).
+    \item Un'istanza con alias \texttt{f} (\textit{father}, il padre).
+\end{itemize}
+
+\begin{lstlisting}[language=SQL]
+SELECT c.Nome    AS NomeFiglio,
+       c.Reddito AS RedditoFiglio,
+       f.Reddito AS RedditoPadre
+FROM   Persone f,
+       Paternita' pat,
+       Persone c
+WHERE  f.Nome = pat.Padre
+  AND  pat.Figlio = c.Nome
+  AND  c.Reddito > f.Reddito;
+\end{lstlisting}
+
+\medskip
+\noindent In algebra relazionale pura questa interrogazione risulterebbe estremamente complessa da formulare e leggere, poiché richiederebbe la ridenominazione preventiva di tutti gli attributi del padre per evitare conflitti di collisione sui nomi di colonna:
+\[
+\pi_{\text{Nome}, \text{Reddito}, \text{RedditoP}}\Big(\sigma_{\text{Reddito} > \text{RedditoP}}\big(\rho_{\dots}(\text{Persone}) \bowtie \text{Paternità} \bowtie \text{Persone}\big)\Big)
+\]
+La notazione dichiarativa con alias di SQL (\texttt{f} e \texttt{c}) consente invece di esprimere il vincolo di parentela e il confronto tra redditi in modo pulito, naturale e privo di ambiguità.
+
+\subsubsection{Espressioni nella Target List e Sintassi Esplicita del JOIN}
+\noindent \textbf{Calcoli ed Espressioni nella Clausola SELECT.} La target list di una query non è limitata alla semplice proiezione di colonne memorizzate: è possibile inserire espressioni aritmetiche, manipolazioni di stringhe o costanti. I valori calcolati vengono generati al volo durante l'interrogazione senza alterare i dati su disco:
+
+\begin{lstlisting}[language=SQL]
+-- Calcola la meta del reddito per una specifica persona:
+SELECT Reddito / 2 AS RedditoDimezzato
+FROM   Persone
+WHERE  Nome = 'Luigi';
+\end{lstlisting}
+L'assegnazione di un alias con \texttt{AS} è caldamente consigliata per assegnare un nome significativo alla colonna risultante, che altrimenti verrebbe etichettata dal motore con il testo dell'espressione o lasciata anonima.
+
+\medskip
+\noindent \textbf{Dal Join Implicito al Join Esplicito.} Nelle versioni iniziali di SQL, il join tra tabelle veniva espresso elencando le relazioni nella clausola \texttt{FROM} e specificando la condizione di accoppiamento nel \texttt{WHERE} (\textit{join implicito}). Lo standard SQL-92 ha introdotto una sintassi dedicata ed esplicita per separare nettamente le condizioni di collegamento tra tabelle dai filtri sulle righe:
+
+\begin{lstlisting}[language=SQL]
+-- Sintassi implicita (tradizionale):
+SELECT m.Madre, f.Figlio, f.Padre
+FROM   Maternità m, Paternità f
+WHERE  m.Figlio = f.Figlio;
+
+-- Sintassi esplicita (standard SQL-92):
+SELECT m.Madre, f.Figlio, f.Padre
+FROM   Maternita' m
+       JOIN Paternita' f ON m.Figlio = f.Figlio;
+\end{lstlisting}
+La sintassi formale generale del blocco con join esplicito è:
+\begin{lstlisting}[language=SQL]
+SELECT <ListaAttributi>
+FROM   TabellaSinistra [INNER] JOIN TabellaDestra
+       ON <CondizioneDiJoin>
+[ WHERE  <AltriFiltri> ];
+\end{lstlisting}
+La parola chiave \texttt{INNER} è opzionale: se si scrive semplicemente \texttt{JOIN}, il DBMS assume per impostazione predefinita un inner join.
+
+\medskip
+\noindent \textbf{Natural Join (\texttt{NATURAL JOIN}).} Se due tabelle condividono attributi con lo stesso identico nome, è possibile ricorrere al \textbf{join naturale}. Il DBMS individua in automatico le colonne omonime, impone l'uguaglianza tra di esse ed elimina le colonne duplicate dal risultato:
+\begin{lstlisting}[language=SQL]
+SELECT Madre, Figlio, Padre
+FROM   Maternita' NATURAL JOIN Paternita';
+\end{lstlisting}
+\textit{Nota pratica}: sebbene compatto, l'uso del \texttt{NATURAL JOIN} nella programmazione reale è spesso sconsigliato, poiché se in futuro viene aggiunta a una delle due tabelle una colonna con un nome coincidente per puro caso, il join cambierà comportamento in modo silenzioso e inatteso.
+
+\subsubsection{Outer Join: Preservare l'Informazione Incompleta}
+\noindent \textbf{Il Limite dell'Inner Join.} Nell'inner join convenzionale, se una tupla non trova alcuna corrispondenza nella tabella con cui viene combinata, essa viene scartata dal risultato finale. Questo comportamento comporta una perdita di informazione quando si desidera visualizzare l'intero elenco di un'entità, indipendentemente dal fatto che abbia o meno record associati.
+
+\medskip
+\noindent \textbf{Le Varianti di Outer Join.} L'\textbf{outer join} supera questo limite: mantiene nel risultato anche le tuple che non soddisfano la condizione di join, riempiendo con valori \texttt{NULL} le colonne della tabella associata mancante. Ne esistono tre declinazioni:
+\begin{itemize}
+    \item \textbf{LEFT [OUTER] JOIN}: mantiene \textbf{tutte} le tuple della tabella di sinistra (primo operando). Se non c'è corrispondenza a destra, gli attributi di destra assumono valore \texttt{NULL}.
+    \item \textbf{RIGHT [OUTER] JOIN}: mantiene \textbf{tutte} le tuple della tabella di destra (secondo operando). Se manca l'abbinamento a sinistra, compaiono valori \texttt{NULL}.
+    \item \textbf{FULL [OUTER] JOIN}: mantiene \textbf{tutte} le tuple di entrambe le tabelle, accoppiando dove possibile e inserendo \texttt{NULL} ovunque manchi la corrispondenza (unione delle due strategie precedenti).
+\end{itemize}
+
+\begin{lstlisting}[language=SQL]
+-- Estrae tutti i figli con il padre noto e, se presente, anche la madre:
+SELECT f.Figlio, f.Padre, m.Madre
+FROM   Paternita' f
+       LEFT OUTER JOIN Maternita' m ON f.Figlio = m.Figlio;
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    \multicolumn{3}{c}{\textbf{Risultato di un LEFT JOIN tra Paternità e Maternità}} \\
+    \midrule
+    \textbf{Figlio} & \textbf{Padre} & \textbf{Madre} \\
+    \midrule
+    Giacomo & Stefano & \textit{NULL} \quad (madre non registrata) \\
+    Filippo & Luigi   & Luisa \\
+    Mario   & Franco  & Anna \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Rappresentazione Insimeistica dei Join.} La figura seguente sintetizza visivamente la differenza semantica tra le tipologie fondamentali di join:
+
+\begin{center}
+\begin{tikzpicture}[font=\footnotesize]
+    % Stili
+    \tikzset{
+        venn/.style={circle, minimum size=1.8cm, draw=black, thick},
+        filled/.style={fill=blue-violet!30},
+        labelnode/.style={align=center, font=\scriptsize\bfseries}
+    }
+
+    % 1. INNER JOIN
+    \begin{scope}[shift={(0,0)}]
+        \begin{scope}
+            \clip (-0.45,0) circle (0.9cm);
+            \fill[blue-violet!50] (0.45,0) circle (0.9cm);
+        \end{scope}
+        \draw[thick] (-0.45,0) circle (0.9cm) node[left=6pt] {A};
+        \draw[thick] (0.45,0) circle (0.9cm) node[right=6pt] {B};
+        \node[labelnode, below=1.2cm] at (0,0) {INNER JOIN\\{\tiny Solo corrispondenze}};
+    \end{scope}
+
+    % 2. LEFT JOIN
+    \begin{scope}[shift={(3.8,0)}]
+        \fill[blue-violet!40] (-0.45,0) circle (0.9cm);
+        \begin{scope}
+            \clip (-0.45,0) circle (0.9cm);
+            \fill[blue-violet!40] (0.45,0) circle (0.9cm);
+        \end{scope}
+        \draw[thick] (-0.45,0) circle (0.9cm) node[left=6pt] {A};
+        \draw[thick] (0.45,0) circle (0.9cm) node[right=6pt] {B};
+        \node[labelnode, below=1.2cm] at (0,0) {LEFT JOIN\\{\tiny Tutto A + match di B}};
+    \end{scope}
+
+    % 3. RIGHT JOIN
+    \begin{scope}[shift={(7.6,0)}]
+        \fill[blue-violet!40] (0.45,0) circle (0.9cm);
+        \begin{scope}
+            \clip (0.45,0) circle (0.9cm);
+            \fill[blue-violet!40] (-0.45,0) circle (0.9cm);
+        \end{scope}
+        \draw[thick] (-0.45,0) circle (0.9cm) node[left=6pt] {A};
+        \draw[thick] (0.45,0) circle (0.9cm) node[right=6pt] {B};
+        \node[labelnode, below=1.2cm] at (0,0) {RIGHT JOIN\\{\tiny Tutto B + match di A}};
+    \end{scope}
+
+    % 4. FULL OUTER JOIN
+    \begin{scope}[shift={(11.4,0)}]
+        \fill[blue-violet!40] (-0.45,0) circle (0.9cm);
+        \fill[blue-violet!40] (0.45,0) circle (0.9cm);
+        \draw[thick] (-0.45,0) circle (0.9cm) node[left=6pt] {A};
+        \draw[thick] (0.45,0) circle (0.9cm) node[right=6pt] {B};
+        \node[labelnode, below=1.2cm] at (0,0) {FULL OUTER JOIN\\{\tiny Tutto A e tutto B}};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Filtraggio delle Sole Tuple Orfane (Anti-Join).} Combinando un outer join con una clausola \texttt{WHERE ... IS NULL}, è possibile isolare con precisione chirurgica i record di una tabella che \textbf{non hanno alcun riscontro} nell'altra:
+\begin{lstlisting}[language=SQL]
+-- Persone registrate che non risultano essere padri di nessuno:
+SELECT p.Nome
+FROM   Persone p
+       LEFT JOIN Paternita' pat ON p.Nome = pat.Padre
+WHERE  pat.Padre IS NULL;
+\end{lstlisting}
+
+\subsubsection{Ordinamento dei Risultati: La Clausola ORDER BY}
+\noindent \textbf{Assenza di Ordine Intrinseco.} In base alla teoria delle relazioni, il risultato di un'interrogazione è un insieme non ordinato di tuple. L'ordine con cui le righe appaiono a schermo dopo una \texttt{SELECT} non è mai garantito dal DBMS, a meno che non venga richiesto esplicitamente mediante la clausola \textbf{\texttt{ORDER BY}}.
+
+\medskip
+\noindent \textbf{Sintassi e Direzione dell'Ordinamento.} La clausola \texttt{ORDER BY} va posizionata come ultimo elemento dell'istruzione:
+\begin{lstlisting}[language=SQL]
+SELECT Nome, Reddito
+FROM   Persone
+WHERE  Eta' <= 30
+ORDER BY Nome ASC;
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{\texttt{ASC}} (crescente, \textit{ascending}): ordina dal valore più piccolo al più grande (dalla A alla Z per stringhe, dal più piccolo al più grande per numeri). Nello standard SQL è il comportamento predefinito se omesso.
+    \item \textbf{\texttt{DESC}} (decrescente, \textit{descending}): inverte l'ordine (dalla Z alla A, o dal numero maggiore al minore).
+\end{itemize}
+
+\begin{center}
+\small
+\textbf{Ordinamento Crescente (\texttt{ORDER BY Nome ASC})} \quad \textbf{Ordinamento Decrescente (\texttt{ORDER BY Nome DESC})} \\[1ex]
+\begin{tabular}{lc}
+    \toprule
+    \textbf{Nome} & \textbf{Reddito} \\
+    \midrule
+    Filippo & 30 \\
+    Giacomo & 15 \\
+    Mario   & 21 \\
+    \bottomrule
+\end{tabular}
+\qquad \qquad
+\begin{tabular}{lc}
+    \toprule
+    \textbf{Nome} & \textbf{Reddito} \\
+    \midrule
+    Mario   & 21 \\
+    Giacomo & 15 \\
+    Filippo & 30 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent È possibile ordinare su più attributi in cascata specificando una lista separata da virgole: le tuple vengono ordinate in base al primo campo; a parità di valore, si valuta il secondo, e così via:
+\begin{lstlisting}[language=SQL]
+ORDER BY Cognome ASC, Reddito DESC;
+\end{lstlisting}
+
+\subsubsection{Operatori Insiemistici: UNION, INTERSECT ed EXCEPT}
+\noindent \textbf{Compatibilità tra Schemi e Notazione Posizionale.} SQL mette a disposizione i tre classici operatori insiemistici per combinare i risultati di due blocchi \texttt{SELECT}:
+\begin{itemize}
+    \item \textbf{\texttt{UNION}}: unione insiemistica.
+    \item \textbf{\texttt{INTERSECT}}: intersezione insiemistica.
+    \item \textbf{\texttt{EXCEPT}} (denominato \texttt{MINUS} in dialetti come Oracle): differenza insiemistica.
+\end{itemize}
+
+\medskip
+\noindent A differenza del modello relazionale matematico in cui i vincoli dipendono dai nomi degli attributi, gli operatori insiemistici in SQL adottano una \textbf{notazione rigidamente posizionale}:
+\begin{enumerate}
+    \item Le due query devono proiettare lo \textbf{stesso numero di colonne}.
+    \item Le colonne corrispondenti nella sequenza (prima con prima, seconda con seconda) devono avere \textbf{tipi di dato tra loro compatibili}.
+    \item I nomi delle colonne nel risultato finale vengono ereditati automaticamente dalla \textbf{prima query}.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Eliminazione dei Duplicati vs Conservazione: Clausola \texttt{ALL}.} Di base, \texttt{UNION}, \texttt{INTERSECT} ed \texttt{EXCEPT} operano in modalità insiemistica pura: \textbf{eliminano i duplicati} dal risultato finale. Se si desidera preservare le righe duplicate (lavorando su multinsiemi per risparmiare tempo di calcolo), si aggiunge la clausola \texttt{ALL}:
+
+\begin{lstlisting}[language=SQL]
+-- Unione insiemistica (ogni figlio compare una sola volta):
+SELECT Figlio FROM Maternita'
+UNION
+SELECT Figlio FROM Paternita';
+
+-- Unione su multinsieme (un figlio compare due volte se ha madre e padre noti):
+SELECT Figlio FROM Maternita'
+UNION ALL
+SELECT Figlio FROM Paternita';
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Differenza ed Intersezione: Esempi.}
+\begin{lstlisting}[language=SQL]
+-- Dipendenti il cui nome NON compare tra i cognomi aziendali:
+SELECT Nome FROM Impiegato
+EXCEPT
+SELECT Cognome AS Nome FROM Impiegato;
+
+-- Dipendenti il cui nome coincide con un cognome registrato:
+SELECT Nome FROM Impiegato
+INTERSECT
+SELECT Cognome AS Nome FROM Impiegato;
+\end{lstlisting}
+L'operatore \texttt{INTERSECT} può essere sempre riscritto tramite un equi-join equivalente della tabella con se stessa, mentre l'operazione \texttt{EXCEPT} trova una traduzione alternativa e potente nelle query annidate con negazione.
+
+\subsubsection{Interrogazioni Annidate (Subquery) e Operatori di Confronto}
+\noindent \textbf{Il Concetto di Sottoquery.} Una delle caratteristiche più rilevanti di SQL è la possibilità di inserire un blocco d'interrogazione completo (\texttt{SELECT-FROM-WHERE}) all'interno della clausola \texttt{WHERE} di un'altra query più esterna. Si parla in questo caso di \textbf{query annidata} (\textit{subquery} o sottointerrogazione).
+
+\medskip
+\noindent Le sottoquery rendono il codice più leggibile e modulare, evitando l'uso massiccio di join cartesiani ed eliminando la necessità di inventare continuamente alias di tabella quando si effettuano verifiche d'appartenenza.
+
+\medskip
+\noindent \textbf{Sottoquery Scalari (Confronto Elementare).} Quando una sottoquery restituisce come output un'unica riga contenente un'unica colonna (un singolo valore o \textit{scalare}), è possibile impiegare gli ordinari operatori di confronto ($=, <>, <, >, <=, >=$):
+
+\begin{lstlisting}[language=SQL]
+-- Trova nome e reddito del padre di 'Franco':
+-- (Versione con equijoin implicito):
+SELECT p.Nome, p.Reddito
+FROM   Persone p, Paternita' pat
+WHERE  p.Nome = pat.Padre
+  AND  pat.Figlio = 'Franco';
+
+-- (Versione equivalente con sottoquery scalare):
+SELECT Nome, Reddito
+FROM   Persone
+WHERE  Nome = (SELECT Padre
+               FROM   Paternita'
+               WHERE  Figlio = 'Franco');
+\end{lstlisting}
+\textit{Attenzione}: se la sottoquery tra parentesi dovesse restituire più di una riga (ad esempio nel caso di una persona registrata con due padri), il confronto scalare fallirebbe sollevando un errore a runtime.
+
+\medskip
+\noindent \textbf{Operatori su Insiemi: \texttt{IN}, \texttt{ANY} e \texttt{ALL}.} Quando la sottoquery restituisce una colonna con zero, una o più righe, si ricorre a operatori insiemistici dedicati:
+
+\begin{center}
+\small
+\begin{tabular}{lp{10cm}}
+    \toprule
+    \textbf{Costrutto} & \textbf{Condizione di Verità per la Tupla Esterna} \\
+    \midrule
+    \texttt{Attributo IN (Expr)} & Il valore dell'attributo è presente all'interno dell'insieme restituito dalla sottoquery (equivale a \texttt{= ANY}). \\
+    \addlinespace
+    \texttt{Attributo NOT IN (Expr)} & Il valore dell'attributo è rigorosamente assente dall'insieme restituito. \\
+    \addlinespace
+    \texttt{Attributo $\theta$ ANY (Expr)} & La condizione $A \ \theta \ x$ è vera per \textbf{almeno uno} degli elementi $x$ restituiti da \texttt{Expr} ($\theta \in \{=, <>, <, >, <=, >=\}$). \\
+    \addlinespace
+    \texttt{Attributo $\theta$ ALL (Expr)} & La condizione $A \ \theta \ x$ è verificata contemporaneamente per \textbf{tutti} gli elementi $x$ restituiti da \texttt{Expr}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Esempio Pratico con \texttt{IN} ed \texttt{ANY}.} Vogliamo estrarre nome e reddito dei padri i cui figli guadagnano più di 20:
+\begin{lstlisting}[language=SQL]
+SELECT Nome, Reddito
+FROM   Persone
+WHERE  Nome IN (
+    SELECT Padre
+    FROM   Paternita'
+    WHERE  Figlio = ANY (
+        SELECT Nome
+        FROM   Persone
+        WHERE  Reddito > 20
+    )
+);
+\end{lstlisting}
+In questa formulazione, a differenza di quanto accade con l'inner join, non è necessario applicare \texttt{DISTINCT} all'esterno: ogni padre compare una sola volta, anche qualora avesse più figli che soddisfano la condizione di reddito.
+
+\subsubsection{Quantificazione Esistenziale: EXISTS e NOT EXISTS}
+\noindent \textbf{Predicati Esistenziali.} Spesso una condizione non dipende dal valore specifico restituito da una colonna, ma dal semplice fatto che una certa proprietà ammetta o meno \textbf{almeno una tupla} di riscontro. Per questo scopo SQL fornisce il predicato:
+\begin{center}
+\texttt{EXISTS ( <Sottoquery> )}
+\end{center}
+Il predicato \texttt{EXISTS} restituisce \textbf{Vero} se la sottoquery tra parentesi produce almeno un record; restituisce \textbf{Falso} se l'insieme risultante è vuoto. La target list della sottoquery è irrilevante (si usa convenzionalmente la dicitura \texttt{SELECT *}).
+
+\medskip
+\noindent \textbf{Sottoquery Correlate.} Nella quasi totalità dei casi, \texttt{EXISTS} viene impiegato all'interno di \textbf{sottoquery correlate}: l'interrogazione interna fa riferimento a una colonna della query più esterna, venendo rivalutata logicamente riga per riga per ogni tupla esaminata dal blocco principale.
+
+\begin{lstlisting}[language=SQL]
+-- Persone che hanno almeno un figlio (padri o madri):
+SELECT *
+FROM   Persone p
+WHERE  EXISTS (SELECT * FROM Paternita' pat WHERE pat.Padre = p.Nome)
+   OR  EXISTS (SELECT * FROM Maternita' mat WHERE mat.Madre = p.Nome);
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{La Potenza di \texttt{NOT EXISTS} per Esprimere ``TUTTI''.} Nella logica del primo ordine, asserire che ``tutti gli elementi soddisfano una data proprietà'' equivale a dire che ``\textbf{non esiste} alcun elemento che violi la proprietà''. SQL non possiede un quantificatore universale diretto; il costrutto \texttt{NOT EXISTS} rappresenta lo strumento standard per tradurre questo pattern:
+
+\begin{lstlisting}[language=SQL]
+-- Padri i cui figli guadagnano TUTTI piu di 20:
+-- (Ovvero: padri per cui NON ESISTE un figlio che guadagna <= 20)
+SELECT DISTINCT f.Padre
+FROM   Paternita' AS f
+WHERE  NOT EXISTS (
+    SELECT *
+    FROM   Persone p
+    WHERE  p.Nome = f.Figlio
+      AND  p.Reddito <= 20
+);
+\end{lstlisting}
+
+\subsubsection{Regole di Visibilità e Ambito delle Variabili (Scoping)}
+\begin{cbox}{Regole di Scoping nei Blocchi Annidati}
+\noindent Il passaggio di parametri e la visibilità delle tabelle tra query concentriche segue regole rigorose analoghe a quelle dei linguaggi di programmazione a blocchi:
+\begin{enumerate}
+    \item \textbf{Dall'interno verso l'esterno}: una sottoquery interna può leggere gli attributi e gli alias definiti nei blocchi che la contengono (variabili dell'ambiente esterno).
+    \item \textbf{Dall'esterno verso l'interno (Divieto)}: una query esterna \textbf{non può in alcun modo accedere} o proiettare attributi definiti esclusivamente nel \texttt{FROM} di una sottoquery interna.
+    \item \textbf{Risoluzione dei Nomi}: se un attributo viene citato senza specificare la tabella, il DBMS lo associa alla tabella più vicina dichiarata nel \texttt{FROM} locale (\textit{nearest scope}).
+    \item \textbf{Invisibilità tra Fratelli}: due sottoquery parallele collegate da operatori logici (\texttt{AND}, \texttt{OR}) si trovano allo stesso livello gerarchico e \textbf{non possono condividere} le rispettive variabili locali.
+\end{enumerate}
+\end{cbox}
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+    % Blocco esterno
+    \draw[thick, fill=blue!8, rounded corners=4pt] (0,0) rectangle (12.5,4.6);
+    \node[anchor=north west, font=\bfseries\color{blue-violet}] at (0.2,4.4) {Query Esterna: SELECT Nome, Reddito FROM Persone p};
+
+    % Blocco interno (Subquery)
+    \draw[thick, fill=orange!10, rounded corners=4pt] (0.8,0.4) rectangle (11.7,3.6);
+    \node[anchor=north west, font=\bfseries\color{deepcarrotorange}] at (1.0,3.4) {Sottoquery: WHERE EXISTS (SELECT * FROM Paternità f ... )};
+
+    % Spiegazione frecce visibilita
+    \draw[-{Latex[length=3mm]}, very thick, codegreen] (2.5,4.0) -- ++(0,-1.2)
+        node[midway, right=4pt, font=\scriptsize\bfseries] {p.Nome e' visibile e utilizzabile all'interno (Correlazione)};
+
+    \draw[-{Latex[length=3mm]}, very thick, red] (8.5,2.4) -- ++(0,1.4)
+        node[midway, right=4pt, font=\scriptsize\bfseries] {f.Figlio NON e' accessibile all'esterno (Errore di Scoping)};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Analisi di un Errore Comune di Scoping.} Si consideri il seguente frammento SQL non valido:
+\begin{lstlisting}[language=SQL]
+-- Esempio Errato: violazione della visibilita tra sottoquery parallele
+SELECT *
+FROM   Impiegato
+WHERE  Dipart IN (SELECT NomeDipart 
+                  FROM   Dipartimento D1 
+                  WHERE  NomeDipart = 'Produzione')
+   OR  Dipart IN (SELECT NomeDipart 
+                  FROM   Dipartimento D2 
+                  WHERE  D2.Citta' = D1.Citta'); -- ERRORE!
+\end{lstlisting}
+La seconda sottoquery tenta di accedere alla colonna \texttt{D1.Città}. Poiché l'alias \texttt{D1} è stato istanziato all'interno del primo blocco parallelo, il suo ciclo di vita si è concluso alla chiusura della parentesi tonda. La variabile non è visibile al ramo fratello e il parser SQL rigetta la query con un errore di identificatore sconosciuto.
+
+\subsubsection{Funzioni Aggregate (Operatori di Colonna)}
+\noindent \textbf{Dal Calcolo su Singola Riga all'Aggregazione.} Le espressioni viste finora operano orizzontalmente all'interno della medesima tupla. Nella maggior parte delle analisi informative è tuttavia necessario estrarre grandezze statistiche complessive (totali, conteggi, medie) calcolate verticalmente su insiemi di righe. SQL risponde a questa esigenza mediante le \textbf{funzioni aggregate} (\textit{aggregate functions}):
+
+\begin{itemize}
+    \item \texttt{COUNT}: calcola il numero di righe o di valori non nulli.
+    \item \texttt{SUM}: calcola la somma aritmetica dei valori numerici.
+    \item \texttt{AVG}: calcola la media aritmetica dei valori numerici.
+    \item \texttt{MIN}: determina il valore minimo (funziona sia su numeri sia su date e stringhe).
+    \item \texttt{MAX}: determina il valore massimo.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Sintassi Fondamentale.} Le funzioni aggregate compaiono nella target list della clausola \texttt{SELECT} e adottano la seguente sintassi generale:
+\begin{center}
+\texttt{NomeFunzione( [DISTINCT] Attributo | * )}
+\end{center}
+L'asterisco (\texttt{*}) è ammesso esclusivamente con la funzione \texttt{COUNT(*)} e serve a conteggiare il numero totale di tuple restituite dalla query, a prescindere dal loro contenuto.
+
+\medskip
+\noindent \textbf{Differenza Chiave: \texttt{COUNT(*)} vs \texttt{COUNT(Attributo)} vs \texttt{COUNT(DISTINCT)}.} Si consideri la seguente istanza campione della relazione \textbf{Persone}:
+
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \multicolumn{4}{c}{\textbf{Relazione Persone}} \\
+    \midrule
+    \textbf{Nome} & \textbf{Cognome} & \textbf{Età} & \textbf{Reddito} \\
+    \midrule
+    Mario   & Rossi   & 27 & 21 \\
+    Giacomo & Bianchi & 25 & \textit{NULL} \\
+    Luisa   & Verdi   & 55 & 21 \\
+    Filippo & Neri    & 50 & 35 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Applicando le diverse forme di conteggio sulla colonna \texttt{Reddito}:
+\begin{lstlisting}[language=SQL]
+SELECT COUNT(*)                  AS ConteggioTotale,
+       COUNT(Reddito)            AS ConteggioValidi,
+       COUNT(DISTINCT Reddito)   AS ConteggioValoriDistinti
+FROM   Persone;
+\end{lstlisting}
+
+\begin{itemize}
+    \item \texttt{COUNT(*)} $= 4$: conta tutte le tuple fisiche presenti, includendo anche la riga di Giacomo che contiene un valore nullo.
+    \item \texttt{COUNT(Reddito)} $= 3$: valuta unicamente i valori noti della colonna, \textbf{ignorando i valori \texttt{NULL}} (prende in esame solo 21, 21 e 35).
+    \item \texttt{COUNT(DISTINCT Reddito)} $= 2$: elimina preliminarmente le repliche e scarta i \texttt{NULL}, conteggiando unicamente i valori distinti (21 e 35).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Comportamento delle Funzioni Aggregate con i Valori NULL.} La regola generale applicata da SQL per \texttt{SUM}, \texttt{AVG}, \texttt{MIN} e \texttt{MAX} prevede l'\textbf{eliminazione preliminare silenziosa di tutti i valori NULL} prima dell'esecuzione del calcolo:
+
+\begin{lstlisting}[language=SQL]
+SELECT AVG(Reddito) AS RedditoMedio
+FROM   Persone;
+\end{lstlisting}
+Il DBMS calcola la media sommando i soli valori presenti ($21 + 21 + 35 = 77$) e dividendo per il numero di tuple valide ($3$):
+\[
+\text{RedditoMedio} = \frac{77}{3} \approx 25{,}66
+\]
+Il record con valore \texttt{NULL} viene del tutto ignorato (non viene conteggiato come zero al denominatore). Se la colonna contiene unicamente valori \texttt{NULL}, il risultato dell'aggregazione sarà a sua volta \texttt{NULL}.
+
+\medskip
+\noindent \textbf{Regola di Omogeneità nella Target List: Un Errore Frequente.} Un errore concettuale molto comune consiste nel tentare di selezionare contemporaneamente un attributo scalare e una funzione di aggregazione globale:
+
+\begin{lstlisting}[language=SQL]
+-- QUERY ERRATA: genera un errore sintattico a runtime!
+SELECT Nome, MAX(Reddito)
+FROM   Persone;
+\end{lstlisting}
+\textit{Perché è errata?} La funzione \texttt{MAX(Reddito)} comprime l'intera tabella in un'unica riga riassuntiva scalare, mentre l'attributo \texttt{Nome} produrrebbe tante righe quante sono le persone archiviate. Il DBMS non può sapere a quale nome associare il valore massimo calcolato.
+
+\medskip
+\noindent Per estrarre sia il dato scalare sia l'estremo cercato, occorre formulare una \textbf{sottoquery di confronto}:
+\begin{lstlisting}[language=SQL]
+-- FORMULAZIONE CORRETTA:
+SELECT *
+FROM   Persone
+WHERE  Reddito = (SELECT MAX(Reddito) FROM Persone);
+\end{lstlisting}
+
+\subsubsection{Raggruppamento dei Dati: La Clausola GROUP BY}
+\noindent \textbf{Necessità del Raggruppamento.} Spesso non si desidera calcolare un aggregato sull'intera tabella, bensì partizionare i dati in sottoinsiemi omogenei (ad esempio calcolare il reddito medio per ciascuna città, o il numero di figli per ciascun padre). Questo comportamento si realizza con la clausola \textbf{\texttt{GROUP BY}}.
+
+\medskip
+\noindent \textbf{Sintassi ed Esempio Operativo.} Data la tabella \textbf{Paternità}(\underline{Figlio}, Padre):
+\begin{lstlisting}[language=SQL]
+SELECT   Padre, COUNT(*) AS NumeroFigli
+FROM     Paternità
+GROUP BY Padre;
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.75cm},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    % Tabella di partenza
+    \node[box, minimum width=3.5cm] (input) {
+        \textbf{Relazione Paternità}\\[2pt]
+        (Stefano, Franco)\\
+        (Luigi, Olga)\\
+        (Luigi, Filippo)\\
+        (Franco, Mario)\\
+        (Franco, Giacomo)
+    };
+
+    % Raggruppamento intermedio
+    \node[box, right=1.6cm of input, minimum width=3.8cm, fill=orange!8] (groups) {
+        \textbf{Gruppi Formati}\\[2pt]
+        Gruppo Stefano $\to$ 1 tupla\\
+        Gruppo Luigi $\to$ 2 tuple\\
+        Gruppo Franco $\to$ 2 tuple
+    };
+
+    % Output aggregato finale
+    \node[box, right=1.6cm of groups, minimum width=3.2cm] (output) {
+        \textbf{Risultato Finale}\\[2pt]
+        Stefano \quad 1\\
+        Luigi \quad\quad 2\\
+        Franco \quad\quad 2
+    };
+
+    \draw[arrow] (input) -- node[above, font=\scriptsize\bfseries] {GROUP BY Padre} (groups);
+    \draw[arrow] (groups) -- node[above, font=\scriptsize\bfseries] {COUNT(*)} (output);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Semantica di Valutazione del GROUP BY.} Il processo concettuale seguito dal motore SQL si articola in due passi:
+\begin{enumerate}
+    \item Le tuple che hanno superato i filtri della clausola \texttt{WHERE} vengono suddivise in partizioni disgiunte: tutte le righe che presentano gli stessi identici valori per gli attributi di raggruppamento confluiscono nel medesimo gruppo.
+    \item Le funzioni aggregate specificate nella \texttt{SELECT} vengono applicate \textbf{separatamente a ciascun gruppo}, producendo esattamente una singola riga di output per ogni partizione.
+\end{enumerate}
+
+\begin{cbox}{La Regola Aurea della Clausola GROUP BY}
+\noindent Se in un'interrogazione è presente la clausola \texttt{GROUP BY}, \textbf{ogni singolo attributo} che compare nella clausola \texttt{SELECT} deve soddisfare tassativamente almeno una di queste due condizioni:
+\begin{itemize}
+    \item È racchiuso come argomento all'interno di una \textbf{funzione aggregata} (es. \texttt{COUNT}, \texttt{AVG}, \texttt{SUM});
+    \item Compare esplicitamente nell'elenco degli attributi del \textbf{\texttt{GROUP BY}}.
+\end{itemize}
+\medskip
+\noindent Qualsiasi colonna non aggregata lasciata fuori dal \texttt{GROUP BY} rende la query non valida, poiché il DBMS non può determinare in modo univoco quale valore estrarre qualora il gruppo contenga tuple con valori eterogenei per quel campo.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Raggruppamento e Valori NULL.} Se una colonna impiegata nel \texttt{GROUP BY} contiene valori \texttt{NULL}, lo standard SQL stabilisce che \textbf{tutti i valori NULL collassano in un unico gruppo}:
+
+\begin{center}
+\small
+\textbf{Tabella R(A, B)} \qquad \qquad \qquad \textbf{Risultato della Query} \\[1ex]
+\begin{tabular}{cc}
+    \toprule
+    \textbf{A} & \textbf{B} \\
+    \midrule
+    1 & 11 \\
+    2 & 11 \\
+    3 & \textit{NULL} \\
+    4 & \textit{NULL} \\
+    \bottomrule
+\end{tabular}
+\qquad $\Longrightarrow$ \qquad
+\begin{tabular}{lc}
+    \toprule
+    \multicolumn{2}{l}{\texttt{SELECT B, COUNT(*) FROM R GROUP BY B;}} \\
+    \midrule
+    \textbf{B} & \textbf{COUNT(*)} \\
+    \midrule
+    11 & 2 \\
+    \textit{NULL} & 2 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Condizioni sui Gruppi: La Clausola HAVING}
+\noindent \textbf{Filtrare Gruppi Interi.} La clausola \texttt{WHERE} non può filtrare i risultati delle funzioni aggregate, poiché viene valutata logicamente \textbf{prima} che i gruppi vengano formati. Per imporre vincoli sul risultato delle funzioni statistiche calcolate sui gruppi, SQL introduce la clausola \textbf{\texttt{HAVING}}.
+
+\medskip
+\noindent \textbf{Esempio di Utilizzo.} Si consideri la richiesta: \textit{«Estrarre i padri i cui figli percepiscono un reddito medio superiore a 25»}:
+\begin{lstlisting}[language=SQL]
+SELECT   p.Padre, AVG(pe.Reddito) AS RedditoMedioFigli
+FROM     Persone pe
+         JOIN Paternita' p ON pe.Nome = p.Figlio
+GROUP BY p.Padre
+HAVING   AVG(pe.Reddito) > 25;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Confronto Diretto: WHERE vs HAVING.} Comprendere la distinzione tra queste due clausole è fondamentale per formulare correttamente query complesse:
+
+\begin{center}
+\small
+\begin{tabular}{lp{6.5cm}p{6.5cm}}
+    \toprule
+    \textbf{Caratteristica} & \textbf{Clausola WHERE} & \textbf{Clausola HAVING} \\
+    \midrule
+    \textbf{Momento di Valutazione} & Agisce a monte, \textbf{prima} della formazione dei gruppi. & Agisce a valle, \textbf{dopo} il raggruppamento e l'aggregazione. \\
+    \addlinespace
+    \textbf{Ambito di Filtraggio} & Filtra le singole righe individuali della tabella. & Filtra intere partizioni o gruppi consolidati. \\
+    \addlinespace
+    \textbf{Uso di Aggregati} & \textbf{Vietato}: non può contenere funzioni come \texttt{AVG()} o \texttt{COUNT()}. & \textbf{Ammesso}: valuta predicati basati sui risultati delle funzioni aggregate. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Uso Congiunto di WHERE ed HAVING.} Le due clausole possono coesistere nella medesima istruzione. Si consideri la query: \textit{«Fornire i padri i cui figli con meno di 30 anni hanno un reddito medio superiore a 20»}:
+
+\begin{lstlisting}[language=SQL]
+SELECT   p.Padre, AVG(pe.Reddito) AS RedditoMedioGiovani
+FROM     Persone pe
+         JOIN Paternita' p ON pe.Nome = p.Figlio
+WHERE    pe.Eta' < 30
+GROUP BY p.Padre
+HAVING   AVG(pe.Reddito) > 20;
+\end{lstlisting}
+La clausola \texttt{WHERE pe.Eta' < 30} scarta preventivamente tutti i figli trentenni o più anziani; il \texttt{GROUP BY} partiziona i soli figli giovani rimasti in base al padre; infine \texttt{HAVING} seleziona unicamente i padri la cui media calcolata supera la soglia di 20.
+
+\subsubsection{Sintassi Completa e Ciclo di Vita del Blocco SELECT}
+\noindent \textbf{La Forma Canonica Generale.} Riassumendo tutte le clausole esaminate, l'interrogazione SQL completa si struttura formalmente nella seguente sequenza:
+
+\begin{lstlisting}[language=SQL]
+SELECT   [DISTINCT] <ListaAttributi ed Espressioni di Aggregazione>
+FROM     <ListaTabelle con eventuali costrutti JOIN>
+[ WHERE    <Predicato di filtraggio sulle singole righe> ]
+[ GROUP BY <ListaAttributi di raggruppamento> ]
+[ HAVING   <Predicato di filtraggio sui gruppi calcolati> ]
+[ ORDER BY <ListaAttributi di ordinamento> [ASC | DESC] ];
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Il Pipeline Concettuale di Esecuzione.} L'ordine logico secondo cui il motore relazionale elabora i dati non coincide con l'ordine di scrittura del testo, ma segue rigorosamente questa pipeline:
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.35cm,
+    stepbar/.style={draw=blue-violet, fill=ghostwhite, rounded corners=2pt, thick, align=left, font=\footnotesize, minimum width=13.5cm, inner sep=4pt},
+    arr/.style={thick, -{Latex[length=2mm]}, draw=blue-violet}
+]
+    \node[stepbar] (s1) {\textbf{1. FROM \& JOIN}: genera il prodotto cartesiano o effettua i collegamenti tra le relazioni.};
+    \node[stepbar, below=of s1] (s2) {\textbf{2. WHERE}: scarta le singole tuple che non verificano la condizione atomica o booleana.};
+    \node[stepbar, below=of s2] (s3) {\textbf{3. GROUP BY}: raggruppa le tuple superstiti in partizioni aventi valori identici sulle chiavi.};
+    \node[stepbar, below=of s3] (s4) {\textbf{4. HAVING}: scarta i blocchi o gruppi che non soddisfano le condizioni di aggregazione.};
+    \node[stepbar, below=of s4] (s5) {\textbf{5. SELECT}: proietta le colonne desiderate ed esegue i calcoli scalari e aggregati.};
+    \node[stepbar, below=of s5] (s6) {\textbf{6. DISTINCT} \textit{(se presente)}: elimina le righe duplicate dall'insieme risultante.};
+    \node[stepbar, below=of s6] (s7) {\textbf{7. ORDER BY}: ordina le tuple finali secondo i criteri specificati (\texttt{ASC}/\texttt{DESC}).};
+
+    \draw[arr] (s1) -- (s2);
+    \draw[arr] (s2) -- (s3);
+    \draw[arr] (s3) -- (s4);
+    \draw[arr] (s4) -- (s5);
+    \draw[arr] (s5) -- (s6);
+    \draw[arr] (s6) -- (s7);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Operazioni di Modifica dei Dati (DML): INSERT, DELETE e UPDATE}
+\noindent Oltre alle interrogazioni in sola lettura, il linguaggio SQL prevede tre istruzioni operative fondamentali per manipolare lo stato estensionale della base di dati: inserimento (\texttt{INSERT}), cancellazione (\texttt{DELETE}) e aggiornamento (\texttt{UPDATE}).
+
+\medskip
+\noindent \textbf{1. Inserimento di Tuple: Il Comando \texttt{INSERT}.}
+L'inserimento può avvenire specificando direttamente i valori della singola tupla (\texttt{VALUES}) oppure popolando la tabella in blocco a partire dal risultato di un'interrogazione (\texttt{SELECT}):
+
+\begin{lstlisting}[language=SQL]
+-- Forma base: specifica tutti i valori rispettando l'ordine dello schema:
+INSERT INTO Persone 
+VALUES ('Giovanni', 'Rossi', 25, 32);
+
+-- Forma con elenco attributi esplicito:
+INSERT INTO Persone (Nome, Eta', Reddito) 
+VALUES ('Giacomo', 28, 40);
+
+-- Inserimento parziale: gli attributi omessi assumono il valore DEFAULT o NULL:
+INSERT INTO Persone (Nome, Reddito) 
+VALUES ('Roberto', 55);
+
+-- Inserimento massivo derivato da una sottoquery:
+INSERT INTO Persone (Nome)
+SELECT Padre
+FROM   Paternita'
+WHERE  Padre NOT IN (SELECT Nome FROM Persone);
+\end{lstlisting}
+\textit{Regole operative}: se la lista delle colonne viene omessa, il comando presuppone che i valori siano forniti per tutti gli attributi nello stesso identico ordine stabilito durante la \texttt{CREATE TABLE}. Se invece viene specificata una lista parziale, tutti i campi esclusi devono obbligatoriamente ammettere il valore \texttt{NULL} o possedere una clausola \texttt{DEFAULT}, altrimenti il DBMS rigetta l'operazione.
+
+\medskip
+\noindent \textbf{2. Cancellazione di Tuple: Il Comando \texttt{DELETE}.}
+Rimuove le righe da una tabella in base a un predicato logico:
+
+\begin{lstlisting}[language=SQL]
+-- Rimuove le persone con eta inferiore a 35 anni:
+DELETE FROM Persone
+WHERE  Eta' < 35;
+
+-- Cancellazione con condizione dipendente da un'altra tabella:
+DELETE FROM Paternita'
+WHERE  Figlio NOT IN (SELECT Nome FROM Persone);
+
+-- ATTENZIONE: cancellazione totale di tutte le tuple della tabella:
+DELETE FROM Paternita';
+\end{lstlisting}
+\textit{Proprietà della cancellazione}:
+\begin{itemize}
+    \item Se la clausola \texttt{WHERE} viene omessa, essa viene intesa implicitamente come \texttt{WHERE TRUE}: \textbf{tutte le righe della tabella vengono eliminate}, lasciando lo schema vuoto ma intatto.
+    \item L'eliminazione di un record genitore può scatenare la rimozione a catena di record figli se sulla relativa chiave esterna è configurata l'azione reattiva \texttt{ON DELETE CASCADE}.
+\end{itemize}
+
+\medskip
+\noindent \textbf{3. Modifica di Tuple: Il Comando \texttt{UPDATE}.}
+Altera il contenuto di una o più colonne nelle tuple che soddisfano il criterio di selezione:
+
+\begin{lstlisting}[language=SQL]
+-- Modifica puntuale di un attributo con valore costante:
+UPDATE Persone
+SET    Reddito = 45
+WHERE  Nome = 'Roberto';
+
+-- Aggiornamento dinamico tramite espressione aritmetica (+10% ai giovani):
+UPDATE Persone
+SET    Reddito = Reddito * 1.1
+WHERE  Eta' < 30;
+
+-- Assegnazione del valore mediante una sottoquery scalare correlata:
+UPDATE Persone
+SET    Reddito = (SELECT Reddito FROM Persone WHERE Nome = 'Mario')
+WHERE  Nome = 'Giacomo';
+
+-- Assegnazione al valore NULL o al valore DEFAULT definito nello schema:
+UPDATE Persone
+SET    Reddito = NULL
+WHERE  Eta' < 30;
+
+UPDATE Persone
+SET    Reddito = DEFAULT
+WHERE  Eta' < 30;
+\end{lstlisting}
+Anche per l'aggiornamento vale la regola di sicurezza: omettere la clausola \texttt{WHERE} comporterà l'applicazione della modifica specificata sull'intera totalità delle tuple presenti nella relazione.
+
 \end{document}

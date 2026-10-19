@@ -1204,17 +1204,26 @@ Un separatore lineare sembra rigido. Ma con tante feature (migliaia di parole, c
 
 \subsubsection{Attributi continui e valutazione del modello}
 
-\noindent Altezza, età, reddito, temperatura, luminosità di un pixel: molte feature sono \textbf{continue}.
+\noindent Molti problemi di classificazione reali si basano su feature \textbf{continue} (ad esempio altezza, peso, temperatura, intensità dei pixel). 
 
-\paragraph{Il limite delle probabilità puntuali}
-Per una variabile continua $P(X_i = x) = 0$ per ogni $x$: non possiamo contare quante volte compare un valore (ogni valore appare una volta o mai). Serve un \textbf{bias induttivo}: assumiamo che, data la classe $y_k$, i valori di $X_i$ seguano una distribuzione nota, di solito la \textbf{Gaussiana} (o Normale).
+\paragraph{Il limite delle probabilità puntuali e densità di probabilità}
+Per una variabile aleatoria continua $X$, la probabilità che venga assunto uno specifico valore esatto è nulla:
+$$P(X = x) = 0 \quad \forall x \in \mathbb{R}$$
+Non possiamo quindi stimare $P(X_i = x \mid Y = y_k)$ tramite semplici conteggi di frequenza, poiché ogni valore reale può comparire una sola volta (o mai). 
+
+\noindent Per superare questo limite si introduce un \textbf{bias induttivo}: si assume che, condizionatamente a ciascuna classe $y_k$, la feature continua $X_i$ segua una distribuzione nota descritta da una \textbf{funzione di densità di probabilità} (\textit{Probability Density Function}, PDF), tipicamente la \textbf{distribuzione Gaussiana} (o Normale).
 
 \paragraph{Ripasso: la distribuzione Gaussiana}
-Una variabile $X \sim \mathcal{N}(\mu, \sigma^2)$ ha densità
+Una variabile $X \sim \mathcal{N}(\mu, \sigma^2)$ ha funzione di densità:
 $$p(x \mid \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)$$
+Tale distribuzione gode di proprietà fondamentali:
 \begin{itemize}
-    \item $\mu$ = \textbf{media}: posizione del centro della campana;
-    \item $\sigma^2$ = \textbf{varianza} ($\sigma$ = deviazione standard): quanto è larga la campana.
+    \item \textbf{Integrale unitario}: l'area totale sottesa dalla curva di densità è pari a 1:
+    $$\int_{-\infty}^{+\infty} p(x \mid \mu, \sigma)\,dx = 1$$
+    \item \textbf{Media} $\mathbb{E}[X] = \mu$: individua il centro di simmetria e il \textbf{picco} (valore massimo) della distribuzione;
+    \item \textbf{Varianza} $\mathbb{V}[X] = \sigma^2$ (deviazione standard $\sigma$): quantifica la dispersione. Più $\sigma^2$ è piccola, più la campana è ristretta e concentrata attorno a $\mu$; viceversa, più $\sigma^2$ è grande, più la curva risulta appiattita e allargata;
+    \item \textbf{Simmetria}: la funzione è perfettamente simmetrica rispetto al valore medio $\mu$;
+    \item \textbf{Massima entropia}: tra tutte le distribuzioni di probabilità continue definite su $\mathbb{R}$ aventi una data media e varianza, la Gaussiana è quella con \textbf{entropia maggiore}. Ciò la rende la scelta meno restrittiva e più naturale (secondo il principio di massima entropia).
 \end{itemize}
 
 \begin{center}
@@ -1226,83 +1235,114 @@ $$p(x \mid \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}} \exp\left(-\frac{(x - \mu
     \draw[very thick, orange!80!black, domain=-3.2:3.2, samples=60]
         plot (\x, {1.2*exp(-\x*\x/8)});
     \draw[dashed, red!70!black] (0,0) -- (0,2.4);
-    \node[below, font=\small] at (0,-0.1) {$\mu$};
+    \node[below, font=\small] at (0,-0.1) {$\mu$ (picco)};
     \node[blue!75!black, font=\small] at (1.8,2.1) {$\sigma$ piccolo};
     \node[orange!80!black, font=\small] at (2.6,0.9) {$\sigma$ grande};
 \end{tikzpicture}
 \end{center}
-\noindent Attenzione: $p(x)$ è una \textbf{densità}, non una probabilità: può superare 1 se $\sigma$ è piccolo. Si confrontano però densità tra classi, ed è lecito perché il fattore di scala è lo stesso per tutte.
 
-\paragraph{Esempio: genere dall'altezza}
-$Y \in \{F, M\}$, $X$ = altezza. Si assume $X \mid F \sim \mathcal{N}(\mu_F, \sigma_F^2)$ e $X \mid M \sim \mathcal{N}(\mu_M, \sigma_M^2)$, con $\mu_F < \mu_M$.
+\noindent \textit{Attenzione}: $p(x)$ è una \textbf{densità}, non una probabilità: può assumere valori superiori a 1 se $\sigma$ è sufficientemente piccolo. Il confronto tra classi rimane tuttavia rigoroso perché il fattore differenziale $dx$ si elide nel rapporto di verosimiglianza.
+
+\paragraph{Confronto tra classi ed esempio: peso medio cani e gatti}
+Supponiamo di voler distinguere due classi tramite una feature continua $x$ (ad esempio il peso medio):
+\begin{itemize}
+    \item \textbf{Classe 1 (Negativa, es. Gatti)}: $x \mid \text{Gatto} \sim \mathcal{N}(\mu_1, \sigma_1^2)$ (in rosso);
+    \item \textbf{Classe 2 (Positiva, es. Cani)}: $x \mid \text{Cane} \sim \mathcal{N}(\mu_2, \sigma_2^2)$ (in blu), con $\mu_2 > \mu_1$ e $\sigma_1^2 < \sigma_2^2$.
+\end{itemize}
+
+\noindent \textbf{Criterio del confronto geometrico}: quando si osserva una nuova istanza con peso $x$, si traccia una retta verticale in corrispondenza del valore $x$ sulle ascisse e si osservano i due punti di intersezione con le curve di densità:
+$$p(x \mid \text{Gatto}) \quad \text{e} \quad p(x \mid \text{Cane})$$
+Il punto di intersezione con ordinata maggiore (pesato per le rispettive probabilità a priori $P(Y)$) indicherà a quale distribuzione è più probabile che appartenga il valore osservato.
+
+\paragraph{Decision Boundary (Frontiera di decisione)}
+La \textbf{frontiera di decisione} è la retta verticale che separa lo spazio delle feature in due zone distinte:
+\begin{itemize}
+    \item \textbf{Zona negativa} (a sinistra della soglia): il modello classifica l'istanza come classe negativa (es.\ Gatto);
+    \item \textbf{Zona positiva} (a destra della soglia): il modello classifica l'istanza come classe positiva (es.\ Cane).
+\end{itemize}
+
+\noindent La posizione della soglia può essere stabilita nel punto di intersezione naturale delle curve a posteriori (ottimo bayesiano per minimizzare l'errore globale), ma il progettista può \textbf{spostarla intenzionalmente} in base alle esigenze del problema:
+\begin{itemize}
+    \item traslarla verso sinistra per \textbf{massimizzare il recall} (catturare più positivi reali ed evitare falsi negativi, tollerando più falsi allarmi);
+    \item traslarla verso destra per \textbf{massimizzare la precisione} (ridurre i falsi positivi, a costo di perdere qualche positivo reale).
+\end{itemize}
 
 \begin{center}
-\begin{tikzpicture}[scale=1.0]
-    \draw[->, thick] (-4,0) -- (5,0) node[right] {Altezza (cm)};
-    \draw[->, thick] (-4,0) -- (-4,3) node[above] {Densità};
-    \draw[very thick, red!70!black, domain=-3.8:1.8, samples=50]
-        plot (\x, {2.5*exp(-(\x+1.2)*(\x+1.2)/(2*1.0))});
-    \node[red!70!black, font=\bfseries] at (-1.2, 2.7) {Femmine};
-    \draw[very thick, blue!75!black, domain=-0.8:4.6, samples=50]
-        plot (\x, {2.5*exp(-(\x-1.8)*(\x-1.8)/(2*1.0))});
-    \node[blue!75!black, font=\bfseries] at (1.8, 2.7) {Maschi};
-    \draw[dashed, thick, black] (0.3, 0) -- (0.3, 2.5);
-    \node[below, font=\small\bfseries] at (0.3, -0.1) {soglia di decisione};
-    \node[font=\small, red!70!black] at (-2.5,-0.7) {$\to$ predico F};
-    \node[font=\small, blue!75!black] at (3,-0.7) {predico M $\leftarrow$};
+\begin{tikzpicture}[scale=0.95]
+    % Assi
+    \draw[->, thick] (-0.5,0) -- (8.5,0) node[right, font=\small] {Peso $x$};
+    \draw[->, thick] (0,0) -- (0,3.2) node[above, font=\small] {Densità $p(x)$};
+
+    % Curva 1: Negativi / Gatti (mu=2.4, sigma=0.85)
+    \draw[very thick, red!70!black, domain=0:5.8, samples=70]
+        plot (\x, {2.7*exp(-(\x-2.4)*(\x-2.4)/(2*0.85*0.85))});
+    \node[red!70!black, font=\bfseries] at (2.4, 2.95) {1 (Gatti, rosso)};
+    \node[red!70!black, font=\scriptsize] at (1.1, 2.3) {$\sigma_1^2 < \sigma_2^2$};
+
+    % Curva 2: Positivi / Cani (mu=5.3, sigma=1.25)
+    \draw[very thick, blue!75!black, domain=1.5:8.2, samples=70]
+        plot (\x, {1.85*exp(-(\x-5.3)*(\x-5.3)/(2*1.25*1.25))});
+    \node[blue!75!black, font=\bfseries] at (5.7, 2.1) {2 (Cani, blu)};
+
+    % Decision boundary
+    \draw[dashed, very thick, black] (3.8, 0) -- (3.8, 3.0);
+    \node[above, font=\small\bfseries, align=center] at (3.8, 3.05) {Decision Boundary\\(soglia)};
+
+    % Zone
+    \node[font=\footnotesize\bfseries, red!70!black] at (1.8, -0.4) {$\leftarrow$ ZONA NEGATIVA};
+    \node[font=\footnotesize\bfseries, blue!75!black] at (5.8, -0.4) {ZONA POSITIVA $\rightarrow$};
+
+    % Punto di confronto x
+    \draw[dotted, thick, gray!80!black] (3.1, 0) -- (3.1, 2.1);
+    \filldraw[red!70!black] (3.1, 1.92) circle (2pt);
+    \filldraw[blue!75!black] (3.1, 0.40) circle (2pt);
+    \node[below, font=\scriptsize] at (3.1, 0) {$x$};
+    \node[right, font=\tiny, red!70!black] at (3.15, 1.85) {Intersezione maggiore $\to$ predico Gatto};
+
+    % Aree TP, FP, FN, TN
+    \node[font=\small\bfseries, red!80!black] at (2.0, 0.85) {TN};
+    \node[font=\small\bfseries, red!80!black] at (4.4, 0.28) {FP};
+    \node[font=\small\bfseries, blue!80!black] at (3.3, 0.28) {FN};
+    \node[font=\small\bfseries, blue!80!black] at (5.6, 0.85) {TP};
 \end{tikzpicture}
 \end{center}
-\noindent La soglia (\textit{decision boundary}) è dove le due curve, pesate con le prior, si incrociano. Con prior uguali e stessa $\sigma$ sta a metà tra $\mu_F$ e $\mu_M$.
-
-\begin{ibox}{Esempio numerico}
-$F$: $\mu = 162$, $\sigma = 6$; $M$: $\mu = 175$, $\sigma = 7$; prior $\frac12$ ciascuna. Nuova persona alta $x = 170$ cm:
-$$p(170 \mid F) = \frac{e^{-\frac{(170-162)^2}{2\cdot36}}}{6\sqrt{2\pi}} = \frac{e^{-0.889}}{15.04} \approx 0.0273 \qquad p(170 \mid M) = \frac{e^{-\frac{(170-175)^2}{2\cdot49}}}{7\sqrt{2\pi}} = \frac{e^{-0.255}}{17.55} \approx 0.0442$$
-Con prior uguali vince $M$: $P(M \mid x) \approx \frac{0.0442}{0.0442 + 0.0273} \approx 0.62$. Per 170 cm è una scelta quasi indifferente, come ci si aspetta vicino alla soglia.
-\end{ibox}
 
 \paragraph{Formulazione generale e stima dei parametri}
-
-\paragraph{Modello}
 Con $n$ feature continue $X_1, \dots, X_n$:
 \begin{enumerate}
-    \item data la classe $y_k$, ogni $X_i$ è gaussiana e indipendente dalle altre:
+    \item Data la classe $y_k$, ciascuna feature $X_i$ segue una distribuzione gaussiana indipendente:
     $$P(X_i = x \mid Y = y_k) = \mathcal{N}(x \mid \mu_{ik}, \sigma_{ik}^2) = \frac{1}{\sigma_{ik}\sqrt{2\pi}} \exp\left(-\frac{(x - \mu_{ik})^2}{2\sigma_{ik}^2}\right)$$
-    \item la classe ha prior $\pi_k = P(Y = y_k)$.
+    \item Ciascuna classe ha prior $\pi_k = P(Y = y_k)$.
 \end{enumerate}
-Ogni coppia (feature, classe) ha una \textbf{propria} media e varianza: $\mu_{ik}$, $\sigma_{ik}^2$.
 
 \paragraph{Classificazione}
 $$Y^{new} = \arg\max_k \; \pi_k \prod_{i=1}^n \mathcal{N}(a_i \mid \mu_{ik}, \sigma_{ik}^2)$$
 
 \paragraph{Stime MLE dai dati}
-Per ogni classe si guardano solo gli esempi di quella classe ($\delta$ = funzione indicatrice, 1 se vero e 0 altrimenti):
+Per ogni classe si calcolano media e varianza campionarie sui soli esempi di quella classe ($\delta$ = funzione indicatrice):
 $$\mu_{ik} = \frac{\sum_{j=1}^N x_i^{(j)} \delta(y^{(j)} = y_k)}{\sum_{j=1}^N \delta(y^{(j)} = y_k)} \qquad \sigma_{ik}^2 = \frac{\sum_{j=1}^N (x_i^{(j)} - \mu_{ik})^2 \, \delta(y^{(j)} = y_k)}{\sum_{j=1}^N \delta(y^{(j)} = y_k)}$$
-Cioè: \textbf{media e varianza campionarie} della feature $X_i$ calcolate sugli esempi della classe $y_k$ (la varianza MLE divide per $N_k$ e non per $N_k - 1$).
+Il modello richiede $2n$ parametri continui per classe (una media e una varianza per feature), mantenendo una complessità lineare $\mathcal{O}(n)$.
 
-\noindent Parametri: $2n$ per classe (una media e una varianza per feature), quindi complessità \textbf{lineare} in $n$.
-
-\noindent Nota pratica: se in una classe una feature ha varianza (quasi) nulla la densità esplode. In pratica si somma una piccola costante alla varianza (equivalente allo smoothing del caso discreto).
-
-\paragraph{Valutazione del modello: matrice di confusione e metriche}
-
-\noindent In una classificazione binaria ogni predizione ricade in uno di quattro casi:
+\paragraph{Valutazione del modello: metriche di errore e matrice di confusione}
+Poiché le predizioni del modello possono essere errate, introduciamo le metriche di confronto basate sulla suddivisione dei casi:
 
 \begin{center}
 \small
 \begin{tabular}{cc|cc}
     \multicolumn{2}{c}{} & \multicolumn{2}{c}{\textbf{Classe reale}} \\
-    \multicolumn{2}{c}{} & \textbf{Positivo} & \textbf{Negativo} \\
+    \multicolumn{2}{c}{} & \textbf{Positivo (es. Cani)} & \textbf{Negativo (es. Gatti)} \\
     \hline
-    \textbf{Predizione} & \textbf{Positivo} & \textbf{TP} (vero positivo) & \textbf{FP} (falso allarme) \\
-    \textbf{del modello} & \textbf{Negativo} & \textbf{FN} (caso mancato) & \textbf{TN} (vero negativo) \\
+    \textbf{Predizione} & \textbf{Positivo} & \textbf{TP} (True Positive) & \textbf{FP} (False Positive) \\
+    \textbf{del modello} & \textbf{Negativo} & \textbf{FN} (False Negative) & \textbf{TN} (True Negative) \\
 \end{tabular}
 \end{center}
 
+\noindent Interpretazione geometrica e semantica:
 \begin{itemize}
-    \item \textbf{TP}: positivo riconosciuto come positivo.
-    \item \textbf{FP}: negativo scambiato per positivo (falso allarme, errore di tipo I).
-    \item \textbf{FN}: positivo che il modello si è lasciato sfuggire (errore di tipo II).
-    \item \textbf{TN}: negativo riconosciuto come negativo.
+    \item \textbf{True Negative (TN)}: negativi reali che cadono nella zona negativa (es.\ gatti classificati come gatti);
+    \item \textbf{False Positive (FP)}: negativi reali la cui feature supera la soglia finendo nella zona positiva (es.\ un gatto particolarmente pesante scambiato per cane $\to$ falso allarme);
+    \item \textbf{False Negative (FN)}: positivi reali che cadono a sinistra della soglia nella zona negativa (es.\ cani con peso inferiore alla soglia che vengono ``persi'' ed erroneamente etichettati come gatti);
+    \item \textbf{True Positive (TP)}: positivi reali che cadono correttamente nella zona positiva (es.\ cani classificati come cani).
 \end{itemize}
 
 \begin{center}
@@ -1322,56 +1362,47 @@ Cioè: \textbf{media e varianza campionarie} della feature $X_i$ calcolate sugli
 \end{tikzpicture}
 \end{center}
 
-\begin{cbox}{Metriche di valutazione}
+\begin{cbox}{Metriche di prestazione}
 \begin{itemize}
-    \item \textbf{Accuracy}: frazione di predizioni corrette.
-    $$\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}$$
-    \textit{Attenzione}: ingannevole con classi sbilanciate (se il 99\% è negativo, dire sempre «negativo» dà 99\% di accuracy e utilità nulla).
+    \item \textbf{Accuratezza (Accuracy)}: quota di predizioni corrette sul totale dei casi osservati:
+    $$\text{Accuracy} = \frac{\text{TP} + \text{TN}}{\text{Totale}} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}$$
+    Può risultare fuorviante in presenza di classi fortemente sbilanciate.
 
-    \item \textbf{Precision}: tra quelli che il modello dice positivi, quanti lo sono davvero.
+    \item \textbf{Precisione (Precision)}: misura la purezza e la qualità delle predizioni positive:
     $$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}$$
-    Alta precision $\implies$ pochi falsi allarmi.
+    Alta precisione $\implies$ pochissimi falsi allarmi (FP minimi).
 
-    \item \textbf{Recall} (sensibilità): tra i positivi reali, quanti ne trova il modello.
+    \item \textbf{Recall (Richiamo o Sensibilità)}: misura la capacità del modello di intercettare i casi positivi reali:
     $$\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}$$
-    Alto recall $\implies$ pochi casi persi.
+    Un richiamo alto indica che il modello individua la stragrande maggioranza dei positivi reali, riducendo al minimo i casi persi (FN minimi).
 
-    \item \textbf{F1-score}: media armonica di Precision e Recall.
+    \item \textbf{F1-score}: media armonica tra Precisione e Richiamo:
     $$F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
-    La media armonica è bassa se anche uno solo dei due valori è basso: non si può «barare» con un solo ottimo.
+    Penalizza i modelli sbilanciati in cui una delle due metriche è sacrificata a favore dell'altra.
 \end{itemize}
 \end{cbox}
 
-\begin{ibox}{Esempio: filtro antispam su 100 email}
-10 email sono spam (positivi), 90 normali. Il filtro ne segnala 9 come spam: ne becca 6 e ne sbaglia 3.
-\begin{center}
-\small
-\begin{tabular}{cc|cc}
-    \multicolumn{2}{c}{} & \multicolumn{2}{c}{\textbf{Reale}} \\
-    \multicolumn{2}{c}{} & \textbf{Spam} & \textbf{Normale} \\
-    \hline
-    \textbf{Predetto} & \textbf{Spam} & TP = 6 & FP = 3 \\
-    & \textbf{Normale} & FN = 4 & TN = 87 \\
-\end{tabular}
-\end{center}
+\begin{ibox}{Esempio numerico: filtro antispam}
+Su 100 email analizzate, 10 sono spam (positivi) e 90 ordinarie (negativi). Il modello ne segnala 9 come spam: ne individua 6 corrette e compie 3 falsi allarmi.
+$$\text{TP} = 6, \quad \text{FP} = 3, \quad \text{FN} = 4, \quad \text{TN} = 87$$
 $$\text{Accuracy} = \frac{6 + 87}{100} = 0.93 \qquad \text{Precision} = \frac{6}{6 + 3} \approx 0.67 \qquad \text{Recall} = \frac{6}{6 + 4} = 0.60$$
 $$F_1 = 2 \cdot \frac{0.67 \cdot 0.60}{0.67 + 0.60} \approx 0.63$$
-L'accuracy sembra ottima, ma un filtro che dice sempre «normale» avrebbe già 90\% di accuracy e recall 0: Precision, Recall e $F_1$ raccontano la verità.
-
-\textit{Quale errore costa di più?} Per lo spam un FP (mail importante persa) è peggio di un FN: conviene alta precision. In una diagnosi medica un FN (malato non riconosciuto) è peggio: conviene alto recall.
+L'accuracy del 93\% nasconde il fatto che un classificatore banale (che predice sempre ``ordinaria'') avrebbe un'accuracy del 90\% con un recall pari a 0. Precision, Recall e $F_1$ evidenziano invece la reale affidabilità del classificatore.
 \end{ibox}
 
 \begin{cbox}{Riepilogo: Naïve Bayes}
 \begin{itemize}
-    \item \textbf{Idea}: $\arg\max_k\ \pi_k \prod_i P(X_i \mid y_k)$, assumendo le feature indipendenti data la classe.
-    \item \textbf{Training}: solo conteggi (MLE); per feature continue, media e varianza per classe (Gaussian NB).
-    \item \textbf{Parametri}: $O(n)$ invece di $O(2^n)$.
-    \item \textbf{Cautele}: smoothing per evitare probabilità 0; logaritmi per evitare underflow.
-    \item \textbf{Natura}: generativo; con feature booleane è un classificatore \textbf{lineare}.
-    \item \textbf{Limite}: non vede le relazioni tra feature (es.\ XOR), e le probabilità che produce sono poco affidabili in senso assoluto.
-    \item \textbf{Valutazione}: matrice di confusione, Precision, Recall, $F_1$ (non solo accuracy).
+    \item \textbf{Idea}: $\arg\max_k\ \pi_k \prod_i P(X_i \mid y_k)$, assumendo le feature condizionatamente indipendenti data la classe.
+    \item \textbf{Training}: conteggi diretti (MLE) per feature discrete; stima di medie e varianze empiriche per feature continue (Gaussian Naïve Bayes).
+    \item \textbf{Parametri}: scalabilità lineare $\mathcal{O}(n)$ anziché esponenziale $\mathcal{O}(2^n)$.
+    \item \textbf{Cautele}: smoothing di Laplace per evitare probabilità nulle; passaggio ai logaritmi per contrastare l'underflow numerico.
+    \item \textbf{Natura}: modello generativo; con feature booleane definisce una frontiera di decisione lineare (iperpiano).
+    \item \textbf{Limite}: non modella le correlazioni tra feature (es.\ problema dello XOR) e tende a generare probabilità a posteriori sovrastimate.
+    \item \textbf{Valutazione}: matrice di confusione, Accuracy, Precision, Recall e $F_1$-score.
 \end{itemize}
 \end{cbox}
+
+\newpage
 
 \subsection{Regressione Logistica}
 
