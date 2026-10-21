@@ -1,5 +1,6 @@
 \documentclass[12pt]{extarticle}
 \usepackage{graphicx}
+\usepackage[export]{adjustbox}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{titlesec}
@@ -390,6 +391,7 @@ Ogni modello offre specifici \textbf{costruttori di tipo}, simili a quelli usati
 \end{enumerate}
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[
     box/.style={draw, rectangle, rounded corners=2pt, minimum width=2.4cm, minimum height=0.75cm, text centered, font=\small},
     widebox/.style={draw, rectangle, rounded corners=2pt, minimum width=9cm, minimum height=0.8cm, text centered, font=\small\bfseries},
@@ -430,6 +432,7 @@ Ogni modello offre specifici \textbf{costruttori di tipo}, simili a quelli usati
     \draw[thick] (log) -- (int);
     \draw[thick] (int) -- (db);
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -2216,7 +2219,7 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
 
 \newpage
 
-\section{SQL}
+\section{SQL di base}
 
 \subsection{Definizione dei Dati (DDL)}
 \subsubsection{Origine, Standardizzazione ed Evoluzione del Linguaggio}
@@ -2236,6 +2239,7 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
 \end{itemize}
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[
     node distance=0.7cm and 0.5cm,
     stepnode/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.9cm},
@@ -2260,6 +2264,7 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
     \draw[arrow] (s5) -- (s6);
     \draw[arrow] (s6) -- (s7);
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -2284,7 +2289,7 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
 \end{tabular}
 \end{center}
 
-\subsubsection{Definizione dei Dati: Database, Schemi e Tabelle}
+\subsubsection{Database, Schemi, Tabelle e Vincoli}
 \noindent \textbf{Il Livello DDL.} Il \textbf{Data Definition Language} comprende tutte le istruzioni con cui si creano, modificano o cancellano le strutture logiche della base di dati (database, schemi, tabelle, domini e indici).
 
 \medskip
@@ -2326,7 +2331,6 @@ Questa dichiarazione stabilisce in modo compatto:
     \item Un vincolo di unicità composito sulla coppia (\texttt{Cognome}, \texttt{Nome}).
 \end{itemize}
 
-\subsubsection{Tipi di Dato di Base e Domini Utente}
 \noindent \textbf{Tipi di Dato Elementari.} In SQL i tipi di dato corrispondono ai domini dell'algebra relazionale. Lo standard mette a disposizione diversi tipi predefiniti:
 \begin{itemize}
     \item \textbf{Stringhe di caratteri}:
@@ -2362,7 +2366,6 @@ CREATE DOMAIN VotoAccademico AS SMALLINT
 \end{lstlisting}
 Una volta definito, \texttt{VotoAccademico} può essere usato come tipo in qualsiasi tabella: il controllo di validità compreso tra 18 e 30 sarà applicato in modo uniforme e centralizzato dal DBMS.
 
-\subsubsection{Definizione dei Vincoli di Tabella}
 \noindent \textbf{Collocazione Sintattica dei Vincoli.} I vincoli possono essere dichiarati in due modalità equivalenti:
 \begin{itemize}
     \item \textbf{Vincolo di colonna (in-line)}: scritto immediatamente a fianco della definizione dell'attributo. Si usa se il vincolo riguarda quel singolo campo.
@@ -2407,7 +2410,7 @@ Cognome CHAR(20) NOT NULL UNIQUE
 \textit{Significato}: in tutta la tabella non potrà \textbf{mai} ripetersi il nome ``Mario'' (anche con cognome diverso), né potrà mai ripetersi il cognome ``Rossi''. Sono due vincoli completamente differenti.
 \end{cbox}
 
-\subsubsection{Integrità Referenziale e Azioni Reattive}
+\subsubsection{Integrità Referenziale ed Evoluzione dello Schema}
 \noindent \textbf{Definizione delle Chiavi Esterne.} Il vincolo di integrità referenziale stabilisce che i valori presenti in una o più colonne di una tabella (\textit{tabella referenziante}) debbano corrispondere a valori già esistenti nella chiave primaria di un'altra tabella (\textit{tabella referenziata}).
 \begin{lstlisting}[language=SQL]
 CREATE TABLE Infrazioni (
@@ -2462,7 +2465,6 @@ CREATE TABLE Infrazioni (
 \end{lstlisting}
 Se un agente viene rimosso dal personale, i suoi verbali passano ad agente \texttt{NULL}; se la sua matricola viene modificata, i verbali vengono aggiornati a cascata.
 
-\subsubsection{Evoluzione dello Schema: Comandi ALTER e DROP}
 \noindent \textbf{Modifica Dinamica dello Schema.} Non è quasi mai possibile prevedere a priori tutte le necessità future di una base di dati. SQL mette a disposizione istruzioni DDL per alterare strutture preesistenti senza perdere i dati già registrati.
 
 \medskip
@@ -2530,7 +2532,7 @@ L'indice opera a \textbf{livello fisico}: non altera la semantica logica dei dat
 \noindent \textbf{Il DDL nella Pratica Professionale.} Nei progetti industriali moderni, sebbene la progettazione avvenga spesso attraverso strumenti grafici (GUI come pgAdmin, MySQL Workbench, DBeaver) o tramite migrazioni automatiche nei framework software (ORM), la comprensione puntuale del DDL testuale resta fondamentale per garantire il controllo e l'ottimizzazione dell'architettura dati.
 
 \subsection{Interrogazioni in SQL}
-\subsubsection{La Struttura del Comando SELECT e il Flusso di Valutazione}
+\subsubsection{Il Comando SELECT: Struttura, Proiezione e Selezione}
 \noindent \textbf{Natura Dichiarativa delle Interrogazioni.} A differenza dell'algebra relazionale, che richiede di specificare l'esatta sequenza procedurale di operazioni per ricavare un risultato, SQL adotta un approccio prevalentemente \textbf{dichiarativo}: chi interroga il sistema specifica \textit{cosa} intende estrarre, lasciando al motore interno del DBMS il compito di stabilire \textit{come} procedere.
 
 \medskip
@@ -2557,6 +2559,7 @@ Le tre clausole assolvono compiti distinti:
 \end{lstlisting}
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[
     stepnode/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=left, font=\footnotesize, minimum width=12.5cm, inner sep=6pt},
     arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
@@ -2570,6 +2573,7 @@ Le tre clausole assolvono compiti distinti:
     \draw[arrow] (where) -- (select);
     \draw[arrow] (select) -- (distinct);
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -2580,7 +2584,6 @@ Le tre clausole assolvono compiti distinti:
     \item L'utente non deve preoccuparsi di ``scrivere una query efficiente a basso livello'', ma deve concentrarsi sulla \textbf{leggibilità} e sulla \textbf{correttezza semantica} della formulazione logica.
 \end{itemize}
 
-\subsubsection{Proiezione, Selezione e Ridenominazione}
 \noindent Per comprendere operativamente il comportamento di SQL, faremo riferimento a una relazione campione denominata \textbf{Persone}:
 
 \begin{center}
@@ -2650,7 +2653,6 @@ WHERE  p.Eta' < 30;
 \end{lstlisting}
 L'assegnazione di alias tramite \texttt{AS} non muta lo schema salvato su disco; si limita a etichettare le colonne nella vista generata a video, facilitando la lettura o evitando ambiguità quando più tabelle condividono attributi con lo stesso nome.
 
-\subsubsection{Condizioni Booleane, Predicato LIKE e Valori NULL}
 \noindent \textbf{Espressioni di Filtraggio Composte.} All'interno della clausola \texttt{WHERE} i confronti atomici ($=, <>, <, >, <=, >=$) possono essere concatenati mediante i connettivi logici \texttt{AND}, \texttt{OR} e \texttt{NOT}. L'uso delle parentesi tonde è fondamentale per esplicitare l'ordine di valutazione ed evitare ambiguità di precedenza:
 \begin{lstlisting}[language=SQL]
 SELECT *
@@ -2691,7 +2693,6 @@ WHERE  Eta' > 40
    OR  Eta' IS NULL;
 \end{lstlisting}
 
-\subsubsection{Duplicati e la Clausola DISTINCT}
 \noindent \textbf{Insiemi vs Multinsiemi (\textit{Bags}).} Nella teoria pura dell'algebra relazionale, ogni relazione è formalizzata come un insieme matematico di tuple: non possono mai esistere due righe duplicate all'interno del medesimo risultato. 
 
 \medskip
@@ -2731,7 +2732,7 @@ Se \texttt{DISTINCT} viene omesso (comportamento equivalente alla parola chiave 
 \end{tabular}
 \end{center}
 
-\subsubsection{Interrogazioni su Più Relazioni e Join Implicito}
+\subsubsection{Interrogazioni su Più Relazioni e Join}
 \noindent \textbf{Prodotto Cartesiano e Selezione.} Quando l'informazione desiderata è distribuita su più tabelle, è sufficiente elencare i rispettivi nomi separandoli da virgole all'interno della clausola \texttt{FROM}. In assenza di filtri, questa formulazione produce il pieno \textbf{prodotto cartesiano}:
 \begin{lstlisting}[language=SQL]
 SELECT *
@@ -2759,7 +2760,6 @@ L'espressione algebrica globale equivalente è quindi:
 \pi_{A_1, A_4}\big(\sigma_{A_2 = A_3}(R_1 \times R_2)\big)
 \]
 
-\subsubsection{Auto-Join (Self-Join) ed Esempi Completi}
 \noindent \textbf{Lavorare con Relazioni Ricorsive o Replicate.} Quando una query richiede di confrontare una riga con altre righe della \textbf{stessa tabella}, occorre includere la tabella più volte nella clausola \texttt{FROM}. Per evitare ambiguità, è obbligatorio assegnare alle singole istanze nomi di variabile distinti (\textit{alias di correlazione}).
 
 \medskip
@@ -2809,7 +2809,6 @@ WHERE  f.Nome = pat.Padre
 \]
 La notazione dichiarativa con alias di SQL (\texttt{f} e \texttt{c}) consente invece di esprimere il vincolo di parentela e il confronto tra redditi in modo pulito, naturale e privo di ambiguità.
 
-\subsubsection{Espressioni nella Target List e Sintassi Esplicita del JOIN}
 \noindent \textbf{Calcoli ed Espressioni nella Clausola SELECT.} La target list di una query non è limitata alla semplice proiezione di colonne memorizzate: è possibile inserire espressioni aritmetiche, manipolazioni di stringhe o costanti. I valori calcolati vengono generati al volo durante l'interrogazione senza alterare i dati su disco:
 
 \begin{lstlisting}[language=SQL]
@@ -2826,7 +2825,7 @@ L'assegnazione di un alias con \texttt{AS} è caldamente consigliata per assegna
 \begin{lstlisting}[language=SQL]
 -- Sintassi implicita (tradizionale):
 SELECT m.Madre, f.Figlio, f.Padre
-FROM   Maternità m, Paternità f
+FROM   Maternita' m, Paternita' f
 WHERE  m.Figlio = f.Figlio;
 
 -- Sintassi esplicita (standard SQL-92):
@@ -2851,7 +2850,6 @@ FROM   Maternita' NATURAL JOIN Paternita';
 \end{lstlisting}
 \textit{Nota pratica}: sebbene compatto, l'uso del \texttt{NATURAL JOIN} nella programmazione reale è spesso sconsigliato, poiché se in futuro viene aggiunta a una delle due tabelle una colonna con un nome coincidente per puro caso, il join cambierà comportamento in modo silenzioso e inatteso.
 
-\subsubsection{Outer Join: Preservare l'Informazione Incompleta}
 \noindent \textbf{Il Limite dell'Inner Join.} Nell'inner join convenzionale, se una tupla non trova alcuna corrispondenza nella tabella con cui viene combinata, essa viene scartata dal risultato finale. Questo comportamento comporta una perdita di informazione quando si desidera visualizzare l'intero elenco di un'entità, indipendentemente dal fatto che abbia o meno record associati.
 
 \medskip
@@ -2888,6 +2886,7 @@ FROM   Paternita' f
 \noindent \textbf{Rappresentazione Insimeistica dei Join.} La figura seguente sintetizza visivamente la differenza semantica tra le tipologie fondamentali di join:
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[font=\footnotesize]
     % Stili
     \tikzset{
@@ -2940,6 +2939,7 @@ FROM   Paternita' f
         \node[labelnode, below=1.2cm] at (0,0) {FULL OUTER JOIN\\{\tiny Tutto A e tutto B}};
     \end{scope}
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -2952,7 +2952,7 @@ FROM   Persone p
 WHERE  pat.Padre IS NULL;
 \end{lstlisting}
 
-\subsubsection{Ordinamento dei Risultati: La Clausola ORDER BY}
+\subsubsection{Ordinamento e Operatori Insiemistici}
 \noindent \textbf{Assenza di Ordine Intrinseco.} In base alla teoria delle relazioni, il risultato di un'interrogazione è un insieme non ordinato di tuple. L'ordine con cui le righe appaiono a schermo dopo una \texttt{SELECT} non è mai garantito dal DBMS, a meno che non venga richiesto esplicitamente mediante la clausola \textbf{\texttt{ORDER BY}}.
 
 \medskip
@@ -2998,7 +2998,6 @@ ORDER BY Nome ASC;
 ORDER BY Cognome ASC, Reddito DESC;
 \end{lstlisting}
 
-\subsubsection{Operatori Insiemistici: UNION, INTERSECT ed EXCEPT}
 \noindent \textbf{Compatibilità tra Schemi e Notazione Posizionale.} SQL mette a disposizione i tre classici operatori insiemistici per combinare i risultati di due blocchi \texttt{SELECT}:
 \begin{itemize}
     \item \textbf{\texttt{UNION}}: unione insiemistica.
@@ -3044,7 +3043,7 @@ SELECT Cognome AS Nome FROM Impiegato;
 \end{lstlisting}
 L'operatore \texttt{INTERSECT} può essere sempre riscritto tramite un equi-join equivalente della tabella con se stessa, mentre l'operazione \texttt{EXCEPT} trova una traduzione alternativa e potente nelle query annidate con negazione.
 
-\subsubsection{Interrogazioni Annidate (Subquery) e Operatori di Confronto}
+\subsubsection{Interrogazioni Annidate e Visibilità delle Variabili}
 \noindent \textbf{Il Concetto di Sottoquery.} Una delle caratteristiche più rilevanti di SQL è la possibilità di inserire un blocco d'interrogazione completo (\texttt{SELECT-FROM-WHERE}) all'interno della clausola \texttt{WHERE} di un'altra query più esterna. Si parla in questo caso di \textbf{query annidata} (\textit{subquery} o sottointerrogazione).
 
 \medskip
@@ -3107,7 +3106,6 @@ WHERE  Nome IN (
 \end{lstlisting}
 In questa formulazione, a differenza di quanto accade con l'inner join, non è necessario applicare \texttt{DISTINCT} all'esterno: ogni padre compare una sola volta, anche qualora avesse più figli che soddisfano la condizione di reddito.
 
-\subsubsection{Quantificazione Esistenziale: EXISTS e NOT EXISTS}
 \noindent \textbf{Predicati Esistenziali.} Spesso una condizione non dipende dal valore specifico restituito da una colonna, ma dal semplice fatto che una certa proprietà ammetta o meno \textbf{almeno una tupla} di riscontro. Per questo scopo SQL fornisce il predicato:
 \begin{center}
 \texttt{EXISTS ( <Sottoquery> )}
@@ -3141,7 +3139,6 @@ WHERE  NOT EXISTS (
 );
 \end{lstlisting}
 
-\subsubsection{Regole di Visibilità e Ambito delle Variabili (Scoping)}
 \begin{cbox}{Regole di Scoping nei Blocchi Annidati}
 \noindent Il passaggio di parametri e la visibilità delle tabelle tra query concentriche segue regole rigorose analoghe a quelle dei linguaggi di programmazione a blocchi:
 \begin{enumerate}
@@ -3153,6 +3150,7 @@ WHERE  NOT EXISTS (
 \end{cbox}
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[font=\small]
     % Blocco esterno
     \draw[thick, fill=blue!8, rounded corners=4pt] (0,0) rectangle (12.5,4.6);
@@ -3169,6 +3167,7 @@ WHERE  NOT EXISTS (
     \draw[-{Latex[length=3mm]}, very thick, red] (8.5,2.4) -- ++(0,1.4)
         node[midway, right=4pt, font=\scriptsize\bfseries] {f.Figlio NON e' accessibile all'esterno (Errore di Scoping)};
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -3186,7 +3185,7 @@ WHERE  Dipart IN (SELECT NomeDipart
 \end{lstlisting}
 La seconda sottoquery tenta di accedere alla colonna \texttt{D1.Città}. Poiché l'alias \texttt{D1} è stato istanziato all'interno del primo blocco parallelo, il suo ciclo di vita si è concluso alla chiusura della parentesi tonda. La variabile non è visibile al ramo fratello e il parser SQL rigetta la query con un errore di identificatore sconosciuto.
 
-\subsubsection{Funzioni Aggregate (Operatori di Colonna)}
+\subsubsection{Aggregazione e Raggruppamento}
 \noindent \textbf{Dal Calcolo su Singola Riga all'Aggregazione.} Le espressioni viste finora operano orizzontalmente all'interno della medesima tupla. Nella maggior parte delle analisi informative è tuttavia necessario estrarre grandezze statistiche complessive (totali, conteggi, medie) calcolate verticalmente su insiemi di righe. SQL risponde a questa esigenza mediante le \textbf{funzioni aggregate} (\textit{aggregate functions}):
 
 \begin{itemize}
@@ -3270,18 +3269,18 @@ FROM   Persone
 WHERE  Reddito = (SELECT MAX(Reddito) FROM Persone);
 \end{lstlisting}
 
-\subsubsection{Raggruppamento dei Dati: La Clausola GROUP BY}
 \noindent \textbf{Necessità del Raggruppamento.} Spesso non si desidera calcolare un aggregato sull'intera tabella, bensì partizionare i dati in sottoinsiemi omogenei (ad esempio calcolare il reddito medio per ciascuna città, o il numero di figli per ciascun padre). Questo comportamento si realizza con la clausola \textbf{\texttt{GROUP BY}}.
 
 \medskip
 \noindent \textbf{Sintassi ed Esempio Operativo.} Data la tabella \textbf{Paternità}(\underline{Figlio}, Padre):
 \begin{lstlisting}[language=SQL]
 SELECT   Padre, COUNT(*) AS NumeroFigli
-FROM     Paternità
+FROM     Paternita'
 GROUP BY Padre;
 \end{lstlisting}
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[
     box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.75cm},
     arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
@@ -3315,6 +3314,7 @@ GROUP BY Padre;
     \draw[arrow] (input) -- node[above, font=\scriptsize\bfseries] {GROUP BY Padre} (groups);
     \draw[arrow] (groups) -- node[above, font=\scriptsize\bfseries] {COUNT(*)} (output);
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \medskip
@@ -3363,7 +3363,6 @@ GROUP BY Padre;
 \end{tabular}
 \end{center}
 
-\subsubsection{Condizioni sui Gruppi: La Clausola HAVING}
 \noindent \textbf{Filtrare Gruppi Interi.} La clausola \texttt{WHERE} non può filtrare i risultati delle funzioni aggregate, poiché viene valutata logicamente \textbf{prima} che i gruppi vengano formati. Per imporre vincoli sul risultato delle funzioni statistiche calcolate sui gruppi, SQL introduce la clausola \textbf{\texttt{HAVING}}.
 
 \medskip
@@ -3407,7 +3406,6 @@ HAVING   AVG(pe.Reddito) > 20;
 \end{lstlisting}
 La clausola \texttt{WHERE pe.Eta' < 30} scarta preventivamente tutti i figli trentenni o più anziani; il \texttt{GROUP BY} partiziona i soli figli giovani rimasti in base al padre; infine \texttt{HAVING} seleziona unicamente i padri la cui media calcolata supera la soglia di 20.
 
-\subsubsection{Sintassi Completa e Ciclo di Vita del Blocco SELECT}
 \noindent \textbf{La Forma Canonica Generale.} Riassumendo tutte le clausole esaminate, l'interrogazione SQL completa si struttura formalmente nella seguente sequenza:
 
 \begin{lstlisting}[language=SQL]
@@ -3423,6 +3421,7 @@ FROM     <ListaTabelle con eventuali costrutti JOIN>
 \noindent \textbf{Il Pipeline Concettuale di Esecuzione.} L'ordine logico secondo cui il motore relazionale elabora i dati non coincide con l'ordine di scrittura del testo, ma segue rigorosamente questa pipeline:
 
 \begin{center}
+\begin{adjustbox}{max width=\linewidth}
 \begin{tikzpicture}[
     node distance=0.35cm,
     stepbar/.style={draw=blue-violet, fill=ghostwhite, rounded corners=2pt, thick, align=left, font=\footnotesize, minimum width=13.5cm, inner sep=4pt},
@@ -3443,6 +3442,7 @@ FROM     <ListaTabelle con eventuali costrutti JOIN>
     \draw[arr] (s5) -- (s6);
     \draw[arr] (s6) -- (s7);
 \end{tikzpicture}
+\end{adjustbox}
 \end{center}
 
 \subsection{Operazioni di Modifica dei Dati (DML): INSERT, DELETE e UPDATE}
@@ -3525,5 +3525,867 @@ SET    Reddito = DEFAULT
 WHERE  Eta' < 30;
 \end{lstlisting}
 Anche per l'aggiornamento vale la regola di sicurezza: omettere la clausola \texttt{WHERE} comporterà l'applicazione della modifica specificata sull'intera totalità delle tuple presenti nella relazione.
+
+\section{SQL avanzato}
+
+\subsection{Vincoli Complessi e Viste}
+
+\subsubsection{Vincoli CHECK e Asserzioni}
+\noindent \textbf{Definizione e Ambito.} La clausola \texttt{CHECK} consente di specificare vincoli di integrità personalizzati su singole tuple (o combinazioni di attributi della stessa tabella), definendo condizioni booleane che ogni riga deve obbligatoriamente soddisfare:
+\begin{lstlisting}[language=SQL]
+CHECK ( Predicato )
+\end{lstlisting}
+Qualsiasi operazione di inserimento (\texttt{INSERT}) o aggiornamento (\texttt{UPDATE}) che renda il predicato \texttt{FALSE} viene bloccata dal DBMS. Se il predicato restituisce \texttt{UNKNOWN} (a causa di valori \texttt{NULL}), il vincolo si considera non violato per specifica dello standard SQL.
+
+\medskip
+\noindent \textbf{Controlli Aritmetici e di Dominio Intra-Tupla.} Il caso d'uso più comune prevede confronti tra colonne appartenenti alla medesima tupla:
+\begin{lstlisting}[language=SQL, caption={Vincoli CHECK intra-tupla}]
+CREATE TABLE Impiegato (
+    Matricola    CHAR(6) PRIMARY KEY,
+    Cognome      VARCHAR(20) NOT NULL,
+    Nome         VARCHAR(20) NOT NULL,
+    Sesso        CHAR(1) NOT NULL CHECK (Sesso IN ('M', 'F')),
+    Stipendio    INTEGER CHECK (Stipendio >= 0),
+    Ritenute     INTEGER,
+    Netto        INTEGER,
+    Supervisore  CHAR(6),
+    CHECK (Netto = Stipendio - Ritenute)
+);
+\end{lstlisting}
+
+\begin{cbox}{Verifica dei Vincoli CHECK: Esempi di Inserimento}
+\noindent Consideriamo tre tentativi di inserimento nella tabella precedente:
+\begin{center}
+\small
+\begin{tabular}{lp{6.8cm}c}
+    \toprule
+    \textbf{Istruzione INSERT} & \textbf{Motivazione Semantica} & \textbf{Esito} \\
+    \midrule
+    \texttt{(1, 'Doe', 'John', '', 100, 20, 80)} & \texttt{Sesso = ''} non appartiene al dominio \texttt{('M', 'F')}. & \textbf{Respinto} \\
+    \addlinespace
+    \texttt{(2, 'Smith', 'Jimmy', 'M', 100, 10, 80)} & Errore aritmetico: $80 \neq 100 - 10 = 90$. & \textbf{Respinto} \\
+    \addlinespace
+    \texttt{(3, 'Rossini', 'Luca', 'M', 70, 20, 50)} & $50 = 70 - 20$ e sesso valido. & \textbf{Accettato} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\medskip
+\noindent \textbf{CHECK con Sottoquery e Limitazioni nei DBMS.} Lo standard SQL ammette teoricamente predicati complessi contenenti sottoquery per confrontare la tupla con altri record della tabella:
+\begin{lstlisting}[language=SQL, caption={CHECK con sottoquery (non supportato universalmente)}]
+CREATE TABLE Impiegato (
+    Matricola    INTEGER PRIMARY KEY,
+    Stipendio    INTEGER,
+    Supervisore  INTEGER,
+    CHECK (Stipendio <= (
+        SELECT Stipendio 
+        FROM Impiegato J 
+        WHERE Supervisore = J.Matricola
+    ))
+);
+\end{lstlisting}
+
+\begin{cbox}{Nota di Supporto Reale sui Vincoli CHECK}
+\noindent L'inserimento di clausole \texttt{SELECT} all'interno di un vincolo \texttt{CHECK} \textbf{non è supportato da molti DBMS commerciali} (tra cui MySQL e PostgreSQL) per motivi di efficienza: richiederebbe l'esecuzione di una sottoquery a ogni singola scrittura. Nella pratica aziendale, controlli complessi tra tuple diverse si implementano tramite \textbf{Trigger}.
+\end{cbox}
+
+\noindent \textbf{Definizione e Ruolo Globale.} Quando una regola di integrità coinvolge più tabelle o l'intero stato della base di dati, i vincoli di tabella non sono sufficienti. Lo standard SQL-92 definisce le \textbf{Asserzioni} (\texttt{ASSERTION}): vincoli indipendenti definiti a livello di schema.
+\begin{lstlisting}[language=SQL]
+CREATE ASSERTION NomeAsserzione CHECK ( Predicato );
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL, caption={Esempio: garantire almeno un impiegato nel database}]
+CREATE ASSERTION AlmenoUnImpiegato
+CHECK (1 <= (SELECT COUNT(*) FROM Impiegato));
+\end{lstlisting}
+
+\begin{cbox}{Confronto Operativo: CHECK vs ASSERTION}
+\begin{center}
+\small
+\begin{tabular}{lp{6.2cm}p{6.2cm}}
+    \toprule
+    \textbf{Proprietà} & \textbf{CHECK (di Tabella)} & \textbf{ASSERTION (di Schema)} \\
+    \midrule
+    \textbf{Associazione} & Legato a una specifica relazione. & Entità autonoma dello schema. \\
+    \addlinespace
+    \textbf{Validazione} & Valutato solo su inserimenti/modifiche della tabella di appartenenza. & Valutato su qualunque modifica che possa alterare il predicato globale. \\
+    \addlinespace
+    \textbf{Supporto Reale} & Ampiamente supportato per controlli intra-tupla. & \textbf{Quasi assente nei DBMS reali} per via del costo di computazione eccessivo. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsubsection{Viste: Interrogazione, Aggiornamento e Annidamento}
+\noindent \textbf{Natura delle Viste.} Una \textbf{vista} è una relazione virtuale il cui contenuto non è memorizzato fisicamente su disco, ma è calcolato dinamicamente tramite un'interrogazione SQL eseguita al momento dell'accesso:
+\begin{lstlisting}[language=SQL]
+CREATE VIEW NomeVista [ ( ListaColonne ) ] AS
+    QuerySELECT
+    [ WITH [ LOCAL | CASCADED ] CHECK OPTION ];
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL, caption={Creazione di una vista filtrata}]
+CREATE VIEW ImpiegatiAmm (Nome, Cognome, Stipendio) AS
+    SELECT Nome, Cognome, Stipendio
+    FROM   Impiegato
+    WHERE  Dipart = 'Amministrazione'
+      AND  Stipendio > 10;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Interrogazione Trasparente e Riscrittura.} Le viste si interrogano esattamente come qualsiasi altra tabella reale:
+\begin{lstlisting}[language=SQL]
+SELECT * 
+FROM   ImpiegatiAmm;
+\end{lstlisting}
+Il DBMS riceve l'interrogazione e opera una \textbf{riscrittura logica trasparente}, integrando il corpo della vista nella query:
+\begin{lstlisting}[language=SQL]
+-- Riscrittura interna eseguita dal motore del DBMS:
+SELECT Nome, Cognome, Stipendio
+FROM   Impiegato
+WHERE  Dipart = 'Amministrazione' 
+  AND  Stipendio > 10;
+\end{lstlisting}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.9cm},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[box] (query) {\textbf{Query Utente}\\\texttt{SELECT * FROM ImpiegatiAmm}};
+    \node[box, right=1.4cm of query] (rewrite) {\textbf{Motore di Riscrittura}\\\textit{Sostituisce la vista con il predicato base}};
+    \node[box, right=1.4cm of rewrite] (db) {\textbf{Esecuzione sul DB}\\\texttt{FROM Impiegato WHERE Dipart = '...'}};
+
+    \draw[arrow] (query) -- (rewrite);
+    \draw[arrow] (rewrite) -- (db);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent \textbf{Aggiornabilità delle Viste.} Le operazioni di modifica (\texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE}) sulle viste presentano ambiguità: devono riflettersi sulle tabelle sottostanti.
+\begin{itemize}
+    \item \textbf{Viste Aggiornabili}: definite su una singola tabella di base, senza funzioni aggregate, \texttt{DISTINCT}, o clausole \texttt{GROUP BY}.
+    \item \textbf{Problema di Inconsistenza}: un utente potrebbe inserire o aggiornare una riga assegnandole valori che non rispettano la clausola \texttt{WHERE} della vista, facendola ``sparire'' dalla vista stessa ma lasciandola registrata sul DB fisico.
+\end{itemize}
+
+\begin{lstlisting}[language=SQL, caption={Vista definita con WITH CHECK OPTION}]
+CREATE VIEW ImpiegatiPoveri AS
+    SELECT *
+    FROM   ImpiegatiAmm
+    WHERE  Stipendio < 50
+    WITH CHECK OPTION;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Il Ruolo di \texttt{WITH CHECK OPTION}.} Impedisce qualsiasi operazione di \texttt{INSERT} o \texttt{UPDATE} che produca tuple non conformi ai criteri di visibilità della vista:
+\begin{lstlisting}[language=SQL, caption={Tentativo di modifica respinto}]
+-- Operazione bloccata dal DBMS:
+UPDATE ImpiegatiPoveri
+SET    Stipendio = 60
+WHERE  Nome = 'Anna';
+-- ERRORE: 60 viola il vincolo (Stipendio < 50) imposto dal CHECK OPTION!
+\end{lstlisting}
+
+\noindent Quando una vista è definita a partire da un'altra vista preesistente, la clausola di controllo può essere configurata su due livelli di rigidità:
+
+\begin{itemize}
+    \item \textbf{\texttt{LOCAL CHECK OPTION}}: convalida unicamente le condizioni \texttt{WHERE} definite sulla vista corrente, senza propagare il vincolo alle viste sottostanti (a meno che non abbiano esplicitamente il proprio \texttt{CHECK OPTION}).
+    \item \textbf{\texttt{CASCADED CHECK OPTION}} (\textit{comportamento predefinito}): propaga i controlli a ritroso lungo tutta la gerarchia, imponendo il rispetto simultaneo delle condizioni della vista corrente e di tutte le viste genitrici.
+\end{itemize}
+
+\begin{cbox}{Riepilogo: Propagazione dei Vincoli nelle Viste Annidate}
+\begin{center}
+\small
+\begin{tabular}{p{3.8cm}p{4.2cm}p{4.2cm}}
+    \toprule
+    \textbf{Scenario di Gerarchia} & \textbf{WITH LOCAL CHECK OPTION} & \textbf{WITH CASCADED CHECK OPTION} \\
+    \midrule
+    \textbf{Vista B definita sopra Vista A} & Controlla solo i filtri propri di B. I filtri di A vengono ignorati se A non ha specificato check option. & \textbf{Controlla entrambi i filtri}: la tupla deve soddisfare i requisiti di B e i requisiti di A. \\
+    \addlinespace
+    \textbf{Garanzia sui Dati} & Flessibilità locale, rischio di effetti collaterali a livelli inferiori. & \textbf{Massima integrità logica}: nessuna tupla illegale può raggiungere la tabella di base. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsection{Query Complesse, Ricorsione e Funzioni Scalari}
+
+\subsubsection{Query Complesse e Scomposizione con Viste Intermedie}
+\noindent \textbf{Il Limite dell'Annidamento degli Aggregati.} In SQL standard non è consentito annidare direttamente funzioni aggregate all'interno della stessa clausola \texttt{SELECT}. 
+
+\medskip
+\noindent Si consideri la richiesta: \textit{«Fornire il numero medio di uffici per dipartimento»}. L'approccio immediato e intuitivo:
+\begin{lstlisting}[language=SQL, caption={Query sintatticamente errata: annidamento di aggregati}]
+-- ERRORE SINTATTICO: SQL vieta l'annidamento di funzioni aggregate
+SELECT AVG(COUNT(DISTINCT Office))
+FROM   Employee
+GROUP BY Dept;
+\end{lstlisting}
+\textit{Motivazione dell'errore}: l'operatore \texttt{COUNT} lavora comprimendo le singole righe all'interno di ogni partizione creata dal \texttt{GROUP BY}, mentre \texttt{AVG} dovrebbe operare su un insieme di risultati già calcolati. Il motore SQL non supporta due livelli logici di riduzione scalare nello stesso blocco di selezione.
+
+\medskip
+\noindent \textbf{Risoluzione con Vista Intermedia a Due Livelli.} Per calcolare aggregazioni su aggregazioni senza incorrere in errori di sintassi, si scompone l'elaborazione creando una \textbf{vista intermedia}:
+
+\begin{lstlisting}[language=SQL, caption={Query corretta con vista intermedia di aggregazione}]
+-- Passo 1: la vista calcola il primo livello di aggregazione per reparto
+CREATE VIEW DeptOffices (NameDept, OffNo) AS
+    SELECT Dept, COUNT(DISTINCT Office)
+    FROM   Employee
+    GROUP BY Dept;
+
+-- Passo 2: la query finale calcola la media sui valori gia aggregati
+SELECT AVG(OffNo) AS MediaUfficiPerDipartimento
+FROM   DeptOffices;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Il Problema delle Clausole HAVING Annidate.} Si consideri una seconda richiesta: \textit{«Individuare il dipartimento con la spesa salariale complessiva più elevata»}.
+Un tentativo frequente consiste nell'annidare una sottoquery direttamente all'interno della clausola \texttt{HAVING}:
+
+\begin{lstlisting}[language=SQL, caption={Query con HAVING annidato: non supportata da molti DBMS}]
+-- Formulazione problematica: clausola HAVING con sottoquery aggregata
+SELECT Dept
+FROM   Employee
+GROUP BY Dept
+HAVING SUM(Salary) >= ALL (
+    SELECT SUM(Salary)
+    FROM   Employee
+    GROUP BY Dept
+);
+\end{lstlisting}
+\textit{Criticità}: sebbene teoricamente concepita dallo standard, la presenza di una clausola \texttt{HAVING} contenente una sottoquery raggruppata e quantificata con \texttt{>= ALL} non è universalmente ammessa da molti motori relazionali o produce piani di esecuzione inefficienti.
+
+\medskip
+\noindent \textbf{Soluzione Robusta: Vista Intermedia di Budget.} Si isola il totale salariale di ciascun dipartimento in una vista, riducendo l'estrazione a una semplice condizione scalare di massimo:
+
+\begin{lstlisting}[language=SQL, caption={Soluzione standard e portabile con vista intermedia}]
+-- Passo 1: isola la somma degli stipendi per ogni dipartimento
+CREATE VIEW BudgetSalary (Dep, TotalSalary) AS
+    SELECT Dept, SUM(Salary)
+    FROM   Employee
+    GROUP BY Dept;
+
+-- Passo 2: estrae il dipartimento confrontando il valore con il massimo
+SELECT Dep
+FROM   BudgetSalary
+WHERE  TotalSalary = (
+    SELECT MAX(TotalSalary)
+    FROM   BudgetSalary
+);
+\end{lstlisting}
+
+\begin{cbox}{Regola Metodologica per Query Aggregate Complesse}
+\noindent Ogniqualvolta una richiesta richieda calcoli statistici a gradini (es. massimo di somme, media di conteggi) o confronti globali su gruppi:
+\begin{enumerate}
+    \item \textbf{Non forzare la query singola}: l'annidamento estremo genera codice illeggibile e spesso non conforme ai compilatori dei singoli DBMS.
+    \item \textbf{Modularizzare con le Viste}: definire una vista intermedia che calcoli le grandezze parziali e interrogare successivamente la vista per ottenere il risultato globale.
+\end{enumerate}
+\end{cbox}
+
+\subsubsection{Query Ricorsive e Chiusura Transitiva (SQL:1999)}
+\noindent \textbf{I Limiti dell'Algebra e la Chiusura Transitiva.} Nelle basi di dati reali i record possono instaurare relazioni ad albero o a grafo di profondità arbitraria (gerarchie aziendali, alberi genealogici, percorsi stradali). Con i soli operatori di join convenzionali è possibile risalire a un numero prefissato di livelli (es. padre, nonno), ma \textbf{non è possibile calcolare la chiusura transitiva} su una gerarchia di profondità ignota.
+
+\medskip
+\noindent Si consideri la relazione \textbf{Paternità} (\textit{Fatherhood}):
+\begin{center}
+\small
+\begin{tabular}{ll}
+    \toprule
+    \multicolumn{2}{c}{\textbf{Relazione Paternità (\textit{Fatherhood})}} \\
+    \midrule
+    \textbf{Father} & \textbf{Child} \\
+    \midrule
+    Carl  & Frank \\
+    Louis & Olga \\
+    Louis & Bob \\
+    Frank & Alex \\
+    Frank & Alfred \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Obiettivo: determinare \textbf{tutti gli antenati} di ciascuna persona (genitori, nonni, bisnonni, ecc.).
+
+\medskip
+\noindent \textbf{Fondamento Teorico: La Ricorsione in Datalog.} Nella logica dei predicati e in Datalog, la chiusura transitiva si scompone formalmente in una regola base e una regola ricorsiva induttiva:
+\begin{align*}
+\text{Ancestors}(p, f) & \leftarrow \text{Fatherhood}(p, f) \\
+\text{Ancestors}(a, d) & \leftarrow \text{Fatherhood}(a, f), \ \text{Ancestors}(f, d)
+\end{align*}
+\begin{itemize}
+    \item \textbf{Passo Base}: ogni padre diretto è un antenato del proprio figlio.
+    \item \textbf{Passo Ricorsivo}: se $a$ è padre di $f$ ed $f$ è antenato di $d$, allora anche $a$ è un antenato di $d$.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Implementazione in SQL:1999 con WITH RECURSIVE.} Lo standard SQL:1999 ha introdotto le \textit{Common Table Expressions} (CTE) ricorsive per implementare il calcolo a punto fisso direttamente nel linguaggio:
+
+\begin{lstlisting}[language=SQL, caption={Calcolo completo degli antenati tramite CTE ricorsiva}]
+WITH RECURSIVE Ancestors (Ancestor, Descendant) AS (
+    -- 1. Query di ancoraggio (Anchor Member - Caso Base)
+    SELECT Father, Child
+    FROM   Fatherhood
+    UNION ALL
+    -- 2. Query ricorsiva (Recursive Member - Passo Induttivo)
+    SELECT a.Ancestor, f.Child
+    FROM   Ancestors a
+           JOIN Fatherhood f 
+             ON a.Descendant = f.Father
+)
+SELECT *
+FROM   Ancestors;
+\end{lstlisting}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    node distance=0.6cm,
+    stepnode/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum width=8.5cm, inner sep=4pt},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[stepnode] (anchor) {\textbf{1. Query di Ancoraggio (Caso Base)}\\Valutazione iniziale: estrae le coppie genitore-figlio dirette ($R_0$)};
+    \node[stepnode, below=of anchor] (rec) {\textbf{2. Query Ricorsiva (Passo Induttivo)}\\Esegue il join tra la vista parziale $R_i$ e la tabella fisica: produce $R_{i+1}$};
+    \node[stepnode, below=of rec] (union) {\textbf{3. Accumulo dei Risultati}\\\texttt{UNION ALL} unisce le nuove tuple scoperte al set complessivo};
+    \node[stepnode, below=of union] (check) {\textbf{4. Raggiungimento del Punto Fisso}\\\textit{Nuove tuple generate in $R_{i+1}$?} $\implies$ Itera al punto 2 altrimenti Termina};
+
+    \draw[arrow] (anchor) -- (rec);
+    \draw[arrow] (rec) -- (union);
+    \draw[arrow] (union) -- (check);
+    \draw[arrow] (check.east) -- ++(0.8,0) |- (rec.east);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Esempio Aziendale: Catena di Supervisione Gerarchica.} 
+Dato lo schema aziendale $\text{Employee}(\underline{\text{No}}, \text{Surname}, \text{Name}, \text{Salary}, \text{Supervisor})$, vogliamo individuare la totalità dei supervisori (diretti e indiretti) del dipendente ``John Doe'':
+
+\begin{lstlisting}[language=SQL, caption={Catena dei supervisori di John Doe}]
+WITH RECURSIVE InCharge (No, Supervisor) AS (
+    -- Caso base: supervisori diretti di tutti i dipendenti
+    SELECT No, Supervisor
+    FROM   Employee
+    UNION
+    -- Passo ricorsivo: risale la catena di comando
+    SELECT e.No, ic.Supervisor
+    FROM   Employee e
+           JOIN InCharge ic 
+             ON e.Supervisor = ic.No
+)
+SELECT e.Name, e.Surname, ic.Supervisor
+FROM   Employee e
+       JOIN InCharge ic 
+         ON e.No = ic.No
+WHERE  e.Name = 'John' 
+  AND  e.Surname = 'Doe';
+\end{lstlisting}
+
+\subsubsection{Funzioni Scalari Predefinite e Manipolazione Dati}
+\noindent \textbf{Natura delle Funzioni Scalari.} A differenza delle funzioni aggregate (che operano verticalmente comprimendo più righe in un unico valore aggregato), le \textbf{funzioni scalari} operano orizzontalmente sul valore del singolo attributo di ogni riga, restituendo esattamente un valore per ciascuna tupla esaminata.
+
+\begin{center}
+\small
+\begin{tabular}{lp{6.2cm}p{6.2cm}}
+    \toprule
+    \textbf{Caratteristica} & \textbf{Funzioni Scalari} & \textbf{Funzioni Aggregate} \\
+    \midrule
+    \textbf{Ambito di Azione} & Valutate tupla per tupla (orizzontale). & Valutate su insiemi di tuple (verticale). \\
+    \addlinespace
+    \textbf{Righe di Output} & Restituiscono un valore per ogni tupla esaminata. & Comprimono il gruppo/tabella in un solo valore riassuntivo. \\
+    \addlinespace
+    \textbf{Posizionamento} & In qualsiasi clausola (\texttt{SELECT}, \texttt{WHERE}, ecc.). & Solo nella clausola \texttt{SELECT} o \texttt{HAVING}. \\
+    \addlinespace
+    \textbf{Esempi Tipici} & \texttt{EXTRACT}, \texttt{LOWER}, \texttt{CAST}. & \texttt{COUNT}, \texttt{SUM}, \texttt{AVG}, \texttt{MIN}, \texttt{MAX}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{1. Funzioni Temporali e Manipolazione Date.} Lo standard definisce funzioni di sistema per interagire con date e timestamp:
+\begin{itemize}
+    \item \texttt{CURRENT\_DATE}: restituisce la data corrente del sistema.
+    \item \texttt{EXTRACT(campo FROM espressione)}: isola una singola porzione numerica da una data (es. \texttt{YEAR}, \texttt{MONTH}, \texttt{DAY}, \texttt{HOUR}).
+\end{itemize}
+
+\begin{lstlisting}[language=SQL, caption={Uso di EXTRACT e CURRENT\_DATE}]
+-- Estrae l'anno degli ordini emessi nella giornata odierna:
+SELECT EXTRACT(YEAR FROM OrderDate) AS AnnoOrdine
+FROM   Orders
+WHERE  DATE(OrderDate) = CURRENT_DATE;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{2. Funzioni di Manipolazione Testuale.} Consentono trasformazioni sulle stringhe di caratteri:
+\begin{itemize}
+    \item \texttt{CHAR\_LENGTH(stringa)}: restituisce il numero intero di caratteri che compongono il testo.
+    \item \texttt{LOWER(stringa)} / \texttt{UPPER(stringa)}: converte l'intero testo in caratteri minuscoli o maiuscoli, fondamentale per eseguire confronti uniformi e indipendenti dalle maiuscole (\textit{case-insensitive}).
+\end{itemize}
+
+\medskip
+\noindent \textbf{3. Conversione di Tipo Esplicita: La Funzione CAST.} Nei database relazionali può essere necessario convertire dinamicamente un attributo da un dominio a un altro:
+\begin{lstlisting}[language=SQL]
+CAST ( Espressione AS NuovoTipoDato )
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL, caption={Esempi di utilizzo di CAST e funzioni su stringhe}]
+-- Normalizzazione di stringhe e calcolo della lunghezza:
+SELECT Matricola,
+       LOWER(Cognome)       AS CognomeMinuscolo,
+       CHAR_LENGTH(Cognome) AS NumeroLettere
+FROM   Employee;
+
+-- Forzare la divisione reale tra due interi:
+SELECT Matricola,
+       CAST(Stipendio AS DECIMAL(10,2)) / 12 AS StipendioMensile
+FROM   Employee;
+\end{lstlisting}
+
+\subsection{Espressioni Condizionali e Sicurezza dei Dati}
+
+\subsubsection{Espressioni Condizionali: COALESCE, NULLIF e CASE}
+\noindent \textbf{Logica Condizionale in SQL.} Nello standard SQL-92 sono state introdotte funzioni scalari per gestire la presenza di valori nulli e implementare logiche decisionali di tipo \textit{if-then-else} direttamente all'interno delle interrogazioni, senza dover demandare tali controlli al software applicativo esterno.
+
+\medskip
+\noindent \textbf{1. La Funzione COALESCE.} Riceve in ingresso una sequenza di espressioni e restituisce il \textbf{primo valore non nullo} incontrato nell'elenco. Se tutti i parametri valgono \texttt{NULL}, la funzione restituisce \texttt{NULL}:
+\begin{lstlisting}[language=SQL]
+COALESCE(valore_1, valore_2, ..., valore_n)
+\end{lstlisting}
+
+\medskip
+\noindent La funzione trova due utilizzi tipici nella pratica:
+\begin{itemize}
+    \item \textbf{Selezione di recapiti a cascata}: recuperare il primo contatto disponibile da colonne alternative:
+\begin{lstlisting}[language=SQL]
+-- Restituisce il cellulare se presente; altrimenti il fisso di casa:
+SELECT Matricola, 
+       COALESCE(Cellulare, TelefonoCasa) AS RecapitoPrincipale
+FROM   Impiegato;
+\end{lstlisting}
+    \item \textbf{Sostituzione di valori di default}: rimpiazzare l'assenza di un valore (\texttt{NULL}) con una stringa o un valore sentinella leggibile:
+\begin{lstlisting}[language=SQL]
+-- Se il dipartimento e' NULL, restituisce la stringa fissa 'Nessuno':
+SELECT Cognome, Nome, 
+       COALESCE(Dipart, 'Nessuno') AS DipartimentoAssegnato
+FROM   Impiegato;
+\end{lstlisting}
+\end{itemize}
+
+\medskip
+\noindent \textbf{2. La Funzione NULLIF.} Confronta i due argomenti passati in input: se sono \textbf{uguali}, restituisce \texttt{NULL}; se sono \textbf{diversi}, restituisce il valore del primo argomento:
+\begin{lstlisting}[language=SQL]
+NULLIF(espressione_1, espressione_2)
+\end{lstlisting}
+Viene impiegata principalmente per ripulire i dati da valori sentinella preesistenti o per evitare errori di divisione per zero:
+\begin{lstlisting}[language=SQL, caption={Uso di NULLIF per normalizzare dati non validi}]
+-- Trasforma la dicitura 'Sconosciuto' nel valore nativo NULL:
+SELECT Cognome, 
+       NULLIF(Dipart, 'Sconosciuto') AS DipartimentoPulito
+FROM   Impiegato;
+
+-- Prevenzione della divisione per zero (restituisce NULL se Divisore = 0):
+SELECT Dividendo / NULLIF(Divisore, 0) AS QuozienteSicuro
+FROM   DatiContabili;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{3. Il Costrutto CASE.} Fornisce una struttura di diramazione condizionale completa a livello di riga. Esiste in due varianti sintattiche:
+
+\begin{itemize}
+    \item \textbf{CASE Semplice}: confronta un'espressione iniziale con una serie di valori costanti:
+\begin{lstlisting}[language=SQL]
+CASE espressione
+    WHEN valore_1 THEN risultato_1
+    WHEN valore_2 THEN risultato_2
+    [ ELSE risultato_default ]
+END
+\end{lstlisting}
+    \item \textbf{CASE Ricercato (\textit{Searched})}: valuta predicati booleani eterogenei in sequenza:
+\begin{lstlisting}[language=SQL]
+CASE
+    WHEN condizione_1 THEN risultato_1
+    WHEN condizione_2 THEN risultato_2
+    [ ELSE risultato_default ]
+END
+\end{lstlisting}
+\end{itemize}
+
+\begin{lstlisting}[language=SQL, caption={Calcolo dell'imposta sui veicoli con CASE}]
+-- Calcolo progressivo del bollo auto in base a tipo e potenza:
+SELECT Targa,
+       (CASE Tipo
+            WHEN 'Auto' THEN 2.58 * PotenzaKW
+            WHEN 'Moto' THEN 22.00 + (1.00 * PotenzaKW)
+            ELSE NULL
+        END) AS ImportoBollo
+FROM   Veicolo
+WHERE  AnnoImmatricolazione > 1975;
+\end{lstlisting}
+
+\begin{cbox}{Sintesi: Funzioni Condizionali in SQL}
+\begin{center}
+\small
+\begin{tabular}{lp{5.4cm}p{6.4cm}}
+    \toprule
+    \textbf{Funzione} & \textbf{Logica Operativa} & \textbf{Tipico Caso d'Uso} \\
+    \midrule
+    \textbf{COALESCE} & Primo argomento $\neq \text{NULL}$. & Fallback su contatti secondari o etichette di default. \\
+    \addlinespace
+    \textbf{NULLIF} & Se $A = B \implies \text{NULL}$; altrimenti $A$. & Bonifica di dati sentinella ed eliminazione divisioni per zero. \\
+    \addlinespace
+    \textbf{CASE} & Struttura \textit{if-then-else} ramificata. & Classificazione fasce di reddito, tariffe e reportistica dinamica. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsubsection{Sicurezza, Privilegi e Ruoli}
+\noindent \textbf{Requisiti di Riservatezza.} La condivisione centralizzata dei dati comporta la necessità di proteggere le informazioni sensibili da accessi non autorizzati. Il sottosistema di sicurezza di SQL consente di definire quali utenti abbiano il diritto di accedere a specifiche porzioni della base di dati e quali operazioni possano eseguire.
+
+\medskip
+\noindent \textbf{Granularità e Titolarità delle Risorse.}
+\begin{itemize}
+    \item \textbf{Oggetti Proteggibili}: relazioni, viste, singoli attributi di tabelle e domini personalizzati.
+    \item \textbf{Superutente Amministratore}: in ogni DBMS esiste un account amministrativo predefinito (es. \texttt{\_system}, \texttt{postgres}, \texttt{root}) dotato a priori di tutti i privilegi globali sul server.
+    \item \textbf{Proprietario della Risorsa (\textit{Owner})}: l'utente che crea un oggetto ne diviene automaticamente proprietario, acquisendo su di esso tutti i diritti d'uso e la facoltà di concederli ad altri.
+\end{itemize}
+
+\begin{cbox}{I Cinque Elementi Costitutivi di un Privilegio}
+\noindent Nel modello di sicurezza relazionale, ogni autorizzazione è descritta formalmente da cinque coordinate:
+\begin{enumerate}
+    \item \textbf{Risorsa}: l'oggetto logico su cui opera il permesso (tabella, vista, colonna).
+    \item \textbf{Soggetto Erogante (\textit{Grantor})}: l'utente che conferisce l'autorizzazione.
+    \item \textbf{Soggetto Ricevente (\textit{Grantee})}: l'utente o ruolo che beneficia del permesso.
+    \item \textbf{Azione Consentita}: l'operazione specifica ammessa sul dato.
+    \item \textbf{Diritto di Propagazione}: la facoltà per il ricevente di estendere il privilegio ricevuto ad altri utenti (\texttt{WITH GRANT OPTION}).
+\end{enumerate}
+\end{cbox}
+
+\medskip
+\noindent \textbf{I Privilegi Nativi di SQL.} Lo standard definisce una serie di operazioni elementari concedibili:
+\begin{center}
+\small
+\begin{tabular}{lp{11.5cm}}
+    \toprule
+    \textbf{Privilegio} & \textbf{Operazione Consentita sulla Risorsa} \\
+    \midrule
+    \textbf{SELECT} & Lettura ed estrazione delle tuple mediante interrogazioni. \\
+    \addlinespace
+    \textbf{INSERT} & Aggiunta di nuove righe all'interno della tabella o vista. \\
+    \addlinespace
+    \textbf{UPDATE} & Modifica del contenuto delle tuple (può essere ristretto a singole colonne). \\
+    \addlinespace
+    \textbf{DELETE} & Rimozione fisica delle righe dalla tabella. \\
+    \addlinespace
+    \textbf{REFERENCES} & Definizione di vincoli di chiave esterna rivolti verso le colonne della tabella. \\
+    \addlinespace
+    \textbf{USAGE} & Utilizzo di una definizione logica condivisa (es. un dominio o una sequenza). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Assegnazione dei Privilegi: Il Comando GRANT.} Consente al proprietario di una risorsa (o all'amministratore) di trasferire permessi a uno o più soggetti:
+\begin{lstlisting}[language=SQL]
+GRANT < ListaPrivilegi | ALL PRIVILEGES >
+ON    Risorsa
+TO    < ListaUtenti | PUBLIC >
+[ WITH GRANT OPTION ];
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL, caption={Esempi di comando GRANT}]
+-- Concessione del permesso di sola lettura su una tabella:
+GRANT SELECT ON Dipartimento TO Jack;
+
+-- Concessione di permessi multipli con facolta di propagazione:
+GRANT SELECT, INSERT ON Impiegato TO Mario 
+WITH GRANT OPTION;
+
+-- Concessione di modifica limitata a singole colonne:
+GRANT UPDATE (Stipendio, Dipart) ON Impiegato TO ResponsabileHR;
+
+-- Concessione pubblica a qualsiasi utente registrato nel sistema:
+GRANT SELECT ON CatalogoProdotti TO PUBLIC;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Revoca dei Privilegi: Il Comando REVOKE.} Per rimuovere autorizzazioni precedentemente assegnate si usa l'istruzione \texttt{REVOKE}:
+\begin{lstlisting}[language=SQL]
+REVOKE ListaPrivilegi
+ON     Risorsa
+FROM   ListaUtenti
+[ RESTRICT | CASCADE ];
+\end{lstlisting}
+\textit{Regola Fondamentale}: i diritti possono essere revocati \textbf{esclusivamente dallo stesso utente che li ha concessi in precedenza}.
+
+\medskip
+\noindent \textbf{Gestione degli Effetti Collaterali: RESTRICT vs CASCADE.}
+\begin{itemize}
+    \item \textbf{RESTRICT} (\textit{comportamento predefinito}): la revoca fallisce se l'utente ricevente ha a sua volta propagato il permesso ad altre persone tramite \texttt{WITH GRANT OPTION}.
+    \item \textbf{CASCADE}: innesca una \textbf{reazione a catena}: il permesso viene tolto all'utente specificato e viene contestualmente rimosso a tutti gli altri utenti a cui tale permesso era stato concesso indirettamente lungo l'albero di propagazione.
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.2cm,
+    usr/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum width=2.4cm, minimum height=0.7cm},
+    arr/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet},
+    rev/.style={thick, -{Latex[length=2.5mm]}, draw=red, dashed}
+]
+    \node[usr] (admin) {\textbf{Admin (Owner)}};
+    \node[usr, right=1.6cm of admin] (u1) {\textbf{Utente 1}\\(Grant Option)};
+    \node[usr, right=1.6cm of u1] (u2) {\textbf{Utente 2}};
+
+    \draw[arr] (admin) -- node[above, font=\scriptsize] {GRANT} (u1);
+    \draw[arr] (u1) -- node[above, font=\scriptsize] {GRANT} (u2);
+
+    \node[below=0.5cm of u1, font=\scriptsize\bfseries\color{red}] (note) {REVOKE ... CASCADE};
+    \draw[rev] (admin.south) -- ++(0,-0.3) -| (u1.south);
+    \draw[rev] (u1.south) -- ++(0,-0.3) -| (u2.south);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent \textbf{Difesa da Attacchi per Inferenza ed Enumerazione.} Un principio cardine della sicurezza nei DBMS impone che il sistema non debba rivelare alcuna informazione sull'esistenza o la consistenza delle risorse non accessibili:
+\begin{itemize}
+    \item Se un utente prova a interrogare una tabella inesistente: riceve un messaggio di errore.
+    \item Se un utente prova a interrogare una tabella esistente su cui \textbf{non possiede il privilegio di lettura}: il sistema deve restituire \textbf{lo stesso identico messaggio di errore}.
+\end{itemize}
+Fornire messaggi differenziati (es. ``\textit{Accesso negato alla tabella Impiegato}'') confermerebbe all'attaccante che la tabella esiste, favorendo l'esplorazione malevola della struttura della base di dati.
+
+\medskip
+\noindent \textbf{Le Viste come Meccanismo di Controllo degli Accessi.} Quando un utente non deve avere visibilità su tutte le righe o su tutte le colonne di una relazione, la tecnica architetturale standard prevede l'uso combinato di \textbf{Viste} e \textbf{Privilegi}:
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.8cm},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[box, fill=orange!8] (base) {\textbf{Tabella Base Riservata}\\\texttt{Impiegato (Matr, Nome, Dipart, Stipendio)}};
+    \node[box, right=1.2cm of base] (view) {\textbf{Vista Filtrata}\\\texttt{WHERE Dipart = 'Vendite'}\\\textit{Colonna Stipendio omessa}};
+    \node[box, right=1.2cm of view] (user) {\textbf{Utente Operativo}\\\textit{Permesso SELECT solo sulla Vista}};
+
+    \draw[arrow] (base) -- node[above, font=\scriptsize] {Proiezione/Filtro} (view);
+    \draw[arrow] (view) -- node[above, font=\scriptsize] {GRANT SELECT} (user);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\begin{lstlisting}[language=SQL, caption={Configurazione di sicurezza tramite vista}]
+-- 1. Creazione della vista con filtraggio orizzontale e verticale:
+CREATE VIEW ImpiegatiRepartoVendite AS
+    SELECT Matricola, Cognome, Nome
+    FROM   Impiegato
+    WHERE  Dipart = 'Vendite';
+
+-- 2. Concessione dell'accesso solo alla vista (nessun diritto su Impiegato):
+GRANT SELECT ON ImpiegatiRepartoVendite TO ResponsabileVendite;
+\end{lstlisting}
+L'utente \texttt{ResponsabileVendite} visualizzerà unicamente il personale del proprio settore, senza poter accedere ai record degli altri reparti né visualizzare l'importo degli stipendi.
+
+\noindent \textbf{Limiti dell'Assegnazione Diretta dei Privilegi.} Nei sistemi aziendali complessi con centinaia di operatori, assegnare i singoli permessi utente per utente risulta ingestibile e causa gravi vulnerabilità:
+\begin{itemize}
+    \item Ogni inserimento di nuovo personale richiede decine di istruzioni \texttt{GRANT}.
+    \item Se un dipendente cambia mansione, occorre rintracciare e revocare manualmente tutti i singoli permessi pregressi.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il Modello RBAC (Role-Based Access Control).} Introdotto formalmente in SQL:1999 (SQL-3), il modello RBAC introduce il concetto di \textbf{Ruolo}:
+\begin{itemize}
+    \item Un \textbf{Ruolo} agisce da contenitore logico di privilegi associati a una determinata funzione lavorativa aziendale (es. \textit{Amministrativo}, \textit{Docente}, \textit{Cassiere}).
+    \item I privilegi sulle risorse vengono assegnati direttamente ai ruoli.
+    \item Agli utenti non vengono concessi i singoli permessi sulle tabelle, ma viene assegnato uno o più ruoli.
+    \item In ogni istante, un utente dispone sia dei propri eventuali privilegi individuali sia di tutti i privilegi ereditati tramite i ruoli a lui assegnati.
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.8cm},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[box] (priv) {\textbf{Insieme dei Privilegi}\\\texttt{SELECT, INSERT, UPDATE...}};
+    \node[box, right=1.3cm of priv, fill=orange!8] (role) {\textbf{Ruolo Logico}\\\texttt{CREATE ROLE Impiegato}};
+    \node[box, right=1.3cm of role] (usr) {\textbf{Utenti Aziendali}\\\texttt{User1, User2, User3...}};
+
+    \draw[arrow] (priv) -- node[above, font=\scriptsize] {GRANT to Role} (role);
+    \draw[arrow] (role) -- node[above, font=\scriptsize] {GRANT Role to} (usr);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Sintassi e Comandi Operativi per la Gestione dei Ruoli.}
+\begin{lstlisting}[language=SQL, caption={Flusso operativo completo con RBAC}]
+-- 1. Creazione di un nuovo ruolo:
+CREATE ROLE RuoloImpiegato;
+
+-- 2. Concessione di privilegi specifici al ruolo:
+GRANT CREATE TABLE TO RuoloImpiegato;
+GRANT SELECT, INSERT ON Dipartimento TO RuoloImpiegato;
+
+-- 3. Assegnazione del ruolo a un utente registrato:
+GRANT RuoloImpiegato TO Mario;
+
+-- 4. Attivazione del ruolo nella sessione utente corrente:
+SET ROLE RuoloImpiegato;
+
+-- 5. Revoca di un permesso dal ruolo (si propaga a tutti i membri del ruolo):
+REVOKE CREATE TABLE FROM RuoloImpiegato;
+\end{lstlisting}
+
+\begin{cbox}{Vantaggi Architetturali del Modello RBAC}
+\begin{itemize}
+    \item \textbf{Manutenibilità Semplificata}: per aggiungere o rimuovere un permesso da un'intera categoria di dipendenti è sufficiente un'unica operazione di \texttt{GRANT} o \texttt{REVOKE} sul ruolo.
+    \item \textbf{Gestione del Personale Immediata}: quando arriva un nuovo dipendente, gli si assegna il ruolo di competenza con un solo comando; se il dipendente lascia l'azienda, è sufficiente revocare il ruolo.
+    \item \textbf{Principio del Minimo Privilegio}: gli utenti acquisiscono unicamente l'insieme di privilegi strettamente necessario a svolgere la propria mansione attiva.
+\end{itemize}
+\end{cbox}
+
+\subsection{Gestione delle Transazioni}
+
+\subsubsection{Transazioni e Proprietà ACID}
+\noindent \textbf{Natura della Transazione.} Una \textbf{transazione} è un programma in esecuzione che costituisce un'unità logica elementare di elaborazione all'interno della base di dati[cite: 38]. Essa rappresenta un'operazione atomica: raggruppa una o più istruzioni di manipolazione dati che devono essere gestite dal DBMS come un unico blocco indivisibile[cite: 38].
+
+\medskip
+\noindent \textbf{I Quattro Requisiti Fondamentali (ACID).} Per garantire l'affidabilità e la correttezza dei dati anche in presenza di accessi concorrenti o di guasti improvvisi del sistema, ogni transazione deve soddisfare quattro proprietà essenziali[cite: 38]:
+\begin{itemize}
+    \item \textbf{Atomicità (\textit{Atomicity})}: l'unità di lavoro deve essere eseguita per intero oppure per nulla[cite: 38, 39].
+    \item \textbf{Preservazione della Coerenza (\textit{Consistency})}: l'esecuzione completa della transazione deve trasferire la base di dati da uno stato coerente a un altro stato coerente[cite: 38, 40].
+    \item \textbf{Isolamento (\textit{Isolation})}: l'esecuzione di transazioni concorrenti non deve provocare interferenze reciproche sui dati[cite: 38, 41].
+    \item \textbf{Persistenza o Durabilità (\textit{Durability})}: i risultati prodotti da una transazione completata con successo devono persistere stabilmente nel tempo[cite: 38, 42].
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    node distance=0.6cm and 0.8cm,
+    acidbox/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum width=3.6cm, minimum height=1.1cm},
+    arr/.style={thick, -{Latex[length=2.2mm]}, draw=blue-violet}
+]
+    \node[acidbox] (a) {\textbf{Atomicità (A)}\\\textit{Tutto o niente}\\\scriptsize Esecuzione indivisibile[cite: 39]};
+    \node[acidbox, right=0.8cm of a] (c) {\textbf{Coerenza (C)}\\\textit{Rispetto dei vincoli}\\\scriptsize Transizione tra stati validi[cite: 40]};
+    \node[acidbox, below=0.6cm of a] (i) {\textbf{Isolamento (I)}\\\textit{Nessuna interferenza}\\\scriptsize Esecuzione concorrente protetta[cite: 41]};
+    \node[acidbox, right=0.8cm of i] (d) {\textbf{Durabilità (D)}\\\textit{Effetti permanenti}\\\scriptsize Resistenza ai guasti[cite: 42]};
+
+    \draw[arr] (a) -- (c);
+    \draw[arr] (c) -- (d);
+    \draw[arr] (d) -- (i);
+    \draw[arr] (i) -- (a);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent \textbf{1. Atomicità (\textit{All or Nothing}).} La transazione costituisce un'unità di elaborazione non frazionabile: deve essere eseguita completamente oppure non deve essere applicata affatto[cite: 39].
+\begin{itemize}
+    \item \textit{Caso d'uso classico}: il bonifico bancario tra due conti correnti $A$ e $B$[cite: 39].
+    \item Il denaro deve essere prelevato da $A$ e contestualmente accreditato su $B$[cite: 39].
+    \item Se il sistema subisce un blocco dopo l'addebito ma prima dell'accredito, nessuna delle due operazioni deve rimanere registrata[cite: 39].
+\end{itemize}
+
+\medskip
+\noindent \textbf{2. Preservazione della Coerenza (\textit{Consistency}).} Se la transazione viene eseguita dall'inizio alla fine senza interferenze, la base di dati passa da uno stato consistente a un nuovo stato consistente[cite: 40].
+\begin{itemize}
+    \item Durante le fasi intermedie di elaborazione possono verificarsi violazioni temporanee di vincoli o bilanci contabili[cite: 40].
+    \item Tali inconsistenze transitorie non possono persistere al momento della chiusura della transazione[cite: 40].
+    \item Se al termine dell'elaborazione i vincoli d'integrità risultano ancora violati, la transazione viene abortita (\textit{abort}) e l'intero stato viene ripristinato[cite: 40].
+\end{itemize}
+
+\medskip
+\noindent \textbf{3. Isolamento (\textit{Isolation}).} Anche in presenza di un numero elevato di transazioni eseguite simultaneamente, ciascuna transazione deve operare come se fosse l'unica attiva all'interno del sistema[cite: 41].
+\begin{itemize}
+    \item L'esecuzione concorrente non deve causare interferenze o anomalie di lettura/scrittura[cite: 41].
+    \item \textit{Esempio}: due operazioni concorrenti di prelievo che insistono nello stesso istante sul medesimo conto corrente devono essere regolate in modo che i saldi intermedi non si sovrascrivano a vicenda[cite: 41].
+\end{itemize}
+
+\medskip
+\noindent \textbf{4. Durabilità degli Effetti (\textit{Durability / Permanency}).} Le modifiche apportate alla base di dati da una transazione confermata con successo (\textit{committed}) devono essere conservate in modo permanente[cite: 42].
+\begin{itemize}
+    \item I dati salvati non possono andare perduti, nemmeno a fronte di guasti critici a livello hardware o crash del sistema operativo[cite: 42].
+    \item La persistenza viene garantita dal DBMS mediante la scrittura preventiva delle operazioni su supporti non volatili (meccanismo del \textit{Write-Ahead Logging})[cite: 42].
+\end{itemize}
+
+\begin{cbox}{Quadro Sinottico: Le Quattro Proprietà ACID}
+\begin{center}
+\small
+\begin{tabular}{p{2.6cm}p{6.4cm}p{6.4cm}}
+    \toprule
+    \textbf{Proprietà} & \textbf{Significato Sistemistico} & \textbf{Comportamento in Caso di Errore} \\
+    \midrule
+    \textbf{Atomicità}[cite: 39] & Unità di calcolo atomica e indivisibile. & Annullamento completo delle operazioni parziali (\textit{Rollback})[cite: 39, 43]. \\
+    \addlinespace
+    \textbf{Coerenza}[cite: 40] & Preservazione di tutti i vincoli di schema. & Annullamento della transazione se permangono violazioni (\textit{Abort})[cite: 40]. \\
+    \addlinespace
+    \textbf{Isolamento}[cite: 41] & Indipendenza da transazioni concorrenti. & Controllo della concorrenza tramite locking o versioning dei record[cite: 41]. \\
+    \addlinespace
+    \textbf{Durabilità}[cite: 42] & Effetti definitivi e non volatili su disco. & Ripristino automatico tramite registri di log post-riavvio[cite: 42]. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsubsection{Comandi Transazionali ed Esempio Completo}
+\noindent \textbf{Ciclo di Vita di una Transazione SQL.} Una volta stabilita la sessione con la base di dati, il controllo dell'unità di lavoro fa uso di parole chiave specifiche[cite: 43]:
+\begin{itemize}
+    \item \textbf{\texttt{START TRANSACTION}}: avvia formalmente una nuova transazione logica (comando opzionale in gran parte degli RDBMS commerciali, dove la prima istruzione DML apre implicitamente il blocco)[cite: 43].
+    \item \textbf{\texttt{COMMIT [WORK]}}: conferma con successo le operazioni eseguite, rendendo le modifiche visibili agli altri utenti e salvandole stabilmente nella base di dati[cite: 43].
+    \item \textbf{\texttt{ROLLBACK [WORK]}}: rifiuta tutte le modifiche apportate dall'inizio della transazione, scartando i dati temporanei e riportando il database al precedente stato consistente[cite: 43].
+\end{itemize}
+
+\medskip
+\noindent \textbf{La Modalità Autocommit.} Per impostazione predefinita, molti sistemi RDBMS (come MySQL) operano in modalità \textbf{autocommit}[cite: 43]:
+\begin{itemize}
+    \item Ogni singola istruzione SQL viene trattata come una transazione a sé stante[cite: 43].
+    \item Al termine dell'esecuzione del comando, il DBMS esegue automaticamente un \texttt{COMMIT} immediato[cite: 43].
+    \item Per coordinare sequenze di aggiornamenti correlate occorre disattivare l'autocommit oppure aprire esplicitamente il blocco con \texttt{START TRANSACTION}[cite: 43, 44].
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.75cm},
+    arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
+]
+    \node[box] (start) {\textbf{START TRANSACTION}\\\textit{Inizio blocco transazionale}[cite: 43]};
+    \node[box, right=1.2cm of start] (exec) {\textbf{Operazioni DML}\\\texttt{UPDATE, INSERT...}\\\textit{Stato temporaneo isolato}[cite: 41, 44]};
+    \node[box, above right=0.3cm and 1.2cm of exec, fill=green!10] (commit) {\textbf{COMMIT WORK}\\\textit{Modifiche consolidate}[cite: 43]};
+    \node[box, below right=0.3cm and 1.2cm of exec, fill=red!10] (rollback) {\textbf{ROLLBACK WORK}\\\textit{Ripristino stato sicuro}[cite: 43]};
+
+    \draw[arrow] (start) -- (exec);
+    \draw[arrow] (exec) |- node[above, font=\scriptsize\bfseries] {Esito OK} (commit);
+    \draw[arrow] (exec) |- node[below, font=\scriptsize\bfseries] {Errore / Fallimento} (rollback);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent Si consideri un'operazione contabile che prevede il trasferimento di $10$ euro dal conto corrente identificato dal numero $42177$ verso il conto $12202$[cite: 44]. 
+
+\medskip
+\noindent L'operazione richiede due aggiornamenti congiunti che non possono essere separati[cite: 39, 44]:
+\begin{lstlisting}[language=SQL, caption={Esempio di transazione bancaria completa}]
+-- Apertura esplicita della transazione (opzionale in alcuni DBMS):
+START TRANSACTION;
+
+-- 1. Prelievo di 10 euro dal conto sorgente:
+UPDATE ContoBancario
+SET    Saldo = Saldo - 10
+WHERE  NumeroConto = 42177;
+
+-- 2. Accredito di 10 euro sul conto di destinazione:
+UPDATE ContoBancario
+SET    Saldo = Saldo + 10
+WHERE  NumeroConto = 12202;
+
+-- Consolidamento definitivo delle modifiche nel database:
+COMMIT WORK;
+\end{lstlisting}
+
+\noindent \textbf{Analisi delle Garanzie Operative}:
+\begin{itemize}
+    \item Se si verifica un calo di tensione o un'interruzione di rete dopo il primo comando di \texttt{UPDATE}, l'accredito non ha luogo; il DBMS interviene ed esegue automaticamente il \textbf{rollback}, ripristinando il saldo originario del conto $42177$[cite: 39, 43].
+    \item Solo nel momento in cui il comando \texttt{COMMIT WORK} viene registrato, entrambe le variazioni di saldo diventano permanenti e visibili alle altre connessioni concorrenti[cite: 42, 43].
+\end{itemize}
+
 
 \end{document}
