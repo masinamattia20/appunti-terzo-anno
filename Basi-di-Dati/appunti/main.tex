@@ -2217,6 +2217,641 @@ dove la testa è un predicato atomico intensionale e il corpo è una lista di pr
     \item Datalog \textbf{ricorsivo con negazione} è \textbf{più espressivo} di calcolo e algebra.
 \end{itemize}
 
+\subsection{Esercizi di algebra relazionale}
+
+\subsubsection{Esercizi visti in classe}
+
+\paragraph{Esercizio 1} Data la relazione:\\
+
+\noindent \texttt{REGION(\underline{Name}, Surface), \\CITY(\underline{Code}, Name, Population), \\BELONGING(\underline{Region}, \underline{City})}\\
+
+\noindent Scrivere l'espressione in algebra relazionale per ottenere i nomi delle regioni aventi città con più di $1.000.000$ abitanti.\\
+
+\noindent \textbf{\textit{Soluzione:}} $\pi_{\text{Region}}(\rho_{\text{Code} \leftarrow \text{City}}(\text{BELONGING}) \bowtie \sigma_{\text{Population} > 1000000}(\text{CITY}))$
+
+\paragraph{Esercizio 2} Data la relazione:\\
+
+\noindent \texttt{TRAIN(\underline{Code}, Start, End, Miles)}\\
+
+\noindent Scrivere l'espressione in algebra relazionale per ottenere tutte le rotte tra Boston e Chicago con uno scalo.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\sigma_{\text{Start} = '\text{Boston}' \,\land\, \text{End} = '\text{Chicago}'} \Big( \\
+\rho_{\text{Code1, Switch, Miles1} \leftarrow \text{Code, End, Miles}}(\text{CODE}) \\
+{}\bowtie \rho_{\text{Code2, Switch, Miles2} \leftarrow \text{Code, Start, Miles}}(\text{TRAIN}) \Big)
+\end{gathered}
+\]
+
+\noindent \textbf{\textit{Soluzioni estese:}}
+
+\begin{enumerate}
+    \item % Versione 1: Theta-join con condizione combinata
+        \[
+        \begin{gathered}
+        \rho_{\text{Code1, Switch, Miles1} \leftarrow \text{Code, End, Miles}}(\text{TRAIN}) \\
+        \bowtie_{\text{Start} = '\text{Boston}' \,\land\, \text{End} = '\text{Chicago}'} \\
+        \rho_{\text{Code2, Switch, Miles2} \leftarrow \text{Code, Start, Miles}}(\text{TRAIN})
+        \end{gathered}
+        \]
+
+    \item
+        % Versione 2: Push-down della selezione (filtri anticipati)
+        \[
+        \begin{gathered}
+        \rho_{\text{Code1, Switch, Miles1} \leftarrow \text{Code, End, Miles}} \big( \sigma_{\text{Start} = '\text{Boston}'}(\text{TRAIN}) \big) \\
+        \bowtie \\
+        \rho_{\text{Code2, Switch, Miles2} \leftarrow \text{Code, Start, Miles}} \big( \sigma_{\text{End} = '\text{Chicago}'}(\text{TRAIN}) \big)
+        \end{gathered}
+        \]
+\end{enumerate}
+
+\paragraph{Esercizio 3} Date le seguenti relazioni:\\
+
+\noindent \texttt{REGION(\underline{Name}, Surface)}\\
+\texttt{CITY(\underline{Code}, Name, Population)}\\
+\texttt{BELONGING(\underline{Region}, \underline{City})}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca i nomi distinti delle città appartenenti a regioni con superficie superiore a 2.500 piedi quadrati. È consentito utilizzare esclusivamente le operazioni di ridenominazione, selezione, proiezione e join naturale.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \\
+\rho_{\text{Region} \leftarrow \text{Name}} \big( \sigma_{\text{Surface} > 2500}(\text{REGION}) \big) \\
+\bowtie \\
+\text{BELONGING} \\
+\bowtie \\
+\rho_{\text{City} \leftarrow \text{Code}}(\text{CITY}) \Big)
+\end{gathered}
+\]
+
+\noindent \textbf{\textit{Soluzione alternativa:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \\
+\sigma_{\text{Surface} > 2500} \big( \rho_{\text{Region} \leftarrow \text{Name}}(\text{REGION}) \big) \\
+\bowtie \\
+\text{BELONGING} \\
+\bowtie \\
+\rho_{\text{City} \leftarrow \text{Code}}(\text{CITY}) \Big)
+\end{gathered}
+\]
+
+\paragraph{Esercizio 4} Date le seguenti relazioni:\\
+
+\noindent \texttt{PERSON(\underline{Id}, Name, Surname, Age)}\\
+\texttt{ENROLLMENT(\underline{Person}, \underline{Course})}\\
+\texttt{COURSE(\underline{Name}, Price)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca i nomi distinti delle persone che frequentano un corso il cui costo è superiore a 10\$ per ogni anno della loro età (ovvero, $\text{Price} > \text{Age} * 10$).\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \\
+\sigma_{\text{Price} > \text{Age} * 10} \big( \\
+\rho_{\text{Person} \leftarrow \text{Id}}(\text{PERSON}) \\
+\bowtie \\
+\text{ENROLLMENT} \\
+\bowtie \\
+\rho_{\text{Course} \leftarrow \text{Name}}(\text{COURSE}) \big) \Big)
+\end{gathered}
+\]
+
+\paragraph{Esercizio 5} Date le seguenti relazioni:\\
+
+\noindent \texttt{STUDENT(\underline{Id}, Name, Surname, School)}\\
+\texttt{EXAM(\underline{Student}, \underline{Subject}, Mark, Date)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca nome e cognome degli studenti che hanno ottenuto 30 in almeno un esame.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name, Surname}} \Big( \\
+\text{STUDENT} \\
+\bowtie_{\text{Id} = \text{Student}} \\
+\sigma_{\text{Mark} = 30}(\text{EXAM}) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 6} Date le seguenti relazioni:\\
+
+\noindent \texttt{SUPPLIER(\underline{Id}, Name, Partners, Headquarter)}\\
+\texttt{PRODUCT(\underline{Id}, Name, Colour, Size, Store)}\\
+\texttt{SUPPLYING(\underline{SupId}, \underline{ProdId}, Quantity)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il nome dei fornitori che forniscono almeno un prodotto diverso da ''PX274''.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \\
+\text{SUPPLIER} \\
+\bowtie_{\text{Id} = \text{SupId}} \\
+\sigma_{\text{ProdId} \neq '\text{PX274}'}(\text{SUPPLYING}) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 7} Date le seguenti relazioni:\\
+
+\noindent \texttt{SUPPLIER(\underline{Id}, Name, Partners, Headquarter)}\\
+\texttt{PRODUCT(\underline{Id}, Name, Colour, Size, Store)}\\
+\texttt{SUPPLYING(\underline{SupId}, \underline{ProdId}, Quantity)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il codice dei fornitori che forniscono almeno due prodotti diversi.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{SupId1}} \Big( \\
+\rho_{\text{SupId1, ProdId1, Quantity1} \leftarrow \text{SupId, ProdId, Quantity}}(\text{SUPPLYING}) \\
+\bowtie_{\text{SupId1} = \text{SupId2} \,\land\, \text{ProdId1} \neq \text{ProdId2}} \\
+\rho_{\text{SupId2, ProdId2, Quantity2} \leftarrow \text{SupId, ProdId, Quantity}}(\text{SUPPLYING}) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 8} Date le seguenti relazioni:\\
+
+\noindent \texttt{STUDENT(\underline{Id}, Name, Surname, School)}\\
+\texttt{EXAM(\underline{Student}, \underline{Subject}, Mark, Date)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca nome e cognome degli studenti che non hanno mai ottenuto 30 in un esame.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name, Surname, Id}}(\text{STUDENT}) \\
+- \\
+\pi_{\text{Name, Surname, Id}} \big( \text{STUDENT} \bowtie_{\text{Id} = \text{Student}} \sigma_{\text{Mark} = 30}(\text{EXAM}) \big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 9} Date le seguenti relazioni:\\
+
+\noindent \texttt{BOOK(\underline{BookId}, Title, Author)}\\
+\texttt{USER(\underline{UserId}, Name, Surname)}\\
+\texttt{BORROWING(\underline{UserId}, \underline{BookId}, \underline{Date})}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca l'identificativo degli utenti che hanno preso in prestito un libro di Fleming.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\pi_{\text{UserId}} \big( \sigma_{\text{Author} = '\text{Fleming}'}(\text{BOOK}) \bowtie \text{BORROWING} \big)
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 10} Date le seguenti relazioni:\\
+
+\noindent \texttt{BOOK(\underline{BookId}, Title, Author)}\\
+\texttt{USER(\underline{UserId}, Name, Surname)}\\
+\texttt{BORROWING(\underline{UserId}, \underline{BookId}, \underline{Date})}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca l'identificativo degli utenti che hanno preso in prestito esclusivamente libri di Fleming.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{UserId}} \big( \sigma_{\text{Author} = '\text{Fleming}'}(\text{BOOK}) \bowtie \text{BORROWING} \big) \\
+- \\
+\pi_{\text{UserId}} \big( \sigma_{\text{Author} \neq '\text{Fleming}'}(\text{BOOK}) \bowtie \text{BORROWING} \big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 11} Date le seguenti relazioni:\\
+
+\noindent \texttt{EXAM(\underline{Code}, Subject, Teacher)}\\
+\texttt{ROOM(\underline{Code}, Name, Building, Capacity)}\\
+\texttt{BOOKING(\underline{Room}, \underline{Date}, Exam)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il nome e l'edificio delle aule in cui si tiene oggi una prova del corso di Database.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name, Building}} \Big( \\
+\pi_{\text{Room}} \big( \sigma_{\text{Subject} = '\text{Database}'}(\text{EXAM}) \\
+\bowtie_{\text{Code} = \text{Exam}} \\
+\sigma_{\text{Date} = '\text{today}'}(\text{BOOKING}) \big) \\
+\bowtie_{\text{Room} = \text{Code}} \\
+\text{ROOM} \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 12} Date le seguenti relazioni:\\
+
+\noindent \texttt{STUDENT(\underline{Id}, Name, Surname, School)}\\
+\texttt{EXAM(\underline{Student}, \underline{Subject}, Mark, Date)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca nome e cognome degli studenti che hanno ottenuto 30 in almeno un esame, riportando anche la data del primo di tali esami.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{aligned}
+R_1 &:= \pi_{\text{Student, Date}}(\sigma_{\text{Mark} = 30}(\text{EXAM})) \\[0.5em]
+R_2 &:= \rho_{\text{Date1} \leftarrow \text{Date}}(R_1) \\[0.5em]
+R_3 &:= \rho_{\text{Date} \leftarrow \text{Date1}} \Big( R_2 - \pi_{\text{Student, Date1}} \big( \sigma_{\text{Date} < \text{Date1}}(R_1 \bowtie R_2) \big) \Big)
+\end{aligned}
+\]
+\[
+\pi_{\text{Name, Surname, Date}} \big( \text{STUDENT} \bowtie_{\text{Id} = \text{Student}} R_3 \big)
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 13} Date le seguenti relazioni:\\
+
+\noindent \texttt{EXAM(\underline{Code}, Subject, Teacher)}\\
+\texttt{ROOM(\underline{Code}, Name, Building, Capacity)}\\
+\texttt{BOOKING(\underline{Room}, \underline{Date}, Exam)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il nome delle aule con capienza maggiore o uguale a 100 posti che non risultano prenotate per oggi.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{aligned}
+\text{BIGROOM} &:= \sigma_{\text{Capacity} \ge 100}(\text{ROOM})
+\end{aligned}
+\]
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \\
+\pi_{\text{Name, Code}}(\text{BIGROOM}) \\
+- \\
+\pi_{\text{Name, Code}} \big( \text{BIGROOM} \bowtie_{\text{Code} = \text{Room}} \sigma_{\text{Date} = '\text{today}'}(\text{BOOKING}) \big) \Big)
+\end{gathered}
+\]
+
+\paragraph{Esercizio 14} Date le seguenti relazioni:\\
+
+\noindent \texttt{WINESHOP(\underline{Code}, Name, Address, ZipC)}\\
+\texttt{CATALOG(\underline{Wineshop}, \underline{Wine}, Price)}\\
+\texttt{WINE(\underline{Code}, Name, Color, Region)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il codice delle enoteche che vendono vini rosé o rossi.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\pi_{\text{Wineshop}} \Big( \text{CATALOG} \bowtie_{\text{Wine} = \text{Code}} \sigma_{\text{Color} = '\text{Rose}' \,\lor\, \text{Color} = '\text{Red}'}(\text{WINE}) \Big)
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 15} Date le seguenti relazioni:\\
+
+\noindent \texttt{WINESHOP(\underline{Code}, Name, Address, ZipC)}\\
+\texttt{CATALOG(\underline{Wineshop}, \underline{Wine}, Price)}\\
+\texttt{WINE(\underline{Code}, Name, Color, Region)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il nome delle enoteche che vendono sia vini rosé che vini rossi.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \Big( \Big( \\
+\pi_{\text{Wineshop}} \big( \text{CATALOG} \bowtie_{\text{Wine} = \text{Code}} \sigma_{\text{Color} = '\text{Rose}'}(\text{WINE}) \big) \\
+\cap \\
+\pi_{\text{Wineshop}} \big( \text{CATALOG} \bowtie_{\text{Wine} = \text{Code}} \sigma_{\text{Color} = '\text{Red}'}(\text{WINE}) \big) \Big) \\
+\bowtie_{\text{Wineshop} = \text{Code}} \text{WINESHOP} \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 16} Date le seguenti relazioni:\\
+
+\noindent \texttt{PERSON(\underline{Name}, Age, Gender)}\\
+\texttt{FREQUENTS(\underline{Name}, \underline{Pizzeria})}\\
+\texttt{EATS(\underline{Name}, \underline{Pizza})}\\
+\texttt{SERVES(\underline{Pizzeria}, \underline{Pizza}, Price)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca i nomi di tutte le donne che mangiano sia la pizza ai funghi che la pizza ai peperoni.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Name}} \big( \sigma_{\text{Gender} = '\text{F}' \,\land\, \text{Pizza} = '\text{pepperoni}'}(\text{PERSON} \bowtie \text{EATS}) \big) \\
+\cap \\
+\pi_{\text{Name}} \big( \sigma_{\text{Gender} = '\text{F}' \,\land\, \text{Pizza} = '\text{mushroom}'}(\text{PERSON} \bowtie \text{EATS}) \big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 17} Date le seguenti relazioni:\\
+
+\noindent \texttt{PERSON(\underline{Name}, Age, Gender)}\\
+\texttt{FREQUENTS(\underline{Name}, \underline{Pizzeria})}\\
+\texttt{EATS(\underline{Name}, \underline{Pizza})}\\
+\texttt{SERVES(\underline{Pizzeria}, \underline{Pizza}, Price)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca i nomi di tutte le pizzerie frequentate esclusivamente da donne o esclusivamente da uomini.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\Big( \pi_{\text{Pizzeria}} \big( \sigma_{\text{Gender} = '\text{F}'}(\text{PERSON}) \bowtie \text{FREQUENTS} \big) \\
+- \\
+\pi_{\text{Pizzeria}} \big( \sigma_{\text{Gender} = '\text{M}'}(\text{PERSON}) \bowtie \text{FREQUENTS} \big) \Big) \\
+\cup \\
+\Big( \pi_{\text{Pizzeria}} \big( \sigma_{\text{Gender} = '\text{M}'}(\text{PERSON}) \bowtie \text{FREQUENTS} \big) \\
+- \\
+\pi_{\text{Pizzeria}} \big( \sigma_{\text{Gender} = '\text{F}'}(\text{PERSON}) \bowtie \text{FREQUENTS} \big) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 18} Date le seguenti relazioni:\\
+
+\noindent \texttt{MAGAZINE(\underline{Code}, Name, Editor)}\\
+\texttt{ARTICLE(\underline{Code}, Title, Topic, Magazine)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca il codice e il nome delle riviste che non hanno mai pubblicato articoli riguardanti il motociclismo.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Code, Name}} \Big( \text{MAGAZINE} \bowtie \Big( \\
+\pi_{\text{Code}}(\text{MAGAZINE}) \\
+- \\
+\rho_{\text{Code} \leftarrow \text{Magazine}} \big( \pi_{\text{Magazine}}(\sigma_{\text{Topic} = '\text{motorcycling}'}(\text{ARTICLE})) \big) \Big) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 19} Date le seguenti relazioni:\\
+
+\noindent \texttt{SAILOR(\underline{Id}, Name, Level, BirthD)}\\
+\texttt{BOOKING(\underline{Sailor}, \underline{Boat}, \underline{Date})}\\
+\texttt{BOAT(\underline{Id}, Name, Colour)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca codici e nomi dei marinai che hanno prenotato sia una barca rossa che una barca verde.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Sid, Sname}} \Big( \\
+\rho_{\text{Sid, Sname, Slevel, SbirthD} \leftarrow \text{Id, Name, Level, BirthD}}(\text{SAILOR}) \\
+\bowtie_{\text{Sid} = \text{Sailor1}} \Big( \\
+\rho_{\text{Sailor1} \leftarrow \text{Sailor}} \big( \text{BOOKING} \bowtie_{\text{Boat} = \text{Id}} \sigma_{\text{Colour} = '\text{Red}'}(\text{BOAT}) \big) \\
+\bowtie_{\text{Sailor1} = \text{Sailor2}} \\
+\rho_{\text{Sailor2} \leftarrow \text{Sailor}} \big( \text{BOOKING} \bowtie_{\text{Boat} = \text{Id}} \sigma_{\text{Colour} = '\text{Green}'}(\text{BOAT}) \big) \Big) \Big)
+\end{gathered}
+\]
+
+\vspace{1em}
+
+\paragraph{Esercizio 20} Date le seguenti relazioni:\\
+
+\noindent \texttt{PLANE(\underline{Id}, Name, Range)}\\
+\texttt{CERTIFICATE(\underline{Eid}, \underline{Pid})}\\
+\texttt{EMPLOYEE(\underline{Id}, Name, Wage)}\\[0.5em]
+
+\noindent Scrivere un'espressione in algebra relazionale che restituisca codici e nomi dei dipendenti autorizzati a pilotare almeno due aerei capaci di coprire distanze superiori a 5000 miglia.\\
+
+\noindent \textbf{\textit{Soluzione:}}
+\[
+\begin{gathered}
+\pi_{\text{Id, Name}} \Big( \text{EMPLOYEE} \bowtie_{\text{Id} = \text{Eid1}} \Big( \\
+\rho_{\text{Id1, Eid1} \leftarrow \text{Id, Eid}} \big( \sigma_{\text{Range} \ge 5000}(\text{PLANE}) \bowtie_{\text{Id} = \text{Pid}} \text{CERTIFICATE} \big) \\
+\bowtie_{\text{Eid1} = \text{Eid2} \,\land\, \text{Id1} \neq \text{Id2}} \\
+\rho_{\text{Id2, Eid2} \leftarrow \text{Id, Eid}} \big( \sigma_{\text{Range} \ge 5000}(\text{PLANE}) \bowtie_{\text{Id} = \text{Pid}} \text{CERTIFICATE} \big) \Big) \Big)
+\end{gathered}
+\]
+
+\vspace{1.5em}
+
+\paragraph{Appendice: Notazione per esami su piattaforma (EOL)} Sintassi testuale equivalente utilizzata per l'inserimento delle query:\\
+
+\noindent \textbf{Operatori relazionali e logici:}
+\begin{itemize}
+    \item \textbf{Selezione:} \texttt{SEL[condizione] Relazione}
+    \item \textbf{Proiezione:} \texttt{PRO[attributo1, ...] Relazione}
+    \item \textbf{Join con condizione:} \texttt{R1 JOIN[condizione] R2}
+    \item \textbf{Ridenominazione:} \texttt{RID[(nuovo\_att, vecchio\_att), ...] Relazione}
+    \item \textbf{Insiemistici:} \texttt{R1 UNI R2} (Unione), \texttt{R1 INT R2} (Intersezione), \texttt{R1 DIF R2} (Differenza)
+    \item \textbf{Logici:} \texttt{AND}, \texttt{OR}, \texttt{NOT}
+\end{itemize}
+
+\noindent \textbf{Esempio di query d'esame:}\\
+\textit{Standard:}
+\[
+\begin{gathered}
+\pi_{\text{idModello, nome}} \big( \sigma_{\text{categoria} = '\text{Berlina}' \,\land\, \text{nazionalita} = '\text{Francia}'}(\text{Modello} \bowtie \rho_{\text{nomeM} \leftarrow \text{nome}}(\text{Marca})) \big) \\
+- \\
+\pi_{\text{idModello, nome}} \big( \sigma_{\text{anno} = '2007'}(\text{Modello} \bowtie_{\text{idModello} = \text{modello}} \text{Valutazione}) \big)
+\end{gathered}
+\]
+\textit{Notazione EOL:}
+\begin{verbatim}
+(PRO [idModello, nome] (SEL [categoria='Berlina' AND nazionalita='Francia'] 
+  (Modello JOIN (RID [(nomeM, nome)] Marca)))) 
+DIF 
+(PRO [idModello, nome] (SEL [anno='2007'] 
+  (Modello JOIN [idModello=modello] Valutazione)))
+\end{verbatim}
+
+
+\subsubsection{Pattern utili da imparare}
+
+\paragraph{Convenzioni e simboli utilizzati}
+Nelle formule generali che seguono vengono utilizzate le seguenti convenzioni:
+\begin{itemize}
+    \item $R, S$: relazioni (tabelle) di partenza o espressioni relazionali intermedie;
+    \item $\text{Key}$: insieme di attributi identificativi (chiave primaria o chiave esterna che lega le relazioni);
+    \item $\text{Target}$: insieme degli attributi finali richiesti dal testo (es. nomi, cognomi, codici);
+    \item $P, P_1, P_2$: condizioni logico-booleane di selezione (es. $\text{Prezzo} > 50$, $\text{Città} = '\text{Roma}'$);
+    \item $\rho, \sigma, \pi, \bowtie, -, \cap, \cup$: operatori standard di ridenominazione, selezione, proiezione, join, differenza, intersezione e unione.
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 1
+% ----------------------------------------------------
+\paragraph{Pattern 1: Esistenziale semplice (``Almeno uno con proprietà $P$'')}
+È la forma base: collegare due entità collegate da una relazione uno-a-molti e filtrare sulla proprietà desiderata.
+\begin{itemize}
+    \item \textbf{Schema logico:}
+    \[
+    \pi_{\text{Target}} \big( R \bowtie \sigma_{P}(S) \big)
+    \]
+    \item \textbf{Strategia:} Eseguire la selezione $\sigma$ sulla tabella che contiene il vincolo prima del join (push-down della selezione), unire con la tabella anagrafica $R$ contenente le informazioni da mostrare, e infine proiettare.
+    \item \textbf{Esercizi di riferimento:} Es.~1, Es.~5, Es.~6, Es.~9, Es.~14.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{DOCENTE(\underline{Id}, Nome, Dipartimento)}, \texttt{CORSO(\underline{Codice}, Titolo, CFU, Docente)}\\
+    \textit{Query:} Restituire i nomi dei docenti che tengono almeno un corso con più di 6 CFU.
+    \[
+    \pi_{\text{Nome}} \big( \text{DOCENTE} \bowtie_{\text{Id} = \text{Docente}} \sigma_{\text{CFU} > 6}(\text{CORSO}) \big)
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 2
+% ----------------------------------------------------
+\paragraph{Pattern 2: Cardinalità multipla (``Almeno due elementi distinti'')}
+Richiede di verificare l'esistenza di tuple distinte che fanno capo alla medesima entità padre, confrontando una relazione con se stessa.
+\begin{itemize}
+    \item \textbf{Schema logico:}
+    \[
+    \pi_{\text{Key1}} \big( \rho_1(R) \bowtie_{\text{Key1} = \text{Key2} \,\land\, \text{Val1} \neq \text{Val2}} \rho_2(R) \big)
+    \]
+    \item \textbf{Regola chiave:} La ridenominazione degli attributi delle due copie è obbligatoria per evitare ambiguità. La condizione $\text{Val1} \neq \text{Val2}$ (oppure $\text{Val1} < \text{Val2}$ per rompere la simmetria) garantisce che non si tratti della medesima tupla.
+    \item \textbf{Esercizi di riferimento:} Es.~7, Es.~20.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{CLIENTE(\underline{Id}, Nome)}, \texttt{ORDINE(\underline{NumOrdine}, Cliente, Articolo, Data)}\\
+    \textit{Query:} Restituire l'Id dei clienti che hanno acquistato almeno due articoli differenti.
+    \[
+    \begin{gathered}
+    \pi_{\text{Cliente1}} \Big( \\
+    \rho_{\text{Num1, Cliente1, Articolo1, Data1} \leftarrow \text{NumOrdine, Cliente, Articolo, Data}}(\text{ORDINE}) \\
+    \bowtie_{\text{Cliente1} = \text{Cliente2} \,\land\, \text{Articolo1} \neq \text{Articolo2}} \\
+    \rho_{\text{Num2, Cliente2, Articolo2, Data2} \leftarrow \text{NumOrdine, Cliente, Articolo, Data}}(\text{ORDINE}) \Big)
+    \end{gathered}
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 3
+% ----------------------------------------------------
+\paragraph{Pattern 3: Congiunzione su righe distinte (``Sia $A$ che $B$'')}
+Si presenta quando un'entità deve possedere contemporaneamente due proprietà che compaiono su tuple separate di una tabella dipendente (es. due acquisti, due iscrizioni).
+\begin{itemize}
+    \item \textbf{Schema logico (Intersezione):}
+    \[
+    \pi_{\text{Key}}(\sigma_{P_1}(S)) \;\cap\; \pi_{\text{Key}}(\sigma_{P_2}(S))
+    \]
+    \item \textbf{Schema logico (Join naturale / Theta-join):}
+    \[
+    \pi_{\text{Key1}} \big( \rho_1(\sigma_{P_1}(S)) \bowtie_{\text{Key1} = \text{Key2}} \rho_2(\sigma_{P_2}(S)) \big)
+    \]
+    \item \textbf{Regola chiave:} L'operatore $\cap$ richiede l'unione-compatibilità: bisogna prima proiettare sullo stesso insieme di attributi (solitamente la chiave dell'entità). Eventuali anagrafiche vanno unite all'esterno dopo l'intersezione.
+    \item \textbf{Esercizi di riferimento:} Es.~15, Es.~16, Es.~19.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{ATLETA(\underline{Matricola}, Nome)}, \texttt{ISCRIZIONE(\underline{Matricola}, \underline{Gara})}\\
+    \textit{Query:} Restituire nome e matricola degli atleti iscritti sia ai '100m' che ai '200m'.
+    \[
+    \begin{gathered}
+    \pi_{\text{Matricola, Nome}} \Big( \text{ATLETA} \bowtie \Big( \\
+    \pi_{\text{Matricola}}(\sigma_{\text{Gara} = '100m'}(\text{ISCRIZIONE})) \\
+    \cap \\
+    \pi_{\text{Matricola}}(\sigma_{\text{Gara} = '200m'}(\text{ISCRIZIONE})) \Big) \Big)
+    \end{gathered}
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 4
+% ----------------------------------------------------
+\paragraph{Pattern 4: Negazione assoluta (``Non ha mai'', ``Nessuno'', ``Senza'')}
+L'algebra relazionale non supporta filtri negativi diretti tra tuple indipendenti. La negazione si realizza come sottrazione dell'insieme di chi viola il vincolo dall'insieme universo di candidati.
+\begin{itemize}
+    \item \textbf{Schema logico:}
+    \[
+    \pi_{\text{Key}}(R) \;-\; \pi_{\text{Key}}\big( R \bowtie \sigma_{\text{Condizione}}(S) \big)
+    \]
+    \item \textbf{Regola chiave:} I due rami della differenza ($-$) devono essere \textbf{compatibili per schema}. Proiettare sempre preventivamente sulla medesima chiave/insieme di attributi. Non sottrarre prima di aver isolato le chiavi.
+    \item \textbf{Esercizi di riferimento:} Es.~8, Es.~13, Es.~18.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{LETTORE(\underline{Id}, Nome)}, \texttt{PRESTITO(\underline{IdLettore}, \underline{IdLibro}, Anno)}\\
+    \textit{Query:} Restituire l'Id dei lettori che non hanno mai preso in prestito alcun libro nel 2024.
+    \[
+    \pi_{\text{Id}}(\text{LETTORE}) \;-\; \pi_{\text{IdLettore}}(\sigma_{\text{Anno} = 2024}(\text{PRESTITO}))
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 5
+% ----------------------------------------------------
+\paragraph{Pattern 5: Condizione universale / Esclusività (``Esclusivamente'', ``Solo'')}
+Seleziona le entità che soddisfano la proprietà $P$ e non hanno mai assunto una proprietà diversa da $P$.
+\begin{itemize}
+    \item \textbf{Schema logico:}
+    \[
+    \pi_{\text{Key}}(\sigma_{P}(S)) \;-\; \pi_{\text{Key}}(\sigma_{\neg P}(S))
+    \]
+    \item \textbf{Spiegazione:} Il primo termine individua i soggetti con almeno una tupla valida per $P$ (evita di selezionare entità vuote o inattive); il secondo termine individua chiunque abbia almeno una tupla che contraddice $P$. La loro differenza lascia solo i soggetti puramente conformi.
+    \item \textbf{Esercizi di riferimento:} Es.~10, Es.~17.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{MEDICO(\underline{Id}, Nome)}, \texttt{VISITA(\underline{IdVisita}, Medico, Specialita)}\\
+    \textit{Query:} Restituire l'Id dei medici che effettuano visite esclusivamente nel campo della 'Cardiologia'.
+    \[
+    \pi_{\text{Medico}}(\sigma_{\text{Specialita} = '\text{Cardiologia}'}(\text{VISITA})) \;-\; \pi_{\text{Medico}}(\sigma_{\text{Specialita} \neq '\text{Cardiologia}'}(\text{VISITA}))
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 6
+% ----------------------------------------------------
+\paragraph{Pattern 6: Calcolo dell'estremo (Minimo / Massimo / Primo evento)}
+In assenza delle funzioni aggregate di SQL ($\min$, $\max$), l'estremo si individua sottraendo dall'insieme totale dei candidati tutti quelli per cui esiste un altro elemento strettamente migliore (o peggiore).
+\begin{itemize}
+    \item \textbf{Schema logico per determinare il minimo di un attributo $V$:}
+    \begin{enumerate}
+        \item Proiettare le coppie $(\text{Key}, V)$: $T_1 \leftarrow \pi_{\text{Key}, V}(R)$
+        \item Ridenominare: $T_2 \leftarrow \rho_{V' \leftarrow V}(T_1)$
+        \item Trovare gli elementi non minimi (esiste un $V < V'$ per lo stesso $\text{Key}$):\\
+        $T_{\text{non\_min}} \leftarrow \pi_{\text{Key}, V'}\big( \sigma_{V < V'}(T_1 \bowtie T_2) \big)$
+        \item Isolare il minimo per differenza:\\
+        $T_{\text{min}} \leftarrow \rho_{V \leftarrow V'}(T_2) - \rho_{V \leftarrow V'}(T_{\text{non\_min}})$
+    \end{enumerate}
+    \item \textbf{Esercizi di riferimento:} Es.~12.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{PRODOTTO(\underline{Codice}, Nome, Prezzo)}\\
+    \textit{Query:} Restituire il codice e il prezzo del prodotto con il prezzo minimo assoluto.
+    \[
+    \begin{aligned}
+    P_1 &:= \pi_{\text{Codice, Prezzo}}(\text{PRODOTTO}) \\[0.3em]
+    P_2 &:= \rho_{\text{Cod2, Prezzo2} \leftarrow \text{Codice, Prezzo}}(P_1) \\[0.3em]
+    P_{\text{non\_min}} &:= \pi_{\text{Cod2, Prezzo2}} \big( \sigma_{\text{Prezzo} < \text{Prezzo2}}(P_1 \times P_2) \big) \\[0.3em]
+    P_{\text{min}} &:= P_2 - P_{\text{non\_min}}
+    \end{aligned}
+    \]
+    \[
+    \pi_{\text{Cod2, Prezzo2}}(P_{\text{min}})
+    \]
+\end{itemize}
+
+% ----------------------------------------------------
+% PATTERN 7
+% ----------------------------------------------------
+\paragraph{Pattern 7: Cammini e catene (Transitività con scalo / Nodi intermedi)}
+Utilizzato quando una relazione modella un grafo orientato (nodi e archi) e l'interrogazione richiede percorsi composti da due o più passi consecutivi.
+\begin{itemize}
+    \item \textbf{Schema logico (Percorso a 2 passi con 1 nodo intermedio):}
+    \[
+    \rho_1(R) \bowtie_{\text{Destinazione1} = \text{Origine2}} \rho_2(R)
+    \]
+    \item \textbf{Filtraggio estremi:} applicare la selezione $\sigma_{\text{Origine1} = '\text{Start}' \,\land\, \text{Destinazione2} = '\text{End}'}$ per bloccare il punto di partenza e il traguardo.
+    \item \textbf{Esercizi di riferimento:} Es.~2.
+    \item \textbf{Esempio applicativo:}\\
+    \textit{Schema:} \texttt{VOLO(\underline{Codice}, Partenza, Destinazione, Durata)}\\
+    \textit{Query:} Trovare tutti i voli da 'Roma' a 'Tokyo' con esattamente uno scalo intermedio.
+    \[
+    \begin{gathered}
+    \sigma_{\text{Partenza1} = '\text{Roma}' \,\land\, \text{Destinazione2} = '\text{Tokyo}'} \Big( \\
+    \rho_{\text{Cod1, Partenza1, Scalo, Durata1} \leftarrow \text{Codice, Partenza, Destinazione, Durata}}(\text{VOLO}) \\
+    \bowtie_{\text{Scalo} = \text{Partenza2}} \\
+    \rho_{\text{Cod2, Partenza2, Destinazione2, Durata2} \leftarrow \text{Codice, Partenza, Destinazione, Durata}}(\text{VOLO}) \Big)
+    \end{gathered}
+    \]
+\end{itemize}
+
 \newpage
 
 \section{SQL di base}
@@ -2609,7 +3244,7 @@ Le tre clausole assolvono compiti distinti:
 \begin{lstlisting}[language=SQL]
 SELECT *
 FROM   Persone
-WHERE  Eta' < 30;
+WHERE  Eta < 30;
 \end{lstlisting}
 Il simbolo asterisco (\texttt{*}) è una scorciatoia sintattica per indicare la totalità degli attributi definiti nello schema della relazione sorgente.
 
@@ -2625,7 +3260,7 @@ FROM   Persone;
 \begin{lstlisting}[language=SQL]
 SELECT Nome, Reddito
 FROM   Persone
-WHERE  Eta' < 30;
+WHERE  Eta < 30;
 \end{lstlisting}
 
 \begin{center}
@@ -2649,7 +3284,7 @@ WHERE  Eta' < 30;
 SELECT p.Nome    AS NomeDipendente,
        p.Reddito AS CompensoAnnuo
 FROM   Persone AS p
-WHERE  p.Eta' < 30;
+WHERE  p.Eta < 30;
 \end{lstlisting}
 L'assegnazione di alias tramite \texttt{AS} non muta lo schema salvato su disco; si limita a etichettare le colonne nella vista generata a video, facilitando la lettura o evitando ambiguità quando più tabelle condividono attributi con lo stesso nome.
 
@@ -2658,7 +3293,7 @@ L'assegnazione di alias tramite \texttt{AS} non muta lo schema salvato su disco;
 SELECT *
 FROM   Persone
 WHERE  Reddito > 25 
-  AND (Eta' < 30 OR Eta' > 60);
+  AND (Eta < 30 OR Eta > 60);
 \end{lstlisting}
 Questa interrogazione estrae le persone con reddito superiore a 25 che siano contemporaneamente o molto giovani (sotto i 30 anni) oppure anziane (sopra i 60).
 
@@ -2689,8 +3324,8 @@ Questo pattern identifica con successo nomi come \texttt{Jim} o \texttt{James}, 
 -- Dipendenti con eta superiore a 40 anni oppure con eta ignota:
 SELECT *
 FROM   Dipendenti
-WHERE  Eta' > 40 
-   OR  Eta' IS NULL;
+WHERE  Eta > 40 
+   OR  Eta IS NULL;
 \end{lstlisting}
 
 \noindent \textbf{Insiemi vs Multinsiemi (\textit{Bags}).} Nella teoria pura dell'algebra relazionale, ogni relazione è formalizzata come un insieme matematico di tuple: non possono mai esistere due righe duplicate all'interno del medesimo risultato. 
@@ -2774,7 +3409,7 @@ Vogliamo estrarre i nomi dei padri i cui figli hanno un reddito superiore a 20. 
 In SQL, combinando \texttt{Persone} e \texttt{Paternità}:
 \begin{lstlisting}[language=SQL]
 SELECT DISTINCT p.Padre
-FROM   Persone pe, Paternita' p
+FROM   Persone pe, Paternita p
 WHERE  p.Figlio = pe.Nome
   AND  pe.Reddito > 20;
 \end{lstlisting}
@@ -2795,7 +3430,7 @@ SELECT c.Nome    AS NomeFiglio,
        c.Reddito AS RedditoFiglio,
        f.Reddito AS RedditoPadre
 FROM   Persone f,
-       Paternita' pat,
+       Paternita pat,
        Persone c
 WHERE  f.Nome = pat.Padre
   AND  pat.Figlio = c.Nome
@@ -2825,13 +3460,13 @@ L'assegnazione di un alias con \texttt{AS} è caldamente consigliata per assegna
 \begin{lstlisting}[language=SQL]
 -- Sintassi implicita (tradizionale):
 SELECT m.Madre, f.Figlio, f.Padre
-FROM   Maternita' m, Paternita' f
+FROM   Maternita m, Paternita f
 WHERE  m.Figlio = f.Figlio;
 
 -- Sintassi esplicita (standard SQL-92):
 SELECT m.Madre, f.Figlio, f.Padre
-FROM   Maternita' m
-       JOIN Paternita' f ON m.Figlio = f.Figlio;
+FROM   Maternita m
+       JOIN Paternita f ON m.Figlio = f.Figlio;
 \end{lstlisting}
 La sintassi formale generale del blocco con join esplicito è:
 \begin{lstlisting}[language=SQL]
@@ -2846,7 +3481,7 @@ La parola chiave \texttt{INNER} è opzionale: se si scrive semplicemente \texttt
 \noindent \textbf{Natural Join (\texttt{NATURAL JOIN}).} Se due tabelle condividono attributi con lo stesso identico nome, è possibile ricorrere al \textbf{join naturale}. Il DBMS individua in automatico le colonne omonime, impone l'uguaglianza tra di esse ed elimina le colonne duplicate dal risultato:
 \begin{lstlisting}[language=SQL]
 SELECT Madre, Figlio, Padre
-FROM   Maternita' NATURAL JOIN Paternita';
+FROM   Maternita NATURAL JOIN Paternita;
 \end{lstlisting}
 \textit{Nota pratica}: sebbene compatto, l'uso del \texttt{NATURAL JOIN} nella programmazione reale è spesso sconsigliato, poiché se in futuro viene aggiunta a una delle due tabelle una colonna con un nome coincidente per puro caso, il join cambierà comportamento in modo silenzioso e inatteso.
 
@@ -2863,8 +3498,8 @@ FROM   Maternita' NATURAL JOIN Paternita';
 \begin{lstlisting}[language=SQL]
 -- Estrae tutti i figli con il padre noto e, se presente, anche la madre:
 SELECT f.Figlio, f.Padre, m.Madre
-FROM   Paternita' f
-       LEFT OUTER JOIN Maternita' m ON f.Figlio = m.Figlio;
+FROM   Paternita f
+       LEFT OUTER JOIN Maternita m ON f.Figlio = m.Figlio;
 \end{lstlisting}
 
 \begin{center}
@@ -2948,7 +3583,7 @@ FROM   Paternita' f
 -- Persone registrate che non risultano essere padri di nessuno:
 SELECT p.Nome
 FROM   Persone p
-       LEFT JOIN Paternita' pat ON p.Nome = pat.Padre
+       LEFT JOIN Paternita pat ON p.Nome = pat.Padre
 WHERE  pat.Padre IS NULL;
 \end{lstlisting}
 
@@ -2960,7 +3595,7 @@ WHERE  pat.Padre IS NULL;
 \begin{lstlisting}[language=SQL]
 SELECT Nome, Reddito
 FROM   Persone
-WHERE  Eta' <= 30
+WHERE  Eta <= 30
 ORDER BY Nome ASC;
 \end{lstlisting}
 \begin{itemize}
@@ -3018,14 +3653,14 @@ ORDER BY Cognome ASC, Reddito DESC;
 
 \begin{lstlisting}[language=SQL]
 -- Unione insiemistica (ogni figlio compare una sola volta):
-SELECT Figlio FROM Maternita'
+SELECT Figlio FROM Maternita
 UNION
-SELECT Figlio FROM Paternita';
+SELECT Figlio FROM Paternita;
 
 -- Unione su multinsieme (un figlio compare due volte se ha madre e padre noti):
-SELECT Figlio FROM Maternita'
+SELECT Figlio FROM Maternita
 UNION ALL
-SELECT Figlio FROM Paternita';
+SELECT Figlio FROM Paternita;
 \end{lstlisting}
 
 \medskip
@@ -3056,7 +3691,7 @@ L'operatore \texttt{INTERSECT} può essere sempre riscritto tramite un equi-join
 -- Trova nome e reddito del padre di 'Franco':
 -- (Versione con equijoin implicito):
 SELECT p.Nome, p.Reddito
-FROM   Persone p, Paternita' pat
+FROM   Persone p, Paternita pat
 WHERE  p.Nome = pat.Padre
   AND  pat.Figlio = 'Franco';
 
@@ -3064,7 +3699,7 @@ WHERE  p.Nome = pat.Padre
 SELECT Nome, Reddito
 FROM   Persone
 WHERE  Nome = (SELECT Padre
-               FROM   Paternita'
+               FROM   Paternita
                WHERE  Figlio = 'Franco');
 \end{lstlisting}
 \textit{Attenzione}: se la sottoquery tra parentesi dovesse restituire più di una riga (ad esempio nel caso di una persona registrata con due padri), il confronto scalare fallirebbe sollevando un errore a runtime.
@@ -3096,7 +3731,7 @@ SELECT Nome, Reddito
 FROM   Persone
 WHERE  Nome IN (
     SELECT Padre
-    FROM   Paternita'
+    FROM   Paternita
     WHERE  Figlio = ANY (
         SELECT Nome
         FROM   Persone
@@ -3119,8 +3754,8 @@ Il predicato \texttt{EXISTS} restituisce \textbf{Vero} se la sottoquery tra pare
 -- Persone che hanno almeno un figlio (padri o madri):
 SELECT *
 FROM   Persone p
-WHERE  EXISTS (SELECT * FROM Paternita' pat WHERE pat.Padre = p.Nome)
-   OR  EXISTS (SELECT * FROM Maternita' mat WHERE mat.Madre = p.Nome);
+WHERE  EXISTS (SELECT * FROM Paternita pat WHERE pat.Padre = p.Nome)
+   OR  EXISTS (SELECT * FROM Maternita mat WHERE mat.Madre = p.Nome);
 \end{lstlisting}
 
 \medskip
@@ -3130,7 +3765,7 @@ WHERE  EXISTS (SELECT * FROM Paternita' pat WHERE pat.Padre = p.Nome)
 -- Padri i cui figli guadagnano TUTTI piu di 20:
 -- (Ovvero: padri per cui NON ESISTE un figlio che guadagna <= 20)
 SELECT DISTINCT f.Padre
-FROM   Paternita' AS f
+FROM   Paternita AS f
 WHERE  NOT EXISTS (
     SELECT *
     FROM   Persone p
@@ -3181,7 +3816,7 @@ WHERE  Dipart IN (SELECT NomeDipart
                   WHERE  NomeDipart = 'Produzione')
    OR  Dipart IN (SELECT NomeDipart 
                   FROM   Dipartimento D2 
-                  WHERE  D2.Citta' = D1.Citta'); -- ERRORE!
+                  WHERE  D2.Citta = D1.Citta); -- ERRORE!
 \end{lstlisting}
 La seconda sottoquery tenta di accedere alla colonna \texttt{D1.Città}. Poiché l'alias \texttt{D1} è stato istanziato all'interno del primo blocco parallelo, il suo ciclo di vita si è concluso alla chiusura della parentesi tonda. La variabile non è visibile al ramo fratello e il parser SQL rigetta la query con un errore di identificatore sconosciuto.
 
@@ -3275,7 +3910,7 @@ WHERE  Reddito = (SELECT MAX(Reddito) FROM Persone);
 \noindent \textbf{Sintassi ed Esempio Operativo.} Data la tabella \textbf{Paternità}(\underline{Figlio}, Padre):
 \begin{lstlisting}[language=SQL]
 SELECT   Padre, COUNT(*) AS NumeroFigli
-FROM     Paternita'
+FROM     Paternita
 GROUP BY Padre;
 \end{lstlisting}
 
@@ -3370,7 +4005,7 @@ GROUP BY Padre;
 \begin{lstlisting}[language=SQL]
 SELECT   p.Padre, AVG(pe.Reddito) AS RedditoMedioFigli
 FROM     Persone pe
-         JOIN Paternita' p ON pe.Nome = p.Figlio
+         JOIN Paternita p ON pe.Nome = p.Figlio
 GROUP BY p.Padre
 HAVING   AVG(pe.Reddito) > 25;
 \end{lstlisting}
@@ -3399,12 +4034,12 @@ HAVING   AVG(pe.Reddito) > 25;
 \begin{lstlisting}[language=SQL]
 SELECT   p.Padre, AVG(pe.Reddito) AS RedditoMedioGiovani
 FROM     Persone pe
-         JOIN Paternita' p ON pe.Nome = p.Figlio
-WHERE    pe.Eta' < 30
+         JOIN Paternita p ON pe.Nome = p.Figlio
+WHERE    pe.Eta < 30
 GROUP BY p.Padre
 HAVING   AVG(pe.Reddito) > 20;
 \end{lstlisting}
-La clausola \texttt{WHERE pe.Eta' < 30} scarta preventivamente tutti i figli trentenni o più anziani; il \texttt{GROUP BY} partiziona i soli figli giovani rimasti in base al padre; infine \texttt{HAVING} seleziona unicamente i padri la cui media calcolata supera la soglia di 20.
+La clausola \texttt{WHERE pe.Eta < 30} scarta preventivamente tutti i figli trentenni o più anziani; il \texttt{GROUP BY} partiziona i soli figli giovani rimasti in base al padre; infine \texttt{HAVING} seleziona unicamente i padri la cui media calcolata supera la soglia di 20.
 
 \noindent \textbf{La Forma Canonica Generale.} Riassumendo tutte le clausole esaminate, l'interrogazione SQL completa si struttura formalmente nella seguente sequenza:
 
@@ -3458,7 +4093,7 @@ INSERT INTO Persone
 VALUES ('Giovanni', 'Rossi', 25, 32);
 
 -- Forma con elenco attributi esplicito:
-INSERT INTO Persone (Nome, Eta', Reddito) 
+INSERT INTO Persone (Nome, Eta, Reddito) 
 VALUES ('Giacomo', 28, 40);
 
 -- Inserimento parziale: gli attributi omessi assumono il valore DEFAULT o NULL:
@@ -3468,7 +4103,7 @@ VALUES ('Roberto', 55);
 -- Inserimento massivo derivato da una sottoquery:
 INSERT INTO Persone (Nome)
 SELECT Padre
-FROM   Paternita'
+FROM   Paternita
 WHERE  Padre NOT IN (SELECT Nome FROM Persone);
 \end{lstlisting}
 \textit{Regole operative}: se la lista delle colonne viene omessa, il comando presuppone che i valori siano forniti per tutti gli attributi nello stesso identico ordine stabilito durante la \texttt{CREATE TABLE}. Se invece viene specificata una lista parziale, tutti i campi esclusi devono obbligatoriamente ammettere il valore \texttt{NULL} o possedere una clausola \texttt{DEFAULT}, altrimenti il DBMS rigetta l'operazione.
@@ -3480,14 +4115,14 @@ Rimuove le righe da una tabella in base a un predicato logico:
 \begin{lstlisting}[language=SQL]
 -- Rimuove le persone con eta inferiore a 35 anni:
 DELETE FROM Persone
-WHERE  Eta' < 35;
+WHERE  Eta < 35;
 
 -- Cancellazione con condizione dipendente da un'altra tabella:
-DELETE FROM Paternita'
+DELETE FROM Paternita
 WHERE  Figlio NOT IN (SELECT Nome FROM Persone);
 
 -- ATTENZIONE: cancellazione totale di tutte le tuple della tabella:
-DELETE FROM Paternita';
+DELETE FROM Paternita;
 \end{lstlisting}
 \textit{Proprietà della cancellazione}:
 \begin{itemize}
@@ -3508,7 +4143,7 @@ WHERE  Nome = 'Roberto';
 -- Aggiornamento dinamico tramite espressione aritmetica (+10% ai giovani):
 UPDATE Persone
 SET    Reddito = Reddito * 1.1
-WHERE  Eta' < 30;
+WHERE  Eta < 30;
 
 -- Assegnazione del valore mediante una sottoquery scalare correlata:
 UPDATE Persone
@@ -3518,11 +4153,11 @@ WHERE  Nome = 'Giacomo';
 -- Assegnazione al valore NULL o al valore DEFAULT definito nello schema:
 UPDATE Persone
 SET    Reddito = NULL
-WHERE  Eta' < 30;
+WHERE  Eta < 30;
 
 UPDATE Persone
 SET    Reddito = DEFAULT
-WHERE  Eta' < 30;
+WHERE  Eta < 30;
 \end{lstlisting}
 Anche per l'aggiornamento vale la regola di sicurezza: omettere la clausola \texttt{WHERE} comporterà l'applicazione della modifica specificata sull'intera totalità delle tuple presenti nella relazione.
 
@@ -4246,15 +4881,15 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
 \subsection{Gestione delle Transazioni}
 
 \subsubsection{Transazioni e Proprietà ACID}
-\noindent \textbf{Natura della Transazione.} Una \textbf{transazione} è un programma in esecuzione che costituisce un'unità logica elementare di elaborazione all'interno della base di dati[cite: 38]. Essa rappresenta un'operazione atomica: raggruppa una o più istruzioni di manipolazione dati che devono essere gestite dal DBMS come un unico blocco indivisibile[cite: 38].
+\noindent \textbf{Natura della Transazione.} Una \textbf{transazione} è un programma in esecuzione che costituisce un'unità logica elementare di elaborazione all'interno della base di dati. Essa rappresenta un'operazione atomica: raggruppa una o più istruzioni di manipolazione dati che devono essere gestite dal DBMS come un unico blocco indivisibile.
 
 \medskip
-\noindent \textbf{I Quattro Requisiti Fondamentali (ACID).} Per garantire l'affidabilità e la correttezza dei dati anche in presenza di accessi concorrenti o di guasti improvvisi del sistema, ogni transazione deve soddisfare quattro proprietà essenziali[cite: 38]:
+\noindent \textbf{I Quattro Requisiti Fondamentali (ACID).} Per garantire l'affidabilità e la correttezza dei dati anche in presenza di accessi concorrenti o di guasti improvvisi del sistema, ogni transazione deve soddisfare quattro proprietà essenziali:
 \begin{itemize}
-    \item \textbf{Atomicità (\textit{Atomicity})}: l'unità di lavoro deve essere eseguita per intero oppure per nulla[cite: 38, 39].
-    \item \textbf{Preservazione della Coerenza (\textit{Consistency})}: l'esecuzione completa della transazione deve trasferire la base di dati da uno stato coerente a un altro stato coerente[cite: 38, 40].
-    \item \textbf{Isolamento (\textit{Isolation})}: l'esecuzione di transazioni concorrenti non deve provocare interferenze reciproche sui dati[cite: 38, 41].
-    \item \textbf{Persistenza o Durabilità (\textit{Durability})}: i risultati prodotti da una transazione completata con successo devono persistere stabilmente nel tempo[cite: 38, 42].
+    \item \textbf{Atomicità (\textit{Atomicity})}: l'unità di lavoro deve essere eseguita per intero oppure per nulla.
+    \item \textbf{Preservazione della Coerenza (\textit{Consistency})}: l'esecuzione completa della transazione deve trasferire la base di dati da uno stato coerente a un altro stato coerente.
+    \item \textbf{Isolamento (\textit{Isolation})}: l'esecuzione di transazioni concorrenti non deve provocare interferenze reciproche sui dati.
+    \item \textbf{Persistenza o Durabilità (\textit{Durability})}: i risultati prodotti da una transazione completata con successo devono persistere stabilmente nel tempo.
 \end{itemize}
 
 \begin{center}
@@ -4264,10 +4899,10 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
     acidbox/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum width=3.6cm, minimum height=1.1cm},
     arr/.style={thick, -{Latex[length=2.2mm]}, draw=blue-violet}
 ]
-    \node[acidbox] (a) {\textbf{Atomicità (A)}\\\textit{Tutto o niente}\\\scriptsize Esecuzione indivisibile[cite: 39]};
-    \node[acidbox, right=0.8cm of a] (c) {\textbf{Coerenza (C)}\\\textit{Rispetto dei vincoli}\\\scriptsize Transizione tra stati validi[cite: 40]};
-    \node[acidbox, below=0.6cm of a] (i) {\textbf{Isolamento (I)}\\\textit{Nessuna interferenza}\\\scriptsize Esecuzione concorrente protetta[cite: 41]};
-    \node[acidbox, right=0.8cm of i] (d) {\textbf{Durabilità (D)}\\\textit{Effetti permanenti}\\\scriptsize Resistenza ai guasti[cite: 42]};
+    \node[acidbox] (a) {\textbf{Atomicità (A)}\\\textit{Tutto o niente}\\\scriptsize Esecuzione indivisibile};
+    \node[acidbox, right=0.8cm of a] (c) {\textbf{Coerenza (C)}\\\textit{Rispetto dei vincoli}\\\scriptsize Transizione tra stati validi};
+    \node[acidbox, below=0.6cm of a] (i) {\textbf{Isolamento (I)}\\\textit{Nessuna interferenza}\\\scriptsize Esecuzione concorrente protetta};
+    \node[acidbox, right=0.8cm of i] (d) {\textbf{Durabilità (D)}\\\textit{Effetti permanenti}\\\scriptsize Resistenza ai guasti};
 
     \draw[arr] (a) -- (c);
     \draw[arr] (c) -- (d);
@@ -4277,33 +4912,33 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
 \end{adjustbox}
 \end{center}
 
-\noindent \textbf{1. Atomicità (\textit{All or Nothing}).} La transazione costituisce un'unità di elaborazione non frazionabile: deve essere eseguita completamente oppure non deve essere applicata affatto[cite: 39].
+\noindent \textbf{1. Atomicità (\textit{All or Nothing}).} La transazione costituisce un'unità di elaborazione non frazionabile: deve essere eseguita completamente oppure non deve essere applicata affatto.
 \begin{itemize}
-    \item \textit{Caso d'uso classico}: il bonifico bancario tra due conti correnti $A$ e $B$[cite: 39].
-    \item Il denaro deve essere prelevato da $A$ e contestualmente accreditato su $B$[cite: 39].
-    \item Se il sistema subisce un blocco dopo l'addebito ma prima dell'accredito, nessuna delle due operazioni deve rimanere registrata[cite: 39].
+    \item \textit{Caso d'uso classico}: il bonifico bancario tra due conti correnti $A$ e $B$.
+    \item Il denaro deve essere prelevato da $A$ e contestualmente accreditato su $B$.
+    \item Se il sistema subisce un blocco dopo l'addebito ma prima dell'accredito, nessuna delle due operazioni deve rimanere registrata.
 \end{itemize}
 
 \medskip
-\noindent \textbf{2. Preservazione della Coerenza (\textit{Consistency}).} Se la transazione viene eseguita dall'inizio alla fine senza interferenze, la base di dati passa da uno stato consistente a un nuovo stato consistente[cite: 40].
+\noindent \textbf{2. Preservazione della Coerenza (\textit{Consistency}).} Se la transazione viene eseguita dall'inizio alla fine senza interferenze, la base di dati passa da uno stato consistente a un nuovo stato consistente.
 \begin{itemize}
-    \item Durante le fasi intermedie di elaborazione possono verificarsi violazioni temporanee di vincoli o bilanci contabili[cite: 40].
-    \item Tali inconsistenze transitorie non possono persistere al momento della chiusura della transazione[cite: 40].
-    \item Se al termine dell'elaborazione i vincoli d'integrità risultano ancora violati, la transazione viene abortita (\textit{abort}) e l'intero stato viene ripristinato[cite: 40].
+    \item Durante le fasi intermedie di elaborazione possono verificarsi violazioni temporanee di vincoli o bilanci contabili.
+    \item Tali inconsistenze transitorie non possono persistere al momento della chiusura della transazione.
+    \item Se al termine dell'elaborazione i vincoli d'integrità risultano ancora violati, la transazione viene abortita (\textit{abort}) e l'intero stato viene ripristinato.
 \end{itemize}
 
 \medskip
-\noindent \textbf{3. Isolamento (\textit{Isolation}).} Anche in presenza di un numero elevato di transazioni eseguite simultaneamente, ciascuna transazione deve operare come se fosse l'unica attiva all'interno del sistema[cite: 41].
+\noindent \textbf{3. Isolamento (\textit{Isolation}).} Anche in presenza di un numero elevato di transazioni eseguite simultaneamente, ciascuna transazione deve operare come se fosse l'unica attiva all'interno del sistema.
 \begin{itemize}
-    \item L'esecuzione concorrente non deve causare interferenze o anomalie di lettura/scrittura[cite: 41].
-    \item \textit{Esempio}: due operazioni concorrenti di prelievo che insistono nello stesso istante sul medesimo conto corrente devono essere regolate in modo che i saldi intermedi non si sovrascrivano a vicenda[cite: 41].
+    \item L'esecuzione concorrente non deve causare interferenze o anomalie di lettura/scrittura.
+    \item \textit{Esempio}: due operazioni concorrenti di prelievo che insistono nello stesso istante sul medesimo conto corrente devono essere regolate in modo che i saldi intermedi non si sovrascrivano a vicenda.
 \end{itemize}
 
 \medskip
-\noindent \textbf{4. Durabilità degli Effetti (\textit{Durability / Permanency}).} Le modifiche apportate alla base di dati da una transazione confermata con successo (\textit{committed}) devono essere conservate in modo permanente[cite: 42].
+\noindent \textbf{4. Durabilità degli Effetti (\textit{Durability / Permanency}).} Le modifiche apportate alla base di dati da una transazione confermata con successo (\textit{committed}) devono essere conservate in modo permanente.
 \begin{itemize}
-    \item I dati salvati non possono andare perduti, nemmeno a fronte di guasti critici a livello hardware o crash del sistema operativo[cite: 42].
-    \item La persistenza viene garantita dal DBMS mediante la scrittura preventiva delle operazioni su supporti non volatili (meccanismo del \textit{Write-Ahead Logging})[cite: 42].
+    \item I dati salvati non possono andare perduti, nemmeno a fronte di guasti critici a livello hardware o crash del sistema operativo.
+    \item La persistenza viene garantita dal DBMS mediante la scrittura preventiva delle operazioni su supporti non volatili (meccanismo del \textit{Write-Ahead Logging}).
 \end{itemize}
 
 \begin{cbox}{Quadro Sinottico: Le Quattro Proprietà ACID}
@@ -4313,32 +4948,32 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
     \toprule
     \textbf{Proprietà} & \textbf{Significato Sistemistico} & \textbf{Comportamento in Caso di Errore} \\
     \midrule
-    \textbf{Atomicità}[cite: 39] & Unità di calcolo atomica e indivisibile. & Annullamento completo delle operazioni parziali (\textit{Rollback})[cite: 39, 43]. \\
+    \textbf{Atomicità} & Unità di calcolo atomica e indivisibile. & Annullamento completo delle operazioni parziali (\textit{Rollback}). \\
     \addlinespace
-    \textbf{Coerenza}[cite: 40] & Preservazione di tutti i vincoli di schema. & Annullamento della transazione se permangono violazioni (\textit{Abort})[cite: 40]. \\
+    \textbf{Coerenza} & Preservazione di tutti i vincoli di schema. & Annullamento della transazione se permangono violazioni (\textit{Abort}). \\
     \addlinespace
-    \textbf{Isolamento}[cite: 41] & Indipendenza da transazioni concorrenti. & Controllo della concorrenza tramite locking o versioning dei record[cite: 41]. \\
+    \textbf{Isolamento} & Indipendenza da transazioni concorrenti. & Controllo della concorrenza tramite locking o versioning dei record. \\
     \addlinespace
-    \textbf{Durabilità}[cite: 42] & Effetti definitivi e non volatili su disco. & Ripristino automatico tramite registri di log post-riavvio[cite: 42]. \\
+    \textbf{Durabilità} & Effetti definitivi e non volatili su disco. & Ripristino automatico tramite registri di log post-riavvio. \\
     \bottomrule
 \end{tabular}
 \end{center}
 \end{cbox}
 
 \subsubsection{Comandi Transazionali ed Esempio Completo}
-\noindent \textbf{Ciclo di Vita di una Transazione SQL.} Una volta stabilita la sessione con la base di dati, il controllo dell'unità di lavoro fa uso di parole chiave specifiche[cite: 43]:
+\noindent \textbf{Ciclo di Vita di una Transazione SQL.} Una volta stabilita la sessione con la base di dati, il controllo dell'unità di lavoro fa uso di parole chiave specifiche:
 \begin{itemize}
-    \item \textbf{\texttt{START TRANSACTION}}: avvia formalmente una nuova transazione logica (comando opzionale in gran parte degli RDBMS commerciali, dove la prima istruzione DML apre implicitamente il blocco)[cite: 43].
-    \item \textbf{\texttt{COMMIT [WORK]}}: conferma con successo le operazioni eseguite, rendendo le modifiche visibili agli altri utenti e salvandole stabilmente nella base di dati[cite: 43].
-    \item \textbf{\texttt{ROLLBACK [WORK]}}: rifiuta tutte le modifiche apportate dall'inizio della transazione, scartando i dati temporanei e riportando il database al precedente stato consistente[cite: 43].
+    \item \textbf{\texttt{START TRANSACTION}}: avvia formalmente una nuova transazione logica (comando opzionale in gran parte degli RDBMS commerciali, dove la prima istruzione DML apre implicitamente il blocco).
+    \item \textbf{\texttt{COMMIT [WORK]}}: conferma con successo le operazioni eseguite, rendendo le modifiche visibili agli altri utenti e salvandole stabilmente nella base di dati.
+    \item \textbf{\texttt{ROLLBACK [WORK]}}: rifiuta tutte le modifiche apportate dall'inizio della transazione, scartando i dati temporanei e riportando il database al precedente stato consistente.
 \end{itemize}
 
 \medskip
-\noindent \textbf{La Modalità Autocommit.} Per impostazione predefinita, molti sistemi RDBMS (come MySQL) operano in modalità \textbf{autocommit}[cite: 43]:
+\noindent \textbf{La Modalità Autocommit.} Per impostazione predefinita, molti sistemi RDBMS (come MySQL) operano in modalità \textbf{autocommit}:
 \begin{itemize}
-    \item Ogni singola istruzione SQL viene trattata come una transazione a sé stante[cite: 43].
-    \item Al termine dell'esecuzione del comando, il DBMS esegue automaticamente un \texttt{COMMIT} immediato[cite: 43].
-    \item Per coordinare sequenze di aggiornamenti correlate occorre disattivare l'autocommit oppure aprire esplicitamente il blocco con \texttt{START TRANSACTION}[cite: 43, 44].
+    \item Ogni singola istruzione SQL viene trattata come una transazione a sé stante.
+    \item Al termine dell'esecuzione del comando, il DBMS esegue automaticamente un \texttt{COMMIT} immediato.
+    \item Per coordinare sequenze di aggiornamenti correlate occorre disattivare l'autocommit oppure aprire esplicitamente il blocco con \texttt{START TRANSACTION}.
 \end{itemize}
 
 \begin{center}
@@ -4347,10 +4982,10 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
     box/.style={draw=blue-violet, fill=ghostwhite, rounded corners=3pt, thick, align=center, font=\footnotesize, minimum height=0.75cm},
     arrow/.style={thick, -{Latex[length=2.5mm]}, draw=blue-violet}
 ]
-    \node[box] (start) {\textbf{START TRANSACTION}\\\textit{Inizio blocco transazionale}[cite: 43]};
-    \node[box, right=1.2cm of start] (exec) {\textbf{Operazioni DML}\\\texttt{UPDATE, INSERT...}\\\textit{Stato temporaneo isolato}[cite: 41, 44]};
-    \node[box, above right=0.3cm and 1.2cm of exec, fill=green!10] (commit) {\textbf{COMMIT WORK}\\\textit{Modifiche consolidate}[cite: 43]};
-    \node[box, below right=0.3cm and 1.2cm of exec, fill=red!10] (rollback) {\textbf{ROLLBACK WORK}\\\textit{Ripristino stato sicuro}[cite: 43]};
+    \node[box] (start) {\textbf{START TRANSACTION}\\\textit{Inizio blocco transazionale}};
+    \node[box, right=1.2cm of start] (exec) {\textbf{Operazioni DML}\\\texttt{UPDATE, INSERT...}\\\textit{Stato temporaneo isolato}};
+    \node[box, above right=0.3cm and 1.2cm of exec, fill=green!10] (commit) {\textbf{COMMIT WORK}\\\textit{Modifiche consolidate}};
+    \node[box, below right=0.3cm and 1.2cm of exec, fill=red!10] (rollback) {\textbf{ROLLBACK WORK}\\\textit{Ripristino stato sicuro}};
 
     \draw[arrow] (start) -- (exec);
     \draw[arrow] (exec) |- node[above, font=\scriptsize\bfseries] {Esito OK} (commit);
@@ -4359,10 +4994,10 @@ REVOKE CREATE TABLE FROM RuoloImpiegato;
 \end{adjustbox}
 \end{center}
 
-\noindent Si consideri un'operazione contabile che prevede il trasferimento di $10$ euro dal conto corrente identificato dal numero $42177$ verso il conto $12202$[cite: 44]. 
+\noindent Si consideri un'operazione contabile che prevede il trasferimento di $10$ euro dal conto corrente identificato dal numero $42177$ verso il conto $12202$. 
 
 \medskip
-\noindent L'operazione richiede due aggiornamenti congiunti che non possono essere separati[cite: 39, 44]:
+\noindent L'operazione richiede due aggiornamenti congiunti che non possono essere separati:
 \begin{lstlisting}[language=SQL, caption={Esempio di transazione bancaria completa}]
 -- Apertura esplicita della transazione (opzionale in alcuni DBMS):
 START TRANSACTION;
@@ -4383,8 +5018,8 @@ COMMIT WORK;
 
 \noindent \textbf{Analisi delle Garanzie Operative}:
 \begin{itemize}
-    \item Se si verifica un calo di tensione o un'interruzione di rete dopo il primo comando di \texttt{UPDATE}, l'accredito non ha luogo; il DBMS interviene ed esegue automaticamente il \textbf{rollback}, ripristinando il saldo originario del conto $42177$[cite: 39, 43].
-    \item Solo nel momento in cui il comando \texttt{COMMIT WORK} viene registrato, entrambe le variazioni di saldo diventano permanenti e visibili alle altre connessioni concorrenti[cite: 42, 43].
+    \item Se si verifica un calo di tensione o un'interruzione di rete dopo il primo comando di \texttt{UPDATE}, l'accredito non ha luogo; il DBMS interviene ed esegue automaticamente il \textbf{rollback}, ripristinando il saldo originario del conto $42177$.
+    \item Solo nel momento in cui il comando \texttt{COMMIT WORK} viene registrato, entrambe le variazioni di saldo diventano permanenti e visibili alle altre connessioni concorrenti.
 \end{itemize}
 
 

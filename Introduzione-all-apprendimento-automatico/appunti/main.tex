@@ -16,6 +16,9 @@
 \usepackage{gensymb}
 \usepackage{centernot}
 \usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.16}
 \usetikzlibrary{arrows.meta}
 \usepackage{mdframed}
 \usepackage{listings}
@@ -427,7 +430,7 @@ $$H(Y \mid B) = \tfrac{51}{64}\cdot 0.936 + \tfrac{13}{64}\cdot 0.619 \approx 0.
 \paragraph{Passo 3: information gain}
 Gain = incertezza prima $-$ incertezza dopo:
 $$I(Y, A) = H(Y) - H(Y \mid A) = 0.994 - 0.727 = \mathbf{0.267} \qquad I(Y, B) = 0.994 - 0.872 = 0.122$$
-(Le slide scrivono $0.288$ per $A$, ma $0.994 - 0.726 = 0.268$: è un refuso. Il valore corretto, con più cifre decimali, è $0.266$.)
+(Con più cifre decimali il valore è $0.266$; $0.994 - 0.726 = 0.268$ risente dell'arrotondamento.)
 
 \begin{center}
 \footnotesize
@@ -1092,7 +1095,7 @@ Spam vince 8 a 1 (circa 89\% in probabilità). Si noti che «ora» appare in ent
 \paragraph{Interpretazione come prodotto scalare}
 Immaginiamo uno spazio con una dimensione per ogni parola del vocabolario:
 \begin{itemize}
-    \item per ogni classe $k$, un \textbf{vettore dei pesi} $\mathbf{s}_k = \langle \log \theta_{j, k} \rangle_{j \in V}$ (nelle slide: vettore «spettrale»);
+    \item per ogni classe $k$, un \textbf{vettore dei pesi} $\mathbf{s}_k = \langle \log \theta_{j, k} \rangle_{j \in V}$;
     \item per il documento, il \textbf{vettore dei conteggi} $\mathbf{d} = \langle n_j \rangle_{j \in V}$.
 \end{itemize}
 Tolta la prior, il punteggio è un prodotto scalare:
@@ -1417,7 +1420,7 @@ Calcola un punteggio lineare $z = w_0 + \sum_i w_i x_i$ e lo trasforma in probab
 \textbf{La strada di Naïve Bayes (indiretta).} Si stimano $P(Y)$ e $P(X \mid Y)$ e poi si inverte con Bayes. Costo: bisogna modellare \emph{come sono fatte le feature} ($P(X \mid Y)$ per ogni classe), e per farlo si fanno ipotesi forti (indipendenza condizionata) che spesso sono false.
 
 \medskip
-\textbf{L'idea della regressione logistica (diretta).} Il nostro scopo è solo classificare, quindi perché non stimare \emph{direttamente} $P(Y \mid X)$? (slide: \textit{«Why not directly learn $P(Y \mid X)$?»}). Ma stimare $P(Y\mid X)$ senza struttura è impossibile: avremmo un valore diverso per ogni possibile $X$. Serve quindi una \textbf{forma funzionale} con pochi parametri $w_0, w_1, \dots, w_n$.
+\textbf{L'idea della regressione logistica (diretta).} Il nostro scopo è solo classificare, quindi perché non stimare \emph{direttamente} $P(Y \mid X)$?. Ma stimare $P(Y\mid X)$ senza struttura è impossibile: avremmo un valore diverso per ogni possibile $X$. Serve quindi una \textbf{forma funzionale} con pochi parametri $w_0, w_1, \dots, w_n$.
 
 \medskip
 \textbf{Il filo logico, in 5 passi:}
@@ -1457,13 +1460,13 @@ Calcola un punteggio lineare $z = w_0 + \sum_i w_i x_i$ e lo trasforma in probab
 
 \noindent Dimostriamo che la forma logistica \emph{non è arbitraria}: è la conseguenza esatta di un Naïve Bayes gaussiano.
 
-\begin{cbox}{Ipotesi (come nelle slide)}
+\begin{cbox}{Ipotesi}
 \begin{itemize}
     \item $Y$ variabile booleana con distribuzione di Bernoulli di parametro $\pi$: $P(Y = 1) = \pi$, \ $P(Y = 0) = 1 - \pi$;
     \item le $X_i$ sono variabili continue, \textbf{condizionatamente indipendenti} data $Y$;
     \item $P(X_i \mid Y = k) = \mathcal{N}(X_i; \mu_{ik}, \sigma_i)$, cioè
     $$P(X_i \mid Y = k) = \frac{1}{\sigma_i \sqrt{2\pi}}\, e^{-\frac{(X_i - \mu_{ik})^2}{2\sigma_i^2}}$$
-    \textbf{Attenzione} (\emph{«Warning: not $\sigma_{ik}$!»} nelle slide): la deviazione standard $\sigma_i$ dipende solo da $i$, \textbf{non dalla classe $k$}. La media $\mu_{ik}$ invece dipende da entrambe.
+    \textbf{Attenzione}: la deviazione standard $\sigma_i$ dipende solo da $i$, \textbf{non dalla classe $k$}. La media $\mu_{ik}$ invece dipende da entrambe.
 \end{itemize}
 \textbf{Tesi}: $\displaystyle P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(w_0 + \sum_i w_i x_i\big)}$ per opportuni $w_0, w_i$.
 \end{cbox}
@@ -1497,18 +1500,20 @@ $$\ln\frac{P(X_i \mid Y = 0)}{P(X_i \mid Y = 1)} = \frac{\mu_{i0} - \mu_{i1}}{\s
 \noindent \textbf{(7) Sommiamo su $i$ e raccogliamo.} Dal passo (4):
 $$\ln \frac{P(Y = 0)\,P(X \mid Y = 0)}{P(Y = 1)\,P(X \mid Y = 1)} = \underbrace{\ln\frac{1 - \pi}{\pi} + \sum_{i=1}^n \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}}_{w_0} + \sum_{i=1}^n \underbrace{\frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}}_{w_i}\, X_i = w_0 + \sum_i w_i X_i$$
 Inserendo nel passo (3) otteniamo la tesi:
-\begin{cbox}{Risultato (formula delle slide)}
-$$P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(w_0 + \sum_i w_i x_i\big)}, \quad w_0 = \ln\frac{1 - \pi}{\pi} + \sum_i \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}, \quad w_i = \frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}$$
+\begin{cbox}{Risultato}
+$$P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(w_0 + \sum_i w_i x_i\big)}$$
+con
+$$w_0 = \ln\frac{1 - \pi}{\pi} + \sum_i \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}, \qquad w_i = \frac{\mu_{i0} - \mu_{i1}}{\sigma_i^2}$$
 \end{cbox}
 \hfill $\blacksquare$
 
-\paragraph{Conseguenze (slide «Very useful!»)}
+\paragraph{Conseguenze}
 Poniamo $s = w_0 + \sum_i w_i x_i$. Dal risultato, $P(Y = 0 \mid X) = 1 - P(Y = 1 \mid X) = 1 - \frac{1}{1 + e^s} = \frac{e^s}{1 + e^s}$. Dividendo le due probabilità:
 $$\frac{P(Y = 0 \mid X)}{P(Y = 1 \mid X)} = \frac{\frac{e^s}{1 + e^s}}{\frac{1}{1 + e^s}} = e^s \quad \Longrightarrow \quad \ln\frac{P(Y = 0 \mid X)}{P(Y = 1 \mid X)} = w_0 + \sum_i w_i x_i$$
 Con questa convenzione di segno, si sceglie la classe $0$ se $w_0 + \sum_i w_i x_i > 0$ (log-rapporto positivo: $Y=0$ è più probabile).
 
 \paragraph{Cambio di segno e definizione della regressione logistica}
-La regressione logistica assume la forma con il segno meno (slide: \textit{«the change in sign is inessential»}):
+La regressione logistica assume la forma con il segno meno:
 $$P(Y = 1 \mid X = \langle x_1, \dots, x_n \rangle) = \frac{1}{1 + \exp\!\big(-w_0 - \sum_i w_i x_i\big)}$$
 Il cambio di segno equivale a sostituire ogni peso $w$ con $-w$ (cioè $w_0 = \ln\frac{\pi}{1-\pi} - \sum_i \frac{\mu_{i1}^2 - \mu_{i0}^2}{2\sigma_i^2}$ e $w_i = \frac{\mu_{i1} - \mu_{i0}}{\sigma_i^2}$): è solo convenzione, ma ha il vantaggio che ora $w_0 + \sum_i w_i x_i > 0$ significa \textbf{classe 1}, e un peso positivo spinge verso la classe 1 (infatti $w_i > 0 \iff \mu_{i1} > \mu_{i0}$: se la media della feature è più alta nella classe 1, valori alti di $x_i$ indicano la classe 1).
 
@@ -1578,17 +1583,46 @@ La frontiera è $x = 4$ ore. Ogni ora in più moltiplica gli odds per $e^{1} \ap
 
 \subsubsection{Addestramento e discesa del gradiente}
 
-\noindent Qui i pesi non si ottengono da medie e varianze: si \textbf{ottimizzano direttamente sul dataset}.
+\noindent Qui i pesi non si ottengono da medie e varianze: si \textbf{ottimizzano direttamente sul dataset}. Il ragionamento ha tre mosse: (1) misuriamo \emph{quanto bene} un certo $\mathbf{w}$ spiega i dati (verosimiglianza); (2) trasformiamo la misura in una funzione da minimizzare (loss); (3) scendiamo lungo la loss a piccoli passi (gradiente). Prima fissiamo la notazione, perché in questa sezione compaiono molti simboli.
+
+\begin{cbox}{Notazione usata in questa sezione}
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lp{0.72\textwidth}@{}}
+    \toprule
+    \textbf{Simbolo} & \textbf{Significato} \\
+    \midrule
+    $n$ & numero di feature \\
+    $N$ & numero di esempi nel training set \\
+    $\ell \in \{1,\dots,N\}$ & \textbf{indice dell'esempio} (è un apice: $x^\ell$ è l'esempio $\ell$-esimo, \emph{non} una potenza) \\
+    $i \in \{0,\dots,n\}$ & \textbf{indice della feature/del peso} \\
+    $x_i^\ell$ & valore della feature $i$ nell'esempio $\ell$ \\
+    $y^\ell \in \{0,1\}$ & etichetta \emph{vera} dell'esempio $\ell$ (dato nel training set) \\
+    $\mathbf{w} = (w_0,\dots,w_n)$ & pesi del modello: sono le \emph{incognite} da ottimizzare \\
+    $x_0^\ell = 1$ & convenzione: feature fittizia sempre uguale a 1, così il bias $w_0$ rientra nella somma \\
+    $z^\ell = \sum_{i=0}^n w_i x_i^\ell$ & punteggio lineare dell'esempio $\ell$ (con la convenzione sopra, $= w_0 + \sum_{i\ge1} w_i x_i^\ell$) \\
+    $\alpha^\ell = \sigma(z^\ell)$ & probabilità \emph{prevista} dal modello che $Y=1$ per l'esempio $\ell$ \\
+    $L(\mathbf{w})$ & verosimiglianza: probabilità che il modello assegna a \emph{tutte} le etichette del training set \\
+    $\mathrm{LL}(\mathbf{w}) = \ln L(\mathbf{w})$ & log-verosimiglianza (da \emph{massimizzare}) \\
+    $E(\mathbf{w}) = -\mathrm{LL}(\mathbf{w})$ & loss / cross-entropy (da \emph{minimizzare}) \\
+    $\eta > 0$ & learning rate (lunghezza del passo) \\
+    $\nabla_\mathbf{w} E$ & gradiente: vettore delle derivate parziali $\partial E/\partial w_i$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Attenzione: $y^\ell$ è un \emph{dato} (0 o 1), $\alpha^\ell$ è una \emph{previsione} (un numero in $(0,1)$ che dipende da $\mathbf{w}$). La loro differenza $y^\ell - \alpha^\ell$ è l'errore del modello sull'esempio $\ell$.
+\end{cbox}
 
 \paragraph{La funzione di verosimiglianza}
-Dato $\mathcal{D} = \{(\mathbf{x}^{(\ell)}, y^{(\ell)})\}_{\ell=1}^N$ con $y^{(\ell)} \in \{0, 1\}$, poniamo
-$$\alpha^{(\ell)} = P(Y = 1 \mid \mathbf{x}^{(\ell)}, \mathbf{w}) = \sigma\left(w_0 + \sum_{i=1}^n w_i x_i^{(\ell)}\right)$$
-La probabilità che il modello assegna all'etichetta osservata è una Bernoulli:
-$$P(y^{(\ell)} \mid \mathbf{x}^{(\ell)}, \mathbf{w}) = (\alpha^{(\ell)})^{y^{(\ell)}} (1 - \alpha^{(\ell)})^{1 - y^{(\ell)}}$$
-(se $y = 1$ resta $\alpha$, se $y = 0$ resta $1 - \alpha$). Per esempi indipendenti:
-$$L(\mathbf{w}) = \prod_{\ell=1}^N (\alpha^{(\ell)})^{y^{(\ell)}} (1 - \alpha^{(\ell)})^{1 - y^{(\ell)}} \qquad
-\ell(\mathbf{w}) = \ln L(\mathbf{w}) = \sum_{\ell=1}^N \Big[ y^{(\ell)} \ln\alpha^{(\ell)} + (1 - y^{(\ell)}) \ln(1 - \alpha^{(\ell)}) \Big]$$
-Cerchiamo $\mathbf{w}^*$ che massimizza $\ell(\mathbf{w})$. Equivalente: minimizzare la \textbf{cross-entropy} $E(\mathbf{w}) = -\ell(\mathbf{w})$, che è la \textit{loss} della regressione logistica.
+Per un singolo esempio $(\mathbf{x}^\ell, y^\ell)$ il modello dice: $P(Y=1\mid\mathbf{x}^\ell)=\alpha^\ell$ e $P(Y=0\mid\mathbf{x}^\ell)=1-\alpha^\ell$. Possiamo scrivere le due casistiche in un'unica formula (Bernoulli):
+$$P(y^\ell \mid \mathbf{x}^\ell, \mathbf{w}) = (\alpha^\ell)^{y^\ell} (1 - \alpha^\ell)^{1 - y^\ell}$$
+Se $y^\ell=1$ l'esponente di $(1-\alpha^\ell)$ è $0$ e resta $\alpha^\ell$; se $y^\ell=0$ resta $1-\alpha^\ell$. In entrambi i casi è \emph{la probabilità che il modello assegna all'etichetta corretta}: vogliamo che sia alta.
+
+Assumendo gli esempi indipendenti, la probabilità di vedere \emph{tutte} le etichette è il prodotto, e passando al logaritmo (che trasforma il prodotto in somma e non cambia il punto di massimo, perché $\ln$ è crescente):
+$$L(\mathbf{w}) = \prod_{\ell=1}^N (\alpha^\ell)^{y^\ell} (1 - \alpha^\ell)^{1 - y^\ell} \qquad
+\mathrm{LL}(\mathbf{w}) = \sum_{\ell=1}^N \Big[ y^\ell \ln\alpha^\ell + (1 - y^\ell) \ln(1 - \alpha^\ell) \Big]$$
+Cerchiamo $\mathbf{w}^*$ che massimizza $\mathrm{LL}(\mathbf{w})$. Per convenzione l'ottimizzazione si formula come \emph{minimizzazione}: si minimizza la \textbf{cross-entropy} $E(\mathbf{w}) = -\mathrm{LL}(\mathbf{w})$, che è la \textit{loss} della regressione logistica. Massimizzare $\mathrm{LL}$ e minimizzare $E$ sono la stessa cosa.
 
 \paragraph{Intuizione sulla loss}
 Per un singolo esempio la perdita è $-\ln\alpha$ se $y = 1$ e $-\ln(1 - \alpha)$ se $y = 0$: è piccola quando il modello è sicuro e ha ragione, \textbf{enorme} quando è sicuro e ha torto.
@@ -1607,15 +1641,17 @@ Per un singolo esempio la perdita è $-\ln\alpha$ se $y = 1$ e $-\ln(1 - \alpha)
 \end{center}
 
 \paragraph{Assenza di soluzione analitica}
-Ponendo a zero le derivate di $\ell(\mathbf{w})$ si ottiene un sistema di equazioni non lineari \textbf{senza soluzione in forma chiusa} (a differenza della regressione lineare ai minimi quadrati). Serve un metodo numerico iterativo: la \textbf{discesa del gradiente}.
+Ponendo a zero le derivate di $\mathrm{LL}(\mathbf{w})$ si ottiene un sistema di equazioni non lineari \textbf{senza soluzione in forma chiusa} (a differenza della regressione lineare ai minimi quadrati). Serve un metodo numerico iterativo: la \textbf{discesa del gradiente}.
 
 \paragraph{La tecnica del gradiente (Gradient Descent)}
 
-\noindent Immaginiamo lo spazio dei pesi con un asse per ogni $w_i$ e un asse verticale per l'errore $E(\mathbf{w}) = -\ell(\mathbf{w})$: la \textbf{superficie d'errore}, una specie di paesaggio. Vogliamo scendere fino al punto più basso. Il \textbf{gradiente}
+\noindent \textbf{Idea.} Ogni scelta di $\mathbf{w}$ ha un costo $E(\mathbf{w})$. Immaginiamo un paesaggio: sul piano orizzontale ci sono i pesi (un asse per ogni $w_i$), in verticale la loss $E(\mathbf{w})$. Cerchiamo il punto più basso ($\mathbf{w}^*$), ma non possiamo vedere tutto il paesaggio: in ogni punto sappiamo solo \emph{da che parte è la discesa più ripida}, e facciamo un passo in quella direzione.
+
+\noindent \textbf{Il gradiente.} Per ogni peso $w_i$ la derivata parziale $\partial E/\partial w_i$ dice \emph{di quanto cambia $E$ se aumentiamo solo $w_i$ di un pochino} (positiva: $E$ sale, quindi conviene \emph{diminuire} $w_i$; negativa: conviene aumentarlo). Impilando tutte le derivate parziali si ottiene il \textbf{gradiente}
 $$\nabla_\mathbf{w} E = \left[ \frac{\partial E}{\partial w_0}, \frac{\partial E}{\partial w_1}, \dots, \frac{\partial E}{\partial w_n} \right]^T$$
-punta nella direzione di \textbf{massima salita}: si fanno quindi piccoli passi nella direzione \textbf{opposta}:
-$$\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla_\mathbf{w} E \qquad \Big(\text{equivalente a } \mathbf{w} \leftarrow \mathbf{w} + \eta \nabla_\mathbf{w} \ell\Big)$$
-con $\eta > 0$ \textbf{learning rate} (lunghezza del passo).
+che punta nella direzione di \textbf{massima salita} di $E$. Per scendere ci si muove nella direzione \textbf{opposta}: ad ogni iterazione si \emph{aggiorna} il vettore dei pesi
+$$\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla_\mathbf{w} E \qquad \text{cioè, componente per componente:} \qquad w_i \leftarrow w_i - \eta \frac{\partial E}{\partial w_i}$$
+dove la freccia $\leftarrow$ significa «sostituisci il vecchio valore con quello a destra» e $\eta > 0$ è il \textbf{learning rate} (lunghezza del passo). Poiché $E = -\mathrm{LL}$, si ha $\nabla E = -\nabla \mathrm{LL}$: lo stesso aggiornamento si scrive come \emph{salita} sulla log-verosimiglianza, $w_i \leftarrow w_i + \eta\, \partial\mathrm{LL}/\partial w_i$. Si ripete finché i pesi smettono di cambiare in modo apprezzabile (gradiente $\approx 0$).
 
 \begin{center}
 \begin{tikzpicture}[scale=0.95]
@@ -1652,31 +1688,92 @@ Vista in una sola dimensione ($E(w) = w^2$, derivata $2w$): con $w = 4$ e divers
 \paragraph{Convessità}
 La loss della regressione logistica è \textbf{convessa}: una «coppa» senza minimi locali, quindi il gradiente scende verso il minimo globale da qualunque punto iniziale (con $\eta$ adeguato). Non è vero per le reti neurali, che hanno superfici molto più irregolari.
 
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    % convessa
+    \begin{scope}
+        \draw[->] (-2.4,0) -- (2.6,0) node[right, font=\small] {$w$};
+        \draw[->] (-2.4,0) -- (-2.4,3.0) node[above, font=\small] {$E$};
+        \draw[very thick, blue!75!black, domain=-2.1:2.1, samples=50] plot (\x, {0.55*\x*\x+0.2});
+        \filldraw[red!70!black] (0,0.2) circle (2pt) node[above right, font=\scriptsize] {minimo globale};
+        \node[font=\small\bfseries] at (0.2,3.7) {Convessa (reg.\ logistica)};
+    \end{scope}
+    % non convessa
+    \begin{scope}[xshift=7cm]
+        \draw[->] (-2.4,0) -- (2.8,0) node[right, font=\small] {$w$};
+        \draw[->] (-2.4,0) -- (-2.4,3.0) node[above, font=\small] {$E$};
+        \draw[very thick, blue!75!black, domain=-2.2:2.4, samples=80] plot (\x, {1.5+0.9*sin(deg(1.9*\x))+0.12*\x*\x-0.3*\x});
+        \filldraw[orange!80!black] (-0.88,0.93) circle (2pt) node[below, font=\scriptsize] {min.\ locale};
+        \filldraw[red!70!black] (2.35,0.58) circle (2pt) node[below, font=\scriptsize] {min.\ globale};
+        \node[font=\small\bfseries] at (0.2,3.7) {Non convessa (reti profonde)};
+    \end{scope}
+\end{tikzpicture}
+\end{center}
+
+\noindent In una funzione convessa ogni segmento tra due punti del grafico sta sopra il grafico: ne segue che \textbf{ogni minimo locale è globale}. Nella superficie non convessa il gradiente si ferma nel primo avvallamento che incontra (dove $\nabla E = 0$), che può essere un minimo locale o un \emph{punto di sella}, e il risultato dipende dai pesi iniziali. Per questo nelle reti profonde si parte da pesi casuali e si usano varianti più robuste del gradiente (momentum, Adam).
+
 \paragraph{Quanti esempi per ogni passo?}
+Il gradiente di $E$ è una somma sugli $N$ esempi, quindi possiamo scegliere \emph{quanti} esempi usare per stimarlo:
 \begin{itemize}
-    \item \textbf{Batch}: gradiente esatto su tutti gli $N$ esempi; preciso ma lento con molti dati.
-    \item \textbf{Online / stocastico (SGD)}: un esempio alla volta; veloce ma la traiettoria è rumorosa (zig-zag).
-    \item \textbf{Mini-batch}: piccoli gruppi (32--128 esempi); compromesso e standard nella pratica.
+    \item \textbf{Batch}: gradiente esatto su tutti gli $N$ esempi; direzione di massima discesa (perpendicolare alle curve di livello) ma costo $O(N)$ per ogni singolo passo: lento con molti dati.
+    \item \textbf{Online / stocastico (SGD)}: un esempio alla volta; ogni passo costa poco ma il gradiente di un solo esempio è una stima \emph{rumorosa} di quello vero, quindi la traiettoria fa zig-zag attorno alla discesa ideale (in media però va nella direzione giusta).
+    \item \textbf{Mini-batch}: piccoli gruppi casuali (32--128 esempi); compromesso e standard nella pratica: meno rumore dell'online, e sfrutta bene il calcolo vettoriale su CPU/GPU.
 \end{itemize}
+Un'\textbf{epoca} è un passaggio completo sul training set: con $N$ esempi e mini-batch di dimensione $B$ un'epoca contiene $N/B$ aggiornamenti. Se i dati sono ordinati per classe l'SGD si «sbilancia» verso l'ultima classe vista: si rimescola il dataset a ogni epoca.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    \foreach \a/\b in {0/-3, 4.6/-3, 9.2/-3}{
+        \begin{scope}[xshift=\a cm]
+            \draw[thick, cyan!60!black, rotate=35] (0,0) ellipse (1.9cm and 0.9cm);
+            \draw[thick, cyan!60!black, rotate=35] (0,0) ellipse (1.2cm and 0.55cm);
+            \draw[thick, cyan!60!black, rotate=35] (0,0) ellipse (0.5cm and 0.22cm);
+            \filldraw[red!70!black] (0,0) circle (1.5pt);
+        \end{scope}
+    }
+    % batch: linea liscia
+    \draw[->, very thick, blue!75!black] (-1.6,-0.9) -- (-1.1,-0.5) -- (-0.7,-0.25) -- (-0.3,-0.08) -- (-0.05,0);
+    % online: zig-zag
+    \draw[->, very thick, blue!75!black] (3.0,-0.9) -- (3.5,-0.95) -- (3.45,-0.45) -- (3.95,-0.6) -- (3.9,-0.2) -- (4.4,-0.3) -- (4.55,-0.02);
+    % mini-batch
+    \draw[->, very thick, blue!75!black] (7.6,-0.9) -- (8.1,-0.62) -- (8.3,-0.5) -- (8.65,-0.3) -- (8.85,-0.12) -- (9.15,-0.02);
+    \node[font=\small\bfseries] at (0,-2.3) {Batch};
+    \node[font=\small\bfseries] at (4.6,-2.3) {Online (SGD)};
+    \node[font=\small\bfseries] at (9.2,-2.3) {Mini-batch};
+\end{tikzpicture}
+\end{center}
 
 \paragraph{Calcolo esplicito del gradiente (dimostrazione completa)}
 
-\noindent \textbf{Obiettivo.} Calcolare $\dfrac{\partial \ell(\mathbf{w})}{\partial w_i}$ per la log-verosimiglianza $\ell(\mathbf{w}) = \sum_\ell \big[ y^\ell \ln\alpha^\ell + (1 - y^\ell)\ln(1 - \alpha^\ell) \big]$.
+\noindent \textbf{Obiettivo.} Per applicare l'aggiornamento serve $\dfrac{\partial \mathrm{LL}(\mathbf{w})}{\partial w_i}$, con $\mathrm{LL}(\mathbf{w}) = \sum_{\ell=1}^N \big[ y^\ell \ln\alpha^\ell + (1 - y^\ell)\ln(1 - \alpha^\ell) \big]$.
 
-\noindent \textbf{Notazione (come nelle slide).} Per ogni esempio $\ell$: $z^\ell = w_0 + \sum_i w_i x_i^\ell$ e $\alpha^\ell = \sigma(z^\ell) = \dfrac{1}{1 + e^{-z^\ell}}$. Convenzione $x_0^\ell = 1$, così $z^\ell = \sum_{i=0}^n w_i x_i^\ell$. Nei calcoli seguenti si fissa un esempio e si scrive $z, \alpha, y$ omettendo l'apice $\ell$.
+\noindent \textbf{Notazione.} Valgono i simboli della tabella sopra: $z^\ell = \sum_{i=0}^n w_i x_i^\ell$ (con $x_0^\ell=1$) e $\alpha^\ell = \sigma(z^\ell) = \dfrac{1}{1 + e^{-z^\ell}}$. Poiché la derivata di una somma è la somma delle derivate, calcoliamo prima il contributo di \emph{un solo} esempio e poi sommiamo; per alleggerire si fissa l'esempio e si scrivono $z, \alpha, y, x_i$ omettendo l'apice $\ell$ .
 
 \medskip
-\noindent \textbf{Strategia.} $\ell(\mathbf{w})$ dipende da $w_i$ solo attraverso $z$, che a sua volta dipende da $w_i$. Quindi si usa la regola della catena: $\dfrac{\partial}{\partial w_i} = \dfrac{\partial}{\partial z}\cdot\dfrac{\partial z}{\partial w_i}$. Calcoliamo i pezzi uno alla volta.
+\noindent \textbf{Strategia.} $\mathrm{LL}(\mathbf{w})$ dipende da $w_i$ solo attraverso $z$, che a sua volta dipende da $w_i$. Quindi si usa la regola della catena: $\dfrac{\partial}{\partial w_i} = \dfrac{\partial}{\partial z}\cdot\dfrac{\partial z}{\partial w_i}$. Calcoliamo i pezzi uno alla volta.
 
 \noindent \textbf{(a) Derivata della sigmoide.} Scriviamo $\sigma(z) = (1 + e^{-z})^{-1}$ e deriviamo (regola della potenza e della catena):
 $$\frac{\partial \sigma}{\partial z} = -(1 + e^{-z})^{-2}\cdot(-e^{-z}) = \frac{e^{-z}}{(1 + e^{-z})^2} = \underbrace{\frac{1}{1 + e^{-z}}}_{\sigma(z)}\cdot\underbrace{\frac{e^{-z}}{1 + e^{-z}}}_{?}$$
 Il secondo fattore vale $\frac{e^{-z}}{1 + e^{-z}} = \frac{(1 + e^{-z}) - 1}{1 + e^{-z}} = 1 - \frac{1}{1 + e^{-z}} = 1 - \sigma(z)$. Dunque
 $$\boxed{\frac{\partial \sigma}{\partial z} = \sigma(z)\big(1 - \sigma(z)\big)}$$
-(slide: «the derivative of the logistic function is very flat!»: vale al massimo $\frac14$ per $z = 0$ e tende a 0 per $|z|$ grande.)
+(La derivata della sigmoide è molto «piatta»: vale al massimo $\frac14$ per $z = 0$ e tende a 0 per $|z|$ grande.)
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=9cm, height=5cm, xlabel={$z$}, xmin=-8, xmax=8, ymin=0, ymax=1.05,
+    legend pos=north west, legend style={font=\small}, grid=both, grid style={gray!20}]
+    \addplot[very thick, blue!75!black, domain=-8:8, samples=80] {1/(1+exp(-x))};
+    \addplot[very thick, orange!85!black, domain=-8:8, samples=80] {exp(-x)/(1+exp(-x))^2};
+    \legend{$\sigma(z)$, $\sigma'(z)=\sigma(1-\sigma)$}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent \textbf{Saturazione.} Quando $|z|$ è grande la sigmoide è «satura» e $\sigma' \approx 0$. Sembrerebbe un problema (gradiente che svanisce), ma nella regressione logistica il fattore $\sigma'$ \emph{si cancella} con il $\frac{1}{\alpha}$ del logaritmo (passo (b)): il gradiente finale $x_i(y-\alpha)$ resta grande quando il modello è sicuro \emph{e sbaglia} ($y-\alpha\approx\pm1$). Con una loss quadratica $(y-\alpha)^2$ il $\sigma'$ non si cancellerebbe e l'apprendimento si bloccherebbe proprio sugli errori più gravi. Nelle reti profonde con molte sigmoidi il problema invece si presenta (\emph{vanishing gradient}) ed è uno dei motivi per cui si preferiscono altre attivazioni, come la ReLU.
 
 \noindent \textbf{(b) Derivata di $\ln\alpha$.} Con $\alpha = \sigma(z)$ e il risultato (a):
 $$\frac{\partial \ln\alpha}{\partial z} = \frac{1}{\alpha}\cdot\frac{\partial \alpha}{\partial z} = \frac{1}{\alpha}\cdot\alpha(1 - \alpha) = 1 - \alpha$$
-(equivalente alla forma delle slide $\frac{e^{-z}}{1 + e^{-z}} = 1 - \alpha$).
+(equivalente a $\frac{e^{-z}}{1 + e^{-z}} = 1 - \alpha$).
 
 \noindent \textbf{(c) Derivata di $\ln(1 - \alpha)$.} Prima semplifichiamo l'argomento: $1 - \alpha = 1 - \frac{1}{1 + e^{-z}} = \frac{e^{-z}}{1 + e^{-z}}$. Allora
 $$\ln(1 - \alpha) = \ln e^{-z} - \ln(1 + e^{-z}) = -z + \ln\frac{1}{1 + e^{-z}} = -z + \ln\alpha$$
@@ -1687,18 +1784,23 @@ $$\frac{\partial \ln(1 - \alpha)}{\partial z} = -1 + (1 - \alpha) = -\alpha$$
 \noindent \textbf{(d) Derivata di $z$ rispetto al peso.} $z = w_0 x_0 + w_1 x_1 + \dots + w_n x_n$ è lineare nei pesi; nella derivata rispetto a $w_i$ sopravvive solo il termine $w_i x_i$:
 $$\frac{\partial z}{\partial w_i} = x_i$$
 
-\noindent \textbf{(e) Un solo esempio.} Sia $\ell_\ell = y\ln\alpha + (1 - y)\ln(1 - \alpha)$ il contributo dell'esempio $\ell$. Per la regola della catena e (b), (c), (d):
+\noindent \textbf{(e) Un solo esempio.} Sia $\mathrm{LL}_\ell = y\ln\alpha + (1 - y)\ln(1 - \alpha)$ il contributo dell'esempio $\ell$ (così $\mathrm{LL} = \sum_\ell \mathrm{LL}_\ell$). Per la regola della catena e (b), (c), (d):
 \begin{align*}
-\frac{\partial \ell_\ell}{\partial w_i} &= \frac{\partial \ell_\ell}{\partial z}\cdot\frac{\partial z}{\partial w_i} = \Big[ y(1 - \alpha) + (1 - y)(-\alpha) \Big] x_i \\
+\frac{\partial \mathrm{LL}_\ell}{\partial w_i} &= \frac{\partial \mathrm{LL}_\ell}{\partial z}\cdot\frac{\partial z}{\partial w_i} = \Big[ y(1 - \alpha) + (1 - y)(-\alpha) \Big] x_i \\
 &= \big[ y - y\alpha - \alpha + y\alpha \big] x_i = (y - \alpha)\, x_i
 \end{align*}
 (i due termini $\pm y\alpha$ si cancellano).
 
 \noindent \textbf{(f) Somma su tutti gli esempi.} La derivata di una somma è la somma delle derivate:
-\begin{cbox}{Gradiente della log-verosimiglianza (formula delle slide)}
-$$\frac{\partial \ell(\mathbf{w})}{\partial w_i} = \sum_{\ell=1}^N x_i^\ell\,\big( y^\ell - \alpha^\ell \big) \qquad \Big(\text{in forma vettoriale: } \nabla_\mathbf{w}\ell = X^T(\mathbf{y} - \boldsymbol{\alpha})\Big)$$
+\begin{cbox}{Gradiente della log-verosimiglianza}
+$$\frac{\partial \mathrm{LL}(\mathbf{w})}{\partial w_i} = \sum_{\ell=1}^N x_i^\ell\,\big( y^\ell - \alpha^\ell \big) \qquad \Big(\text{in forma vettoriale: } \nabla_\mathbf{w}\mathrm{LL} = X^T(\mathbf{y} - \boldsymbol{\alpha})\Big)$$
+dove $X$ è la matrice $N\times(n+1)$ con $X_{\ell i}=x_i^\ell$, $\mathbf{y}=(y^1,\dots,y^N)^T$, $\boldsymbol{\alpha}=(\alpha^1,\dots,\alpha^N)^T$.
 \end{cbox}
 \hfill $\blacksquare$
+
+\noindent \textbf{Regola di aggiornamento completa.} Sostituendo nel passo di discesa (ricordando $E=-\mathrm{LL}$):
+$$w_i \leftarrow w_i + \eta \sum_{\ell=1}^N x_i^\ell\,\big( y^\ell - \alpha^\ell \big) \qquad \text{per ogni } i=0,\dots,n$$
+dove ad ogni iterazione i $\alpha^\ell$ vanno \emph{ricalcolati} con i pesi correnti.
 
 \noindent \textbf{Come leggerlo}: ogni esempio contribuisce con (\textbf{valore della feature}) $\times$ (\textbf{errore} = etichetta vera $-$ probabilità prevista). Se il modello è già corretto ($y \approx \alpha$) il contributo è nullo; altrimenti il peso viene spinto nella direzione che riduce l'errore. Si noti la semplicità: la derivata della sigmoide $\alpha(1-\alpha)$ si semplifica completamente con quella del logaritmo $\frac{1}{\alpha}$, ed è per questo che la cross-entropy è la loss «giusta» per la sigmoide.
 
@@ -1707,6 +1809,13 @@ $$\frac{\partial \ell(\mathbf{w})}{\partial w_i} = \sum_{\ell=1}^N x_i^\ell\,\bi
 \paragraph{Algoritmo}
 Si parte da pesi nulli (o casuali) e si ripete fino a convergenza (es.\ finché l'accuracy sul test è soddisfacente):
 $$w_i \leftarrow w_i + \eta \sum_{\ell=1}^N x_i^{(\ell)} \big(y^{(\ell)} - P(Y = 1 \mid \mathbf{x}^{(\ell)}, \mathbf{w})\big)$$
+In forma vettoriale ($X$ matrice dei dati con colonna di 1 per il bias) l'intero ciclo è:
+\begin{enumerate}[1.]
+    \item inizializza $\mathbf{w} \leftarrow \mathbf{0}$;
+    \item \textbf{ripeti}: calcola $\boldsymbol{\alpha} = \sigma(X\mathbf{w})$; calcola il gradiente $\mathbf{g} = X^T(\mathbf{y}-\boldsymbol{\alpha})$; aggiorna $\mathbf{w} \leftarrow \mathbf{w} + \eta\,\mathbf{g}$;
+    \item \textbf{fino a} che $\|\eta\,\mathbf{g}\| < \epsilon$ (incremento trascurabile), oppure l'accuracy su un insieme di validazione smette di migliorare, oppure si raggiunge un numero massimo di epoche.
+\end{enumerate}
+Fermarsi quando l'errore su validazione risale (\emph{early stopping}) è anche una forma implicita di regolarizzazione.
 \begin{itemize}
     \item modello corretto ($y \approx \alpha$): errore $\approx 0$, il peso resta fermo;
     \item positivo sottostimato ($y = 1$, $\alpha \approx 0$): il peso cresce se $x_i > 0$, aumentando la probabilità;
@@ -1751,6 +1860,10 @@ L_1\ (\text{Lasso}):&\quad w_i \leftarrow w_i - \eta\lambda\,\mathrm{sign}(w_i) 
     \item $\lambda$ regola il compromesso: troppo alto $\to$ underfitting, troppo basso $\to$ overfitting.
 \end{itemize}
 
+\noindent \textbf{Perché $L_1$ azzera i pesi e $L_2$ no?} Il termine di penalità sposta ogni peso verso 0 a \emph{ogni} passo: con $L_2$ di una quantità \emph{proporzionale} a $w_i$ ($\eta\lambda w_i$), che si fa sempre più piccola avvicinandosi a 0, quindi $w_i$ si avvicina a 0 senza mai raggiungerlo davvero; con $L_1$ di una quantità \emph{costante} ($\eta\lambda$), che continua a spingere con la stessa forza fino ad arrivare a 0. Esempio con $w=0.5$, $\eta\lambda=0.1$ e senza altri termini: $L_2$ dà $0.5\to0.45\to0.405\dots$, $L_1$ dà $0.5\to0.4\to0.3\to0.2\to0.1\to0$.
+
+\noindent Un'altra lettura: $L_2$ equivale a una prior \emph{gaussiana} centrata in 0 sui pesi, $L_1$ a una prior di \emph{Laplace}; la regolarizzazione è la stima MAP al posto della MLE. Nella pratica $\lambda$ si sceglie per validazione incrociata.
+
 \paragraph{Modelli generativi vs discriminativi}
 
 \noindent Entrambi stimano $f: X \to Y$ o $P(Y \mid X)$, con filosofie opposte:
@@ -1791,6 +1904,11 @@ L_1\ (\text{Lasso}):&\quad w_i \leftarrow w_i - \eta\lambda\,\mathrm{sign}(w_i) 
 \end{itemize}
 
 \begin{center}
+\includegraphics[width=0.55\textwidth]{img/mnist-esempi.png}\\
+{\small Esempi di MNIST: scrittura molto varia; i riquadri evidenziano cifre ambigue o scritte in modo anomalo.}
+\end{center}
+
+\begin{center}
 \begin{tikzpicture}[scale=0.85]
     \draw[step=0.25cm, gray!40, very thin] (0,0) grid (2.8,2.8);
     \draw[thick, black] (0,0) rectangle (2.8,2.8);
@@ -1813,6 +1931,10 @@ Con due classi si ritrova la sigmoide. Esempio con tre classi e punteggi $\mathb
 $$e^{z} = (7.39,\ 2.72,\ 1.11), \quad \text{somma} = 11.21 \quad \Longrightarrow \quad P = (0.66,\ 0.24,\ 0.10)$$
 Si predice la classe col punteggio più alto, come in Naïve Bayes. La softmax amplifica le differenze (l'esponenziale premia il punteggio massimo) ma conserva l'ordine.
 
+\noindent \textbf{Addestramento.} Con etichetta \emph{one-hot} $y_k^\ell\in\{0,1\}$ (1 solo per la classe vera) la loss è la cross-entropy generalizzata $E = -\sum_\ell\sum_k y_k^\ell \ln P(Y{=}k\mid\mathbf{x}^\ell)$, e il gradiente ha la stessa forma del caso binario:
+$$\frac{\partial \mathrm{LL}}{\partial w_{ki}} = \sum_\ell x_i^\ell\big(y_k^\ell - P(Y{=}k\mid\mathbf{x}^\ell)\big) \qquad \Longrightarrow \qquad \nabla_{W}\mathrm{LL} = X^T(Y - P)$$
+(feature $\times$ errore, per ogni classe). Con $K=2$ si ritrova la regressione logistica binaria.
+
 \noindent Con penalità $L_1$ molti pesi vanno esattamente a zero (sparsità). Risultati su MNIST:
 \begin{itemize}
     \item \textbf{sparsità}: 25.18\% dei pesi azzerati;
@@ -1824,12 +1946,18 @@ Un modello lineare semplice, veloce e compatto supera il 92\% su 10 classi.
 \paragraph{I pesi come immagini}
 Il vettore $\mathbf{w}_k$ ha 784 componenti, una per pixel: può essere rimodellato in una griglia $28 \times 28$ e \textbf{visualizzato come immagine}. È una «maschera» della cifra $k$:
 
+\begin{center}
+\includegraphics[width=0.85\textwidth]{img/mnist-pesi.png}\\
+{\small Pesi $\mathbf{w}_k$ delle 10 classi rimodellati a $28\times28$. Colori opposti = segno opposto.}
+\end{center}
+
 \begin{cbox}{Come leggere le immagini dei pesi}
 \begin{itemize}
-    \item \textbf{Pesi positivi}: pixel che, se accesi, \textit{aumentano} la probabilità della classe; tracciano la sagoma tipica della cifra (l'anello per lo «0», il tratto verticale per l'«1»).
+    \item \textbf{Pesi positivi}: pixel che, se accesi, \textit{aumentano} la probabilità della classe.
     \item \textbf{Pesi negativi}: pixel che, se accesi, \textit{riducono} la probabilità della classe (tratti incompatibili con quella cifra).
-    \item \textbf{Pesi quasi nulli}: pixel irrilevanti (es.\ i bordi dell'immagine, sempre vuoti).
+    \item \textbf{Pesi quasi nulli} (bianco): pixel irrilevanti, es.\ i bordi dell'immagine, sempre vuoti.
 \end{itemize}
+Le mappe non sono «sagome pulite» delle cifre: sono rumorose perché il modello non cerca di descrivere la cifra, ma solo di \emph{discriminare} una classe dalle altre (approccio discriminativo), quindi pesa i pixel che distinguono, non quelli comuni a tutte.
 \end{cbox}
 
 \noindent Classificare = confrontare l'immagine con ogni maschera (prodotto scalare) e scegliere quella con cui c'è maggior \textbf{correlazione}: è la stessa idea del prodotto scalare tra documento e profilo di classe vista in Naïve Bayes.
@@ -1838,11 +1966,447 @@ Il vettore $\mathbf{w}_k$ ha 784 componenti, una per pixel: può essere rimodell
 \begin{itemize}
     \item \textbf{Modello}: $P(Y = 1 \mid \mathbf{x}) = \sigma(w_0 + \mathbf{w}\cdot\mathbf{x})$; log-odds lineari, frontiera = iperpiano.
     \item \textbf{Training}: massimizzare la log-verosimiglianza (minimizzare la cross-entropy) per discesa del gradiente.
-    \item \textbf{Gradiente}: $\partial\ell/\partial w_i = \sum_\ell x_i^{(\ell)}(y^{(\ell)} - \alpha^{(\ell)})$: feature $\times$ errore.
+    \item \textbf{Gradiente}: $\partial\mathrm{LL}/\partial w_i = \sum_\ell x_i^{(\ell)}(y^{(\ell)} - \alpha^{(\ell)})$: feature $\times$ errore.
     \item \textbf{Loss convessa}: nessun minimo locale; il learning rate $\eta$ va scelto con cura.
     \item \textbf{Regolarizzazione} $L_1/L_2$ contro l'overfitting e pesi esplosivi.
     \item \textbf{Multiclasse}: softmax, un vettore di pesi per classe.
     \item \textbf{Discriminativo}: modella $P(Y \mid X)$ senza assunzioni su $X$, a differenza di Naïve Bayes.
+\end{itemize}
+\end{cbox}
+
+\newpage
+
+\section{Reti neurali e deep learning}
+
+\subsection{Deep Learning in breve}
+
+\subsubsection{Che cos'è il Deep Learning e dove si applica}
+
+\noindent Il tema si introduce con una serie di domande e risposte, ciascuna accompagnata dal ragionamento che sta dietro.
+
+\paragraph{Che cos'è il Deep Learning?}
+È un \textbf{ramo del Machine Learning}. Come visto nell'introduzione, l'intelligenza artificiale contiene il Machine Learning (apprendere dai dati invece di programmare regole a mano), e questo contiene a sua volta il Deep Learning.
+
+\begin{center}
+\begin{tikzpicture}
+    \draw[thick, blue!60!black, fill=blue!5] (0,0) ellipse (4.2cm and 2.2cm);
+    \draw[thick, orange!80!black, fill=orange!8] (0.3,-0.25) ellipse (3.1cm and 1.5cm);
+    \draw[thick, red!70!black, fill=red!8] (0.7,-0.5) ellipse (1.9cm and 0.8cm);
+    \node[font=\small\bfseries, blue!60!black] at (0,1.65) {Intelligenza Artificiale};
+    \node[font=\small\bfseries, orange!80!black] at (0.3,0.7) {Machine Learning};
+    \node[font=\small\bfseries, red!70!black] at (0.7,-0.5) {Deep Learning};
+\end{tikzpicture}
+\end{center}
+
+\noindent Un modello di Deep Learning è dunque un modello di ML: ha parametri $\mathbf{w}$ che si stimano dai dati minimizzando una loss con la discesa del gradiente, esattamente come la regressione logistica del capitolo precedente. Cambia la \emph{forma} del modello (molto più ricca), non il paradigma.
+
+\paragraph{A che tipo di problemi si applica?}
+A \textbf{tutti i problemi adatti al Machine Learning}: classificazione, regressione, \dots\ In generale, a ogni problema in cui esiste un fenomeno che si può descrivere con esempi $(\mathbf{x}, y)$ ma non con regole scritte a mano. Non è quindi una tecnica per un tipo di compito speciale: è un modo diverso di costruire il modello $f: X \to Y$.
+
+\paragraph{Esistono problemi in cui eccelle in modo particolare?}
+Sì: i problemi con una \textbf{miriade di feature}, tipicamente dati non strutturati come immagini, audio/voce e testo, oppure sistemi di raccomandazione.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.3cm}p{3.4cm}p{4.2cm}p{4.3cm}}
+    \toprule
+    \textbf{Dominio} & \textbf{Dato di ingresso} & \textbf{Feature} & \textbf{Ordine di grandezza} \\
+    \midrule
+    Immagini & matrice di pixel & un valore per pixel (e canale) & $28\times28=784$ (MNIST), $>10^5$ per foto \\
+    Voce & forma d'onda campionata & ampiezza a ogni istante & decine di migliaia al secondo \\
+    Testo & sequenza di parole & presenza/identità di ogni parola & vocabolario da $10^4$ a $10^5$ \\
+    Raccomandazione & storico utente-prodotto & interazione con ogni prodotto & milioni di prodotti \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché proprio qui?} Nei capitoli precedenti le feature erano poche e scelte a mano (es.\ \emph{Outlook}, \emph{Wind} negli alberi di decisione). Con migliaia di feature grezze (i singoli pixel) è impossibile progettarle a mano: servono modelli capaci di \emph{costruire da soli} feature utili, combinando quelle elementari in livelli successivi (bordi $\to$ forme $\to$ oggetti). È proprio ciò che fanno le reti profonde. Il caso MNIST visto con la regressione logistica ($784$ feature, $92.6\%$ di accuratezza con un modello \emph{lineare}) mostra il punto di partenza; le reti neurali superano quel risultato proprio perché non sono limitate a combinazioni lineari dei pixel.
+
+\subsubsection{La tecnica di base: le reti neurali}
+
+\paragraph{Qual è la tecnica di base del DL?}
+Le \textbf{reti neurali} (Neural Networks).
+
+\paragraph{Perché «Deep» (profondo)?}
+Perché sfrutta reti neurali \textbf{profonde}, composte da \textbf{molti strati (layer)} di neuroni. La profondità è il numero di strati che il dato attraversa dall'ingresso all'uscita.
+
+\begin{center}
+\begin{tikzpicture}[x=1.9cm, y=0.8cm, every node/.style={circle, draw, minimum size=0.55cm, inner sep=0pt}]
+    \foreach \i in {1,...,4} \node[fill=blue!15] (i\i) at (0,-\i+2.5) {};
+    \foreach \i in {1,...,5} \node[fill=orange!20] (a\i) at (1,-\i+3) {};
+    \foreach \i in {1,...,5} \node[fill=orange!20] (b\i) at (2,-\i+3) {};
+    \foreach \i in {1,...,3} \node[fill=orange!20] (c\i) at (3,-\i+2) {};
+    \foreach \i in {1,2} \node[fill=red!20] (o\i) at (4,-\i+1.5) {};
+    \foreach \i in {1,...,4} \foreach \j in {1,...,5} \draw[gray!60] (i\i) -- (a\j);
+    \foreach \i in {1,...,5} \foreach \j in {1,...,5} \draw[gray!60] (a\i) -- (b\j);
+    \foreach \i in {1,...,5} \foreach \j in {1,...,3} \draw[gray!60] (b\i) -- (c\j);
+    \foreach \i in {1,...,3} \foreach \j in {1,2} \draw[gray!60] (c\i) -- (o\j);
+    \node[draw=none, font=\small, blue!60!black] at (0,-2.4) {ingresso};
+    \node[draw=none, font=\small, orange!80!black] at (2,-3.4) {strati nascosti (hidden)};
+    \node[draw=none, font=\small, red!70!black] at (4,-1.4) {uscita};
+\end{tikzpicture}
+\end{center}
+
+\noindent Il singolo neurone è definito nella sezione successiva; anticipiamo l'idea: il neurone calcola $\sigma(w_0 + \mathbf{w}\cdot\mathbf{x})$, cioè \emph{è esattamente una regressione logistica}. Una rete neurale è una composizione di tante regressioni logistiche, in cui le uscite di uno strato sono gli ingressi del successivo. Con un solo strato si ottiene un modello lineare; la profondità permette di rappresentare frontiere di decisione non lineari (come lo XOR, che un singolo iperpiano non separa).
+
+\noindent \textbf{Seconda risposta: le feature profonde.} Il DL è «profondo» anche perché sfrutta \textbf{feature profonde} (\emph{deep features}), cioè feature \emph{estratte da altre feature}. Ogni strato prende in ingresso le uscite dello strato precedente e le ricombina: nel primo strato di una rete per immagini compaiono rilevatori di bordi, nei successivi forme, poi parti di oggetti, infine oggetti. Le feature non sono più progettate a mano, ma \emph{apprese} insieme al classificatore.
+
+\subsection{Le reti neurali}
+
+\subsubsection{Neurone artificiale, funzioni di attivazione e confronto col cervello}
+
+\paragraph{Rete neurale}
+Una rete neurale è una \textbf{rete di neuroni (artificiali)}. Ogni neurone riceve più ingressi e produce una sola uscita, che può a sua volta essere ingresso di molti altri neuroni. In figura: uno strato di ingresso (\emph{input layer}), due strati nascosti (\emph{hidden layer}) e uno di uscita (\emph{output layer}); gli strati nascosti sono quelli che non vediamo né in ingresso né in uscita.
+
+\paragraph{Il neurone artificiale}
+Dati gli ingressi $x_1,\dots,x_n$, il neurone calcola
+$$\text{uscita} = \varphi\Big(\underbrace{\sum_{i=1}^n w_i x_i + b}_{\text{somma pesata } z}\Big) = \varphi(\mathbf{w}\cdot\mathbf{x} + b)$$
+dove $w_i$ sono i \textbf{pesi} (uno per ingresso), $b$ è il \textbf{bias} (equivale a un ingresso fisso $+1$ con peso $b$, come lo $w_0$ visto in precedenza) e $\varphi$ è la \textbf{funzione di attivazione}.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={font=\small}]
+    \node[draw, circle, minimum size=0.8cm] (x1) at (0,1.6) {$x_1$};
+    \node[draw, circle, minimum size=0.8cm] (x2) at (0,0.4) {$x_2$};
+    \node at (0,-0.5) {$\vdots$};
+    \node[draw, circle, minimum size=0.8cm] (xn) at (0,-1.4) {$x_n$};
+    \node[draw, circle, minimum size=0.8cm] (b) at (3,-1.5) {$+1$};
+    \node[draw, circle, minimum size=1cm] (s) at (3,0) {$\Sigma$};
+    \node[draw, minimum width=1.4cm, minimum height=0.8cm] (f) at (5.4,0) {$\varphi$};
+    \draw[->] (x1) -- (s) node[midway, above, sloped] {$w_1$};
+    \draw[->] (x2) -- (s) node[midway, above, sloped] {$w_2$};
+    \draw[->] (xn) -- (s) node[midway, below, sloped] {$w_n$};
+    \draw[->] (b) -- (s) node[midway, right] {$b$};
+    \draw[->] (s) -- (f) node[midway, above] {$z$};
+    \draw[->] (f) -- (7.2,0) node[right] {uscita};
+    \node[blue!60!black] at (0,2.4) {ingressi};
+    \node[green!40!black] at (5.4,0.9) {attivazione};
+\end{tikzpicture}
+\end{center}
+
+\noindent \textbf{Punto chiave.} Se $\varphi=\sigma$ (sigmoide), il neurone è esattamente la regressione logistica $\sigma(\mathbf{w}\cdot\mathbf{x}+b)$: stessi parametri, stessa formula. La novità delle reti sta nel \emph{collegare molti neuroni}, non nel neurone. In generale la parte $\mathbf{w}\cdot\mathbf{x}+b$ è un modello lineare (come una regressione lineare); il neurone coincide con la regressione lineare se $\varphi(z)=z$ e con quella logistica se $\varphi=\sigma$.
+
+\begin{ibox}{Esempio: un neurone che calcola l'AND}
+Pesi $w_1=w_2=1$, bias $b=-1.5$, attivazione a soglia (\texttt{if x>0 then 1 else 0}).
+\begin{center}
+\small
+\begin{tabular}{cccc}
+    \toprule
+    $x_1$ & $x_2$ & $z = x_1+x_2-1.5$ & uscita \\
+    \midrule
+    0 & 0 & $-1.5$ & 0 \\
+    0 & 1 & $-0.5$ & 0 \\
+    1 & 0 & $-0.5$ & 0 \\
+    1 & 1 & $+0.5$ & 1 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Con $b=-0.5$ si ottiene invece l'OR. Un singolo neurone non può però calcolare lo XOR (non è linearmente separabile): servono due strati, ad esempio $h_1=\mathrm{OR}(x_1,x_2)$, $h_2=\mathrm{AND}(x_1,x_2)$ e uscita $=1$ se $h_1-h_2-0.5>0$, cioè «OR ma non AND». È il motivo per cui servono gli strati nascosti.
+\end{ibox}
+
+\paragraph{Funzioni di attivazione}
+La funzione di attivazione è la responsabile dello «scatto» a soglia del neurone. Quattro scelte comuni:
+
+\begin{center}
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=4 by 1, horizontal sep=1.2cm}, width=4.2cm, height=3.6cm,
+    xmin=-4, xmax=4, ymin=-1.3, ymax=1.3, grid=both, grid style={gray!20}, tick label style={font=\tiny}, title style={font=\scriptsize}]
+    \nextgroupplot[title={soglia}]
+    \addplot[very thick, red!70!black, domain=-4:0, samples=2] {0};
+    \addplot[very thick, red!70!black, domain=0:4, samples=2] {1};
+    \nextgroupplot[title={logistica $\sigma$}]
+    \addplot[very thick, red!70!black, domain=-4:4, samples=60] {1/(1+exp(-x))};
+    \nextgroupplot[title={tanh}]
+    \addplot[very thick, red!70!black, domain=-4:4, samples=60] {(exp(x)-exp(-x))/(exp(x)+exp(-x))};
+    \nextgroupplot[title={ReLU}]
+    \addplot[very thick, red!70!black, domain=-4:0, samples=2] {0};
+    \addplot[very thick, red!70!black, domain=0:1.3, samples=2] {x};
+\end{groupplot}
+\end{tikzpicture}
+\end{center}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{p{2.6cm}p{3.6cm}p{2.4cm}p{5.6cm}}
+    \toprule
+    \textbf{Nome} & \textbf{Formula} & \textbf{Uscita} & \textbf{Note} \\
+    \midrule
+    Soglia & \texttt{if x>0 then 1 else 0} & $\{0,1\}$ & il neurone originale (percettrone); derivata nulla ovunque, quindi \emph{non} addestrabile col gradiente \\
+    Logistica & $\dfrac{1}{1+e^{-x}}$ & $(0,1)$ & soglia «morbida» e derivabile, interpretabile come probabilità; satura per $|x|$ grande \\
+    Tangente iperbolica & $\dfrac{e^x-e^{-x}}{e^x+e^{-x}}$ & $(-1,1)$ & sigmoide centrata in 0 (è una logistica scalata: $\tanh x = 2\sigma(2x)-1$) \\
+    ReLU & $\max(0,x)$ & $[0,\infty)$ & molto economica; non satura per $x>0$, per cui attenua il problema del vanishing gradient \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{A cosa serve la funzione di attivazione}
+Serve a introdurre una \textbf{non linearità}, e questo è ciò che permette alla rete di avere un \textbf{potere espressivo} elevato. Vediamo perché con un ragionamento in tre passi.
+
+\medskip
+\noindent \textbf{Passo 1: senza attivazione, più strati valgono quanto uno.} Prendiamo due strati \emph{senza} funzione di attivazione (o, che è lo stesso, con $\varphi(z)=z$). Il primo calcola $\mathbf{h} = W_1\mathbf{x}$ e il secondo $\mathbf{y} = W_2\mathbf{h}$. Mettendo insieme i due calcoli:
+$$\mathbf{y} = W_2(W_1\mathbf{x}) = \underbrace{(W_2W_1)}_{W}\,\mathbf{x} = W\mathbf{x}$$
+Il prodotto di due matrici è ancora una matrice, quindi i due strati si \emph{riducono} a uno solo. Lo stesso vale per tre, dieci o cento strati. Una rete profonda ma lineare è in realtà un modello lineare, esattamente come la regressione logistica o il Naïve Bayes visti prima: sa tracciare solo \textbf{rette} (iperpiani) per separare le classi.
+
+\begin{ibox}{Esempio numerico: due strati lineari si fondono}
+Con un solo ingresso $x$: primo strato $h = 2x$, secondo strato $y = 3h$. Allora $y = 3\cdot(2x) = 6x$: è identico a un unico strato con peso $6$. Aggiungere il secondo strato non ha dato nessuna capacità in più.
+\end{ibox}
+
+\noindent \textbf{Passo 2: l'attivazione «rompe» la fusione.} Se tra i due strati inseriamo una funzione non lineare $\varphi$, il calcolo diventa $\mathbf{y} = W_2\,\varphi(W_1\mathbf{x})$. Ora $\varphi$ sta in mezzo e le due matrici \emph{non} si possono più moltiplicare tra loro: ogni strato aggiunge davvero qualcosa. Per questo l'attivazione si applica in ogni strato nascosto, subito dopo la somma pesata.
+
+\begin{ibox}{Esempio: lo stesso calcolo con una ReLU in mezzo}
+Riprendiamo $h = 2x$ e $y = 3h$, ma applichiamo ReLU a $h$: $y = 3\cdot\max(0,\,2x)$.
+\begin{center}
+\small
+\begin{tabular}{ccc}
+    \toprule
+    $x$ & $h=\max(0,2x)$ & $y=3h$ \\
+    \midrule
+    $-2$ & $0$ & $0$ \\
+    $-1$ & $0$ & $0$ \\
+    $0$ & $0$ & $0$ \\
+    $1$ & $2$ & $6$ \\
+    $2$ & $4$ & $12$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Il grafico non è più una retta: per $x<0$ resta fermo a $0$, per $x>0$ sale come $6x$. Ha un «gomito», e una retta non potrà mai averlo.
+\end{ibox}
+
+\noindent \textbf{Passo 3: più non linearità, più forme possibili.} Ogni neurone con attivazione contribuisce con un piccolo «gomito» o una piccola curva. Sommando tanti gomiti si può approssimare una curva qualunque, un po' come ricostruire una linea curva usando tanti piccoli segmenti dritti. In figura, tre neuroni ReLU sommati danno una funzione a tratti con più pendenze diverse:
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=10cm, height=5cm, xlabel={$x$}, ylabel={$y$}, xmin=-3, xmax=3, ymin=-0.5, ymax=3.2,
+    grid=both, grid style={gray!20}, legend style={font=\small}, legend pos=outer north east]
+    \addplot[thick, gray, dashed, domain=-3:3, samples=2] {max(0,x+1)};
+    \addplot[thick, gray, dotted, domain=-3:3, samples=2] {max(0,-x+1)};
+    \addplot[thick, gray, dashdotted, domain=-3:3, samples=2] {max(0,x-1.5)};
+    \addplot[very thick, blue!75!black, domain=-3:3, samples=200] {max(0,x+1) + max(0,-x+1) + max(0,x-1.5) - 1.2};
+    \legend{ReLU 1, ReLU 2, ReLU 3, somma}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent Le tre curve grigie sono i singoli neuroni (ognuno è una ReLU spostata), la curva blu è la loro somma pesata: una forma complicata, con tre cambi di pendenza, che nessuna retta può riprodurre. Con \emph{molti} neuroni la curva può seguire quasi qualsiasi andamento. Questa idea ha un nome preciso: il \textbf{teorema di approssimazione universale} dice che una rete con uno strato nascosto sufficientemente largo e un'attivazione non lineare può approssimare (con la precisione che si vuole) qualunque funzione continua. Ha però un limite pratico: dice che la rete \emph{esiste}, non come trovare i pesi giusti, né quanti neuroni servano; con più strati si ottengono di solito gli stessi risultati con molti meno neuroni.
+
+\begin{cbox}{In sintesi}
+\begin{itemize}
+    \item \textbf{Senza} attivazione: $W_2(W_1\mathbf{x})=W\mathbf{x}$, la rete è un modello lineare, per quanti strati abbia.
+    \item \textbf{Con} attivazione non lineare: ogni strato aggiunge capacità, e la rete può imparare frontiere di decisione curve (come per lo XOR).
+    \item Più strati e più neuroni $\Rightarrow$ più \textbf{potere espressivo}, ma anche più parametri da stimare e più rischio di overfitting.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Come scegliere l'attivazione}
+\begin{itemize}
+    \item \textbf{Strati nascosti}: di solito la \textbf{ReLU}, perché è semplice, veloce e non satura per valori positivi (il gradiente non si «spegne»).
+    \item \textbf{Uscita per classificazione binaria}: la \textbf{sigmoide}, perché dà un numero in $(0,1)$ interpretabile come probabilità.
+    \item \textbf{Uscita per più classi}: la \textbf{softmax} (come nella regressione logistica multinomiale).
+    \item \textbf{Uscita per regressione} (valore qualunque): nessuna attivazione, cioè $\varphi(z)=z$.
+    \item La \textbf{soglia} non si usa nell'addestramento perché la sua derivata è zero quasi ovunque e il gradiente non avrebbe nulla da seguire.
+\end{itemize}
+
+\noindent Il passaggio dalla soglia alla sigmoide non è un dettaglio: l'addestramento a gradiente richiede funzioni \emph{derivabili}, e la sigmoide è la versione liscia della soglia.
+
+\paragraph{Il neurone biologico}
+Il neurone corticale ha un \textbf{albero dendritico} che raccoglie gli ingressi dagli altri neuroni, i quali vengono sommati nel corpo cellulare; quando si supera una \textbf{soglia di attivazione} il cono d'emergenza dell'assone (\emph{Axon Hillock}) genera un impulso che viaggia lungo l'assone verso altri neuroni.
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Neurone biologico} & & \textbf{Neurone artificiale} \\
+    \midrule
+    dendriti (ingressi) & $\leftrightarrow$ & ingressi $x_i$ \\
+    forza della sinapsi & $\leftrightarrow$ & pesi $w_i$ \\
+    somma nel corpo cellulare & $\leftrightarrow$ & $\Sigma$ \\
+    soglia dell'Axon Hillock & $\leftrightarrow$ & funzione di attivazione $\varphi$ (e bias) \\
+    assone (uscita) & $\leftrightarrow$ & uscita verso altri neuroni \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Qualche numero sul cervello umano}
+\begin{itemize}
+    \item neuroni: circa $2\cdot10^{10}$;
+    \item tempo di commutazione di un neurone: circa $0.001$ s (\textbf{lento}!);
+    \item sinapsi per neurone: circa $10^{4\text{--}5}$;
+    \item tempo per riconoscere un'immagine: circa $0.1$ s.
+\end{itemize}
+\noindent Se un neurone impiega $1$ ms, in $0.1$ s ci stanno al più $0.1/0.001 = 100$ passi in sequenza: il cervello è quindi \textbf{poco profondo} (meno di 100 strati) e a \textbf{parallelismo altissimo}. Anche una rete artificiale è un calcolo a pochi strati ma molto «larghi», in cui tutti i neuroni di uno strato lavorano insieme (per questo le GPU sono così adatte).
+
+\paragraph{Perché studiare il calcolo neurale}
+\begin{itemize}
+    \item \textbf{capire il cervello}, simulandone il funzionamento;
+    \item esplorare un \textbf{paradigma di calcolo diverso}, lontanissimo dai linguaggi di programmazione tradizionali (non si scrivono istruzioni, si addestrano pesi);
+    \item \textbf{risolvere problemi pratici} difficili con le tecniche algoritmiche, \emph{anche se il cervello funziona in modo diverso}: le reti artificiali sono ispirate al cervello, non ne sono una copia fedele.
+\end{itemize}
+
+\subsection{Topologie di rete e tipi di strato}
+
+\subsubsection{Feed-forward, strati densi e strati convolutivi}
+
+\paragraph{Reti feed-forward e ricorrenti}
+Se il grafo della rete è \textbf{aciclico} si parla di rete \textbf{feed-forward}: l'informazione va solo dall'ingresso all'uscita. Se ci sono \textbf{cicli} la rete è \textbf{ricorrente} (l'uscita di un neurone può tornare a influenzare se stesso nel tempo; utili per le sequenze, ma non trattate nel corso).
+
+\paragraph{Strati (layer)}
+In una rete feed-forward i neuroni sono organizzati in \textbf{strati}. Con \textbf{più di uno strato nascosto} la rete è \textbf{profonda} (\emph{deep}); con uno solo (o nessuno) è \textbf{superficiale} (\emph{shallow}). Con $L$ strati la rete calcola una composizione di funzioni
+$$f(\mathbf{x}) = f_L\big(\cdots f_2\big(f_1(\mathbf{x})\big)\cdots\big)$$
+dove ogni $f_k$ è lo strato $k$-esimo.
+
+\paragraph{Lo strato come componente: tensori in ingresso e in uscita}
+Oltre al neurone, il mattone principale di una rete è lo \textbf{strato} (\emph{layer}), che contiene i neuroni. Uno strato prende in ingresso e restituisce in uscita dei \textbf{tensori}, cioè array \emph{multidimensionali}. Davanti a ogni strato bisogna quindi chiedersi: \emph{che tensore ricevo in ingresso e che tensore mi serve in uscita?}
+
+È come incastrare i pezzi del Lego: l'uscita di uno strato deve avere la forma (\emph{shape}) che l'ingresso dello strato successivo si aspetta, altrimenti i componenti non combaciano.
+
+Perché multidimensionali? Un'immagine 2D ha tipicamente anche la dimensione dei \textbf{canali} (ad es.\ RGB, 3 canali), che può variare da uno strato all'altro: l'ingresso è già un tensore 3D (altezza $\times$ larghezza $\times$ canali). Con un lotto (\emph{batch}) di immagini si aggiunge una quarta dimensione.
+
+\paragraph{Strato denso (fully connected)}
+Ogni neurone dello strato $k-1$ è collegato a \textbf{ciascun} neurone dello strato $k$. Per un singolo neurone con $n$ ingressi
+$$I^n \cdot W^n + B^1 = O^1$$
+e vettorizzando si calcolano $m$ uscite in parallelo con un'unica moltiplicazione matriciale:
+$$I^n \cdot W^{n\times m} + B^m = O^m$$
+(poi si applica l'attivazione elemento per elemento). Le dimensioni: $I$ vettore riga $1\times n$, $W$ matrice $n\times m$ (colonna $j$ = pesi del neurone $j$), $B$ vettore $1\times m$.
+
+\begin{ibox}{Esempio: quanti parametri?}
+Immagine MNIST appiattita ($n=784$) in uno strato denso con $m=128$ neuroni: $W$ ha $784\cdot128 = 100\,352$ pesi più $128$ bias, cioè \textbf{100\,480 parametri} in un solo strato.
+\end{ibox}
+
+\noindent Gli strati densi lavorano su ingressi \textbf{piatti} (non strutturati): l'\textbf{ordine} degli elementi in ingresso è \textbf{irrilevante}. Se si permutano allo stesso modo i pixel di tutte le immagini, la rete (riaddestrata) funziona uguale: lo strato non sa nulla di «pixel vicini».
+
+\paragraph{Strato convolutivo}
+Ogni neurone dello strato $k-1$ è collegato a un sottoinsieme \emph{fisso e piccolo} di neuroni dello strato $k$ tramite un \textbf{kernel} parametrico che viene fatto scorrere (\emph{convoluto}) su tutto lo strato precedente:
+\begin{enumerate}[1.]
+    \item si sposta il kernel $K$ su una porzione $M$ dell'ingresso di uguale dimensione;
+    \item si calcola il prodotto scalare $M\cdot K$ (ed eventualmente si somma un bias);
+    \item si sposta il kernel e si ripete.
+\end{enumerate}
+La dimensione dell'uscita dipende solo dal \emph{numero di volte} in cui si applica il kernel. L'ingresso è \textbf{strutturato} (le posizioni contano) e la struttura si riflette nell'uscita.
+
+\begin{ibox}{Esempio 1D}
+Ingresso $\mathbf{x}=(1,2,3,4,5)$, kernel $K=(1,0,-1)$ (lunghezza 3, passo 1):
+\begin{align*}
+(1,2,3)\cdot(1,0,-1) &= 1-3 = -2\\
+(2,3,4)\cdot(1,0,-1) &= 2-4 = -2\\
+(3,4,5)\cdot(1,0,-1) &= 3-5 = -2
+\end{align*}
+Uscita $(-2,-2,-2)$, lunga $5-3+1=3$. Questo kernel misura la \emph{variazione} locale (un rilevatore di bordi): su un ingresso costante darebbe $0$, su una rampa dà un valore costante.
+\end{ibox}
+
+\begin{center}
+\begin{tikzpicture}[x=0.8cm,y=0.8cm, every node/.style={font=\small}]
+    \foreach \i/\v in {0/1,1/2,2/3,3/4,4/5}{\node[draw, minimum size=0.7cm] at (\i,1.6) {\v};}
+    \fill[orange!25, opacity=0.8] (-0.4,1.2) rectangle (2.4,2.0);
+    \draw[thick, orange!80!black] (-0.4,1.2) rectangle (2.4,2.0);
+    \foreach \i/\v in {0/-2,1/-2,2/-2}{\node[draw, minimum size=0.7cm] at (\i+1,0) {\v};}
+    \draw[->, thick, orange!80!black] (1,1.1) -- (1,0.5);
+    \node[left] at (-0.6,1.6) {ingresso};
+    \node[left] at (0.4,0) {uscita};
+    \node[orange!80!black, right] at (4.6,1.6) {kernel $(1,0,-1)$};
+\end{tikzpicture}
+\end{center}
+
+\noindent \textbf{Perché è potente.} Lo stesso kernel (stessi pesi) è riutilizzato in ogni posizione: un rilevatore di bordi serve ovunque nell'immagine. Il numero di parametri non dipende dalla dimensione dell'ingresso: un kernel $3\times3$ ha solo $9$ pesi (+1 bias), contro i $784\cdot784\approx6\cdot10^5$ di uno strato denso che mantenga $784$ uscite da un'immagine $28\times28$. Meno parametri, meno overfitting e struttura spaziale sfruttata.
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+    \toprule
+    & \textbf{Denso} & \textbf{Convolutivo} \\
+    \midrule
+    Collegamenti & ogni neurone con tutti i precedenti & solo con un piccolo vicinato (kernel) \\
+    Pesi & uno per ogni coppia & condivisi in tutte le posizioni \\
+    Ingresso & piatto, ordine irrilevante & strutturato (immagini, serie temporali) \\
+    Uscita & dimensione scelta liberamente & dipende da quante volte si applica il kernel \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tuffo nel Deep Learning}
+
+\subsubsection{Obiettivi, strumenti e storia}
+
+\paragraph{Un primo esempio}
+Un primo esempio pratico di rete addestrata (demo dal vivo a lezione).
+
+\paragraph{Capire il DL}
+Gli obiettivi del corso su questo tema:
+\begin{itemize}
+    \item capire i \textbf{diversi strati} e il loro scopo;
+    \item capire come gli strati si organizzano in \textbf{architetture} rilevanti;
+    \item capire le diverse \textbf{applicazioni} del DL e le soluzioni specifiche;
+    \item capire i principali \textbf{problemi e costi} (dati, calcolo, overfitting).
+\end{itemize}
+
+\paragraph{Framework}
+\textbf{TensorFlow/Keras} (Google Brain), \textbf{PyTorch} (Facebook), \textbf{MXNet} (Apache). Fanno la differenziazione automatica (calcolano da soli i gradienti, quindi non si derivano a mano come fatto per la regressione logistica) e girano su GPU. Nel corso si usa principalmente \textbf{Keras}.
+
+\paragraph{Cenni storici: l'eredità}
+\begin{center}
+\small
+\begin{tabular}{rl}
+    \toprule
+    \textbf{Anno} & \textbf{Idea} \\
+    \midrule
+    1958 & percettrone \\
+    1975 & backpropagation \\
+    1980 & strati convolutivi \\
+    1992 & max-pooling \\
+    1997 & LSTM \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Progresso \emph{estremamente lento}: le idee di base c'erano da decenni, ma mancavano dati e potenza di calcolo.
+
+\paragraph{La rivoluzione del Deep Learning}
+Dal 2011 in poi le pietre miliari si susseguono rapidamente:
+\begin{center}
+\small
+\begin{tabular}{rl@{\hspace{1.2cm}}rl}
+    \toprule
+    2011 & \textbf{Google Brain foundation} & 2017 & \textbf{PyTorch release} \\
+    2012 & ReLU e Dropout & 2017 & Mask-RCNN \\
+    2012 & ImageNet Competition & 2017 & PPO \\
+    2013 & DQN & 2018 & Transformers \\
+    2014 & Inception v1 & 2018 & BERT \\
+    2015 & \textbf{TensorFlow release} & 2018 & GPT \\
+    2015 & Keras release & 2018 & Soft Actor Critic \\
+    2015 & Batch normalization & 2020 & OpenAI Jukebox \\
+    2015 & YOLO v1 & 2020 & Vision Transformer \\
+    2015 & \textbf{OpenAI foundation} & 2021 & \textbf{MXNet release} \\
+    2016 & Residual connections & 2022 & DALL-E \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Le cause della svolta: \textbf{più dati} (es.\ ImageNet), \textbf{più calcolo} (GPU), \textbf{migliori trucchi} (ReLU, Dropout, batch normalization, connessioni residuali) e \textbf{framework} aperti che hanno abbassato la barriera d'ingresso.
+
+\paragraph{Il panorama a inizio secolo e nell'era del DL}
+All'inizio del 2000 i campi dell'IA erano separati ma con intersezioni: rappresentazione della conoscenza, sistemi esperti e programmazione a vincoli (AI «classica»); SVM, modelli bayesiani e clustering (ML); NLP, visione, OCR, robotica. Le reti neurali (NN) erano un'area piccola, all'incrocio fra questi campi.
+
+\begin{center}
+\begin{tikzpicture}[every node/.style={font=\small}]
+    \draw (-2.8,0.6) ellipse (2cm and 1.1cm) node[above=0.7cm] {AI};
+    \draw (1.2,1.2) ellipse (2cm and 1cm) node[above=0.7cm] {ML};
+    \draw (0,2.3) ellipse (0.8cm and 1.3cm) node[above=1cm] {NLP};
+    \draw (1.6,-0.5) ellipse (2cm and 0.8cm) node[right=1cm] {Vision};
+    \draw (-0.3,-1.4) ellipse (1.8cm and 0.55cm) node {Robotics};
+    \draw (-0.3,-0.2) circle (0.5cm) node {NN};
+    \draw (3.4,0.4) circle (0.45cm) node {OCR};
+    \draw[very thick, green!50!black] (0.4,-0.3) ellipse (3.3cm and 1.8cm);
+    \node[green!40!black, font=\small\bfseries] at (4.6,2.0) {Deep Learning};
+    \draw[green!50!black, very thick] (4.2,1.8) -- (3.4,1.2);
+\end{tikzpicture}
+\end{center}
+
+\noindent Con la rivoluzione del DL il disegno cambia: le reti neurali profonde invadono quasi tutti gli altri campi (visione, NLP, robotica, OCR e parte del ML), diventando la tecnica dominante. Resta fuori buona parte della AI simbolica classica.
+
+\begin{cbox}{Riepilogo del capitolo}
+\begin{itemize}
+    \item \textbf{Neurone} $=\varphi(\mathbf{w}\cdot\mathbf{x}+b)$; con $\varphi=\sigma$ è una regressione logistica. Attivazioni: soglia, sigmoide, tanh, ReLU.
+    \item Ispirazione biologica (dendriti $\to$ somma $\to$ soglia $\to$ assone) ma il cervello è poco profondo e molto parallelo.
+    \item \textbf{Feed-forward} (aciclica) vs \textbf{ricorrente} (con cicli); \textbf{deep} se ha più di uno strato nascosto.
+    \item \textbf{Strato denso}: tutti con tutti, $I\cdot W+B=O$, ingresso piatto. \textbf{Strato convolutivo}: kernel condiviso, ingresso strutturato, pochi parametri.
+    \item Idee note dal 1958, ma la \textbf{rivoluzione} parte nel 2011--2012 grazie a dati, GPU, nuovi trucchi e framework (Keras, PyTorch, \dots).
 \end{itemize}
 \end{cbox}
 
