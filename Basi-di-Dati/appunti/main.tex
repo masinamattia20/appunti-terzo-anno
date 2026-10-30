@@ -5022,5 +5022,182 @@ COMMIT WORK;
     \item Solo nel momento in cui il comando \texttt{COMMIT WORK} viene registrato, entrambe le variazioni di saldo diventano permanenti e visibili alle altre connessioni concorrenti.
 \end{itemize}
 
+\subsection{Concorrenza, affidabilità e indici}
+
+\subsubsection{Controllo di Concorrenza: Anomalie, Schedule e Serializzabilità}
+
+\noindent Il DBMS esegue molte transazioni in parallelo, alternandone le operazioni, per sfruttare le risorse. Senza controllo, l'esecuzione concorrente produce \textbf{anomalie}. Notazione: $r_i(x)$ e $w_i(x)$ sono lettura e scrittura di $x$ da parte di $T_i$; $c_i$ e $a_i$ sono commit e abort.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{4.2cm}p{7cm}}
+    \toprule
+    \textbf{Anomalia} & \textbf{Schedule tipico} & \textbf{Cosa succede} \\
+    \midrule
+    Perdita di aggiornamento & $r_1(x)\,r_2(x)\,w_1(x)\,w_2(x)$ & entrambe leggono $x$, la scrittura di $T_2$ cancella quella di $T_1$ (conflitto WW) \\
+    Lettura sporca & $w_1(x)\,r_2(x)\,a_1$ & $T_2$ legge un valore di $T_1$ che poi fa abort: un valore mai esistito (WR) \\
+    Letture inconsistenti & $r_1(x)\,w_2(x)\,c_2\,r_1(x)$ & $T_1$ legge due volte $x$ e ottiene valori diversi (RW) \\
+    Aggiornamento fantasma & --- & $T_1$ legge dati che violano un vincolo perché $T_2$ ne ha aggiornati solo una parte (es.\ somma $x+y+z$ letta a metà di un trasferimento) \\
+    Inserimento fantasma & --- & $T_1$ calcola un aggregato (es.\ media degli stipendi), $T_2$ \emph{inserisce} una tupla che soddisfa la condizione, e una seconda lettura di $T_1$ dà un altro risultato \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Uno \textbf{schedule} è una sequenza di operazioni di più transazioni che rispetta l'ordine interno di ciascuna. È \textbf{seriale} se le transazioni sono eseguite una dopo l'altra, senza alternanza: uno schedule seriale non ha anomalie. Lo scheduler deve accettare solo schedule \textbf{serializzabili}, cioè equivalenti a uno seriale.
+\begin{itemize}
+    \item Due operazioni sono in \textbf{conflitto} se appartengono a transazioni diverse, operano sullo stesso oggetto e almeno una è una scrittura (coppie RW, WR, WW).
+    \item Uno schedule è \textbf{conflict-serializzabile} (CSR) se è conflict-equivalente (stesse coppie in conflitto, nello stesso ordine) a uno seriale.
+    \item \textbf{Grafo dei conflitti}: un nodo per transazione e un arco $T_i \to T_j$ se un'operazione di $T_i$ precede un'operazione di $T_j$ in conflitto con essa. Lo schedule è CSR \textbf{se e solo se il grafo è aciclico}.
+\end{itemize}
+
+\begin{cbox}{Esempio: schedule non serializzabile}
+In $w_1(A)\,w_2(A)\,w_2(B)\,w_1(B)$ ci sono l'arco $T_1 \to T_2$ (su $A$) e l'arco $T_2 \to T_1$ (su $B$): il grafo ha un ciclo, quindi lo schedule \emph{non} è serializzabile.
+\end{cbox}
+
+\subsubsection{Lock, Locking a Due Fasi e Livelli di Isolamento}
+
+\noindent Nei DBMS reali la serializzabilità si ottiene con i \textbf{lock}: prima di leggere una risorsa si chiede un \textbf{lock condiviso} ($S$), prima di scriverla un \textbf{lock esclusivo} ($X$). Più lock $S$ possono coesistere, mentre $X$ è incompatibile con tutto; se il lock non è concesso la transazione attende.
+\begin{itemize}
+    \item \textbf{2PL (locking a due fasi)}: dopo aver rilasciato un lock una transazione non può acquisirne altri (fase crescente, poi calante). Garantisce la serializzabilità.
+    \item \textbf{2PL stretto}: i lock si rilasciano solo dopo commit o abort. Evita anche le letture sporche e gli abort a cascata; è la variante usata in pratica.
+\end{itemize}
+Lettura sporca risolta con 2PL stretto: $X_1(x)\,w_1(x)\,S_2(x)\,[\text{attesa}]\,a_1\,[\text{rilascio}]\,r_2(x)\,c_2$: $T_2$ legge $x$ solo dopo la fine di $T_1$.
+
+\paragraph{Deadlock}
+Con i lock due transazioni possono attendersi a vicenda. Si risolve con \textit{timeout}, con la rilevazione dei cicli nel \textit{grafo delle attese} o con la prevenzione; una transazione viene abortita e rieseguita.
+
+\paragraph{Livelli di isolamento in SQL}
+SQL permette di rinunciare a parte dell'isolamento per guadagnare prestazioni (\texttt{SET TRANSACTION ISOLATION LEVEL \dots}). In tutti i livelli i lock in scrittura sono tenuti fino al commit; cambia la gestione delle letture:
+\begin{center}
+\small
+\begin{tabular}{llp{6.2cm}}
+    \toprule
+    \textbf{Livello} & \textbf{Letture} & \textbf{Anomalie ancora possibili} \\
+    \midrule
+    \texttt{READ UNCOMMITTED} & nessun lock in lettura & lettura sporca, letture inconsistenti, fantasmi \\
+    \texttt{READ COMMITTED} & lock in lettura brevi & letture inconsistenti, aggiornamento e inserimento fantasma \\
+    \texttt{REPEATABLE READ} & lock in lettura lunghi (sulle tuple) & inserimento fantasma \\
+    \texttt{SERIALIZABLE} & lock lunghi + lock di predicato & nessuna \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Per scegliere il livello minimo: lettura sporca $\Rightarrow$ \texttt{READ COMMITTED}; letture non ripetibili o perdita di aggiornamento ($r_1 r_2 w_1 w_2$) $\Rightarrow$ \texttt{REPEATABLE READ}; inserimento fantasma $\Rightarrow$ \texttt{SERIALIZABLE}.
+
+\subsubsection{Affidabilità: Log, Ripresa dai Guasti e ARIES}
+
+\noindent Il gestore dell'affidabilità garantisce atomicità e durabilità tramite il \textbf{log}, un file sequenziale su memoria stabile:
+\begin{itemize}
+    \item record di transazione: $B(T)$ begin, $C(T)$ commit, $A(T)$ abort; $U(T,O,BS,AS)$ update con \textit{before state} e \textit{after state}; $I(T,O,AS)$ insert; $D(T,O,BS)$ delete;
+    \item record di sistema: \textbf{checkpoint} $CK(T_1,\dots,T_n)$ con le transazioni attive in quel momento, e \textbf{dump}, copia completa del DB.
+\end{itemize}
+
+\begin{cbox}{Regole fondamentali del log}
+\begin{itemize}
+    \item \textbf{WAL (write-ahead log)}: la parte \textit{before state} va scritta su disco \emph{prima} del dato corrispondente, così si può sempre fare UNDO.
+    \item \textbf{Commit-precedenza}: la parte \textit{after state} va scritta \emph{prima} del commit, così si può sempre fare REDO.
+\end{itemize}
+Il commit avviene quando $C(T)$ è scritto in modo sincrono nel log: da lì la transazione è definitiva.
+\end{cbox}
+
+\begin{itemize}
+    \item \textbf{Ripresa a caldo} (guasto di sistema, memoria centrale persa): si risale il log fino all'ultimo checkpoint, si costruiscono l'insieme UNDO (transazioni attive senza commit) e l'insieme REDO (transazioni con commit), si disfano le prime all'indietro e si rifanno le seconde in avanti.
+    \item \textbf{Ripresa a freddo} (guasto di dispositivo): si ripristina l'ultimo dump, si rifanno in avanti le azioni del log fino al guasto, poi si esegue una ripresa a caldo.
+\end{itemize}
+
+\paragraph{ARIES}
+È l'algoritmo di recovery più diffuso. Ogni record di log ha un \textit{LSN} e ogni pagina conserva il \textit{pageLSN} dell'ultimo aggiornamento che contiene. Al riavvio esegue tre fasi:
+\begin{enumerate}
+    \item \textbf{Analisi}: dal checkpoint determina le transazioni attive al crash (le \textit{loser}) e le pagine forse non scritte su disco.
+    \item \textbf{REDO} (``ripetere la storia''): riesegue in avanti le operazioni del log il cui effetto non è già sulla pagina (LSN $>$ pageLSN), comprese quelle delle loser.
+    \item \textbf{UNDO}: annulla all'indietro le operazioni delle loser, scrivendo nel log un \textbf{CLR} (\textit{compensation log record}) per ogni operazione annullata, così un nuovo crash non le annulla due volte.
+\end{enumerate}
+
+\begin{cbox}{Esempio ARIES}
+$A = 10$; una transazione senza commit esegue 4 volte $A := A+2$. Il log va su disco dopo l'operazione 1 e dopo la 3, $A$ va su disco dopo la 1, poi crash dopo la 4.
+\begin{itemize}
+    \item Log su disco: \textbf{1, 2, 3} (la 4 era solo in memoria); $A$ su disco vale \textbf{12}.
+    \item REDO: si rieseguono \textbf{2, 3} (la 1 è già su disco): $A = 16$.
+    \item UNDO (nessun commit): \textbf{3', 2', 1'}. Log finale: 1 2 3 3' 2' 1'; $A$ torna a \textbf{10}.
+\end{itemize}
+\end{cbox}
+
+\subsubsection{Strutture Fisiche di Accesso e Indici}
+
+\noindent Gli \textbf{indici} migliorano i tempi di risposta delle interrogazioni e sono definiti a livello \textit{fisico}, non logico: \texttt{CREATE INDEX idx\_Surname ON Officer (Surname)}.
+
+\noindent I dati stanno in memoria secondaria, organizzata in \textbf{blocchi}: il costo di un'operazione si misura in \emph{numero di blocchi letti o scritti}. Un file di $B$ blocchi può essere:
+\begin{itemize}
+    \item \textbf{Heap (seriale)}: record in fondo, senza ordine; inserimento economico, ricerca per scansione.
+    \item \textbf{Sequenziale ordinato}: record ordinati su un campo; ricerca binaria e scansioni ordinate, ma inserimenti costosi (spazio libero o overflow).
+    \item \textbf{Hash}: la posizione si calcola con una funzione hash sulla chiave; accesso diretto per uguaglianza.
+\end{itemize}
+
+\paragraph{Classificazione degli indici}
+Un indice associa ai valori della \textit{chiave di ricerca} i puntatori ai record:
+\begin{itemize}
+    \item \textbf{Primario / secondario}: primario se definito sul campo che ordina il file; secondario altrimenti (sempre denso).
+    \item \textbf{Denso / sparso}: denso con un'entrata per ogni valore della chiave; sparso con meno entrate (tipicamente una per blocco), possibile solo su file ordinato.
+    \item \textbf{Clustered / unclustered}: clustered se l'ordine fisico dei record segue quello dell'indice; efficiente per gli intervalli.
+    \item \textbf{Monolivello / multilivello}: un indice sull'indice produce una struttura ad albero.
+\end{itemize}
+
+\paragraph{Alberi B e B+}
+Gli indici dinamici dei DBMS sono alberi bilanciati con \textit{fan-out} elevato, quindi bassi (3--4 livelli bastano per milioni di record). Ogni nodo ha fino a $F-1$ chiavi ordinate e $F$ puntatori, ed è pieno almeno a metà (radice esclusa); tutte le foglie sono allo stesso livello.
+\begin{itemize}
+    \item \textbf{B-tree}: i nodi intermedi puntano anche ai dati.
+    \item \textbf{B+tree}: \emph{tutte} le chiavi stanno nelle foglie, collegate in lista; i nodi intermedi hanno solo chiavi separatrici. La lista rende efficienti le ricerche su intervalli.
+\end{itemize}
+\begin{itemize}
+    \item \textbf{Ricerca}: dalla radice si sceglie il puntatore tra le due chiavi che racchiudono il valore ($k_i \le v < k_{i+1}$) fino alla foglia; costo $\approx \log_F N$ accessi.
+    \item \textbf{Inserimento}: se la foglia è piena si fa uno \textbf{split}; la prima chiave della nuova foglia è \emph{copiata} nel padre (che può dividersi a sua volta; lo split di un nodo intermedio \emph{sposta} la chiave mediana in alto). Se si divide la radice l'albero cresce di un livello.
+    \item \textbf{Cancellazione}: se la foglia va in \textbf{underflow} (meno di metà piena) si fa una \textbf{ridistribuzione} con un fratello che ha chiavi in eccesso (aggiornando la separatrice nel padre), altrimenti un \textbf{merge} con il fratello, eliminando la separatrice dal padre.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    bn/.style={draw=blue!60!black,fill=cyan!12,font=\small,minimum height=6mm,inner sep=3pt},
+    >=Stealth]
+  \node[bn] (r) at (0,0) {$9 \mid 13$};
+  \node[bn] (a) at (-2.2,-1.3) {$2 \mid 5$};
+  \node[bn] (b) at (0,-1.3) {$9 \mid 10 \mid 11$};
+  \node[bn] (c) at (2.2,-1.3) {$13 \mid 15$};
+  \foreach \x in {a,b,c} \draw[->] (r) -- (\x);
+  \draw[->,densely dashed] (a) -- (b); \draw[->,densely dashed] (b) -- (c);
+  \node at (3.9,-0.65) {$\xrightarrow{\ +12\ }$};
+  \begin{scope}[xshift=8cm]
+    \node[bn] (r2) at (0,0) {$9 \mid 11 \mid 13$};
+    \node[bn] (a2) at (-2.7,-1.3) {$2 \mid 5$};
+    \node[bn] (b2) at (-0.9,-1.3) {$9 \mid 10$};
+    \node[bn] (d2) at (0.9,-1.3) {$11 \mid 12$};
+    \node[bn] (c2) at (2.7,-1.3) {$13 \mid 15$};
+    \foreach \x in {a2,b2,d2,c2} \draw[->] (r2) -- (\x);
+    \draw[->,densely dashed] (a2) -- (b2); \draw[->,densely dashed] (b2) -- (d2);
+    \draw[->,densely dashed] (d2) -- (c2);
+  \end{scope}
+\end{tikzpicture}\\
+{\small Inserimento di 12 (nodi da 3 chiavi): la foglia $[9,10,11]$ si divide in $[9,10]$ e $[11,12]$ e 11 sale nella radice.}
+\end{center}
+
+\paragraph{Strutture hash}
+Una funzione $h(k)$ dà il numero di un \textit{bucket}. Ottime per ricerche per \emph{uguaglianza} (circa un accesso), inutili per gli intervalli. Con l'\textbf{hashing statico} il numero di bucket è fisso e i record in più vanno in catene di overflow; con l'\textbf{hashing dinamico/lineare} i bucket crescono col file, dividendosi a turno tramite un puntatore di split.
+
+\paragraph{Costo delle operazioni}
+Blocchi letti in media, file di $B$ blocchi:
+\begin{center}
+\small
+\begin{tabular}{p{5.6cm}p{3.2cm}p{5.6cm}}
+    \toprule
+    \textbf{Operazione} & \textbf{Organizzazione} & \textbf{Costo} \\
+    \midrule
+    Uguaglianza sulla chiave & heap & $0.5\,B$ \\
+    Ricerca su campo non chiave & heap & $B$ (scansione completa) \\
+    Uguaglianza sul campo di ordinamento & file ordinato & $\log_2 B$ \\
+    Uguaglianza su un altro campo & file ordinato & $0.5\,B$, come un heap \\
+    Uguaglianza & hash (senza overflow) & $\approx 1$ \\
+    Uguaglianza o intervallo & B+tree & altezza $+$ blocchi letti \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
 
 \end{document}

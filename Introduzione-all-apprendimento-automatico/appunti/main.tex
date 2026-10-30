@@ -553,7 +553,7 @@ Ad esempio $I_G(A = \text{True}) = 1 - (21/26)^2 - (5/26)^2 \approx 0.310$. L'im
 \begin{itemize}
     \item \textbf{Interpretabili}: ogni predizione si spiega con la sequenza di test lungo il cammino.
     \item Gestiscono feature numeriche e categoriche senza bisogno di normalizzarle.
-    \item Predizione velocissima: costo proporzionale alla profondità.
+    \item Predizione velocissima: costo proporzionale alla profondità, e l'altezza dell'albero è al più il numero di feature.
 \end{itemize}
 
 \paragraph{Difetti}
@@ -2226,6 +2226,12 @@ Il neurone corticale ha un \textbf{albero dendritico} che raccoglie gli ingressi
 \end{tabular}
 \end{center}
 
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{img/neurone_corticale.png}\hspace{1em}
+    \includegraphics[width=0.38\textwidth]{img/confronto_neurone.png}\\
+    {\small Neurone corticale e il suo confronto con il neurone artificiale (slide credit: A.\ L.\ Nelson).}
+\end{center}
+
 \paragraph{Qualche numero sul cervello umano}
 \begin{itemize}
     \item neuroni: circa $2\cdot10^{10}$;
@@ -2282,6 +2288,11 @@ Ogni neurone dello strato $k-1$ è collegato a un sottoinsieme \emph{fisso e pic
     \item si sposta il kernel e si ripete.
 \end{enumerate}
 La dimensione dell'uscita dipende solo dal \emph{numero di volte} in cui si applica il kernel. L'ingresso è \textbf{strutturato} (le posizioni contano) e la struttura si riflette nell'uscita.
+
+\begin{center}
+    \includegraphics[width=0.5\textwidth]{img/convoluzione.png}\\
+    {\small Convoluzione 2D: il kernel (qui un filtro \emph{emboss}) centrato sul pixel sorgente produce il nuovo valore come somma pesata del pixel e dei suoi vicini.}
+\end{center}
 
 \begin{ibox}{Esempio 1D}
 Ingresso $\mathbf{x}=(1,2,3,4,5)$, kernel $K=(1,0,-1)$ (lunghezza 3, passo 1):

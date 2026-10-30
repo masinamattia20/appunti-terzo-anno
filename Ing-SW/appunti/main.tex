@@ -1,5 +1,6 @@
 \documentclass[12pt]{extarticle}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{titlesec}
@@ -35,8 +36,38 @@
 \newcommand{\sysbox}[5]{\draw[semithick] (#1,#2) rectangle (#3,#4); \node[font=\small\bfseries\sffamily, anchor=north] at ({(#1+#3)/2},#4-0.1) {#5};}
 \tikzset{
   incl/.style={-{Stealth[scale=1]}, dashed, semithick, font=\scriptsize\sffamily},
-  assoc/.style={semithick}
+  assoc/.style={semithick},
+  agg/.style={-{Diamond[open, length=9pt, width=6pt]}, semithick},
+  comp/.style={-{Diamond[length=9pt, width=6pt]}, semithick},
+  nav/.style={-{Straight Barb[length=7pt, width=7pt]}, semithick},
+  c1/.style={cls, rectangle split parts=1},
+  c2/.style={cls, rectangle split parts=2},
+  c3/.style={cls, rectangle split parts=3},
+  m1/.style={pos=0.1, above, font=\tiny\sffamily, inner sep=1pt},
+  m2/.style={pos=0.9, above, font=\tiny\sffamily, inner sep=1pt},
+  nm/.style={midway, above, sloped, font=\tiny\sffamily, inner sep=1pt}
 }
+\tikzset{
+  stt/.style={draw, rounded corners=5pt, semithick, font=\scriptsize\sffamily, fill=green!6, minimum height=0.7cm, align=center, inner sep=4pt},
+  stt2/.style={stt, rectangle split, rectangle split parts=2, text width=1.9cm},
+  tr/.style={-{Stealth[scale=0.9]}, semithick, font=\tiny\sffamily},
+  ini/.style={circle, fill=black, inner sep=2.5pt},
+  fin/.style={circle, draw, semithick, minimum size=0.45cm, inner sep=0, path picture={\fill (path picture bounding box.center) circle (0.12cm);}},
+  ac/.style={draw, rounded corners=8pt, semithick, font=\scriptsize\sffamily, fill=green!6, align=center, minimum height=0.7cm, minimum width=2.4cm},
+  dc/.style={draw, diamond, aspect=2, semithick, inner sep=1pt, fill=yellow!10, minimum width=0.5cm},
+  fbar/.style={draw, fill=black, minimum height=0.1cm, inner sep=0},
+  cmp/.style={draw, semithick, minimum width=2.8cm, minimum height=0.9cm, font=\scriptsize\sffamily, fill=white, path picture={\draw[fill=white] ([shift={(-0.4,-0.15)}]path picture bounding box.north east) rectangle ++(0.25,-0.14); \draw[fill=white] ([shift={(-0.45,-0.19)}]path picture bounding box.north east) rectangle ++(0.1,-0.03); \draw[fill=white] ([shift={(-0.45,-0.27)}]path picture bounding box.north east) rectangle ++(0.1,-0.03);}}
+}
+\newcommand{\lh}[4]{\node[draw, fill=gray!10, font=\scriptsize\sffamily, inner sep=3pt, minimum height=0.6cm] (#1) at (#2,0) {#4}; \draw[dashed, semithick] (#1.south) -- (#2,#3);}
+\newcommand{\lha}[4]{\actor{#1}{#2}{0}{#4} \draw[dashed, semithick] (#2,-1.3) -- (#2,#3);}
+\newcommand{\sm}[4]{\draw[-{Stealth[scale=0.9]}, semithick] (#1,#3) -- node[above, font=\tiny\sffamily, inner sep=1pt] {#4} (#2,#3);}
+\newcommand{\sr}[4]{\draw[-{Stealth[scale=0.9]}, semithick, dashed] (#1,#3) -- node[above, font=\tiny\sffamily, inner sep=1pt] {#4} (#2,#3);}
+\newcommand{\sself}[3]{\draw[-{Stealth[scale=0.9]}, semithick] (#1,#2) -- (#1+0.8,#2) -- (#1+0.8,#2-0.4) -- (#1,#2-0.4); \node[right, font=\tiny\sffamily, inner sep=1pt] at (#1+0.8,#2-0.2) {#3};}
+\newcommand{\frag}[6]{\draw[semithick] (#1,#3) rectangle (#2,#4); \draw[semithick, fill=white] (#1,#3) -- (#1+0.9,#3) -- (#1+0.9,#3-0.2) -- (#1+0.7,#3-0.35) -- (#1,#3-0.35) -- cycle; \node[font=\tiny\bfseries\sffamily, anchor=west] at (#1+0.05,#3-0.17) {#5}; \node[font=\tiny\sffamily, anchor=west] at (#1+1.0,#3-0.17) {#6};}
+\newcommand{\fsep}[4]{\draw[dashed] (#1,#3) -- (#2,#3); \node[font=\tiny\sffamily, anchor=north west] at (#1+0.05,#3) {#4};}
+\newcommand{\sep}[4]{\draw[semithick] (#1,#3) -- (#2,#3) (#1,#3-0.12) -- (#2,#3-0.12); \node[fill=white, draw, font=\tiny\bfseries\sffamily, inner sep=2pt] at ({(#1+#2)/2},#3-0.06) {#4};}
+\newcommand{\dnode}[6]{\draw[semithick, fill=white] (#2,#3) rectangle ++(#4,#5); \draw[semithick] (#2,#3+#5) -- ++(0.18,0.18) -- ++(#4,0) -- ++(0,-#5) -- ++(-0.18,-0.18) (#2+#4,#3+#5) -- ++(0.18,0.18); \node[font=\scriptsize\bfseries\sffamily] at (#2+#4/2,#3+#5-0.25) {#6}; \coordinate (#1) at (#2+#4/2,#3+#5/2); \coordinate (#1n) at (#2+#4/2,#3+#5+0.18); \coordinate (#1s) at (#2+#4/2,#3); \coordinate (#1e) at (#2+#4,#3+#5/2); \coordinate (#1w) at (#2,#3+#5/2);}
+\newcommand{\artf}[3]{\node[draw, fill=gray!8, font=\tiny\sffamily, inner sep=3pt] at (#1,#2) {#3};}
 \usepackage{mdframed}
 \usepackage{listings}
 \usepackage[T1]{fontenc}
@@ -428,6 +459,27 @@
 
 \medskip
 \noindent \textbf{Competenze.} Tre livelli: \textbf{1 -- Base}, \textbf{2 -- Applicativo}, \textbf{3 -- Esperto}. La competenza si dimostra sul campo, non coi titoli, e può essere tecnica o sociale (negoziazione, consenso con gli stakeholder).
+
+
+\subsubsection{Esercizio: Code Review come Pratica Essence}
+\noindent Esercizio: \textit{essenzializzare} la pratica \textbf{Code Review}, cioè descriverla come pratica Essence riusabile e indipendente dagli strumenti (purpose, Alpha primario, work product, attività, competenze, criteri di avanzamento, pattern, uso dell'LLM). Nelle soluzioni degli studenti c'è buona intuizione, ma confusione tra \textit{Alpha}, \textit{Work Product} e \textit{strumenti}.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{4.6cm}p{7.6cm}}
+    \toprule
+    \textbf{Aspetto} & \textbf{Studenti} & \textbf{Soluzione del docente} \\
+    \midrule
+    Purpose & qualità, sicurezza, manutenibilità & valutare le modifiche prima dell'integrazione e condividere conoscenza \\
+    Alpha primario & spesso ambiguo o errato (es.\ ``approvazione del codice'' è un \emph{risultato}; ``avere un IDE'' è uno strumento) & \textit{Software System}, con \textit{Team} e \textit{Way of Working} a supporto \\
+    Work product & report / documentazione (troppo generico) & \textit{Review Record} strutturato \\
+    Attività & lettura, analisi, correzione & Prepare Review, Examine Change, Resolve Findings, Confirm Integration \\
+    Competenze & soprattutto programmazione & development, testing, comprensione del sistema, comunicazione costruttiva \\
+    LLM & assente o generico & supporto alla review, con verifica umana \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Una sequenza come «in attesa di revisione $\to$ da correggere $\to$ corretto» descrive meglio gli stati di un Alpha \emph{specifico della pratica} (es.\ \textit{Code Change}) che di un Alpha del kernel. Le \textit{competencies} sono l'aspetto più sottovalutato. L'LLM può suggerire domande o possibili problemi, ma ogni risultato va verificato da un revisore competente.
 
 \newpage
 
@@ -871,94 +923,6 @@ Uno degli errori più gravi e frequenti nella modellazione OO consiste nel trasf
     \label{fig:the_killer_antipattern}
 \end{figure}
 
-\paragraph{Esercizi Proposti di Modellazione Concettuale (OOCM).}
-Di seguito vengono analizzati e formalizzati i requisiti operativi per i sistemi proposti negli esercizi, identificando per ciascuno gli attori coinvolti, i casi d'uso primari e le relative relazioni strutturali.
-
-\paragraph{Esercizio 1: Sistema di Prenotazione e Pianificazione Taxi.}
-Il sistema deve gestire l'interazione tra passeggeri e vettori, ottimizzando l'assegnazione delle corse:
-\begin{itemize}
-    \item \textbf{Attori identificati}:
-    \begin{itemize}
-        \item \texttt{Passenger}: utente che richiede una corsa immediata o prenota un viaggio futuro;
-        \item \texttt{Taxi Driver}: operatore che riceve gli incarichi, aggiorna la propria disponibilità e conferma la presa in carico;
-        \item \texttt{Dispatcher / System Scheduler}: entità logica o attore di centrale addetto al coordinamento e all'ottimizzazione dei percorsi.
-    \end{itemize}
-    \item \textbf{Casi d'uso primari}:
-    \begin{itemize}
-        \item \textit{Book Taxi}: inserimento del punto di partenza, destinazione e orario desiderato;
-        \item \textit{Schedule Assignment}: algoritmo di pianificazione per abbinare la richiesta al taxi più vicino disponibile;
-        \item \textit{Update Driver Status}: notifica dello stato operativo (libero, occupato, fuori servizio);
-        \item \textit{Track Ride}: monitoraggio della posizione del veicolo in tempo reale.
-    \end{itemize}
-\end{itemize}
-
-\begin{figure}[htbp]
-    \centering
-\begin{tikzpicture}[font=\small\sffamily]
-    \sysbox{2.4}{-3.2}{9.8}{3.4}{Taxi Booking System}
-    \actor{pas}{0}{1.8}{Passenger}
-    \actor{dis}{0}{-2}{Dispatcher}
-    \actor{drv}{12.2}{0}{Taxi Driver}
-    \node[ucase] (book) at (6.1, 2.2) {Book Taxi};
-    \node[ucase] (track) at (6.1, 0.7) {Track Ride};
-    \node[ucase] (sched) at (6.1, -0.8) {Schedule Assignment};
-    \node[ucase] (stat) at (6.1, -2.3) {Update Driver Status};
-    \draw[assoc] (pas.east) -- (book.west);
-    \draw[assoc] (pas.east) -- (track.west);
-    \draw[assoc] (dis.east) -- (sched.west);
-    \draw[assoc] (drv.west) -- (sched.east);
-    \draw[assoc] (drv.west) -- (stat.east);
-    \draw[assoc] (drv.west) -- (track.east);
-\end{tikzpicture}
-    \label{fig:oocm_taxi}
-\end{figure}
-
-\paragraph{Esercizio 2: Piattaforma di Negoziazione Titoli (Stocks Trading Service).}
-La piattaforma connette investitori e istituti finanziari per la quotazione e la compravendita di titoli sul mercato:
-\begin{itemize}
-    \item \textbf{Attori}:
-    \begin{itemize}
-        \item \texttt{Trader / User}: utente operativo che consulta i corsi azionari ed emette ordini di acquisto;
-        \item \texttt{Banking System}: sistema esterno remoto che fornisce i dati di mercato ed esegue la transazione finanziaria.
-    \end{itemize}
-    \item \textbf{Casi d'uso e varianti}:
-    \begin{itemize}
-        \item \textit{Acquire Stock Prices}: recupero in tempo reale delle quotazioni presso le banche collegate;
-        \item \textit{Analyze Trends}: analisi predittiva e andamento storico dei prezzi;
-        \item \textit{Place Stock Order}: emissione dell'ordine (con parametri quali esecuzione immediata vs differita, prezzo secco vs intervallo di prezzo).
-    \end{itemize}
-    \item \textbf{Estensioni ed eccezioni (\texttt{<<extends>>})}:
-    \begin{itemize}
-        \item \textit{Handle Bank Disconnection}: attivato se il canale verso l'istituto bancario si interrompe;
-        \item \textit{Resolve Bid Conflict}: risoluzione di conflitti tra offerte sovrapposte;
-        \item \textit{Handle Stock Unavailable}: notifica nel caso in cui il titolo non sia più negoziabile o esaurito.
-    \end{itemize}
-\end{itemize}
-
-\begin{figure}[htbp]
-    \centering
-\begin{tikzpicture}[font=\small\sffamily]
-    \sysbox{1.2}{-4.6}{10.8}{3.8}{Stocks Trading Service}
-    \actor{tr}{-0.2}{0.4}{Trader}
-    \actor{bk}{12.4}{0.6}{Banking System}
-    \node[ucase] (prices) at (6, 2.6) {Acquire Stock Prices};
-    \node[ucase] (trends) at (6, 1.1) {Analyze Trends\\and Predictions};
-    \node[ucase] (order) at (6, -0.8) {Place Stock Order};
-    \node[ucase] (e1) at (2.8, -3.4) {Handle Bank\\Disconnection};
-    \node[ucase] (e2) at (6, -3.4) {Resolve Bid\\Conflict};
-    \node[ucase] (e3) at (9.2, -3.4) {Handle Stock\\Unavailable};
-    \draw[assoc] (tr.east) -- (prices.west);
-    \draw[assoc] (tr.east) -- (trends.west);
-    \draw[assoc] (tr.east) -- (order.west);
-    \draw[assoc] (bk.west) -- (prices.east);
-    \draw[assoc] (bk.west) -- (order.east);
-    \draw[incl] (e1.north) -- node[above, sloped] {\texttt{<<extends>>}} (order.south west);
-    \draw[incl] (e2.north) -- node[right] {\texttt{<<extends>>}} (order.south);
-    \draw[incl] (e3.north) -- node[above, sloped] {\texttt{<<extends>>}} (order.south east);
-\end{tikzpicture}
-    \label{fig:oocm_stock_trading}
-\end{figure}
-
 \subsubsection{Object-Oriented Analysis (OOA)}
 
 \paragraph{Visione Generale dell'OOA.}
@@ -1065,6 +1029,8 @@ Nel rigore della progettazione ad oggetti, \textbf{tipo} e \textbf{classe} non s
 \end{itemize}
 
 \paragraph{Il Class Diagram e il Concetto di Associazione.}
+\noindent\textit{Le relazioni elencate qui sotto sono riassunte graficamente nella legenda di pag.~\pageref{fig:uml-legenda-relazioni}; esercizi svolti nella sezione \S\ref{sec:uml-esercitazioni}.}
+
 Il \textbf{Class Diagram} costituisce il cuore statico della modellazione OO, visualizzando i tipi di oggetti presenti nel sistema e le relazioni intercorrenti:
 \begin{itemize}
     \item \textbf{Associazione (\textit{Association})}: relazione semantica tra istanze di classi distinte che collaborano sul piano operativo;
@@ -1127,6 +1093,21 @@ Il sistema di regolazione termica già esaminato a livello comportamentale può 
     \label{fig:class_diagram_aircond_complete}
 \end{figure}
 
+\paragraph{Lettura Guidata del Diagramma: Che Relazione Lega Cosa.}
+Nel diagramma compaiono tre tipi di relazione, riconoscibili dalla decorazione all'estremo della linea:
+\begin{itemize}
+    \item \textbf{Generalizzazione} (linea con \emph{triangolo vuoto}): significa ``\textit{è un}''. \texttt{Light}, \texttt{Heater} e \texttt{Cooler} puntano ad \texttt{Actuator}: ognuno \emph{è un} attuatore e ne eredita \texttt{startUp()} e \texttt{shutDown()}. \texttt{Light} aggiunge \texttt{on()} e \texttt{off()}. Il nome \texttt{Actuator} in corsivo indica una \textbf{classe astratta}: non esistono attuatori ``generici'', solo le sue sottoclassi concrete;
+    \item \textbf{Aggregazione} (linea con \emph{rombo vuoto}): significa ``\textit{è composto da / contiene}'', cioè una relazione \textbf{tutto--parte}. Il rombo si trova sempre dal lato del \emph{tutto} (\texttt{Environmental Controller}); le \emph{parti} sono \texttt{Light}, \texttt{Heater} e \texttt{Cooler}. Le parti hanno vita propria: se il controllore sparisce, una \texttt{Light} può continuare a esistere (nella \textbf{composizione}, rombo \emph{pieno}, le parti morirebbero con il tutto; qui non è il caso). I numeri sono le \textbf{molteplicità} dal lato della parte: un controllore ha $1$ \texttt{Heater}, $1$ \texttt{Cooler} e un numero qualsiasi ($*$) di \texttt{Light};
+    \item \textbf{Associazione} (linea \emph{semplice}, senza rombo né triangolo): significa ``\textit{si conoscono / collaborano}''. È il legame più debole: non c'è gerarchia né tutto--parte. Qui ce ne sono due: \texttt{Environmental Controller}--\texttt{SystemLog} e \texttt{Actuator}--\texttt{SystemLog}. Il \texttt{SystemLog} registra gli eventi di controllore e attuatori.
+\end{itemize}
+
+\noindent\textbf{\texttt{Heater}, \texttt{Light} e \texttt{Cooler} sono associati tra loro?} \textbf{No.} Tra di loro non esiste nessuna linea: sono solo ``fratelli'', perché condividono lo stesso padre \texttt{Actuator} (generalizzazione). Ciascuno ha invece relazioni solo con \emph{altre} classi:
+\begin{itemize}
+    \item con \texttt{Actuator}: generalizzazione (ne è figlio);
+    \item con \texttt{Environmental Controller}: aggregazione (ne è parte);
+    \item con \texttt{SystemLog}: associazione \emph{ereditata}, perché l'associazione è disegnata su \texttt{Actuator} e vale quindi per tutte le sue sottoclassi.
+\end{itemize}
+
 \paragraph{Classi e Diagrammi: Linee Guida di Progettazione.}
 Nello sviluppo di modelli OO, le classi e i diagrammi non hanno una corrispondenza biunivoca: una singola classe può comparire all'interno di molteplici diagrammi differenti.
 Ciascun diagramma deve focalizzarsi su una specifica vista o prospettiva del sistema, rispettando criteri di chiarezza e leggibilità:
@@ -1136,6 +1117,65 @@ Ciascun diagramma deve focalizzarsi su una specifica vista o prospettiva del sis
     \item \textbf{Information hiding}: nascondere attributi o operazioni secondarie che non contribuiscono alla comprensione dello scenario analizzato;
     \item \textbf{Natura iterativa}: la stesura di un diagramma efficace e corretto (\textit{proper diagram}) richiede sistematicamente molteplici iterazioni di raffinamento.
 \end{itemize}
+
+\paragraph{Notazione Grafica delle Relazioni: Legenda.}\label{par:uml-notazione-relazioni}
+Prima di entrare nel dettaglio di ogni relazione, la tabella seguente fissa la notazione usata in tutti i diagrammi di queste note (e nelle soluzioni della sezione \emph{UML: esercitazioni}, \S\ref{sec:uml-esercitazioni}). Ciò che distingue due relazioni è sempre la combinazione di tre elementi: \textbf{tipo di linea} (continua o tratteggiata), \textbf{decorazione all'estremo} (freccia, triangolo, rombo) e \textbf{lato} su cui la decorazione è posta.
+
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}[font=\footnotesize\sffamily, x=1cm, y=1cm]
+    \def\rowh{-1.15}
+    \node[anchor=west, font=\footnotesize\bfseries\sffamily] at (0, 0) {Simbolo};
+    \node[anchor=west, font=\footnotesize\bfseries\sffamily] at (4.2, 0) {Relazione};
+    \node[anchor=west, font=\footnotesize\bfseries\sffamily] at (8.0, 0) {Significato};
+    \draw[semithick] (0, -0.35) -- (14.6, -0.35);
+
+    % associazione
+    \draw[assoc] (0, 1*\rowh) -- (3.4, 1*\rowh);
+    \node[anchor=west] at (4.2, 1*\rowh) {Associazione};
+    \node[anchor=west, text width=6.4cm] at (8.0, 1*\rowh) {legame semantico tra istanze, \emph{lunga durata}};
+    % associazione navigabile
+    \draw[nav] (0, 2*\rowh) -- (3.4, 2*\rowh);
+    \node[anchor=west] at (4.2, 2*\rowh) {Associazione navigabile};
+    \node[anchor=west, text width=6.4cm] at (8.0, 2*\rowh) {come sopra, ma solo il lato \emph{sorgente} conosce quello di destinazione};
+    % aggregazione
+    \draw[agg] (3.4, 3*\rowh) -- (0, 3*\rowh);
+    \node[anchor=west] at (4.2, 3*\rowh) {Aggregazione ($\lozenge$)};
+    \node[anchor=west, text width=6.4cm] at (8.0, 3*\rowh) {parte--tutto \emph{debole}: le parti sopravvivono al tutto};
+    % composizione
+    \draw[comp] (3.4, 4*\rowh) -- (0, 4*\rowh);
+    \node[anchor=west] at (4.2, 4*\rowh) {Composizione ($\blacklozenge$)};
+    \node[anchor=west, text width=6.4cm] at (8.0, 4*\rowh) {parte--tutto \emph{forte}: le parti nascono e muoiono col tutto};
+    % generalizzazione
+    \draw[inh] (0, 5*\rowh) -- (3.4, 5*\rowh);
+    \node[anchor=west] at (4.2, 5*\rowh) {Generalizzazione};
+    \node[anchor=west, text width=6.4cm] at (8.0, 5*\rowh) {\emph{is-a}: il triangolo punta alla \emph{superclasse}};
+    % realizzazione
+    \draw[real] (0, 6*\rowh) -- (3.4, 6*\rowh);
+    \node[anchor=west] at (4.2, 6*\rowh) {Realizzazione};
+    \node[anchor=west, text width=6.4cm] at (8.0, 6*\rowh) {la classe implementa un'\emph{interfaccia}: il triangolo punta all'interfaccia};
+    % dipendenza
+    \draw[dep] (0, 7*\rowh) -- (3.4, 7*\rowh);
+    \node[anchor=west] at (4.2, 7*\rowh) {Dipendenza};
+    \node[anchor=west, text width=6.4cm] at (8.0, 7*\rowh) {uso \emph{temporaneo}: se il fornitore cambia, il cliente può rompersi};
+\end{tikzpicture}
+    \caption{Legenda delle relazioni UML tra classi. Il rombo sta sempre dal lato del \emph{tutto}; il triangolo e la freccia stanno sempre dal lato dell'elemento \emph{più generale} o \emph{usato}.}
+    \label{fig:uml-legenda-relazioni}
+\end{figure}
+
+\noindent Le relazioni si ordinano per \textbf{forza del legame}, dalla più debole alla più forte:
+\[
+\text{dipendenza} \;<\; \text{associazione} \;<\; \text{aggregazione} \;<\; \text{composizione} \;<\; \text{generalizzazione}
+\]
+Nel dubbio si sceglie la relazione \emph{più debole} che riesce ancora a esprimere il vincolo del dominio: ogni legame più forte aumenta l'accoppiamento tra le classi (principio del basso accoppiamento, sezione sulla progettazione modulare).
+
+\paragraph{Come scegliere la relazione giusta.}
+Le tre domande seguenti, poste nell'ordine, selezionano la relazione (con esempi dalle esercitazioni):
+\begin{enumerate}
+    \item \textbf{Una classe \emph{è un} caso particolare dell'altra?} $\to$ generalizzazione (\texttt{Manager} \emph{is-a} \texttt{Staff}, Esercizio del Pub); se l'elemento generale è solo un contratto di operazioni $\to$ realizzazione (\texttt{Pistol} realizza \texttt{SemiAutomatic}).
+    \item \textbf{Una classe \emph{è parte} dell'altra?} $\to$ aggregazione o composizione. Se la parte non ha senso senza il tutto $\to$ composizione (\texttt{Room} in \texttt{Apartment}, Esercizio 4: la stanza non esiste senza l'appartamento); altrimenti aggregazione (\texttt{Person} proprietaria di \texttt{Apartment}).
+    \item \textbf{Un'istanza \emph{conosce} stabilmente l'altra (la mantiene in un attributo)?} $\to$ associazione, eventualmente navigabile (\texttt{Customer} \emph{places} \texttt{Order}). Se invece l'altra classe compare solo come parametro, variabile locale o valore di ritorno di un metodo $\to$ dipendenza.
+\end{enumerate}
 
 \paragraph{Associazione: Relazione tra Classi.}
 Un'\textbf{associazione} stabilisce un legame semantico e concettuale tra istanze di classi distinte.
@@ -1233,7 +1273,7 @@ I vincoli cardinali possono essere espressi mediante diverse notazioni formali:
 \paragraph{Navigabilità delle Associazioni (Navigability).}
 La \textbf{navigabilità} stabilisce la possibilità per un'istanza di accedere direttamente a runtime all'oggetto associato:
 \begin{itemize}
-    \item \textbf{Navigabilità unidirezionale}: rappresentata da una freccia orientata posta lungo la linea di associazione;
+    \item \textbf{Navigabilità unidirezionale}: rappresentata da una \textbf{freccia aperta} (a V, non un triangolo) all'estremo navigabile della linea continua di associazione;
     \item \textbf{Accesso asimmetrico}: una freccia da \texttt{Order} verso \texttt{Customer} indica che l'ordine possiede la conoscenza diretta del proprio cliente, mentre il cliente non mantiene visibilità o collezioni dirette dei propri ordini;
     \item \textbf{Associazione bidirezionale}: in assenza di frecce, la navigabilità è garantita in entrambi i versi; in questo scenario l'uso dei nomi di ruolo diventa fondamentale per identificare chiaramente i contratti di accesso reciproci.
 \end{itemize}
@@ -1243,9 +1283,31 @@ La \textbf{navigabilità} stabilisce la possibilità per un'istanza di accedere 
 \begin{tikzpicture}
     \node[cls, anchor=north, text width=3.4cm] (order) at (0, 0) {\cn{Order}\nodepart{second}dateReceived\\ isPrepaid\\ number : String\\ price : Money\nodepart{third}dispatch()};
     \node[cls, anchor=north, text width=3.4cm] (cust) at (8, 0) {\cn{Customer}\nodepart{second}name\\ address\nodepart{third}creditRating()};
-    \draw[-{Stealth[scale=1.2]}, semithick] (order.east |- 0,-1.2) -- (cust.west |- 0,-1.2);
+    \draw[nav] (order.east |- 0,-1.2) -- (cust.west |- 0,-1.2);
 \end{tikzpicture}
     \label{fig:navigability_arrow}
+\end{figure}
+
+\paragraph{Dipendenza (Dependency).}\label{par:uml-dipendenza}
+La \textbf{dipendenza} è la relazione più debole tra classi e si distingue dall'associazione per la \emph{durata} del legame:
+\begin{itemize}
+    \item \textbf{Notazione}: linea \textbf{tratteggiata} con \textbf{freccia aperta} (a V) che parte dalla classe \emph{cliente} e punta alla classe \emph{fornitore} (\textit{supplier}). Può avere uno stereotipo, ad esempio \guillemotleft\textit{use}\guillemotright{}, \guillemotleft\textit{create}\guillemotright{} o \guillemotleft\textit{instanceOf}\guillemotright{};
+    \item \textbf{Semantica}: una modifica al fornitore può richiedere modifiche al cliente (stessa definizione usata per le dipendenze tra package, \S\ref{par:uml-dipendenza-package}). Non esiste un attributo che memorizzi il fornitore: il cliente lo \emph{usa} soltanto, in modo \textbf{temporaneo}, come parametro, variabile locale o valore di ritorno di un'operazione, oppure lo istanzia;
+    \item \textbf{Differenza con l'associazione}: l'associazione (linea continua) implica un collegamento che sopravvive alle singole chiamate e di norma si traduce in un attributo; la dipendenza (linea tratteggiata) vale solo per la durata dell'uso;
+    \item \textbf{Molteplicità e ruoli}: non si indicano, perché non c'è un legame strutturale tra le istanze.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=3cm}]
+    \node[cls, rectangle split parts=2] (o) at (0, 0) {\cn{Order}\nodepart{second}+dispatch()};
+    \node[cls, rectangle split parts=1] (c) at (6.5, 0) {\cn{Customer}};
+    \node[cls, rectangle split parts=1] (m) at (6.5, -2) {\cn{Mailer}};
+    \draw[nav] (o.east |- 0,0.2) -- node[above, font=\scriptsize\sffamily] {placedBy} (c.west |- 0,0.2);
+    \draw[dep] (o.south east) -- node[below, sloped, font=\scriptsize\sffamily] {\guillemotleft use\guillemotright} (m.west);
+\end{tikzpicture}
+    \caption{\texttt{Order} \emph{ha} un \texttt{Customer} (associazione: attributo permanente) ma \emph{usa} un \texttt{Mailer} solo dentro \texttt{dispatch()} (dipendenza).}
+    \label{fig:uml-assoc-vs-dep}
 \end{figure}
 
 \paragraph{Classi di Associazione (Association Classes).}
@@ -1955,6 +2017,15 @@ $$\textbf{Event}\;(\text{argomenti})\;[\textbf{guard condition}]\;/\;\textbf{act
 \label{fig:transition_formal_syntax}
 \end{figure}
 
+\paragraph{Semantica degli Eventi (Run-to-Completion).}
+Qualunque classificatore UML può avere una macchina a stati che ne descrive il comportamento.
+\begin{itemize}
+    \item Gli eventi in arrivo finiscono in una \textbf{coda} e vengono estratti \textbf{uno alla volta}.
+    \item \textbf{Run-to-completion}: un nuovo evento è estratto solo quando la macchina ha finito di elaborare il precedente.
+    \item Se più transizioni sono eseguibili insieme (stesso evento, guardie entrambe vere), \textbf{ne scatta una sola}.
+    \item \textbf{Submachine state}: uno stato può rimandare a un altro diagramma di stati; un'icona indica uno stato composito di cui non si mostra l'interno.
+\end{itemize}
+
 \paragraph{Esempio Completo: Gestione di un Ordine (Order Processing).}
 Il ciclo di vita di un ordine e-commerce illustra l'interazione tra guardie e attività:
 \begin{enumerate}
@@ -2063,6 +2134,16 @@ I nodi di controllo governano diramazioni e parallelismo:
 % -----------------------------------------------------------------------------
 % INTERACTION DIAGRAMS (SEQUENCE & COLLABORATION)
 % -----------------------------------------------------------------------------
+\paragraph{Nodi e Modello a Token (Activity Diagram).}
+\begin{itemize}
+    \item \textbf{Tre tipi di nodo}: \textit{action} (unità di comportamento: può invocare un'attività, un comportamento o un'operazione), \textit{object} (oggetto in ingresso/uscita di un'azione), \textit{control} (guidano il flusso: decision, merge, fork, join, finali).
+    \item \textbf{Token}: la semantica si capisce immaginando \textbf{gettoni} che viaggiano nel diagramma. Un'azione parte quando c'è un token su \textbf{tutti} gli archi entranti e le \textbf{precondizioni} sono vere; alla fine mette un token su tutti gli archi uscenti. Il movimento di un token è atomico. Le \textbf{postcondizioni} devono valere perché il token esca.
+    \item \textbf{Decision}: un arco entrante, più uscite \textbf{mutuamente esclusive} (il token va su una sola). \textbf{Merge}: più ingressi, una sola uscita (nessuna sincronizzazione).
+    \item \textbf{Fork}: duplica il token su tutte le uscite. \textbf{Join}: genera il token in uscita solo quando ce n'è uno su \textbf{ogni} ingresso.
+    \item \textbf{Nodi finali}: il \textit{flow final} ($\otimes$) termina solo il ramo che lo raggiunge (``kill thread''); l'\textit{activity final} (cerchio pieno con bordo) termina \textbf{tutti} i flussi (``kill process'').
+    \item \textbf{Usi}: modellare il flusso di un caso d'uso (analisi), il comportamento di un'operazione di classe o un algoritmo (design).
+\end{itemize}
+
 \paragraph{Diagrammi di Interazione: Il Dialogo tra Oggetti.}
 I diagrammi di interazione descrivono il comportamento dinamico concentrandosi sugli \textbf{oggetti}: dettagliano come le istanze si scambiano messaggi per realizzare le funzionalità dei casi d'uso. L'interazione si osserva da due prospettive duali:
 \begin{enumerate}
@@ -2148,6 +2229,39 @@ UML definisce notazioni distinte a seconda della semantica:
     \item se una ramificazione è semplice, annotarla con una guardia \texttt{[condition]}; se i flussi alternativi sono complessi, \textbf{non affollare un unico diagramma}: disegnare diagrammi di sequenza separati per ciascuno scenario significativo.
 \end{itemize}
 \end{cbox}
+
+\paragraph{Lifeline e Istanze.}
+Nei diagrammi di interazione compaiono \textbf{istanze} di classificatori (oggetti, attori) oppure \textbf{lifeline}, che rappresentano un \textbf{ruolo} e non un oggetto preciso. Si preferiscono le lifeline.
+\begin{itemize}
+    \item Un'\textbf{istanza} è \textit{un} oggetto specifico; una \textbf{lifeline} è un'istanza \textbf{arbitraria} del classificatore.
+    \item Entrambe usano la notazione del classificatore, ma la lifeline \textbf{non è sottolineata}.
+    \item Notazione completa: \texttt{nome [selettore] : Tipo}. Il \textbf{selettore} è una condizione booleana opzionale che sceglie un rappresentante (es.\ \texttt{[id = "1234"]}).
+\end{itemize}
+
+\paragraph{Sync vs Async, Sintassi dei Messaggi.}
+\begin{itemize}
+    \item Il messaggio \textbf{sincrono} blocca il mittente fino al \textit{return}; l'\textbf{asincrono} no. I return sono opzionali: si mostrano se non peggiorano la leggibilità o per indicare valori di ritorno.
+    \item In \textbf{analisi} conviene indicare tutti i messaggi come sincroni (il caso più restrittivo); la distinzione emerge in design.
+    \item Tipi di messaggio: chiamata sincrona, asincrona, return, creazione, distruzione, \textit{found message} (mittente sconosciuto), \textit{lost message} (destinatario sconosciuto).
+    \item In analisi basta il \textbf{nome}; per più dettaglio si aggiungono i parametri tra parentesi (formali, attuali o entrambi: \texttt{getArea(shape=g)}) e le guardie.
+\end{itemize}
+
+\paragraph{Combined Fragment.}
+Un \textbf{combined fragment} è un'area del diagramma che racchiude parte dell'interazione e ne dice \textbf{come} viene eseguita. È composto da:
+\begin{itemize}
+    \item un \textbf{operatore} (nell'angolo in alto a sinistra, in un pentagono);
+    \item uno o più \textbf{operandi}: fasce orizzontali separate da linee tratteggiate;
+    \item zero o più \textbf{guardie} tra parentesi quadre, dopo l'operatore o in cima all'operando.
+\end{itemize}
+Il rettangolo si estende orizzontalmente fino a includere le lifeline coinvolte. Gli operatori più usati (corrispondono ai costrutti di controllo dei linguaggi):
+\begin{itemize}
+    \item \texttt{opt}: un solo operando, eseguito se e solo se la guardia è vera (\textit{if});
+    \item \texttt{alt}: più operandi, ne esegue \textbf{al più uno} (\textit{if/else});
+    \item \texttt{loop min,max [cond]}: esegue min volte e poi al massimo (max$-$min) volte finché la condizione è vera; min e max si possono omettere, la condizione può essere in linguaggio naturale;
+    \item \texttt{break}: come \texttt{break};
+    \item \texttt{gate}: punto sul bordo esterno del diagramma, origine o destinazione di una freccia;
+    \item \texttt{ref}: rimanda a un altro sequence diagram, per modularizzare e riusare.
+\end{itemize}
 
 \paragraph{Classi di Confine (Boundary Classes).}
 Una \textbf{boundary class} modella la frontiera di comunicazione tra il sistema e il mondo esterno (attori umani, periferiche, altri sistemi). Nei diagrammi di interazione conviene evidenziarle perché:
@@ -2239,7 +2353,7 @@ La collaborazione tra sottosistemi si struttura secondo due macro-modelli archit
 % -----------------------------------------------------------------------------
 % PACKAGES E DIPENDENZE
 % -----------------------------------------------------------------------------
-\paragraph{I Package in UML e le Dipendenze.}
+\paragraph{I Package in UML e le Dipendenze.}\label{par:uml-dipendenza-package}
 Un \textbf{Package} in UML rappresenta un meccanismo di raggruppamento generico utilizzato per organizzare gli elementi del modello in blocchi logici gestibili. Nei linguaggi di programmazione esso mappa direttamente sui costrutti nativi di modularizzazione: i \texttt{package} in Java e Python, oppure i \texttt{namespace} in C++ e C\#.
 
 \noindent Graficamente, il package viene rappresentato come una cartella con una linguetta superiore sinistra. Tra i package possono intercorrere relazioni di \textbf{dipendenza} (\textit{dependency}), tracciate mediante una freccia tratteggiata aperta:
@@ -3327,12 +3441,12 @@ Definisce un oggetto che incapsula e controlla il modo in cui un insieme di ogge
 \label{fig:pattern_mediator_structure}
 \end{figure}
 
-\newpage4-sql-di-base.pdf?from=informatica
+\newpage
 
 % -----------------------------------------------------------------------------
 % ESERCIZI PROPOSTI E SISTEMI OPERATIVI
 % -----------------------------------------------------------------------------
-\section{UML: esercitazioni}
+\section{UML: esercitazioni}\label{sec:uml-esercitazioni}
 
 \subsection{La Notazione delle Classi (Class Icon)}
 
@@ -3369,6 +3483,56 @@ La visibilità regola l'accessibilità di attributi e metodi dall'esterno della 
     \item \textbf{Package (\texttt{\~{})}}: l'elemento è accessibile da qualunque entità allocata nel medesimo package in cui risiede la classe (o nei suoi eventuali sotto-package annidati).
 \end{itemize}
 
+\subsection{La Notazione degli Oggetti (Object Icon)}
+
+\noindent Le istanze di una classe (gli \textbf{oggetti}) si disegnano come le classi, con tre differenze:
+\begin{itemize}
+    \item il titolo è \underline{sottolineato} e ha formato \texttt{nome : NomeClasse};
+    \item il nome dell'oggetto è \textbf{opzionale} (\texttt{: Person} è un oggetto anonimo);
+    \item \textbf{niente slot per le operazioni}, ma gli attributi hanno un \textbf{valore} (\texttt{age = 10}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=2.6cm}]
+    \node[cls, rectangle split parts=1] (c) at (0, 0) {\cn{Person}};
+    \node[cls, rectangle split parts=2] (c2) at (0, -2) {\cn{Person}\nodepart{second}-age: int\\ +getAge(): int};
+    \node[cls, rectangle split parts=2] (o) at (6, 0) {\cn{\underline{Jim : Person}}\nodepart{second}age = 10};
+    \node[cls, rectangle split parts=1] (a) at (6, -2) {\cn{\underline{: Person}}};
+\end{tikzpicture}
+    \caption{Classe (a sinistra) e oggetti (a destra).}
+\end{figure}
+
+\paragraph{Relazione Classe--Oggetto.}
+L'oggetto \textit{istanzia} la classe: si disegna una \textbf{dipendenza} (linea tratteggiata con freccia aperta) dall'oggetto alla classe, con stereotipo \guillemotleft\textit{instanceOf}\guillemotright.
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=2.6cm}]
+    \node[cls, rectangle split parts=3] (c) at (0, 0) {\cn{Person}\nodepart{second}-age: int\nodepart{third}+getAge(): int};
+    \node[cls, rectangle split parts=2] (o) at (7, 0) {\cn{\underline{Jim : Person}}\nodepart{second}age = 10};
+    \draw[dep] (o.west) -- node[above] {\guillemotleft instanceOf\guillemotright} (c.east);
+\end{tikzpicture}
+    \caption{Dipendenza \guillemotleft instanceOf\guillemotright{} tra oggetto e classe.}
+\end{figure}
+
+\paragraph{Esercizio 1: i bicchieri.}
+\textbf{Testo}: \textit{Definire la classe \texttt{Glass} con almeno 3 attributi e 2 metodi. Poi istanziare 2 bicchieri: uno pieno di vino, l'altro mezzo pieno di gin tonic.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=3.6cm}]
+    \node[cls, rectangle split parts=2] (w) at (-3.2, 3.6) {\cn{\underline{wineGlass}}\nodepart{second}capacity = 300.0\\ content = "wine"\\ fillLevel = 300.0};
+    \node[cls, rectangle split parts=2] (g) at (3.2, 3.6) {\cn{\underline{ginTonicGlass}}\nodepart{second}capacity = 400.0\\ content = "gin tonic"\\ fillLevel = 200.0};
+    \node[cls, rectangle split parts=3, text width=5cm] (c) at (0, 0) {\cn{Glass}\nodepart{second}-capacity: float\\ -content: string\\ -fillLevel: float\nodepart{third}+fill(drink: string, amount: float): void\\ +empty(): void};
+    \draw[dep] (w.south) -- node[left] {\guillemotleft instanceOf\guillemotright} ($(c.north west)+(1,0)$);
+    \draw[dep] (g.south) -- node[right] {\guillemotleft instanceOf\guillemotright} ($(c.north east)+(-1,0)$);
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 1.}
+\end{figure}
+
+\newpage
+
 \subsection{Relazioni Strutturali: Generalizzazione e Realizzazione}
 
 \noindent I legami concettuali ed operativi tra le classi all'interno di un sistema si esprimono attraverso specifiche relazioni standardizzate.
@@ -3381,7 +3545,7 @@ L'ereditarietà nel paradigma a oggetti viene formalizzata in UML mediante la re
     \item \textbf{Ereditarietà Multipla}: UML supporta nativamente l'ereditarietà multipla. Una classe figlia può derivare simultaneamente da più superclassi indipendenti. Ad esempio, una classe \texttt{automobile} può specializzare congiuntamente la superclasse \texttt{meansOfTransportation} (ereditando \texttt{numOfPass}) e la superclasse \texttt{machine} (ereditando \texttt{typeOfEnergy}).
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
 \begin{tikzpicture}[cls/.append style={rectangle split parts=2, text width=4.2cm}]
     \node[cls] (m) at (-3.6, 4) {\cn{meansOfTransportation}\nodepart{second}numOfPass};
@@ -3405,7 +3569,7 @@ La realizzazione descrive una relazione semantica in cui un elemento fornitore (
     \item \textbf{Notazione grafica}: una linea tratteggiata con punta a forma di \textbf{triangolo vuoto} orientata verso l'interfaccia. L'interfaccia viene tipicamente decorata con lo stereotipo \guillemotleft\textit{interface}\guillemotright.
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
 \begin{tikzpicture}
     \node[cls, rectangle split parts=1, text width=2.6cm, minimum height=1.4cm] (c) at (0, 0) {\cn{Catalog}};
@@ -3427,6 +3591,39 @@ Una classe si definisce astratta quando definisce un'astrazione incompleta e non
         \item Annotare i singoli metodi astratti con il tag \texttt{<abstract>} o \texttt{\{abstract\}}.
     \end{itemize}
 \end{itemize}
+
+\paragraph{Esercizio 2: le armi da fuoco.}
+\textbf{Testo}: \textit{Modellare un sistema di armi e meccanismi di sparo.}
+\begin{itemize}
+    \item \texttt{Firearm} (astratta): attributi \texttt{caliber}, \texttt{weight}, \texttt{manufacturer}; metodo astratto \texttt{fire()}; metodo concreto \texttt{reload()}.
+    \item \texttt{TriggerMechanism} (astratta): attributo \texttt{triggerType}; metodo astratto \texttt{pullTrigger()}.
+    \item Interfacce: \texttt{SemiAutomatic} (\texttt{ejectCasing()}) e \texttt{FullyAutomatic} (\texttt{burstFire()}).
+    \item \texttt{Pistol}: eredita da \texttt{Firearm}, usa un \texttt{TriggerMechanism}, implementa \texttt{SemiAutomatic}.
+    \item \texttt{AssaultRifle}: eredita da \texttt{Firearm}, usa un \texttt{TriggerMechanism}, implementa entrambe le interfacce.
+    \item \texttt{SilencedPistol}: specializzazione di \texttt{Pistol}.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=2.8cm}, use/.style={-{Straight Barb[length=7pt, width=7pt]}, semithick}]
+    \node[cls, rectangle split parts=1] (sp) at (-2, 8) {\cn{SilencedPistol}};
+    \node[cls, rectangle split parts=1] (p) at (-2, 5.5) {\cn{Pistol}};
+    \node[cls, rectangle split parts=1] (ar) at (4, 5.5) {\cn{AssaultRifle}};
+    \node[cls, rectangle split parts=3] (f) at (-6, 1.4) {\cn{\textit{Firearm}}\nodepart{second}-caliber: string\\ -weight: float\\ -manufacturer: string\nodepart{third}+\textit{fire()}: void\\ +reload(): void};
+    \node[cls, rectangle split parts=3] (t) at (-1.2, 1.4) {\cn{\textit{TriggerMechanism}}\nodepart{second}-triggerType: string\nodepart{third}+\textit{pullTrigger()}: void};
+    \node[cls, rectangle split parts=3] (s) at (3.6, 1.4) {\makebox[\linewidth][c]{\guillemotleft interface\guillemotright}\\ \cn{\textit{SemiAutomatic}}\nodepart{second}\nodepart{third}+ejectCasing(): void};
+    \node[cls, rectangle split parts=3] (fa) at (8.2, 1.4) {\makebox[\linewidth][c]{\guillemotleft interface\guillemotright}\\ \cn{\textit{FullyAutomatic}}\nodepart{second}\nodepart{third}+burstFire(): void};
+    \draw[inh] (sp.south) -- (p.north);
+    \draw[inh] (p.south west) -- ($(f.north)+(-0.6,0)$);
+    \draw[inh] (ar.north) -- ++(0,1.1) -| ($(f.north)+(0.6,0)$);
+    \draw[use] (p.south) -- (t.north);
+    \draw[use] (ar.south west) -- (t.north east);
+    \draw[real] (p.south east) -- (s.north west);
+    \draw[real] (ar.south) -- (s.north east);
+    \draw[real] (ar.south east) -- (fa.north);
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 2. Corsivo = astratto; freccia piena aperta = associazione ``usa''.}
+\end{figure}
 
 \subsection{I Diagrammi dei Casi d'Uso (Use Case Diagrams)}
 
@@ -3450,6 +3647,18 @@ Un attore specifica un ruolo ricoperto da un'entità esterna che dialoga attivam
     \item \textbf{Esternalità assoluta}: gli attori risiedono sempre ed esclusivamente all'\textbf{esterno} del confine di sistema.
     \item \textbf{Natura eterogenea}: un attore non coincide necessariamente con una persona umana; può trattarsi di un apparato hardware, di un sensore, di un agente software remoto, di un sistema bancario o di un demone interno che innesca compiti schedulati (es. trigger temporale per backup).
     \item \textbf{Attori Primari e Secondari}: l'attore che fa partire l'interazione viene denominato \textit{attore primario} (in UML ogni evento è causalmente ricondotto all'entità che lo genera). Gli altri attori coinvolti per fornire dati di supporto o ricevere notifiche operative sono definiti \textit{attori secondari}.
+    \item \textbf{Ordine di lavoro}: prima si trovano gli attori, poi i loro casi d'uso.
+\end{itemize}
+
+\paragraph{Come trovare gli attori?} Domande da porsi:
+\begin{itemize}
+    \item Chi/cosa usa il sistema? Che ruolo ha?
+    \item In quale parte dell'organizzazione è usato?
+    \item Chi/cosa avvia il sistema? Chi lo supporta e mantiene?
+    \item Altri sistemi interagiscono con questo?
+    \item Ci sono funzioni periodiche (es.\ backup)?
+    \item Chi/cosa fornisce o riceve informazioni dal sistema?
+    \item Un attore ha più ruoli? Lo stesso ruolo è di più attori?
 \end{itemize}
 
 
@@ -3461,6 +3670,16 @@ Un caso d'uso descrive un'esigenza o un obiettivo che l'attore intende conseguir
     \item \textbf{Classificatore comportamentale}: il caso d'uso è a tutti gli effetti un classificatore provvisto di comportamento (\textit{classifier with behavior}). Può essere descritto analiticamente mediante diagrammi di interazione, diagrammi di sequenza, diagrammi a stati, corredato da formali precondizioni e postcondizioni.
 \end{itemize}
 
+
+\paragraph{Come trovare i casi d'uso?} Domande da porsi:
+\begin{itemize}
+    \item Quali funzioni si aspetta ogni attore?
+    \item Il sistema gestisce informazioni (le memorizza/fornisce)?
+    \item Qualche attore va avvisato quando lo stato del sistema cambia? E viceversa, gli attori devono avvisare il sistema di cambiamenti improvvisi?
+    \item Eventi esterni influenzano il sistema?
+    \item Ci sono casi d'uso di manutenzione?
+    \item Tutti i requisiti funzionali sono coperti da casi d'uso?
+\end{itemize}
 
 \paragraph{Il Confine del Sistema (System Boundary) e le Associazioni.}
 Nel diagramma dei casi d'uso la delimitazione tra ciò che appartiene all'architettura e ciò che fa parte del contesto circostante viene resa esplicita:
@@ -3475,7 +3694,7 @@ Nel diagramma dei casi d'uso la delimitazione tra ciò che appartiene all'archit
     \end{itemize}
 \end{itemize}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
 \begin{tikzpicture}[font=\small\sffamily, lab/.style={font=\scriptsize\sffamily, fill=white, inner sep=1pt}]
     \draw[semithick] (3.2, -3.4) rectangle (9.6, 3.2);
@@ -3506,7 +3725,7 @@ Nel diagramma dei casi d'uso la delimitazione tra ciò che appartiene all'archit
 
 \noindent \textbf{Soluzione Minimale ed Esatta}:
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
 \begin{tikzpicture}
     \draw[semithick] (2.6, -3.2) rectangle (10, 3.2);
@@ -3521,6 +3740,1176 @@ Nel diagramma dei casi d'uso la delimitazione tra ciò che appartiene all'archit
 \end{tikzpicture}
     \caption{Soluzione corretta e minimale del diagramma dei casi d'uso per il sistema \texttt{Stupid Craps}.}
     \label{fig:uml_stupid_craps_solution}
+\end{figure}
+
+\paragraph{Esercizi di Modellazione Concettuale (casi d'uso).}
+Di seguito vengono analizzati e formalizzati i requisiti operativi per i sistemi proposti negli esercizi, identificando per ciascuno gli attori coinvolti, i casi d'uso primari e le relative relazioni strutturali.
+
+\paragraph{Esercizio Taxi: Sistema di Prenotazione e Pianificazione Taxi.}
+Il sistema deve gestire l'interazione tra passeggeri e vettori, ottimizzando l'assegnazione delle corse:
+\begin{itemize}
+    \item \textbf{Attori identificati}:
+    \begin{itemize}
+        \item \texttt{Passenger}: utente che richiede una corsa immediata o prenota un viaggio futuro;
+        \item \texttt{Taxi Driver}: operatore che riceve gli incarichi, aggiorna la propria disponibilità e conferma la presa in carico;
+        \item \texttt{Dispatcher / System Scheduler}: entità logica o attore di centrale addetto al coordinamento e all'ottimizzazione dei percorsi.
+    \end{itemize}
+    \item \textbf{Casi d'uso primari}:
+    \begin{itemize}
+        \item \textit{Book Taxi}: inserimento del punto di partenza, destinazione e orario desiderato;
+        \item \textit{Schedule Assignment}: algoritmo di pianificazione per abbinare la richiesta al taxi più vicino disponibile;
+        \item \textit{Update Driver Status}: notifica dello stato operativo (libero, occupato, fuori servizio);
+        \item \textit{Track Ride}: monitoraggio della posizione del veicolo in tempo reale.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[font=\small\sffamily]
+    \sysbox{2.4}{-3.2}{9.8}{3.4}{Taxi Booking System}
+    \actor{pas}{0}{1.8}{Passenger}
+    \actor{dis}{0}{-2}{Dispatcher}
+    \actor{drv}{12.2}{0}{Taxi Driver}
+    \node[ucase] (book) at (6.1, 2.2) {Book Taxi};
+    \node[ucase] (track) at (6.1, 0.7) {Track Ride};
+    \node[ucase] (sched) at (6.1, -0.8) {Schedule Assignment};
+    \node[ucase] (stat) at (6.1, -2.3) {Update Driver Status};
+    \draw[assoc] (pas.east) -- (book.west);
+    \draw[assoc] (pas.east) -- (track.west);
+    \draw[assoc] (dis.east) -- (sched.west);
+    \draw[assoc] (drv.west) -- (sched.east);
+    \draw[assoc] (drv.west) -- (stat.east);
+    \draw[assoc] (drv.west) -- (track.east);
+\end{tikzpicture}
+    \label{fig:oocm_taxi}
+\end{figure}
+
+\paragraph{Esercizio Stocks (Complex 1): Piattaforma di Negoziazione Titoli (Stocks Trading Service).}
+La piattaforma connette investitori e istituti finanziari per la quotazione e la compravendita di titoli sul mercato:
+\begin{itemize}
+    \item \textbf{Attori}:
+    \begin{itemize}
+        \item \texttt{Trader / User}: utente operativo che consulta i corsi azionari ed emette ordini di acquisto;
+        \item \texttt{Banking System}: sistema esterno remoto che fornisce i dati di mercato ed esegue la transazione finanziaria.
+    \end{itemize}
+    \item \textbf{Casi d'uso e varianti}:
+    \begin{itemize}
+        \item \textit{Acquire Stock Prices}: recupero in tempo reale delle quotazioni presso le banche collegate;
+        \item \textit{Analyze Trends}: analisi predittiva e andamento storico dei prezzi;
+        \item \textit{Place Stock Order}: emissione dell'ordine (con parametri quali esecuzione immediata vs differita, prezzo secco vs intervallo di prezzo).
+    \end{itemize}
+    \item \textbf{Estensioni ed eccezioni (\texttt{<<extends>>})}:
+    \begin{itemize}
+        \item \textit{Handle Bank Disconnection}: attivato se il canale verso l'istituto bancario si interrompe;
+        \item \textit{Resolve Bid Conflict}: risoluzione di conflitti tra offerte sovrapposte;
+        \item \textit{Handle Stock Unavailable}: notifica nel caso in cui il titolo non sia più negoziabile o esaurito.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[font=\small\sffamily]
+    \sysbox{1.2}{-4.6}{10.8}{3.8}{Stocks Trading Service}
+    \actor{tr}{-0.2}{0.4}{Trader}
+    \actor{bk}{12.4}{0.6}{Banking System}
+    \node[ucase] (prices) at (6, 2.6) {Acquire Stock Prices};
+    \node[ucase] (trends) at (6, 1.1) {Analyze Trends\\and Predictions};
+    \node[ucase] (order) at (6, -0.8) {Place Stock Order};
+    \node[ucase] (e1) at (2.8, -3.4) {Handle Bank\\Disconnection};
+    \node[ucase] (e2) at (6, -3.4) {Resolve Bid\\Conflict};
+    \node[ucase] (e3) at (9.2, -3.4) {Handle Stock\\Unavailable};
+    \draw[assoc] (tr.east) -- (prices.west);
+    \draw[assoc] (tr.east) -- (trends.west);
+    \draw[assoc] (tr.east) -- (order.west);
+    \draw[assoc] (bk.west) -- (prices.east);
+    \draw[assoc] (bk.west) -- (order.east);
+    \draw[incl] (e1.north) -- node[above, sloped] {\texttt{<<extends>>}} (order.south west);
+    \draw[incl] (e2.north) -- node[right] {\texttt{<<extends>>}} (order.south);
+    \draw[incl] (e3.north) -- node[above, sloped] {\texttt{<<extends>>}} (order.south east);
+\end{tikzpicture}
+    \label{fig:oocm_stock_trading}
+\end{figure}
+
+
+\subsection{Esercizi sui Diagrammi delle Classi}
+
+\begin{cbox}{Notazione usata nelle soluzioni}
+\noindent Riepilogo operativo della teoria esposta in OOA (legenda a pag.~\pageref{fig:uml-legenda-relazioni}; associazione, molteplicità, navigabilità, aggregazione, dipendenza).
+\begin{itemize}
+    \item $\lozenge$ \textbf{rombo vuoto} sul lato del tutto = \textbf{aggregazione} (le parti vivono anche senza il tutto);
+    \item $\blacklozenge$ \textbf{rombo pieno} sul lato del tutto = \textbf{composizione} (le parti muoiono col tutto);
+    \item \textbf{freccia aperta} (linea continua) = associazione navigabile; \textbf{triangolo vuoto} = generalizzazione;
+    \item \textbf{freccia aperta tratteggiata} = dipendenza; \textbf{triangolo vuoto tratteggiato} = realizzazione.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Come procedere.} Si parte dalla struttura minima (classi e associazioni ovvie), poi si aggiungono attributi, molteplicità e operazioni. Le classi candidate sono i \textbf{sostantivi} del testo; i \textbf{verbi} suggeriscono operazioni e associazioni.
+
+\paragraph{Esempio: il Pub.}
+\textbf{Testo}: \textit{Un pub è popolato da clienti e da personale. Il personale raccoglie gli ordini e consegna le birre. Il pagamento avviene alla cassa. Il manager si occupa del servizio, controlla la disponibilità di ogni birra nel frigo e, se serve, lo rifornisce.}
+
+\noindent \textbf{Classi}: \texttt{Staff} (gestisce i clienti), \texttt{Manager} (sottoclasse di \texttt{Staff}, gestisce frigo e birre), \texttt{Customer}, \texttt{Order}, \texttt{Beer}, \texttt{Fridge} (contiene birre).
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=2.2cm}]
+    \node[c1] (st) at (0, 2) {\cn{Staff}};
+    \node[c1] (cu) at (6, 2) {\cn{Customer}};
+    \node[c1] (ma) at (0, -0.3) {\cn{Manager}};
+    \node[c1] (or) at (6, -0.3) {\cn{Order}};
+    \node[c1] (fr) at (0, -2.6) {\cn{Fridge}};
+    \node[c1] (be) at (6, -2.6) {\cn{Beer}};
+    \draw[nav] (st) -- node[nm] {handles} (cu);
+    \draw[nav] (cu) -- node[right, font=\tiny\sffamily] {places} (or);
+    \draw[nav] (or) -- node[right, font=\tiny\sffamily] {contains} (be);
+    \draw[inh] (ma) -- (st);
+    \draw[nav] (ma) -- node[right, font=\tiny\sffamily] {restocks} (fr);
+    \draw[agg] (be) -- node[nm] {holds} (fr);
+\end{tikzpicture}
+    \caption{Soluzione: classi del Pub.}
+\end{figure}
+
+\paragraph{Esercizio 4: Edificio.}
+\textbf{Testo}: \textit{Un appartamento è composto da una o più stanze, ognuna con lunghezza e larghezza. Un appartamento è posseduto da una o più persone. Un edificio ha un certo numero di piani ed è composto da uno o più appartamenti.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=3cm}]
+    \node[c2] (b) at (0, 4) {\cn{Building}\nodepart{second}-floorCount: int};
+    \node[c2] (a) at (0, 1.5) {\cn{Apartment}\nodepart{second}\phantom{x}};
+    \node[c2] (r) at (-3.5, -1.3) {\cn{Room}\nodepart{second}-length: float\\ -width: float};
+    \node[c2] (p) at (3.5, -1.3) {\cn{Person}\nodepart{second}+name: string};
+    \draw[comp] (a.north) -- node[m1, right] {1..*} node[m2, right] {1} (b.south);
+    \draw[comp] (r.north) -- node[m1, left] {1..*} node[m2, left] {1} (a.south west);
+    \draw[agg] (p.north) -- node[m1, right] {1..*} node[m2, right] {1} (a.south east);
+    \node[font=\tiny\sffamily] at (-2.1, 2.9) {composed of};
+    \node[font=\tiny\sffamily] at (-3.4, 0.3) {composed of};
+    \node[font=\tiny\sffamily] at (3.2, 0.3) {owned by};
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 4. Aggregazione o composizione? Le stanze non esistono senza l'appartamento (composizione); le persone sì (aggregazione).}
+\end{figure}
+
+\paragraph{Esercizio 5: De Montfort University (DMU).}
+\textbf{Testo}: \textit{DMU offre programmi di studio, ognuno porta a un titolo di laurea. Ogni titolo è pubblicizzato nel prospetto informativo. Ogni programma include diversi moduli. Gli studenti iscritti a un programma seguono fino a 8 moduli all'anno. Alcuni titoli sono congiunti: uno studente può iscriversi a due programmi (es.\ accounting e finance).}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[cls/.append style={text width=2.4cm}]
+    \node[c2] (st) at (0, 0) {\cn{Student}\nodepart{second}+name: string\\ +year: int};
+    \node[c2] (pr) at (4.8, 1.3) {\cn{Program}\nodepart{second}+name: string};
+    \node[c2] (dt) at (9.6, 1.3) {\cn{DegreeTitle}\nodepart{second}+name: string\\ +isJoint: boolean};
+    \node[c2] (pp) at (14.4, 1.3) {\cn{Prospectus}\nodepart{second}+year: int};
+    \node[c2] (mo) at (9.6, -1.3) {\cn{Module}\nodepart{second}+code: string\\ +title: string};
+    \draw[nav] (st) -- node[nm] {enrolled in} node[m1, below] {1} node[m2, below] {1..2} (pr);
+    \draw[nav] (pr) -- node[nm] {leads to} node[m1, below] {1} node[m2, below] {1} (dt);
+    \draw[agg] (dt.east) -- node[nm] {listed in} node[m1, below] {1} node[m2, below] {1} (pp.west);
+    \draw[agg] (mo.north west) -- node[nm] {includes} node[m1, below] {1..*} (pr.south east);
+    \draw[nav] (st.south east) -- node[nm] {follows per year} node[m1, below] {1} node[m2, below] {1..8} (mo.west);
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 5.}
+\end{figure}
+
+\paragraph{Esercizio 5a: estensione di DMU.}
+\textbf{Parte 1}: \textit{DMU è composta da 6 Facoltà. Ogni Facoltà definisce un certo numero di Materie (es.\ Accounting, Auditing), gestite da diversi Moduli e insegnate in diversi Programmi.}
+
+\noindent \textbf{Parte 2}: \textit{Il Consiglio di Facoltà è composto da Studenti e Personale Accademico o Amministrativo. Il Personale Accademico insegna un numero arbitrario di Moduli e supervisiona più Studenti, ognuno iscritto a un Programma. Parte del Personale Amministrativo è nel Consiglio ma non insegna.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.3cm, font=\scriptsize\sffamily}]
+    \node[c1] (dm) at (0, 6.6) {\cn{DMU}};
+    \node[c2] (fa) at (0, 4.2) {\cn{Faculty}\nodepart{second}+name: string};
+    \node[c2] (su) at (3.8, 4.2) {\cn{Subject}\nodepart{second}+name: string};
+    \node[c2] (pr) at (7.6, 4.2) {\cn{Program}\nodepart{second}+name: string};
+    \node[c2] (dt) at (11.4, 5.4) {\cn{DegreeTitle}\nodepart{second}+name: string\\ +isJoint: boolean};
+    \node[c2] (pp) at (15.2, 5.4) {\cn{Prospectus}\nodepart{second}+year: int};
+    \node[c2] (mo) at (11.4, 2.2) {\cn{Module}\nodepart{second}+code: string\\ +title: string};
+    \node[c1] (fc) at (0, 1.6) {\cn{FacultyCouncil}};
+    \node[c2] (stu) at (7.6, 0.2) {\cn{Student}\nodepart{second}+name: string\\ +year: int};
+    \node[c1] (ac) at (3.8, -2) {\cn{AcademicStaff}};
+    \node[c2] (sf) at (0, -2) {\cn{Staff}\nodepart{second}+name: string\\ +role: string};
+    \node[c1] (ad) at (0, -4.6) {\cn{AdministrativeStaff}};
+    \draw[comp] (fa) -- node[right, font=\tiny\sffamily] {6} (dm);
+    \draw[agg] (su) -- node[nm] {defines} (fa);
+    \draw[nav] (su) -- node[nm] {taught in} (pr);
+    \draw[nav] (su.south) |- node[pos=0.8, above, font=\tiny\sffamily] {handled by} (mo.west);
+    \draw[nav] (pr) -- node[nm] {leads to} (dt);
+    \draw[agg] (dt) -- node[nm] {listed in} (pp);
+    \draw[agg] (mo.north west) -- node[nm] {includes} (pr.south east);
+    \draw[agg] (fc) -- node[right, font=\tiny\sffamily] {has} (fa);
+    \draw[nav] (ac.north east) -- node[nm, pos=0.7] {teaches} (mo.south);
+    \draw[nav] (ac) -- node[nm] {supervises} (stu);
+    \draw[nav] (stu) -- node[right, font=\tiny\sffamily] {enrolled in} (pr);
+    \draw[nav] (stu.east) -- node[nm] {follows per year} (mo.south east);
+    \draw[agg] (stu.north west) -- (fc.east);
+    \draw[agg] (sf.north) -- (fc.south);
+    \draw[inh] (ac) -- (sf);
+    \draw[inh] (ad) -- (sf);
+\end{tikzpicture}}
+    \caption{Soluzione completa dell'Esercizio 5a. Il rombo pieno \texttt{DMU}--\texttt{Faculty} (6 facoltà) è aggiunto rispetto alla slide.}
+\end{figure}
+
+\clearpage
+
+\paragraph{Esercizio 6 (proposto): Nightclub.}
+\textbf{Testo}: \textit{Un sistema gestisce le feste private di un locale. Una festa ha un host (chi invia gli inviti), molti ospiti, un DJ, dei camerieri e un buttafuori. Il sistema deve permettere di invitare le persone, ricevere le risposte (accetta/rifiuta), definire il menù di cocktail e bevande, creare una playlist. I camerieri servono i drink, il DJ gestisce la playlist e accetta richieste durante la festa. Il buttafuori fa entrare solo gli invitati.}
+
+\noindent \textit{La slide non riporta la soluzione: la proposta seguente è ricostruita dal testo.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.3cm, font=\scriptsize\sffamily}]
+    \node[c2] (pa) at (0, 0) {\cn{Party}\nodepart{second}+date: Date};
+    \node[c1] (ho) at (-6, 3) {\cn{Host}};
+    \node[c1] (gu) at (-6, 0.8) {\cn{Guest}};
+    \node[c2] (bo) at (-6, -3) {\cn{Bouncer}\nodepart{second}+checkInvite()};
+    \node[c2] (inv) at (0, -3) {\cn{Invitation}\nodepart{second}+response: string};
+    \node[c2] (dj) at (6, 3) {\cn{DJ}\nodepart{second}+acceptRequest()};
+    \node[c2] (wa) at (6, 0.5) {\cn{Waiter}\nodepart{second}+serve()};
+    \node[c2] (pl) at (12, 3) {\cn{Playlist}\nodepart{second}+addSong()};
+    \node[c2] (dr) at (12, 0.5) {\cn{Drink}\nodepart{second}+name: string};
+    \node[c2] (me) at (6, -3) {\cn{Menu}\nodepart{second}+addDrink()};
+    \draw[nav] (pa) -- node[nm] {hosted by} node[m2, below] {1} (ho);
+    \draw[nav] (pa) -- node[nm] {invites} node[m2, below] {*} (gu);
+    \draw[nav] (pa) -- node[nm] {has} node[m2, below] {1} (dj);
+    \draw[nav] (pa) -- node[nm] {has} node[m2, below] {*} (wa);
+    \draw[nav] (bo) -- node[nm] {checks} (inv);
+    \draw[nav] (inv) -- node[right, font=\tiny\sffamily] {for} (pa);
+    \draw[comp] (me) -- node[m1, above] {1} (pa);
+    \draw[comp] (pl.north west) to[bend right=20] node[m2, above] {1} (pa.north east);
+    \draw[agg] (dr.south west) -- node[m1, below] {*} (me.east);
+    \draw[nav] (dj) -- node[nm] {manages} (pl);
+    \draw[nav] (wa) -- node[nm] {serves} (dr);
+\end{tikzpicture}}
+    \caption{Proposta di soluzione per l'Esercizio 6 (la superclasse \texttt{Person} è omessa per leggibilità).}
+\end{figure}
+
+\newpage
+
+\subsection{Esercizi Complessi (Classi e Casi d'Uso)}
+
+\paragraph{Complex 1: Stocks Trading Service (diagramma delle classi).}
+Testo e diagramma dei casi d'uso: esercizio Stocks nella sezione sui Casi d'Uso. Qui la parte strutturale.
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.5cm, font=\scriptsize\sffamily}]
+    \node[c2] (ba) at (-1.5, 8.6) {\cn{Bank}\nodepart{second}+name: string};
+    \node[c2] (co) at (-3.2, 5.2) {\cn{Connection}\nodepart{second}+status: string\\ +lastUpdated: DateTime};
+    \node[c2] (pf) at (0.8, 5.2) {\cn{PriceFeed}\nodepart{second}+timestamp: DateTime\\ +price: float};
+    \node[c2] (us) at (5, 8.6) {\cn{User}\nodepart{second}+id: string\\ +name: string};
+    \node[c3] (ta) at (5, 5.2) {\cn{TrendAnalysis}\nodepart{second}\nodepart{third}+calculateMovingAverage()\\ +predictNext()\\ +visualizeTrend()};
+    \node[c3] (or) at (11.2, 5.2) {\cn{Order}\nodepart{second}+quantity: int\\ +executionType: string\\ +pricingStrategy: string\\ +status: string\nodepart{third}\phantom{x}};
+    \node[c2] (st) at (0.8, 1.2) {\cn{Stock}\nodepart{second}+symbol: string\\ +name: string\\ +currentPrice: float\\ +availabilityStatus: string};
+    \node[c1] (bc) at (7.6, 0.6) {\cn{BidConflictHandler}};
+    \node[c1] (sa) at (12.6, 0.6) {\cn{StockAvailabilityChecker}};
+    \node[c1] (fb) at (9, 8.6) {\cn{FixedBid}};
+    \node[c1] (rb) at (11.8, 8.6) {\cn{RangeBid}};
+    \node[c1] (io) at (14.6, 8.6) {\cn{ImmediateOrder}};
+    \node[c1] (do) at (17.4, 8.6) {\cn{DelayedOrder}};
+    \draw[nav] (ba) -- node[nm] {connection} node[m1, below] {1} node[m2, below] {1} (co);
+    \draw[nav] (ba) -- node[nm] {provides} node[m1, below] {1} node[m2, below] {0..*} (pf);
+    \draw[nav] (pf) -- node[m1, right] {1} node[m2, right] {1} (st);
+    \draw[nav] (us) -- node[right, font=\tiny\sffamily] {uses} (ta);
+    \draw[nav] (us) -- node[nm] {places} node[m2, left] {0..*} (or.north west);
+    \draw[nav] (or.south west) -- node[nm] {refers to} node[m2, above] {1..*} (st.east);
+    \draw[nav] (or.south) -- node[nm] {resolves with} (bc.north);
+    \draw[nav] (or.south east) -- node[nm] {checks via} (sa.north);
+    \foreach \x in {fb,rb,io,do} \draw[inh] (\x.south) -- (or.north);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 1 -- classi.}
+\end{figure}
+
+\paragraph{Complex 2: Network Printing Service.}
+\textbf{Testo}: \textit{Una stampante laser a colori ad altissima risoluzione è disponibile in rete. Il servizio permette di vedere l'anteprima del documento. L'utente può vedere lo stato della stampante (documenti in coda, problemi come inceppamenti, carta o toner finiti) e monitorare i propri lavori di stampa, ritardandoli o cancellandoli. Per stampare servono autorizzazione e quota di stampa. Un amministratore gestisce utenti e quote.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=3cm, font=\scriptsize\sffamily}]
+    \node[c2] (ad) at (0, 3) {\cn{Admin}\nodepart{second}+name: string};
+    \node[c3] (au) at (0, 0) {\cn{AuthorizationService}\nodepart{second}\nodepart{third}+verifyUser(user: User): boolean\\ +checkQuota(user: User): boolean};
+    \node[c2] (us) at (5.5, 1.5) {\cn{User}\nodepart{second}+id: string\\ +name: string\\ +printQuota: int\\ +authorized: boolean};
+    \node[c2] (pj) at (11, 1.5) {\cn{PrintJob}\nodepart{second}+id: string\\ +status: string\\ +submissionTime: DateTime\\ +owner: User.id};
+    \node[c2] (qu) at (16.5, 3.3) {\cn{Queue}\nodepart{second}+jobs: List<PrintJob>};
+    \node[c2] (pv) at (16.5, 0) {\cn{Preview}\nodepart{second}+previewImage: Image\\ +resolution: string};
+    \node[c2] (pr) at (11, 5.2) {\cn{Printer}\nodepart{second}+model: string\\ +status: string\\ +tonerLevel: int\\ +paperLevel: int};
+    \draw[nav] (ad.east) -- node[nm] {manages} node[m1, below] {1} node[m2, below] {0..*} (us.north west);
+    \draw[nav] (au.east) -- node[nm] {checks access} (us.south west);
+    \draw[nav] (us) -- node[nm] {prepares} node[m1, below] {1} node[m2, below] {0..*} (pj);
+    \draw[nav] (pj) -- node[nm] {submit} node[m2, below] {0..1} (qu);
+    \draw[nav] (pj) -- node[nm] {generates} node[m1, below] {1} node[m2, below] {0..1} (pv);
+    \draw[nav] (pr) -- node[nm] {has} node[m1, above] {1} node[m2, above] {1} (qu);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 2 (ricostruita dalla slide, che è tagliata a destra).}
+\end{figure}
+
+\clearpage
+
+\paragraph{Complex 3: Bread Machine (classi e casi d'uso).}
+\textbf{Testo}: \textit{La macchina del pane prepara pagnotte tonde o a cassetta. Si toglie la vaschetta, si aggiungono gli ingredienti, si reinserisce la vaschetta, si seleziona il programma e si avvia. A fine cottura la macchina tiene in caldo il pane per un'ora: va tolto e fatto raffreddare, altrimenti indurisce. Prima di affettarlo si aspettano altri 30 minuti. Ingredienti base: liquido (acqua o latte), farina (bianca o integrale), sale, zucchero, lievito (fresco o secco). Si possono aggiungere ingredienti extra (dopo un beep): olive, semi, pomodori secchi. Tutti i pani seguono lo stesso ciclo, tranne quello integrale: preriscaldamento, impasto, due riposi (lievitazione) e cottura.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.3cm, font=\scriptsize\sffamily}]
+    \node[c3] (bm) at (7, 10) {\cn{BreadMachine}\nodepart{second}\nodepart{third}+start(program: Program)\\ +keepWarm()};
+    \node[c3] (pa) at (-1, 7) {\cn{Pan}\nodepart{second}\nodepart{third}+insert()\\ +remove()};
+    \node[c2] (br) at (4, 7) {\cn{Bread}\nodepart{second}+shape: string\\ +type: string};
+    \node[c2] (pg) at (11, 7) {\cn{Program}\nodepart{second}+name: string\\ +isWholeWheat: boolean};
+    \node[c2] (be) at (16, 7) {\cn{Beep}\nodepart{second}+timeOffset: int};
+    \node[c1] (cy) at (11, 4.2) {\cn{Cycle}};
+    \node[c2] (stp) at (11, 1.4) {\cn{Step}\nodepart{second}+name: string\\ +duration: int\\ +order: int};
+    \node[c1] (ei) at (-1, 3.4) {\cn{ExtraIngredient}};
+    \node[c1] (bi) at (4, 3.4) {\cn{BaseIngredient}};
+    \node[c1] (li) at (7.6, 4.6) {\cn{Liquid}};
+    \node[c1] (fl) at (7.6, 3.4) {\cn{Flour}};
+    \node[c1] (ye) at (7.6, 2.2) {\cn{Yeast}};
+    \node[c2] (in) at (1.5, 0.4) {\cn{\textit{Ingredient}}\nodepart{second}+name: string};
+    \draw[dep] (bm.west) -| node[nm, pos=0.2] {\guillemotleft uses\guillemotright} (pa.north);
+    \draw[nav] (bm.south west) -- node[nm] {produces} (br.north);
+    \draw[nav] (bm.south east) -- node[nm] {executes} (pg.north);
+    \draw[dep] (bm.east) -| node[nm, pos=0.2] {emits} (be.north);
+    \draw[nav] (pg) -- node[right, font=\tiny\sffamily] {defines} (cy);
+    \draw[dep] (pg) -- node[nm] {\guillemotleft triggers\guillemotright} (be);
+    \draw[comp] (stp) -- node[right, font=\tiny\sffamily] {contains} (cy);
+    \draw[comp] (ei) -- node[nm] {optionally enriched} node[m1, below] {*} (br.south west);
+    \draw[comp] (bi) -- node[right, font=\tiny\sffamily] {made with} node[m1, right] {5..*} (br);
+    \foreach \x in {li,fl,ye} \draw[inh] (\x.west) -- (bi.east);
+    \draw[inh] (ei) -- (in.north west);
+    \draw[inh] (bi) -- (in.north east);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 3 -- diagramma delle classi.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[font=\small\sffamily]
+    \sysbox{2.6}{-3.9}{10.6}{3.1}{Bread Machine}
+    \actor{us}{0}{-0.4}{User}
+    \node[ucase] (wb) at (3.5, 4.2) {Wait Before Slicing};
+    \node[ucase] (pp) at (4.8, 2) {Prepare Pan};
+    \node[ucase] (ai) at (9, 1) {Add Ingredients};
+    \node[ucase] (ae) at (4.8, 0) {Add ExtraIngredients};
+    \node[ucase] (sb) at (4.8, -1.7) {Start Baking};
+    \node[ucase] (sp) at (9, -1.7) {Select Program};
+    \node[ucase] (rb) at (4.8, -3.2) {Remove Bread};
+    \draw[assoc] (us.east) -- (wb.west);
+    \draw[assoc] (us.east) -- (pp.west);
+    \draw[assoc] (us.east) -- (sb.west);
+    \draw[assoc] (us.east) -- (rb.west);
+    \draw[incl] (pp.east) -- node[above, sloped] {\guillemotleft include\guillemotright} (ai.north west);
+    \draw[incl] (ae.east) -- node[above, sloped] {\guillemotleft extend\guillemotright} (ai.south west);
+    \draw[incl] (sb.east) -- node[above] {\guillemotleft include\guillemotright} (sp.west);
+\end{tikzpicture}
+    \caption{Soluzione Complex 3 -- casi d'uso (come nella slide, \textit{Wait Before Slicing} è fuori dal confine).}
+\end{figure}
+
+\clearpage
+
+\paragraph{Complex 4: Component Brokerage System.}
+\textbf{Testo}: \textit{Il sistema fa da broker di componenti software. Gli sviluppatori, a fine sviluppo, li sottomettono via Internet. Un amministratore ne verifica funzionalità e modalità di connessione, li categorizza e li pubblica in un'area pubblica. I clienti (altri sviluppatori) navigano/cercano i componenti e li scaricano. Poi i fornitori vedono le statistiche di download e possono aggiungere/rimuovere componenti.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.6cm, font=\scriptsize\sffamily}]
+    \node[c1] (pv) at (0, 4.5) {\cn{Provider}};
+    \node[c1] (ad) at (0, 0.5) {\cn{Administrator}};
+    \node[c2] (su) at (4.6, 2.8) {\cn{Submission}\nodepart{second}+submittedOn: Date\\ +status: string};
+    \node[c2, text width=3.4cm] (co) at (9.8, 2.5) {\cn{Component}\nodepart{second}+id: string\\ +name: string\\ +version: string\\ +category: string\\ +description: string\\ +tags: List<string>\\ +connectivityInfo: string};
+    \node[c2] (dl) at (14.8, 3.2) {\cn{DownloadLog}\nodepart{second}+date: Date};
+    \node[c1] (cu) at (19, 3.2) {\cn{Customer}};
+    \node[c2] (us) at (19, 0.4) {\cn{User}\nodepart{second}+username: string\\ +email: string};
+    \draw[nav] (pv) -- node[nm] {submits} node[m1, below] {1} node[m2, below] {0..*} (su);
+    \draw[nav] (ad) -- node[nm] {reviews} (su);
+    \draw[nav] (su) -- (co);
+    \draw[nav] (ad) -- node[nm] {categorizes} (co);
+    \draw[nav] (co) -- node[nm] {logs} node[m2, below] {0..*} (dl);
+    \draw[nav] (dl) -- node[nm] {by} (cu);
+    \draw[inh] (cu) -- (us);
+    \draw[inh] (pv.north) -- ++(0,0.8) -| (us.north);
+    \draw[inh] (ad.south) -- ++(0,-0.8) -| (us.south);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 4.}
+\end{figure}
+
+\clearpage
+
+\paragraph{Complex 5: Telepass.}
+\textbf{Testo}: \textit{Un dispositivo sul parabrezza permette di pagare il pedaggio senza fermarsi; in alcune sedi anche il parcheggio. Il servizio è per persone fisiche. Ogni dispositivo è assegnato a un cliente tramite un contratto che definisce il metodo di pagamento: addebito periodico su conto corrente, BancoPosta o carta di credito abilitata. Il dispositivo ha un codice univoco e si associa a al più tre veicoli, le cui targhe sono registrate. Al casello un sistema ottico (CTV) riconosce il tipo di veicolo e fa emettere un segnale di richiesta identificazione; il dispositivo risponde col codice. Dopo mezzo secondo, se il codice è valido, la centralina alza la sbarra; altrimenti una telecamera fotografa la targa. In ogni caso un secondo sistema ottico conferma la classificazione.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\small\sffamily, lb/.style={fill=white, inner sep=1pt, font=\tiny\sffamily, pos=0.5}]
+    \sysbox{2.4}{-5.2}{14.2}{4.8}{Telepass System}
+    \actor{cu}{0}{1.6}{Customer}
+    \actor{ve}{0}{-3}{Vehicle}
+    \node[ucase] (rc) at (5.6, 3.4) {Register Contract};
+    \node[ucase] (at) at (5.6, 2.1) {Assign Telepass to Vehicles};
+    \node[ucase] (cp) at (5.6, 0.8) {Configure Payment Method};
+    \node[ucase] (pt) at (5.6, -2.2) {Pass Toll Gate};
+    \node[ucase] (pp) at (5.6, -4.3) {Pay for Parking};
+    \node[ucase] (vd) at (11.6, 2.6) {Validate Device Code};
+    \node[ucase] (dv) at (11.6, 0.9) {Detect Vehicle Type};
+    \node[ucase] (hi) at (11.6, -0.8) {Handle Invalid Passage};
+    \node[ucase] (pm) at (11.6, -2.6) {Process Toll Payment};
+    \foreach \n in {rc,at,cp} \draw[assoc] (cu.east) -- (\n.west);
+    \foreach \n in {pt,pp} \draw[assoc] (ve.east) -- (\n.west);
+    \draw[incl] (pt) -- node[lb] {\guillemotleft include\guillemotright} (vd);
+    \draw[incl] (pt) -- node[lb] {\guillemotleft include\guillemotright} (dv);
+    \draw[incl] (hi) -- node[lb] {\guillemotleft extend\guillemotright} (pt);
+    \draw[incl] (pt) -- node[lb] {\guillemotleft include\guillemotright} (pm);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 5 -- casi d'uso. La freccia \guillemotleft extend\guillemotright{} parte da \textit{Handle Invalid Passage} (la slide la disegna al contrario).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.6cm, font=\scriptsize\sffamily}]
+    \node[c2] (cu) at (0, 2) {\cn{Customer}\nodepart{second}+name: string\\ +fiscalCode: string};
+    \node[c2] (ct) at (4.6, 2) {\cn{Contract}\nodepart{second}+id: string\\ +startDate: Date\\ +billingCycle: string};
+    \node[c2] (td) at (9.2, 3.2) {\cn{TelepassDevice}\nodepart{second}+deviceId: string};
+    \node[c2] (ve) at (14, 5.5) {\cn{Vehicle}\nodepart{second}+licensePlate: string\\ +type: string};
+    \node[c2] (te) at (19, 5.5) {\cn{TransitEvent}\nodepart{second}+timestamp: DateTime\\ +status: string};
+    \node[c1] (pm) at (9.2, 0.2) {\cn{\textit{PaymentMethod}}};
+    \node[c1] (ba) at (14, 0.2) {\cn{BankAccount}};
+    \node[c1] (bp) at (14, -1.3) {\cn{BancoPosta}};
+    \node[c1] (cc) at (14, -2.8) {\cn{CreditCard}};
+    \node[c1] (tg) at (14, 3) {\cn{TollGate}};
+    \node[c2] (ctv) at (19, 3) {\cn{CTV}\nodepart{second}+detectVehicleType()};
+    \node[c2] (ca) at (19, 1.2) {\cn{Camera}\nodepart{second}+takePhoto(plate: string)};
+    \node[c2] (cn) at (19, -0.8) {\cn{ControlUnit}\nodepart{second}+validateCode(code: string)\\ +raiseBarrier()};
+    \draw[nav] (cu) -- node[m1, below] {1} node[m2, below] {1} (ct);
+    \draw[nav] (ct) -- node[m1, below] {1} node[m2, below] {1} (td);
+    \draw[nav] (ct) -- node[m1, below] {1} node[m2, below] {1} (pm);
+    \draw[nav] (td) -- node[nm] {assigned to} node[m2, below] {1..3} (ve);
+    \draw[nav] (ve) -- node[nm] {triggers} (te);
+    \draw[nav] (td) to[bend left=12] node[nm] {logs} (te);
+    \draw[dep] (td) -- node[nm] {\guillemotleft use\guillemotright} (tg);
+    \foreach \x in {ba,bp,cc} \draw[inh] (\x.west) -- (pm.east);
+    \draw[agg] (ctv.west) -- (tg.east);
+    \draw[agg] (ca.west) -- (tg.south east);
+    \draw[agg] (cn.west) -- (tg.south);
+\end{tikzpicture}}
+    \caption{Soluzione Complex 5 -- diagramma delle classi.}
+\end{figure}
+
+\paragraph{Esercizio proposto: Bug Tracking System.}
+\textbf{Testo}: \textit{Gli sviluppatori usano il sistema per tracciare i bug di un progetto. Chi trova un bug può inviare una segnalazione. Altri sviluppatori possono assegnare il bug a uno sviluppatore specifico (in particolare il responsabile del modulo) perché lo risolva. Gli utenti possono navigare/cercare tutti i bug. Un amministratore gestisce gli utenti per limitare l'accesso. L'amministratore deve anche generare report sullo stato del progetto, sotto forma di pagine web aggiornate ogni giorno alle 2:00.}
+
+\noindent \textit{La slide non riporta la soluzione: caso d'uso ricostruito dal testo. Il Timer (evento temporale) è un attore esterno che innesca il report.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}[font=\small\sffamily]
+    \sysbox{3}{-4.6}{9.6}{3.6}{Bug Tracking System}
+    \actor{de}{0}{1.8}{Developer}
+    \actor{us}{0}{-0.6}{User}
+    \actor{ad}{0}{-3}{Administrator}
+    \actor{ti}{12.6}{-2}{Timer (2am)}
+    \node[ucase] (sb) at (6.3, 2.6) {Submit Bug Report};
+    \node[ucase] (ab) at (6.3, 1.2) {Assign Bug};
+    \node[ucase] (br) at (6.3, -0.4) {Browse/Search Bugs};
+    \node[ucase] (mu) at (6.3, -1.9) {Manage Users};
+    \node[ucase] (gr) at (6.3, -3.4) {Generate Reports};
+    \draw[assoc] (de.east) -- (sb.west);
+    \draw[assoc] (de.east) -- (ab.west);
+    \draw[assoc] (us.east) -- (br.west);
+    \draw[assoc] (ad.east) -- (mu.west);
+    \draw[assoc] (ad.east) -- (gr.west);
+    \draw[assoc] (ti.west) -- (gr.east);
+\end{tikzpicture}
+    \caption{Proposta di soluzione per il Bug Tracking System.}
+\end{figure}
+
+\subsection{Esercizi sugli Statechart}
+
+\begin{cbox}{Ripasso: sintassi di una transizione}
+\noindent \texttt{evento [guardia] / azione}: tutti gli elementi sono opzionali. Cerchio nero pieno = stato iniziale, cerchio con bordo = stato finale. Dentro uno stato: \texttt{entry/}, \texttt{exit/}, \texttt{do/}.
+\end{cbox}
+
+\paragraph{Esercizio 1: il tuo processo di sviluppo software.}
+\textbf{Testo}: \textit{Definire lo statechart del proprio processo di sviluppo software.} (``Your mileage may vary'': esistono molte soluzioni valide.)
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt] (id) at (1.6, 0) {Idle};
+    \node[stt] (pl) at (4.2, 0) {Planning};
+    \node[stt] (de) at (7, 0) {Designing};
+    \node[stt] (co) at (10, 0) {Coding};
+    \node[stt] (te) at (12.4, -2) {Testing};
+    \node[stt] (db) at (14.4, -4) {Debugging};
+    \node[stt] (su) at (10, -6) {Submitting};
+    \node[stt] (do) at (13, -6) {Done};
+    \node[fin] (f) at (15.2, -6) {};
+    \draw[tr] (i) -- (id);
+    \draw[tr] (id) -- node[above] {startProject} (pl);
+    \draw[tr] (pl) -- node[above] {[Understood]} (de);
+    \draw[tr] (de) -- node[above] {[Complete]} (co);
+    \draw[tr] (co) -- node[above, sloped] {[Complete]} (te);
+    \draw[tr] (te) to[bend left=15] node[above, sloped] {[Fail]} (db);
+    \draw[tr] (db) to[bend left=15] node[below, sloped] {fixBug} (te);
+    \draw[tr] (co.south) to[bend right=25] node[left, near start] {[noTimeLeft]} (su.north west);
+    \draw[tr] (te.south) -- node[left, near start] {testsPass} (su.north);
+    \draw[tr] (db.south west) -- node[below, sloped] {[noTimeLeft]} (su.east);
+    \draw[tr] (su) -- node[above] {submit} (do);
+    \draw[tr] (do) -- (f);
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 1 (Statechart).}
+\end{figure}
+
+\clearpage
+
+\paragraph{Esercizio 2: una partita di basket.}
+\textbf{Testo}: \textit{Definire lo statechart di una partita di basket.}
+
+\noindent \textbf{Soluzione semplice}: 4 quarti da 15 minuti con pausa a metà; se pari dopo il 4$^\circ$ quarto, supplementare (che si ripete finché pari).
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt] (pg) at (1.6, 0) {PreGame};
+    \node[stt2] (q1) at (4.2, 0) {Q1 \nodepart{second}wait/15m};
+    \node[stt2] (q2) at (6.4, 0) {Q2 \nodepart{second}wait/15m};
+    \node[stt2] (ht) at (8.6, 0) {Halftime \nodepart{second}recess};
+    \node[stt2] (q3) at (10.8, 0) {Q3 \nodepart{second}wait/15m};
+    \node[stt2] (q4) at (13, 0) {Q4 \nodepart{second}wait/15m};
+    \node[stt2] (ot) at (13, -2.2) {Overtime \nodepart{second}wait/5m};
+    \node[stt2, text width=2.3cm] (go) at (16.2, 0) {GameOver \nodepart{second}entry/ring final buzzer};
+    \node[fin] (f) at (18.2, 0) {};
+    \draw[tr] (i) -- (pg);
+    \draw[tr] (pg) -- node[above] {start} (q1);
+    \draw[tr] (q1) -- (q2); \draw[tr] (q2) -- (ht); \draw[tr] (ht) -- (q3); \draw[tr] (q3) -- (q4);
+    \draw[tr] (q4) -- (go);
+    \draw[tr] (q4) -- node[left] {[Tie]} (ot);
+    \draw[tr] (ot.east) -| (go.south);
+    \draw[tr] (ot.north east) to[out=60, in=0, looseness=6] node[right] {[Tie]} (ot.east);
+    \draw[tr] (go) -- (f);
+\end{tikzpicture}}
+    \caption{Esercizio 2: soluzione semplice.}
+\end{figure}
+
+\noindent \textbf{Con sottostati}: Q1 e Q2 raggruppati in \texttt{FirstHalf}, Q3 e Q4 in \texttt{SecondHalf} (stati compositi).
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt] (pg) at (1.6, 0) {PreGame};
+    \draw[semithick, rounded corners=6pt] (3.3, -1) rectangle (7.7, 1.2);
+    \node[font=\scriptsize\sffamily] at (5.5, 0.95) {FirstHalf};
+    \node[stt2] (q1) at (4.3, 0) {Q1 \nodepart{second}wait/15m};
+    \node[stt2] (q2) at (6.7, 0) {Q2 \nodepart{second}wait/15m};
+    \node[stt2] (ht) at (9.5, 0) {Halftime \nodepart{second}recess};
+    \draw[semithick, rounded corners=6pt] (11.2, -1) rectangle (15.6, 1.2);
+    \node[font=\scriptsize\sffamily] at (13.4, 0.95) {SecondHalf};
+    \node[stt2] (q3) at (12.2, 0) {Q3 \nodepart{second}wait/15m};
+    \node[stt2] (q4) at (14.6, 0) {Q4 \nodepart{second}wait/15m};
+    \node[stt2] (ot) at (15.6, -2.6) {Overtime \nodepart{second}wait/5m};
+    \node[stt2, text width=2.3cm] (go) at (18.8, 0) {GameOver \nodepart{second}entry/ring final buzzer};
+    \node[fin] (f) at (20.8, 0) {};
+    \draw[tr] (i) -- (pg);
+    \draw[tr] (pg) -- node[above] {start} (3.3, 0);
+    \draw[tr] (q1) -- (q2);
+    \draw[tr] (7.7, 0) -- (ht);
+    \draw[tr] (ht) -- (11.2, 0);
+    \draw[tr] (q3) -- (q4);
+    \draw[tr] (15.6, 0.5) -- (go.north west);
+    \draw[tr] (15.0, -1) -- node[left] {[Tie]} (ot.north);
+    \draw[tr] (ot.east) -| (go.south);
+    \draw[tr] (go) -- (f);
+\end{tikzpicture}}
+    \caption{Esercizio 2: soluzione con stati compositi.}
+\end{figure}
+
+\noindent \textbf{Con timeout}: ogni quarto (e l'overtime) è uno stato composito con due sottostati, \texttt{InPlay} e \texttt{Timeout} (1 minuto). Lo schema vale per Q1--Q4 e Overtime.
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \draw[semithick, rounded corners=8pt] (0, -1.9) rectangle (8, 1.6);
+    \node[font=\scriptsize\bfseries\sffamily] at (4, 1.3) {Q1};
+    \draw[semithick] (0, 1.0) -- (8, 1.0);
+    \node[font=\tiny\sffamily, anchor=west] at (0.2, 1.15) {wait/15m};
+    \node[ini] (i) at (0.8, 0) {};
+    \node[stt] (ip) at (2.4, 0) {InPlay1};
+    \node[stt2, text width=1.5cm] (to) at (6.4, 0) {Timeout1 \nodepart{second}wait/1m};
+    \draw[tr] (i) -- (ip);
+    \draw[tr] (ip.north east) to[bend left=20] node[above] {timeoutCalled} (to.north west);
+    \draw[tr] (to.south west) to[bend left=20] node[below] {timeoutEnds} (ip.south east);
+\end{tikzpicture}
+    \caption{Esercizio 2: dettaglio con timeout (stesso schema per ogni quarto e per l'overtime).}
+\end{figure}
+
+\clearpage
+
+\paragraph{Esercizio 3: stato civile di una persona.}
+\textbf{Testo}: \textit{Stato civile dalla nascita alla morte. In Italia ci si sposa a 18 anni; il tribunale dei minorenni può concedere l'emancipazione a chi ha almeno 16 anni, permettendo il matrimonio.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt, text width=1.8cm] (s1) at (2.4, 0) {Single1\\ {[age < 16]}};
+    \node[stt, text width=1.8cm] (s2) at (6.4, 0) {Single2\\ {[age >= 16]}};
+    \node[stt] (ma) at (9.4, -2) {Married};
+    \node[stt] (wi) at (13.2, 1.6) {Widowed};
+    \node[stt] (se) at (14.6, -4.4) {Separated};
+    \node[stt] (di) at (9.4, -6) {Divorced};
+    \node[fin] (f) at (4.4, -8.2) {};
+    \draw[tr] (i) -- node[above] {birth} (s1);
+    \draw[tr] (s1.north east) to[out=70, in=110, looseness=7] node[above, pos=0.5] {birthday [age < 15]} (s1.north west);
+    \draw[tr] (s1) -- node[above] {birthday [age = 15]} (s2);
+    \draw[tr] (s2) -- node[above] {marry} (ma);
+    \draw[tr] (ma) -- node[above, sloped] {partner dies} (wi);
+    \draw[tr] (wi) to[bend right=15] node[below, sloped] {marry} (ma);
+    \draw[tr] (ma) to[bend left=10] node[above, sloped] {separate} (se);
+    \draw[tr] (se) to[bend left=10] node[below, sloped] {reunite} (ma);
+    \draw[tr] (ma) -- node[left] {divorce} (di);
+    \draw[tr] (di) -- node[below, sloped] {marry} (ma.south west);
+    \draw[tr] (se) -- node[below, sloped] {divorce} (di);
+    \draw[tr] (se.north) -- node[right] {partner dies} (wi.south);
+    \foreach \n in {s1,s2,ma,wi,se,di} \draw[tr, densely dotted] (\n) -- node[font=\tiny\sffamily, fill=white, inner sep=1pt, pos=0.5] {death} (f);
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 3. Ogni stato ha una transizione \texttt{death} verso lo stato finale (tratteggiata per leggibilità).}
+\end{figure}
+
+\noindent \textit{Nota dalla lezione}: nessuna delle soluzioni proposte è davvero conforme al diritto italiano. Ad esempio, qui \texttt{Single2} (età $\ge 16$) può sposarsi con un semplice \texttt{marry}, ignorando la regola dei 18 anni e l'emancipazione del tribunale dei minorenni. In aula la soluzione è stata accettata come approssimazione.
+
+\clearpage
+
+\paragraph{Esercizio 4: conto bancario.}
+\textbf{Testo}: \textit{Un utente può aprire un conto, prelevare e versare. Disegnare lo statechart che tiene traccia del saldo.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 3) {};
+    \node[stt, text width=2.2cm] (af) at (0, 0.8) {account with funds};
+    \node[stt] (zb) at (0, -2.2) {zero balance};
+    \node[fin] (f) at (0, -4) {};
+    \draw[tr] (i) -- node[right] {open bank account} (af);
+    \draw[tr] (af.north west) to[out=140, in=180, looseness=5] node[left] {deposit funds} (af.west);
+    \draw[tr] (af.east) to[out=0, in=0, looseness=4] node[right] {withdraw funds [balance > 0]} (af.south east);
+    \draw[tr] (af) -- node[right] {withdraw funds [balance == 0]} (zb);
+    \draw[tr] (zb.west) -- ++(-1.8, 0) |- node[left, pos=0.25] {deposit funds} (af.west);
+    \draw[tr] (zb) -- (f);
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 4.}
+\end{figure}
+
+\paragraph{Esercizio 5: la spesa al supermercato.}
+\textbf{Testo}: \textit{Statechart del cliente: cerca parcheggio, poi fa la spesa; deve comprare surgelati e carne, facendo la coda al banco macelleria; alla fine paga alla cassa, ma può decidere di andarsene in qualsiasi momento.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt] (lp) at (1.8, 0) {LookingForParking};
+    \node[stt] (es) at (5, 1) {EnterSupermarket};
+    \node[stt] (qb) at (8.4, 1.6) {QueueingAtButcher};
+    \node[stt] (bm) at (11.6, 2.8) {BuyingMeat};
+    \node[stt] (bf) at (14.6, 4) {BuyingFrozenFoods};
+    \node[stt] (pa) at (17.6, 5) {Paying};
+    \node[stt] (se) at (19.6, 1) {ShopExit};
+    \node[fin] (f) at (21.6, 1) {};
+    \draw[tr] (i) -- (lp);
+    \draw[tr] (lp) -- node[above, sloped] {foundSpot} (es);
+    \draw[tr] (es) -- (qb);
+    \draw[tr] (qb) -- node[above, sloped] {served} (bm);
+    \draw[tr] (bm) -- node[above, sloped] {next} (bf);
+    \draw[tr] (bf) -- (pa);
+    \draw[tr] (pa) -- (se);
+    \draw[tr] (lp.south) to[out=-30, in=-120] node[below] {[decideToLeave]} (se.south west);
+    \draw[tr] (qb) to[bend right=8] node[below, pos=0.6] {[decideToLeave]} (se);
+    \draw[tr] (bm) to[bend right=8] node[below, pos=0.6] {[decideToLeave]} (se);
+    \draw[tr] (bf) to[bend left=8] node[below, pos=0.6] {[decideToLeave]} (se);
+    \draw[tr] (se) -- (f);
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 5 (la slide mostra anche \texttt{[decideToLeave]} da \texttt{EnterSupermarket}, omesso per leggibilità).}
+\end{figure}
+
+\subsection{Esercizi sugli Activity Diagram}
+
+\paragraph{Esercizio 1: biblioteca.}
+\textbf{Testo}: \textit{Una biblioteca permette il prestito di libri e riviste. Il sistema tiene traccia dei prestiti in corso e verifica che non si superi il massimo di 6 volumi per persona. Solo i soci registrati possono prendere in prestito. La disponibilità di ogni opera è aggiornata di continuo e va controllata al momento della richiesta.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[ac] (br) at (2.4, 0) {Book request};
+    \node[ac] (vm) at (6.2, 0) {Verify\\membership};
+    \node[dc] (d1) at (6.2, -1.7) {};
+    \node[ac] (nm) at (2.4, -1.7) {New\\membership};
+    \node[dc] (d2) at (2.4, -3.4) {};
+    \node[fin] (f1) at (0, -3.4) {};
+    \node[ac] (cb) at (6.2, -3.4) {Check member\\books on lease};
+    \node[dc] (d3) at (6.2, -5.1) {};
+    \node[fin] (f2) at (9.6, -5.1) {};
+    \node[dc] (mg) at (4.2, -6.3) {};
+    \node[ac] (ca) at (4.2, -7.8) {Check if book\\is available};
+    \node[dc] (d4) at (4.2, -9.4) {};
+    \node[ac] (ub) at (4.2, -11) {Update book\\status};
+    \node[ac] (um) at (8, -11) {Update member\\status};
+    \node[ac] (nr) at (8, -9.4) {New book\\request};
+    \node[dc] (d5) at (8, -7.8) {};
+    \node[fin] (f3) at (11, -7.8) {};
+    \draw[tr] (i) -- (br);
+    \draw[tr] (br) -- (vm);
+    \draw[tr] (vm) -- (d1);
+    \draw[tr] (d1) -- node[above] {[Not member]} (nm);
+    \draw[tr] (nm) -- (d2);
+    \draw[tr] (d2) -- node[above] {[CANCEL]} (f1);
+    \draw[tr] (d2.south) -- node[below, near end] {[OK]} (mg.west);
+    \draw[tr] (d1) -- node[right] {[Member]} (cb) ;
+    \draw[tr] (cb) -- (d3);
+    \draw[tr] (d3) -- node[above] {[Book limit reached]} (f2);
+    \draw[tr] (d3.south) -- node[left, pos=0.3] {[OK]} (mg.east);
+    \draw[tr] (mg) -- (ca);
+    \draw[tr] (ca) -- (d4);
+    \draw[tr] (d4) -- node[left] {[available]} (ub);
+    \draw[tr] (ub) -- (um);
+    \draw[tr] (um) -- (nr);
+    \draw[tr] (d4.east) -- node[above] {[NOT available]} (nr.west);
+    \draw[tr] (nr) -- (d5);
+    \draw[tr] (d5) -- node[above] {[CANCEL]} (f3);
+    \draw[tr] (d5.north) |- node[above, pos=0.7] {[OK]} (cb.east);
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 1 (rombi = decision/merge; la slide usa una barra al posto del merge, ``solution\dots sort of'').}
+\end{figure}
+
+\paragraph{Esercizio 2: partita di basket.}
+\textbf{Testo}: \textit{Activity diagram della partita di basket. Attenzione: i cicli sono brutti.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{0.9\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[ac, minimum width=3.4cm] (a1) at (0, -1.1) {Initialize game and teams};
+    \node[ac, minimum width=3.4cm] (a2) at (0, -2.2) {Start 1st Quarter};
+    \node[ac, minimum width=3.4cm] (a3) at (0, -3.3) {Play 1st--4th Quarter};
+    \node[ac, minimum width=3.4cm] (a4) at (0, -4.4) {Halftime break (dopo il 2$^\circ$)};
+    \node[dc] (d1) at (0, -5.8) {};
+    \node[font=\tiny\sffamily, anchor=west] at (0.7, -5.8) {Game is tied?};
+    \node[ac] (ge) at (4.5, -5.8) {Game ends after\\4th Quarter};
+    \node[fin] (f1) at (4.5, -7) {};
+    \node[ac] (so) at (-2.4, -7) {Start Overtime};
+    \node[ac] (po) at (-2.4, -8.2) {Play Overtime};
+    \node[dc] (d2) at (-2.4, -9.5) {};
+    \node[font=\tiny\sffamily, anchor=east] at (-3.1, -9.5) {Still tied?};
+    \node[ac] (sa) at (-6.2, -9.5) {Start another\\Overtime};
+    \node[ac] (go) at (-2.4, -11) {Game ends after Overtime};
+    \node[fin] (f2) at (-2.4, -12.1) {};
+    \draw[tr] (i) -- (a1); \draw[tr] (a1) -- (a2); \draw[tr] (a2) -- (a3); \draw[tr] (a3) -- (a4); \draw[tr] (a4) -- (d1);
+    \draw[tr] (d1) -- node[above] {no} (ge);
+    \draw[tr] (ge) -- (f1);
+    \draw[tr] (d1.south) |- node[above, pos=0.7] {yes} (so.north east);
+    \draw[tr] (so) -- (po);
+    \draw[tr] (po) -- (d2);
+    \draw[tr] (d2) -- node[above] {yes} (sa);
+    \draw[tr] (sa.north) |- (po.west);
+    \draw[tr] (d2) -- node[right] {no} (go);
+    \draw[tr] (go) -- (f2);
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 2 (il ciclo dell'overtime è un ramo di ritorno dopo \textit{Still tied?}).}
+\end{figure}
+
+\paragraph{Esercizio proposto: il tuo processo di sviluppo (Activity).}
+\textit{La slide non riporta la soluzione: proposta ricostruita.} Dopo la fase di design, codice e test si scrivono in parallelo (fork/join); i test falliti riportano al codice.
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[ac] (rq) at (2.2, 0) {Gather\\requirements};
+    \node[ac] (ds) at (5, 0) {Design};
+    \node[fbar, minimum width=0.1cm, minimum height=2.2cm] (fk) at (7, 0) {};
+    \node[ac] (cd) at (9.2, 0.9) {Write code};
+    \node[ac] (wt) at (9.2, -0.9) {Write tests};
+    \node[fbar, minimum width=0.1cm, minimum height=2.2cm] (jn) at (11.4, 0) {};
+    \node[ac] (rt) at (13.6, 0) {Run tests};
+    \node[dc] (dd) at (15.8, 0) {};
+    \node[ac] (dp) at (18, 0) {Deploy};
+    \node[fin] (f) at (20, 0) {};
+    \node[ac] (fx) at (15.8, -2.2) {Fix bugs};
+    \draw[tr] (i) -- (rq); \draw[tr] (rq) -- (ds); \draw[tr] (ds) -- (fk);
+    \draw[tr] (fk) -- (cd); \draw[tr] (fk) -- (wt);
+    \draw[tr] (cd) -- (jn); \draw[tr] (wt) -- (jn);
+    \draw[tr] (jn) -- (rt); \draw[tr] (rt) -- (dd);
+    \draw[tr] (dd) -- node[above] {[passed]} (dp);
+    \draw[tr] (dd) -- node[right] {[failed]} (fx);
+    \draw[tr] (fx.west) -| (fk.south);
+    \draw[tr] (dp) -- (f);
+\end{tikzpicture}}
+    \caption{Proposta: processo di sviluppo come Activity Diagram.}
+\end{figure}
+
+\subsection{Esercizi sui Sequence Diagram}
+
+\paragraph{Esercizio 1: avvio di un ATM.}
+\textbf{Testo}: \textit{Il sistema si attiva quando l'operatore porta l'interruttore su ``on''. Poi gli si chiede di inserire il contante disponibile nell'ATM e quindi si stabilisce la connessione con la banca. A questo punto si possono servire i clienti.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \lh{op}{0}{-7.2}{:OperatorPanel}
+    \lh{atm}{4}{-7.2}{:ATM}
+    \lh{cd}{8}{-7.2}{:CashDispenser}
+    \lh{nb}{11.5}{-7.2}{:NetworkToBank}
+    \sm{0}{4}{-1.4}{switchOn()}
+    \sself{4}{-1.8}{performStartup()}
+    \sm{4}{0}{-2.9}{getInitialCash()}
+    \sr{0}{4}{-3.6}{initialCash}
+    \sm{4}{8}{-4.5}{setInitialCash(initialCash)}
+    \sm{4}{11.5}{-5.6}{openConnection()}
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 1: System Startup Sequence Diagram.}
+\end{figure}
+
+\paragraph{Esercizio 2: richiesta di nuovo codice.}
+\textbf{Testo}: \textit{Modellare come si riceve la richiesta di sviluppare un nuovo pezzo di codice.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \lha{cl}{0}{-6.2}{Client}
+    \lh{me}{4}{-6.2}{Me}
+    \sm{0}{4}{-1.6}{Request new code}
+    \sself{4}{-2.0}{Analyze request}
+    \frag{-1}{6.2}{-2.9}{-4.3}{alt}{[Requirements unclear]}
+    \sm{4}{0}{-3.7}{Ask for clarifications}
+    \sm{0}{4}{-4.1}{Provide clarifications}
+    \sself{4}{-4.6}{Design solution}
+    \sself{4}{-5.1}{Implement code}
+    \sm{4}{0}{-5.9}{Deliver code}
+\end{tikzpicture}
+    \caption{Soluzione dell'Esercizio 2.}
+\end{figure}
+
+\paragraph{Esercizio 3: invio di un pacchetto TCP su Ethernet.} \textbf{Testo}: \textit{Modellare con un sequence diagram come un pacchetto TCP viene inviato su una connessione Ethernet.}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{ap}{0}{-8.5}{Application}
+    \lh{tcp}{3.6}{-8.5}{TCP Layer}
+    \lh{ip}{7.2}{-8.5}{IP Layer}
+    \lh{eth}{10.8}{-8.5}{Ethernet Layer}
+    \lh{nw}{14.4}{-8.5}{Network}
+    \sm{0}{3.6}{-1.5}{Send data}
+    \sself{3.6}{-1.9}{Add TCP header (segment)}
+    \sm{3.6}{7.2}{-2.9}{Pass TCP segment}
+    \sself{7.2}{-3.3}{Add IP header (packet)}
+    \sm{7.2}{10.8}{-4.3}{Pass IP packet}
+    \sself{10.8}{-4.7}{Add Ethernet header \& trailer (frame)}
+    \sm{10.8}{14.4}{-5.7}{Transmit frame}
+    \sm{14.4}{10.8}{-6.3}{Deliver frame}
+    \sm{10.8}{7.2}{-6.9}{Extract IP packet}
+    \sm{7.2}{3.6}{-7.5}{Extract TCP segment}
+    \sm{3.6}{0}{-8.1}{Deliver data}
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 3.}
+\end{figure}
+
+\paragraph{Esercizio 4: consegna di un progetto (con alt).}
+\textbf{Testo}: \textit{Modellare come si riceve la richiesta di sviluppare un nuovo pezzo di codice. Qual è la differenza con prima?} (Qui il processo coinvolge più attori/lifeline e un ramo di fallimento test.)
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{pr}{0}{-10.5}{Professor}
+    \lha{st}{3.6}{-10.5}{CS Student}
+    \lh{dv}{7.2}{-10.5}{Development}
+    \lh{ts}{10.8}{-10.5}{Testing}
+    \lh{ds}{14.4}{-10.5}{Deployment System}
+    \lh{gr}{18}{-10.5}{Grading}
+    \sm{0}{3.6}{-1.6}{1. Assign project requirements}
+    \sm{3.6}{7.2}{-2.2}{2. Analyze \& Design}
+    \sself{7.2}{-2.7}{3. Implement code}
+    \sm{7.2}{10.8}{-3.7}{4. Submit for testing}
+    \sself{10.8}{-4.2}{5. Run tests}
+    \frag{-1}{19.4}{-5.1}{-9.9}{alt}{[Tests passed]}
+    \sm{10.8}{14.4}{-5.9}{6a. Deploy project}
+    \sm{14.4}{0}{-6.5}{7a. Notify submission ready}
+    \sm{0}{18}{-7.1}{8a. Evaluate project}
+    \fsep{-1}{19.4}{-7.6}{[Tests failed]}
+    \sm{10.8}{7.2}{-8.4}{6b. Report defects}
+    \sself{7.2}{-8.8}{7b. Fix code}
+    \sm{7.2}{10.8}{-9.6}{8b. Resubmit for testing}
+\end{tikzpicture}}
+    \caption{Soluzione dell'Esercizio 4.}
+\end{figure}
+
+\paragraph{Esercizio 5: telefono cellulare (cell to cell e roaming).}
+\textbf{Testo}: \textit{Rappresentare come un cellulare passa da una cella all'altra e gestisce il roaming.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \lha{mp}{0}{-9}{Mobile Phone}
+    \lh{ac}{4}{-9}{Active Cell Tower}
+    \lh{nc}{8.2}{-9}{New Cell Tower}
+    \lh{sp}{12.2}{-9}{Service Provider}
+    \sm{0}{4}{-1.6}{1. Active connection}
+    \sm{4}{0}{-2.2}{2. Provide service}
+    \sep{-0.8}{13.2}{-3}{Movement to new cell}
+    \sm{0}{8.2}{-3.9}{3. Signal detected (handover request)}
+    \sm{8.2}{12.2}{-4.6}{4. Check subscription}
+    \sm{12.2}{8.2}{-5.3}{7. Authorization granted}
+    \sm{8.2}{0}{-6}{8. Establish new connection}
+    \sm{4}{8.2}{-6.7}{9. Release old connection}
+    \sep{-0.8}{13.2}{-7.5}{Handover completed}
+\end{tikzpicture}
+    \caption{Esercizio 5 -- cell to cell.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{mp}{0}{-10.4}{Mobile Phone}
+    \lh{sc}{3.8}{-10.4}{Serving Cell Tower}
+    \lh{nc}{7.8}{-10.4}{New Cell Tower}
+    \lh{hn}{11.6}{-10.4}{Home Network}
+    \lh{vn}{15}{-10.4}{VN}
+    \sm{0}{3.8}{-1.6}{1. Active connection}
+    \sm{3.8}{0}{-2.2}{2. Provide service}
+    \sep{-0.8}{16}{-3}{Movement to new cell}
+    \sm{0}{7.8}{-3.9}{3. Signal detected (handover request)}
+    \sm{7.8}{11.6}{-4.5}{4. Check subscription}
+    \sm{11.6}{15}{-5.1}{5. Authenticate roaming}
+    \sm{15}{11.6}{-5.7}{6. Confirm authentication}
+    \sm{11.6}{7.8}{-6.3}{7. Authorization granted}
+    \sm{7.8}{0}{-6.9}{8. Establish new connection}
+    \sm{3.8}{7.8}{-7.5}{9. Release old connection}
+    \sep{-0.8}{16}{-8.2}{Roaming established}
+    \sm{0}{15}{-9.1}{10. Continue service via visited network}
+    \sm{15}{11.6}{-9.7}{11. Update billing / tracking}
+\end{tikzpicture}}
+    \caption{Esercizio 5 -- roaming.}
+\end{figure}
+
+\subsection{Esercizio Completo: il Garage}
+
+\textbf{Testo}: \textit{Un garage è fatto di più livelli, ognuno con un certo numero di posti, di tipo diverso: auto normali, veicoli grandi (furgoni\dots), auto di lusso. Le auto a GPL possono parcheggiare solo al primo piano. Si può affittare un posto su base mensile, se disponibile; non più del 50\% dei posti di ogni categoria può essere affittato. I posti non affittati servono per il parcheggio orario, fino a un massimo di otto ore; oltre le otto ore si applica una penale al ritiro dell'auto. Gli utenti sono i conducenti e il gestore del sistema, che fornisce le informazioni di configurazione (es.\ il numero di posti per categoria).} Richiesti: casi d'uso, classi, sequence e statechart.
+
+\paragraph{Diagramma dei casi d'uso.}
+\texttt{Regular Client} e \texttt{Occasional Client} sono specializzazioni dell'attore \texttt{Driver} (generalizzazione tra attori).
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\small\sffamily]
+    \sysbox{0}{-1.2}{17.6}{2.2}{Parking Garage System}
+    \actor{sm}{-1.6}{4}{System Manager}
+    \actor{rc}{5}{7.6}{Regular Client}
+    \actor{dr}{9}{5}{Driver}
+    \actor{oc}{14}{7.6}{Occasional Client}
+    \node[ucase] (cs) at (2.2, 0.6) {Configure Space System};
+    \node[ucase] (rp) at (6, -0.6) {Rent Parking Space (Monthly)};
+    \node[ucase] (as) at (9.8, 0.6) {Assign Space};
+    \node[ucase] (pp) at (12.4, -0.6) {Pay Penalty};
+    \node[ucase] (ph) at (15.2, 0.6) {Park by Hour};
+    \draw[assoc] (sm.south) -- (cs.north);
+    \draw[assoc] (rc.south) -- (rp.north);
+    \draw[assoc] (dr.south) -- (as.north);
+    \draw[assoc] (oc.south) -- (pp.north);
+    \draw[assoc] (oc.south) -- (ph.north);
+    \draw[inh] (rc.east) -- (dr.north west);
+    \draw[inh] (oc.west) -- (dr.north east);
+    \draw[incl] (rp) -- node[above, font=\tiny\sffamily] {\guillemotleft include\guillemotright} (as);
+    \draw[incl] (ph) -- node[above, font=\tiny\sffamily] {\guillemotleft include\guillemotright} (as);
+    \draw[incl] (pp) -- node[above, font=\tiny\sffamily] {\guillemotleft extend\guillemotright} (ph);
+\end{tikzpicture}}
+    \caption{Garage -- casi d'uso.}
+\end{figure}
+
+\paragraph{Diagramma delle classi.}
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[cls/.append style={text width=2.8cm, font=\scriptsize\sffamily}]
+    \node[c2] (sm) at (0, 11) {\cn{SystemManager}\nodepart{second}-configData: Config};
+    \node[c2] (ga) at (0, 8.6) {\cn{Garage}\nodepart{second}-levels: int};
+    \node[c2] (le) at (0, 6) {\cn{Level}\nodepart{second}-levelNumber: int};
+    \node[c2] (ps) at (0, 3) {\cn{\textit{ParkingSpot}}\nodepart{second}-id: int\\ -isAvailable: boolean};
+    \node[c1] (rs) at (-5, 0) {\cn{RegularSpot}};
+    \node[c1] (ls) at (-1.7, 0) {\cn{LargeSpot}};
+    \node[c1] (lp) at (1.6, 0) {\cn{LPGSpot}};
+    \node[c2] (cl) at (8, 6) {\cn{\textit{Client}}\nodepart{second}-name: String\\ -licensePlate: String};
+    \node[c1] (oc) at (5.6, 3) {\cn{OccasionalClient}};
+    \node[c1] (rcl) at (10.8, 3) {\cn{RegularClient}};
+    \node[c2] (hu) at (5.2, -0.6) {\cn{HourlyUsage}\nodepart{second}-startTime: DateTime\\ -endTime: DateTime\\ -duration: int\\ -penalty: double};
+    \node[c2] (re) at (10.8, -0.6) {\cn{Rental}\nodepart{second}-startDate: Date\\ -endDate: Date\\ -monthlyFee: double};
+    \draw[assoc] (sm) -- (ga);
+    \draw[comp] (le) -- node[m1, right] {n} node[m2, right] {1} (ga);
+    \draw[comp] (ps) -- node[m1, right] {n} node[m2, right] {1} (le);
+    \draw[inh] (rs.north) -- (ps.south west);
+    \draw[inh] (ls.north) -- (ps.south);
+    \draw[inh] (lp.north) -- (ps.south east);
+    \draw[inh] (oc) -- (cl);
+    \draw[inh] (rcl) -- (cl);
+    \draw[assoc] (oc.south) -- node[m1, left] {1} node[m2, left] {1..*} (hu.north);
+    \draw[assoc] (rcl.south) -- node[m1, left] {1} node[m2, left] {1..*} (re.north);
+    \draw[assoc] (ps.south east) -- node[m2, above] {0..1} (hu.north west);
+    \draw[assoc] (ps.east) -- node[m2, above] {0..1} (re.west);
+\end{tikzpicture}}
+    \caption{Garage -- classi.}
+\end{figure}
+
+\paragraph{Diagrammi di sequenza.} Tre scenari: abbonamento mensile per auto GPL (ramo \texttt{alt}), abbonamento mensile per auto non-GPL (\texttt{loop} sui livelli + \texttt{alt} sulla regola del 50\%), parcheggio orario.
+
+\begin{figure}[H]
+    \centering
+\resizebox{0.9\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{dr}{0}{-8.4}{GPL Driver}
+    \lh{ga}{5}{-8.4}{:Garage}
+    \lh{lv}{10}{-8.4}{Level (First Floor)}
+    \sm{0}{5}{-1.6}{1. Request monthly subscription (GPL car)}
+    \sm{5}{10}{-2.4}{2. Check availability (LPG spots)}
+    \frag{-1}{11.4}{-3.1}{-7.8}{alt}{[Spot available]}
+    \sm{10}{5}{-4.1}{3a. Availability confirmed}
+    \sself{5}{-4.6}{4a. Prepare contract}
+    \sm{5}{0}{-5.6}{5. Confirm subscription}
+    \fsep{-1}{11.4}{-6.1}{[No spot available]}
+    \sm{10}{5}{-6.8}{3b. No Availability}
+    \sm{5}{0}{-7.4}{4b. Notify unavailability}
+\end{tikzpicture}}
+    \caption{Garage -- abbonamento mensile, auto GPL.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\resizebox{0.9\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{dr}{0}{-9.6}{Driver}
+    \lh{ga}{5.5}{-9.6}{:Garage}
+    \lh{lv}{10.5}{-9.6}{Level}
+    \sm{0}{5.5}{-1.6}{1. Request monthly subscription (non-GPL car)}
+    \frag{4}{11.6}{-2.2}{-3.9}{loop}{[For each level]}
+    \sm{5.5}{10.5}{-3.0}{2. Check availability (spots of requested type)}
+    \sr{10.5}{5.5}{-3.6}{3. Return availability}
+    \frag{-1}{9}{-4.5}{-8.9}{alt}{[Free spots > 50\% in some level]}
+    \sself{5.5}{-5.5}{4a. Prepare contract}
+    \sm{5.5}{0}{-6.6}{5a. Confirm subscription}
+    \fsep{-1}{9}{-7.2}{[No spot available in all levels]}
+    \sm{5.5}{0}{-8.4}{4b. Notify unavailability}
+\end{tikzpicture}}
+    \caption{Garage -- abbonamento mensile, auto non-GPL.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+    \lha{dr}{0}{-14}{Occasional Driver}
+    \lh{ga}{5}{-14}{:Garage}
+    \lh{lv}{9.5}{-14}{Level}
+    \lh{hu}{12.5}{-14}{HourlyUsage}
+    \sm{0}{5}{-1.6}{1. Request hourly parking (non-GPL car)}
+    \frag{4}{10.8}{-2.2}{-3.9}{loop}{[For each level]}
+    \sm{5}{9.5}{-3.0}{2. Check availability}
+    \sr{9.5}{5}{-3.6}{3. Return availability}
+    \frag{-1}{14}{-4.5}{-13.4}{alt}{[Free spot available]}
+    \sm{5}{12.5}{-5.4}{4a. Create hourly usage record}
+    \sr{12.5}{0}{-6.1}{5a. Assign parking spot}
+    \node[font=\tiny\sffamily] at (5, -6.8) {$\cdots$ later $\cdots$};
+    \sm{0}{5}{-7.5}{6a. Request exit}
+    \sm{12.5}{5}{-8.2}{7a. Calculate duration}
+    \frag{0.5}{9}{-8.8}{-11.6}{alt}{[Duration $\le$ 8h]}
+    \sm{5}{0}{-9.9}{8a. Charge normal fee}
+    \fsep{0.5}{9}{-10.4}{[Duration > 8h]}
+    \sm{5}{0}{-11.1}{8b. Charge normal fee + penalty}
+    \fsep{-1}{14}{-12.1}{[No spot available]}
+    \sm{5}{0}{-12.9}{4b. Notify unavailability}
+\end{tikzpicture}}
+    \caption{Garage -- parcheggio orario (cliente occasionale).}
+\end{figure}
+
+\paragraph{Statechart di un posto auto (proposta).}
+\textit{La slide richiede anche lo statechart ma non lo mostra: proposta ricostruita per \texttt{ParkingSpot}.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \node[ini] (i) at (0, 0) {};
+    \node[stt] (fr) at (2.2, 0) {Free};
+    \node[stt] (ru) at (9, 2.4) {Rented (monthly)};
+    \node[stt2, text width=2.4cm] (oc) at (9, -2.4) {Occupied (hourly) \nodepart{second}do/count hours};
+    \draw[tr] (i) -- (fr);
+    \draw[tr] (fr.north east) to[out=60, in=180] node[above, sloped, pos=0.4] {rent [rented < 50\%]} (ru.west);
+    \draw[tr] (ru.south west) to[out=200, in=20] node[below, sloped, pos=0.5] {contractEnds} (fr.east |- fr.north east);
+    \draw[tr] (fr.south east) to[out=-60, in=180] node[below, sloped, pos=0.4] {carEnters} (oc.west);
+    \draw[tr] (oc.north west) to[out=160, in=-20] node[above, sloped, pos=0.5] {carExits / charge} (fr.east |- fr.south east);
+\end{tikzpicture}
+    \caption{Proposta: statechart di \texttt{ParkingSpot}.}
+\end{figure}
+
+\subsection{Esercizi su Componenti e Deployment}
+
+\paragraph{Esercizio: Online Bookstore (componenti).}
+\textbf{Testo}: \textit{Una software house costruisce un sistema di libreria online con tre componenti principali: \texttt{Catalog Service} (libri, categorie, disponibilità), \texttt{Shopping Cart Service} (aggiunta/rimozione libri, stato del carrello) e \texttt{Payment Service} (pagamenti tramite gateway esterni). Una \texttt{Web UI} dipende da Catalog e Shopping Cart. Lo Shopping Cart dipende dal Payment Service. Il Catalog usa un componente \texttt{Book Database}.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \node[cmp] (ui) at (3.6, 6) {Web UI};
+    \node[cmp] (ca) at (0, 3.6) {Catalog Service};
+    \node[cmp] (sc) at (7.2, 3.6) {Shopping Cart Service};
+    \node[cmp] (db) at (0, 1.2) {Book Database};
+    \node[cmp] (ps) at (7.2, 1.2) {Payment Service};
+    \node[cmp] (pg) at (7.2, -1.2) {Payment Gateway};
+    \draw[nav, dashed] (ui) -- node[above, sloped, font=\tiny\sffamily] {uses} (ca);
+    \draw[nav, dashed] (ui) -- node[above, sloped, font=\tiny\sffamily] {uses} (sc);
+    \draw[nav, dashed] (ca) -- node[right, font=\tiny\sffamily] {queries} (db);
+    \draw[nav, dashed] (sc) -- node[right, font=\tiny\sffamily] {requests} (ps);
+    \draw[nav, dashed] (ps) -- node[right, font=\tiny\sffamily] {API call} (pg);
+\end{tikzpicture}
+    \caption{Soluzione: diagramma dei componenti (frecce tratteggiate = dipendenze).}
+\end{figure}
+
+\paragraph{Esercizio: piattaforma d'esame Unibo (deployment).}
+\textbf{Testo}: \textit{Unibo vuole una piattaforma d'esame online: Web Application, Database Server e Authentication Service. La Web Application gira su un Application Server che comunica con Database Server e Authentication Service. Studenti e docenti accedono da PC e dispositivi mobili via Internet. Il Database Server è su una macchina fisica separata, l'Authentication Service è ospitato all'esterno (es.\ Google OAuth). Mostrare dove sono distribuiti gli artefatti (ExamApp.war, ExamDB, AuthAPI) sui nodi.}
+
+\begin{figure}[H]
+    \centering
+\begin{tikzpicture}
+    \dnode{cd}{0.5}{6.4}{4.4}{1.5}{Client Device}
+    \artf{2.7}{6.8}{Browser/Mobile App}
+    \node[draw, fill=gray!8, font=\scriptsize\sffamily, inner sep=3pt] (inet) at (2.7, 4.6) {Internet};
+    \dnode{asv}{0.5}{1.8}{4.4}{1.6}{Application Server}
+    \artf{2.7}{2.2}{ExamApp.war}
+    \dnode{dbs}{-2}{-1.8}{3.8}{1.6}{Database Server}
+    \artf{-0.1}{-1.4}{ExamDB}
+    \dnode{au}{3.2}{-1.8}{3.8}{1.6}{Authentication Service}
+    \artf{5.1}{-1.4}{AuthAPI}
+    \draw[nav] (cds) -- (inet.north);
+    \draw[nav] (inet.south) -- node[right, font=\tiny\sffamily] {HTTPS} (2.7, 3.6);
+    \draw[nav] (2.1, 1.8) -- node[left, font=\tiny\sffamily] {JDBC} (-0.1, -0.2);
+    \draw[nav] (3.3, 1.8) -- node[right, font=\tiny\sffamily] {REST API} (5.1, -0.2);
+\end{tikzpicture}
+    \caption{Soluzione: diagramma di deployment.}
 \end{figure}
 
 \newpage
@@ -5346,6 +6735,982 @@ La definizione dell'architettura non scaturisce in forma perfetta al primo tenta
     \textbf{Software di Sistema} & Layered, Repository, Web Server, Internet/Intranet. & Middleware (RPC, ORB), stack TCP/IP, protocollo HTTP. & Gestione centralizzata o instradamento asincrono. \\
     \addlinespace
     \textbf{Software Applicativo} & Data-Flow (Pipes and Filters) vs Object-Oriented. & Stream di byte (Pipe) oppure invocazione metodi. & Call-and-Return, Manager, Broadcast o Interrupt. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% =============================================================================
+% SEZIONE: JAVA STRATEGY PATTERN (PARTE 1: SCOPING, NESTED, INNER & LOCAL)
+% =============================================================================
+
+\section{Java Strategy Pattern}
+
+\subsection{Motivazioni e Fondamenti: Polimorfismo e Scoping}
+
+\noindent L'implementazione del pattern \textbf{Strategy} in Java rappresenta uno dei punti di contatto più profondi tra i principi architetturali dell'ingegneria del software e i meccanismi concreti forniti dal linguaggio.
+A differenza di linguaggi procedurali o ibridi come il C e il C++ (in cui la selezione dinamica del comportamento è tradizionalmente affidata a \textbf{puntatori a funzione} o template a tempo di compilazione), Java adotta un modello puramente orientato agli oggetti:
+\begin{itemize}
+    \item Il comportamento non viaggia isolato come indirizzo di memoria, ma viene incapsulato all'interno di \textbf{oggetti polimorfi};
+    \item Il meccanismo abilitante risiede nella combinazione di \textbf{overriding} dei metodi e \textbf{late binding} (risoluzione dinamica delle chiamate a runtime);
+    \item L'obiettivo ingegneristico consiste nel padroneggiare \textit{come} e \textit{perché} determinate scelte architetturali vengono adottate per disaccoppiare la logica computazionale, evitando soluzioni grezze (\textit{hacking}).
+\end{itemize}
+
+\paragraph{Recap dei Pattern Visti Finora.}
+\begin{itemize}
+    \item \textbf{Singleton}: vincola l'unicità dell'istanza di una classe;
+    \item \textbf{Visitor}: applica una funzione a tutti gli elementi di una struttura (ad esempio la funzione \texttt{map});
+    \item \textbf{Strategy}: polimorfismo via \textit{overriding}.
+\end{itemize}
+
+\paragraph{Il Riferimento Concettuale: Le Chiusure Lessicali di Smalltalk.}
+Le radici concettuali del passaggio di comportamenti affondano nel linguaggio \textbf{Smalltalk}, dove blocchi di codice autonomi (\textit{blocks}) agiscono come oggetti di prima classe dotati di chiusura lessicale (\textit{lexical scoping}):
+\begin{lstlisting}
+testScope
+    | t |
+    t := 42.
+    self testBlock: [ Transcript show: t printString ]
+
+testBlock: aBlock
+    | t |
+    t := nil.
+    aBlock value
+\end{lstlisting}
+\noindent All'esecuzione, la chiamata a \texttt{testScope} stampa \textbf{42} (e non \texttt{nil}). Il blocco \texttt{[ ... ]} cattura stabilmente la variabile \texttt{t} del contesto in cui è stato \textbf{definito}, rimanendo del tutto immune alla ridefinizione locale presente in \texttt{testBlock:}.
+Questo modello di incapsulamento ed isolamento di esecuzione costituisce l'obiettivo ideale a cui mira la gestione dinamica delle strategie.
+
+\noindent In Smalltalk il \textbf{chunk} (blocco) permette quindi di usare il corpo di una funzione come parametro da passare. Un'idea analoga, in forma molto più limitata, esiste già in C: l'espressione \texttt{a = b = c = d = 50} viene valutata da destra verso sinistra, perché l'assegnazione è essa stessa un'espressione che restituisce un valore (prima \texttt{d = 50}, poi \texttt{c = (d = 50)}, e così via).
+In Java e in C++ lo stesso obiettivo si raggiunge con le classi annidate; in C++ però l'annidamento ha rilevanza solo per la \textbf{visibilità}, mentre in Java si distinguono i tre tipi di classe descritti di seguito (nested, inner, local).
+
+\subsection{Classi in Ambiti Annidati (Inner Scopes)}
+
+\paragraph{Differenza Concettuale tra C++ e Java.}
+Sia Java che C++ consentono di dichiarare la definizione di una classe all'interno di un'altra classe:
+\begin{itemize}
+    \item \textbf{In C++}: l'annidamento ha una rilevanza legata primariamente alla \textbf{visibilità} e al \textbf{namespacing}. Una classe annidata è concettualmente un'entità indipendente inserita nello scope di nomi della classe contenitrice; non possiede alcun legame implicito con le istanze di quest'ultima.
+    \item \textbf{In Java}: il meccanismo è nettamente più articolato e distingue tre livelli di astrazione:
+    \begin{enumerate}
+        \item \textbf{Static Nested Classes}: classi statiche annidate per ragioni di incapsulamento e raggruppamento logico;
+        \item \textbf{Inner Classes}: classi non statiche le cui istanze dipendono intrinsecamente dall'esistenza di un'istanza della classe contenitrice;
+        \item \textbf{Local Classes}: classi dichiarate localmente all'interno di un blocco di codice (es. all'interno di un metodo).
+    \end{enumerate}
+\end{itemize}
+
+\begin{cbox}{Tassonomia delle Classi in Ambiti Interni in Java}
+\begin{itemize}
+    \item \textbf{Nested Classes (Static)}: dichiarate con la parola chiave \texttt{static} nel corpo della classe principale. Non mantengono alcun riferimento implicito all'istanza dell'outer class e possono accedere solo ai suoi membri statici.
+    \item \textbf{Inner Classes (Non-Static)}: dichiarate senza \texttt{static}. Ogni loro istanza è legata a una specifica istanza dell'outer class, di cui può leggere e modificare tutti i campi (anche privati).
+    \item \textbf{Local Classes}: inner class definite all'interno del corpo di un metodo, costruttore o blocco esecutivo (\texttt{if}, \texttt{for}).
+    \item \textbf{Anonymous Classes}: classi locali prive di identificatore, istanziate al volo all'interno di una singola espressione.
+\end{itemize}
+\end{cbox}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{3.8cm}p{3.8cm}p{3.4cm}}
+    \toprule
+    \textbf{Tipologia} & \textbf{Punto di Dichiarazione} & \textbf{Dipendenza da Istanza Outer} & \textbf{Membri Statici Ammessi} \\
+    \midrule
+    \textbf{Static Nested Class} & Livello di classe (con \texttt{static}) & Nessuna (autonoma) & Sì, tutti. \\
+    \addlinespace
+    \textbf{Member Inner Class} & Livello di classe (senza \texttt{static}) & Obbligatoria (\texttt{Outer.this}) & No (solo costanti \texttt{static final}). \\
+    \addlinespace
+    \textbf{Local Class} & All'interno di un metodo/blocco & Se in contesto non-statico & No (solo costanti \texttt{static final}). \\
+    \addlinespace
+    \textbf{Anonymous Class} & All'interno di un'espressione & Se in contesto non-statico & No (solo costanti \texttt{static final}). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Classi Statiche Annidate (Static Nested Classes)}
+
+\paragraph{Definizione e Regole di Visibilità.}
+Una \textbf{static nested class} consente di nascondere l'esistenza di un tipo rispetto al mondo esterno e di raggruppare logicamente classi correlate all'interno del medesimo modulo.
+\begin{itemize}
+    \item Il nome della classe annidata è locale allo scope della classe contenitrice (es. \texttt{Outer.Nested});
+    \item Può accedere \textbf{esclusivamente ai membri statici} della classe contenitrice;
+    \item \textbf{Non ha accesso diretto} ai campi o metodi di istanza dell'outer class, poiché non possiede alcun riferimento implicito a un oggetto contenitore.
+\end{itemize}
+
+\paragraph{Nota Storica.}
+Le classi annidate statiche sono funzionalmente simili ai \texttt{package}/\texttt{namespace}: furono introdotte perché il C++ era molto in voga ma all'epoca non esistevano ancora i namespace. Servono solo per \textbf{visibilità} (possono essere nascoste all'esterno della classe) e accedono unicamente alle variabili statiche della classe contenitrice.
+
+\paragraph{Confronto di Sintassi: Java vs C++.}
+Il frammento seguente evidenzia la differenza tra classi interne e classi statiche annidate in Java:
+\begin{lstlisting}[language=Java]
+public class X {
+    int instanceVar;        // Appartiene a una specifica istanza di X
+    static int staticVar;   // Appartiene alla classe X
+
+    // 1. Inner class (non-statica): accede sia a stato d'istanza che statico
+    private class Inner {
+        int y;
+        Inner() {
+            y = instanceVar + staticVar; // Pienamente lecito
+        }
+    }
+
+    // 2. Static nested class: accede ESCLUSIVAMENTE ai membri statici
+    private static class Nested {
+        int x;
+        Nested() {
+            x = staticVar;               // Lecito
+            // x += instanceVar;         // ERRORE DI COMPILAZIONE!
+        }
+    }
+}
+\end{lstlisting}
+
+\noindent In C++, la semantica coincide naturalmente con la variante statica di Java:
+\begin{lstlisting}[language=C++]
+class X {
+public:
+    int instanceVar;
+    static int staticVar;
+
+    class Nested {
+        int x;
+        Nested() {
+            x = staticVar;          // Lecito
+            // instanceVar++;       // ERRORE: nessun puntatore this a X
+        }
+    };
+};
+\end{lstlisting}
+
+\paragraph{Pattern Applicativi delle Static Nested Classes.}
+L'impiego delle classi statiche annidate risponde a tre esigenze primarie di ingegnerizzazione:
+
+\begin{enumerate}
+    \item \textbf{Namespacing e Classi Helper}: raggruppare funzioni di utilità correlate sotto un unico namespace logico evitando l'inquinamento del package globale.
+\begin{lstlisting}[language=Java]
+class Strings {
+    static class Joiner {
+        static String by(char sep, String... parts) {
+            return String.join(String.valueOf(sep), parts);
+        }
+    }
+    static class Trimmer {
+        static String left(String s, int n) {
+            return (s.length() <= n) ? s : s.substring(0, n);
+        }
+    }
+}
+// Utilizzo: Strings.Joiner.by(',', "a", "b");
+\end{lstlisting}
+
+    \item \textbf{Builder Pattern}: disaccoppiare la configurazione dei parametri di creazione dall'oggetto immutabile finale, consentendo una sintassi fluente.
+\begin{lstlisting}[language=Java]
+class HttpRequest {
+    final String url;
+    final int timeoutMs;
+
+    private HttpRequest(String url, int timeoutMs) {
+        this.url = url; 
+        this.timeoutMs = timeoutMs;
+    }
+
+    static class Builder {
+        private String url;
+        private int timeoutMs = 3000;
+
+        Builder url(String u) { this.url = u; return this; }
+        Builder timeout(int ms) { this.timeoutMs = ms; return this; }
+        HttpRequest build() { return new HttpRequest(url, timeoutMs); }
+    }
+}
+// Utilizzo: new HttpRequest.Builder().url("https://ex").timeout(1000).build();
+\end{lstlisting}
+
+    \item \textbf{Private Type Hiding (Incapsulamento Rigoroso)}: celare strutture dati e tipi ausiliari all'esterno del componente client.
+\begin{lstlisting}[language=Java]
+class Cache {
+    private static class Entry {
+        final String key, value;
+        final long ts;
+        Entry(String k, String v) {
+            key = k; value = v; ts = System.currentTimeMillis();
+        }
+    }
+
+    private final java.util.Map<String, Entry> map = new java.util.HashMap<>();
+
+    void put(String k, String v) { map.put(k, new Entry(k, v)); }
+    String get(String k) {
+        Entry e = map.get(k);
+        return (e == null) ? null : e.value;
+    }
+}
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Classi Interne (Inner Classes)}
+
+\paragraph{Legame con l'Istanza Esterna.}
+Una classe interna (\textbf{Member Inner Class}) non è decorata con \texttt{static} ed è strettamente associata all'oggetto contenitore:
+\begin{itemize}
+    \item Ogni istanza della classe interna possiede un \textbf{riferimento implicito} all'istanza della classe esterna che l'ha generata;
+    \item Può accedere direttamente a tutti i campi e metodi dell'istanza esterna, anche se privati;
+    \item Per fare esplicito riferimento all'istanza della classe contenitrice si impiega la sintassi formale:
+    \begin{center}
+        \texttt{NomeClasseEsterna.this}
+    \end{center}
+    \item L'istanziazione diretta dall'esterno richiede obbligatoriamente un oggetto della classe outer:
+    \begin{center}
+        \texttt{Outer outer = new Outer();}\\
+        \texttt{Outer.Inner inner = outer.new Inner();}
+    \end{center}
+\end{itemize}
+
+\paragraph{Vincoli Strutturali.}
+\begin{itemize}
+    \item Una inner class \textbf{non può dichiarare membri statici} (metodi, campi o blocchi statici), ad eccezione di costanti a tempo di compilazione (\texttt{static final});
+    \item Non può avere lo stesso identificatore della classe che la racchiude;
+    \item La sua esistenza riflette una stretta cooperazione in memoria tra l'oggetto racchiuso e quello contenitore.
+\end{itemize}
+
+\paragraph{Perché Non Possono Avere Membri Statici.}
+Una inner class esiste solo in presenza di un oggetto della classe contenitrice. La differenza con il C emerge dal modello di caricamento: in C il file eseguibile (\texttt{.out}) carica tutto all'avvio (in modo semplificato), mentre in Java ogni classe è compilata in un \textbf{ClassFile} e i suoi membri statici vengono inizializzati quando la \textbf{classe viene caricata}. Un membro statico di una inner class dovrebbe invece esistere prima di qualunque istanza dell'outer, e per questo non è ammesso. Le inner class possono essere \textbf{anonime} e \textbf{locali}.
+
+\paragraph{Pattern Applicativi delle Inner Classes.}
+\begin{enumerate}
+    \item \textbf{Accesso Condiviso allo Stato dell'Outer Instance}:
+\begin{lstlisting}[language=Java]
+class Counter {
+    private int value = 0;
+
+    class Incrementer {
+        void inc() { value++; }              // Modifica il campo dell'outer class
+        Counter outer() { return Counter.this; } // Restituisce l'istanza outer
+    }
+
+    int next() {
+        new Incrementer().inc();
+        return value;
+    }
+}
+\end{lstlisting}
+
+    \item \textbf{Implementazione di Iteratori Personalizzati}: l'iteratore necessita di navigare le collezioni interne della classe preservando l'information hiding verso l'esterno.
+\begin{lstlisting}[language=Java]
+class IntRange implements Iterable<Integer> {
+    private final int start, end;
+    IntRange(int s, int e) { start = s; end = e; }
+
+    class It implements java.util.Iterator<Integer> {
+        int cur = start;
+        public boolean hasNext() { return cur <= end; }
+        public Integer next() {
+            if (!hasNext()) throw new java.util.NoSuchElementException();
+            return cur++;
+        }
+    }
+
+    public java.util.Iterator<Integer> iterator() { return new It(); }
+}
+\end{lstlisting}
+
+    \item \textbf{Event Handler e GUI Listener}: gestione di reazioni grafiche che necessitano di aggiornare direttamente lo stato del pannello contenitore.
+\begin{lstlisting}[language=Java]
+class ClickCounter {
+    private int clicks = 0;
+
+    class Handler implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            clicks++;
+            System.out.println("Clicks = " + clicks);
+        }
+    }
+
+    javax.swing.JButton makeButton() {
+        javax.swing.JButton b = new javax.swing.JButton("Click");
+        b.addActionListener(new Handler());
+        return b;
+    }
+}
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Classi Locali (Local Classes)}
+
+\paragraph{Incapsulamento a Livello di Blocco.}
+Una \textbf{classe locale} è una particolare variante di inner class dichiarata direttamente all'interno di un blocco di codice eseguibile: tipicamente nel corpo di un metodo, di un costruttore o persino all'interno di un costrutto decisionale o iterativo (\texttt{if}, \texttt{for}, \texttt{while}).
+\begin{itemize}
+    \item \textbf{Scope circoscritto}: la classe è visibile e utilizzabile \textbf{soltanto all'interno del blocco} in cui è dichiarata;
+    \item \textbf{Ciclo di vita dell'istanza}: sebbene il tipo sia noto solo nel blocco, un oggetto della classe locale può sopravvivere al metodo qualora venga restituito come interfaccia o sottomesso a un thread;
+    \item \textbf{Incapsulamento funzionale}: consente di realizzare strutture dati o algoritmi helper temporanei senza renderli visibili al resto della classe o del package.
+\end{itemize}
+
+\paragraph{Funzioni dentro Funzioni.}
+Una classe dentro una funzione è lecita; una \textit{funzione} dentro una funzione è possibile ma complessa. In C++ si ottiene solo con un trucco, tramite un'estensione dell'ultima versione di GCC. Una classe locale non può essere \texttt{static}: non avrebbe un'istanza dell'outer da cui allocare memoria.
+
+\paragraph{Regole Sintattiche e Compilazione.}
+\begin{itemize}
+    \item Non possono essere marcate con modificatori di accesso (\texttt{public}, \texttt{protected}, \texttt{private});
+    \item Non possono essere dichiarate \texttt{static};
+    \item Non possono dichiarare membri statici, salvo costanti \texttt{static final} inizializzate con espressioni costanti a tempo di compilazione;
+    \item Il compilatore Java genera un file bytecode dedicato adottando una convenzione di denominazione numerata:
+    \begin{center}
+        \texttt{OuterClass\$1LocalClass.class}
+    \end{center}
+\end{itemize}
+
+\paragraph{Regola di Accesso: Membri Outer e Variabili Locali.}
+\begin{itemize}
+    \item Una classe locale ha pieno accesso a tutti i membri della classe che la racchiude (inclusi campi privati);
+    \item Se la classe locale è dichiarata all'interno di un metodo \textbf{non-statico}, ha a disposizione il riferimento \texttt{Outer.this}; se dichiarata in un metodo \textbf{statico}, può accedere solo ai membri statici della classe outer;
+    \item Può accedere ai parametri formali e alle variabili locali del metodo contenitore \textbf{unicamente se sono \texttt{final} o \textit{effectively final}} (ovvero valorizzate una sola volta e mai riassegnate successivamente).
+\end{itemize}
+
+\paragraph{Esempio di Utilizzo: Validatore Ad-Hoc.}
+\begin{lstlisting}[language=Java]
+class UserService {
+    boolean isUsernameOk(String u) {
+        // Classe locale: visibile e utilizzabile solo dentro isUsernameOk
+        class NonEmptyAlphaValidator {
+            boolean ok(String s) {
+                if (s == null || s.isEmpty()) return false;
+                for (char c : s.toCharArray()) {
+                    if (!Character.isLetter(c)) return false;
+                }
+                return true;
+            }
+        }
+
+        NonEmptyAlphaValidator v = new NonEmptyAlphaValidator();
+        return v.ok(u);
+    }
+}
+\end{lstlisting}
+
+\subsection{Contesti Statici e Non-Statici nelle Classi Annidate}
+
+\paragraph{Panoramica e Tassonomia delle Inner Class.}
+Le classi interne (non-statiche) sono dichiarate senza la parola chiave \texttt{static} e risultano intrinsecamente vincolate a un'istanza della classe che le racchiude. La gerarchia include tre varianti:
+\begin{itemize}
+    \item \textbf{Member Inner Classes}: dichiarate a livello di corpo di classe, esattamente come un campo o un metodo d'istanza.
+    \item \textbf{Local Classes}: dichiarate all'interno di un blocco di codice circoscritto (metodo, costruttore o blocco logico).
+    \item \textbf{Anonymous Classes}: classi locali prive di identificatore, definite e istanziate istantaneamente all'interno di una singola espressione per compiti usa-e-getta.
+\end{itemize}
+
+\paragraph{Esecuzione in Contesto Statico vs Non-Statico.}
+L'accesso ai membri della classe contenitrice dipende strettamente dal contesto in cui la classe interna viene dichiarata ed eseguita:
+\begin{itemize}
+    \item \textbf{Contesto Non-Statico (metodi d'istanza, costruttori, inizializzatori)}: il codice viene eseguito con un riferimento \texttt{this} associato all'istanza dell'outer class. La classe interna dispone automaticamente di \texttt{Outer.this} e può accedere a tutti i membri d'istanza (campi e metodi, anche privati) della classe esterna.
+    \item \textbf{Contesto Statico (metodi statici, inizializzatori statici)}: non esiste alcuna istanza outer associata. Di conseguenza, le classi locali o anonime dichiarate in un contesto statico non possono accedere ai membri d'istanza di \texttt{Outer}, ma unicamente ai suoi membri statici.
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+class Outer {
+    private int v = 10;
+
+    int f() {
+        // Contesto non-statico: new L() ha accesso a v tramite Outer.this
+        class L {
+            int h() { return v; } // OK
+        }
+        return new L().h();
+    }
+
+    static int g() {
+        // Contesto statico: nessuna istanza di Outer disponibile
+        class L {
+            // int h() { return v; } // ERRORE DI COMPILAZIONE: v non e statico
+            int h() { return 0; }   // OK: usa solo membri statici o propri
+        }
+        return new L().h();
+    }
+}
+\end{lstlisting}
+
+\subsection{Cattura delle Variabili Locali: Final ed Effectively Final}
+
+\paragraph{Il Principio di Cattura.}
+Le classi locali e anonime possono utilizzare le variabili locali e i parametri definiti nel metodo circostante, ma a una condizione tassativa: tali variabili devono essere dichiarate \textbf{\texttt{final}} oppure essere \textbf{\textit{effectively final}}. Una variabile è \textit{effectively final} se, pur priva del modificatore esplicito \texttt{final}, riceve un valore una sola volta e non viene mai più riassegnata nel corso della sua esistenza.
+
+\begin{cbox}{Perché le Variabili Catturate Devono Essere (Effectively) Final?}
+La motivazione risiede nel divario tra il ciclo di vita dello \textbf{stack} e dello \textbf{heap}:
+\begin{itemize}
+    \item Le variabili locali di un metodo risiedono sullo \textbf{stack} di esecuzione e vengono deallocate immediatamente non appena il metodo termina.
+    \item Un'istanza di una classe locale o anonima risiede nello \textbf{heap} e può sopravvivere alla fine del metodo (ad esempio se restituita all'esterno, registrata come callback o sottomessa a un pool di thread concorrenti).
+    \item Per consentire all'oggetto di continuare ad accedere a tali valori, il compilatore crea una \textbf{copia sintetica} di ciascuna variabile catturata all'interno dei campi generati della classe interna.
+    \item Se la variabile locale potesse essere riassegnata dopo la creazione dell'istanza, la copia interna e la variabile originale divergerebbero, distruggendo la consistenza dei dati. Il vincolo di finalità garantisce che il valore copiato sia immutabile e sempre coerente.
+\end{itemize}
+\end{cbox}
+
+\begin{lstlisting}[language=Java]
+void run() {
+    int base = 10; // effectively final
+    class Task {
+        void print() { System.out.println(base); } // OK: cattura base
+    }
+    new Task().print();
+}
+
+void fail() {
+    int base = 10;
+    base++; // La riassegnazione rompe l'effective finality!
+    class Task {
+        // ERRORE: local variables referenced from an inner class must be final
+        void print() { System.out.println(base); } 
+    }
+}
+\end{lstlisting}
+
+\paragraph{Strategie di Risoluzione del Vincolo (Fix Pattern).}
+Nel codice concorrente o asincrono capita di dover modificare lo stato o aggiornare contatori prima dell'invio di un task a un esecutore. Esistono due soluzioni ingegneristiche per superare il blocco del compilatore:
+
+\begin{enumerate}
+    \item \textbf{Snapshotting del Valore (Fix A)}: si assegna il valore corrente a una variabile locale esplicitamente marcata \texttt{final} prima della cattura. La variabile originale può continuare a mutare senza alterare lo snapshot catturato dal task.
+\begin{lstlisting}[language=Java]
+Future<?> scheduleJob() {
+    int tries = 0;
+    final int snapshot = tries; // Snapshot immutabile per la classe locale
+
+    class Job implements Runnable {
+        public void run() { System.out.println(snapshot); }
+    }
+    tries++; // Lecito: non altera snapshot
+    return pool.submit(new Job());
+}
+\end{lstlisting}
+
+    \item \textbf{Boxing dello Stato Mutabile (Fix B)}: si incapsula il dato all'interno di un contenitore reference immutabile, ad esempio un array a elemento singolo (\texttt{final int[] box = \{0\};}) o un wrapper. Il riferimento all'array rimane rigorosamente \texttt{final} (soddisfacendo il compilatore), mentre il suo contenuto interno (\texttt{box[0]}) può essere modificato liberamente sia dentro che fuori la classe locale.
+\begin{lstlisting}[language=Java]
+Future<?> scheduleJob() {
+    final int[] box = { 0 }; // Reference immutabile a contenuto mutabile
+
+    class Job implements Runnable {
+        public void run() { System.out.println(box[0]); }
+    }
+    box[0]++; // Lecito: muta il contenuto dell'array, non il puntatore
+    return pool.submit(new Job());
+}
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Pattern ed Esempi Applicativi di Classi Locali}
+
+\noindent Le classi locali trovano impiego pratico in tre scenari principali:
+\begin{itemize}
+    \item \textbf{Validatori e Helper Monouso}: incapsulano logiche di controllo interne a un metodo senza esporre classi accessorie all'esterno.
+    \item \textbf{Algoritmi di Calcolo Parametrici}: classi matematiche temporanee che leggono parametri del metodo \textit{effectively final} senza richiedere campi d'istanza dedicati.
+    \item \textbf{Strategy Pattern Locale}: scelta runtime dell'algoritmo direttamente nello scope del metodo chiamante.
+\end{itemize}
+
+\paragraph{Esempio: Strategy Pattern Diretto all'Interno di un Metodo.}
+Il seguente frammento dimostra come realizzare una variante compatta del pattern Strategy senza creare gerarchie pubbliche separate. Le classi concrete che implementano gli algoritmi di ordinamento (\texttt{Asc} e \texttt{Desc}) sono definite all'interno del metodo \texttt{sort} e selezionate dinamicamente:
+\begin{lstlisting}[language=Java]
+class Sorter {
+    void sort(int[] a, boolean descending) {
+        class Asc {
+            void apply(int[] x) { java.util.Arrays.sort(x); }
+        }
+        class Desc {
+            void apply(int[] x) {
+                java.util.Arrays.sort(x);
+                for (int i = 0, j = x.length - 1; i < j; i++, j--) {
+                    int t = x[i]; x[i] = x[j]; x[j] = t;
+                }
+            }
+        }
+
+        if (descending) {
+            new Desc().apply(a);
+        } else {
+            new Asc().apply(a);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Significato di \texttt{static} e \texttt{final}}
+
+\noindent Data la dichiarazione \texttt{HttpRequestBuilder a = new HttpRequestBuilder()}, a lezione è stata commentata una tabella sul significato dei modificatori:
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{4.2cm}p{7cm}}
+    \toprule
+    \textbf{Modificatore} & \textbf{Su} & \textbf{Significato} \\
+    \midrule
+    \texttt{final} & Variabile & Costante: il compilatore non deve allocare spazio in memoria per essa. Protegge da modifiche future accidentali di un valore che deve restare costante. \\
+    \addlinespace
+    \texttt{static} & Variabile & Condivisa da tutte le istanze: è membro della classe, non del singolo oggetto. \\
+    \addlinespace
+    \texttt{static} & Metodo & Non richiede un'istanza dell'oggetto. \\
+    \addlinespace
+    \texttt{static} & Classe & Solo per classi annidate: classe inserita in un'altra classe, senza riferimento all'outer. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Costruttore omesso}: se non viene dichiarato, Java fornisce il costruttore di default (che invoca quello del padre).
+
+\paragraph{Confronto con il C.} In C \texttt{static} ha due significati: su una \textbf{variabile globale} la rende visibile solo nel file; su una \textbf{variabile locale} a una funzione la rende comune a tutte le chiamate (persiste tra una chiamata e l'altra). Con \texttt{extern int x;} si \textit{dichiara} ma non si \textit{definisce} la variabile (non viene allocato spazio).
+
+\paragraph{\texttt{final} vs \texttt{static final}.}
+Domanda posta a lezione dal docente. \texttt{final} da solo indica un campo non riassegnabile ma \textbf{per istanza} (può essere inizializzato nel costruttore e ogni oggetto ne ha una copia); \texttt{static final} indica una costante \textbf{di classe}, unica e condivisa, valorizzata una sola volta al caricamento della classe.
+
+\subsection{Errori Comuni e Correzioni: Guida Pratica}
+
+\noindent L'analisi dei tipici errori di compilazione legati allo scoping e all'istanziazione delle classi annidate permette di fissare le regole cardinali del modello Java:
+
+\paragraph{1. Static Nested Class e Membri Non-Statici.}
+\begin{itemize}
+    \item \textbf{Errore comune}: tentare di accedere direttamente a campi d'istanza della classe contenitrice dall'interno di una classe statica annidata (\texttt{return secret + common;}). Poiché la classe è \texttt{static}, non dispone di alcun puntatore \texttt{this} verso l'esterno.
+    \item \textbf{Correzione}: passare esplicitamente l'oggetto esterno come parametro al metodo della classe annidata (\texttt{int f(ENested outer) \{ return outer.secret + common; \}}).
+    \item \textbf{Risultato}: se \texttt{secret = 7} e \texttt{common = 3}, l'invocazione di \texttt{t.f(outer)} produce \texttt{10}, mentre la chiamata statica \texttt{Tool.g()} restituisce \texttt{6}.
+\end{itemize}
+
+\paragraph{2. Member Inner Class: Istanziazione e Membri Statici.}
+\begin{itemize}
+    \item \textbf{Errore comune}: dichiarare variabili statiche non costanti dentro una inner class (\texttt{static int k = 4;}) oppure tentare di istanziare la classe da un metodo statico con un generico \texttt{new In()}.
+    \item \textbf{Correzione}:
+    \begin{enumerate}
+        \item I campi statici nelle inner class sono ammessi solo se costanti di compilazione (\texttt{static final int K = 4;}).
+        \item L'istanziazione da contesto statico deve ancorarsi esplicitamente a un'istanza esterna tramite la sintassi dedicata: \texttt{outer.new In()}.
+    \end{enumerate}
+    \item \textbf{Risultato}: con \texttt{v = 1} e costante \texttt{K = 4}, \texttt{in.h()} calcola \texttt{1 + 4 = 5}.
+\end{itemize}
+
+\paragraph{3. Local Class: Campi Statici e Rottura dell'Effective Finality.}
+\begin{itemize}
+    \item \textbf{Errore comune}: dichiarare costanti prive del modificatore \texttt{final} all'interno del metodo (\texttt{static int FACTOR = 10;}) e riassegnare variabili locali utilizzate dalla classe locale (\texttt{base = base + n;}).
+    \item \textbf{Correzione}:
+    \begin{enumerate}
+        \item Convertire il campo statico della classe locale in costante a tempo di compilazione: \texttt{static final int FACTOR = 10;}.
+        \item Precalcolare il valore della variabile locale e mantenerlo rigorosamente immutabile: \texttt{final int base = 2 + n;} prima della dichiarazione della classe, eliminando successive riassegnazioni.
+    \end{enumerate}
+    \item \textbf{Risultato}: invocando \texttt{work(5)} con \texttt{label = "X"}, si ottiene \texttt{base = 7}; il calcolo \texttt{apply(3)} produce $3 \times 7 = 21$, generando l'output formattato \texttt{X:21:10}.
+\end{itemize}
+
+\subsection{Interfacce: Definizione, Costanti ed Ereditarietà}
+
+\paragraph{Natura di un'Interfaccia in Java.}
+Un'interfaccia introduce un nuovo \textbf{tipo di riferimento} (\textit{reference type}) il cui scopo primario è definire un contratto formale di comportamento per classi altrimenti del tutto eterogenee e non correlate.
+\begin{itemize}
+    \item \textbf{Assenza di stato d'istanza}: un'interfaccia non può dichiarare variabili di istanza né memorizzare alcuno stato mutabile;
+    \item \textbf{Non istanziabilità}: non può essere istanziata direttamente tramite l'operatore \texttt{new}, ma può essere unicamente implementata da classi o estesa da altre interfacce;
+    \item \textbf{Membri ammessi}: a partire dalle specifiche moderne di Java, un'interfaccia può contenere esclusivamente costanti, firme di metodi astratti, metodi \texttt{default}, metodi \texttt{static} e tipi annidati (\textit{nested types});
+    \item \textbf{Disaccoppiamento}: elimina la necessità per classi correlate sul piano comportamentale di condividere una comune superclasse astratta nell'albero gerarchico, evitando di forzare metodi specifici all'interno della classe radice \texttt{Object}.
+\end{itemize}
+
+\paragraph{Dichiarazione, Costanti ed Ereditarietà Multipla.}
+La sintassi di un'interfaccia supporta sia l'ereditarietà singola che l'\textbf{ereditarietà multipla} tramite la clausola \texttt{extends}: poiché le interfacce non contengono dati d'istanza, l'ereditarietà multipla non incorre nelle problematiche e ambiguità tipiche del C++ (come la duplicazione dei campi nel problema del diamante).
+
+\begin{lstlisting}[language=Java]
+// Esempio base: contratto comportamentale
+public interface Bicycle {
+    void changeCadence(int newValue);
+    void changeGear(int newValue);
+    void speedUp(int increment);
+    void applyBrakes(int decrement);
+}
+
+// Ereditarieta multipla tra interfacce e costanti
+public interface GroupedInterface extends Interface1, Interface2, Interface3 {
+    // Costante implicita: compilata come public static final
+    double E = 2.718282;
+
+    // Firme di metodi astratti: implicitamente public e abstract
+    void doSomething(int i, double x);
+    int doSomethingElse(String s);
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Costanti implicite}: tutte le variabili dichiarate all'interno di un'interfaccia sono implicitamente \texttt{public}, \texttt{static} e \texttt{final};
+    \item \textbf{Metodi impliciti}: tutte le firme prive di corpo, così come i metodi \texttt{default} e \texttt{static}, possiedono automaticamente visibilità \texttt{public}.
+\end{itemize}
+
+\paragraph{Implementazione Concreta.}
+Quando una classe concreta implementa un'interfaccia, il compilatore impone che tutti i metodi astratti dichiarati siano provvisti di un'implementazione esplicita; l'assenza anche di una sola definizione comporta il fallimento della compilazione:
+\begin{lstlisting}[language=Java]
+class BianchiBicycle implements Bicycle {
+    int cadence = 0, speed = 0, gear = 1;
+
+    public void changeCadence(int newValue) { cadence = newValue; }
+    public void changeGear(int newValue) { gear = newValue; }
+    public void speedUp(int increment) { speed += increment; }
+    public void applyBrakes(int decrement) { speed -= decrement; }
+
+    void printStates() {
+        System.out.println("cadence: " + cadence + " speed: " + speed + " gear: " + gear);
+    }
+}
+\end{lstlisting}
+
+\subsection{Metodi nelle Interfacce e Risoluzione dei Conflitti}
+
+\paragraph{Metodi Default e Metodi Statici.}
+Con l'introduzione di Java 8, le interfacce hanno acquisito la capacità di dichiarare metodi dotati di corpo:
+\begin{itemize}
+    \item \textbf{Metodi Statici (\texttt{static})}: definiscono comportamenti generali o funzioni helper collegate al tipo. Non consentono l'accesso a dati d'istanza e non partecipano al meccanismo di polimorfismo/overriding (vengono invocati unicamente tramite il nome dell'interfaccia, es. \texttt{InterfaceName.method()}).
+    \item \textbf{Metodi Default (\texttt{default})}: forniscono un'implementazione standard del metodo che viene ereditata dalle classi implementatrici. Possono essere ridefiniti liberamente (\textit{overridden}) dalle classi derivate.
+\end{itemize}
+
+\paragraph{Le Due Regole Fondamentali di Risoluzione dei Conflitti.}
+Quando una classe implementa molteplici interfacce o estende una superclasse ereditando definizioni concorrenti per un metodo con la medesima firma, il compilatore Java adotta due principi gerarchici deterministici per risolvere le ambiguità:
+\begin{enumerate}
+    \item \textbf{I metodi d'istanza di classe vincono sui metodi default delle interfacce} (\textit{"Classes beat interfaces"}).
+    \item \textbf{I metodi già sovrascritti da altri candidati nella gerarchia vengono ignorati} (\textit{"More specific interfaces beat general ones"}).
+\end{enumerate}
+
+\paragraph{Regola 1: Metodi d'Istanza di Classe vs Metodi Default.}
+Se una superclasse concreta fornisce un metodo d'istanza e un'interfaccia fornisce un metodo \texttt{default} avente identica firma, l'implementazione della classe genitore ha sempre la precedenza:
+
+\begin{lstlisting}[language=Java]
+public class Horse {
+    public String identifyMyself() { return "I am a horse."; }
+}
+
+public interface Flyer {
+    default public String identifyMyself() { return "I am able to fly."; }
+}
+
+public interface Mythical {
+    default public String identifyMyself() { return "I am a mythical creature."; }
+}
+
+public class Pegasus extends Horse implements Flyer, Mythical {
+    public static void main(String... args) {
+        Pegasus myApp = new Pegasus();
+        System.out.println(myApp.identifyMyself()); // Restituisce: "I am a horse."
+    }
+}
+\end{lstlisting}
+
+\paragraph{Regola 2: Metodi Default Ereditati e Gerarchie Concorrenti.}
+Quando una classe implementa due interfacce che condividono un antenato comune, l'interfaccia che ha già effettuato l'override del metodo nasconde l'implementazione dell'interfaccia più generica:
+
+\begin{lstlisting}[language=Java]
+public interface Animal {
+    default public String identifyMyself() { return "I am an animal."; }
+}
+
+public interface EggLayer extends Animal {
+    default public String identifyMyself() { return "I am able to lay eggs."; }
+}
+
+public interface FireBreather extends Animal { }
+
+public class Dragon implements EggLayer, FireBreather {
+    public static void main(String... args) {
+        Dragon myApp = new Dragon();
+        System.out.println(myApp.identifyMyself()); // Restituisce: "I am able to lay eggs."
+    }
+}
+\end{lstlisting}
+\noindent Poiché \texttt{EggLayer} specializza \texttt{Animal} ridefinendo \texttt{identifyMyself()}, la sua versione è considerata più specifica rispetto a quella ereditata per via transitiva da \texttt{FireBreather}.
+
+\paragraph{Conflitti Indipendenti e Disambiguazione Esplicita con \texttt{super}.}
+Se due interfacce indipendenti forniscono implementazioni \texttt{default} per lo stesso metodo, oppure se un metodo \texttt{default} entra in conflitto con un metodo astratto privo di corpo, il compilatore genera un \textbf{errore di compilazione}. In questo scenario, la classe implementatrice è obbligata a effettuare l'override esplicito del metodo.
+
+\noindent All'interno dell'override, è possibile richiamare una o entrambe le implementazioni di default facendo ricorso alla parola chiave \texttt{super} preceduta dal nome dell'interfaccia di riferimento:
+\begin{center}
+    \texttt{NomeInterfaccia.super.nomeMetodo(parametri);}
+\end{center}
+
+\begin{lstlisting}[language=Java]
+public interface OperateCar {
+    default public int startEngine(EncryptedKey key) {
+        // Implementazione accensione auto convenzionale
+        return 1;
+    }
+}
+
+public interface FlyCar {
+    default public int startEngine(EncryptedKey key) {
+        // Implementazione accensione modulo di volo
+        return 2;
+    }
+}
+
+public class FlyingCar implements OperateCar, FlyCar {
+    // Override obbligatorio: risoluzione del conflitto tra interfacce concorrenti
+    public int startEngine(EncryptedKey key) {
+        // Invocazione selettiva o combinata dei comportamenti originali
+        OperateCar.super.startEngine(key);
+        return FlyCar.super.startEngine(key);
+    }
+}
+\end{lstlisting}
+
+\paragraph{Metodi d'Istanza di Superclasse che Soddisfano Metodi Astratti.}
+Un metodo d'istanza ereditato da una superclasse ordinaria può soddisfare direttamente la dichiarazione di un metodo astratto presente in un'interfaccia implementata, senza richiedere la riscrittura del codice nella classe figlia:
+
+\begin{lstlisting}[language=Java]
+public interface Mammal {
+    String identifyMyself(); // Metodo astratto privo di corpo
+}
+
+public class Horse {
+    public String identifyMyself() { return "I am a horse."; }
+}
+
+public class Mustang extends Horse implements Mammal {
+    public static void main(String... args) {
+        Mustang myApp = new Mustang();
+        System.out.println(myApp.identifyMyself()); // Restituisce: "I am a horse."
+    }
+}
+\end{lstlisting}
+\noindent La classe \texttt{Mustang} eredita \texttt{identifyMyself()} da \texttt{Horse}, soddisfacendo automaticamente il contratto imposto dall'interfaccia \texttt{Mammal}.
+
+\paragraph{Quadro Sinottico sull'Overriding dei Metodi.}
+Il comportamento delle interazioni tra metodi statici e d'istanza tra superclassi e sottoclassi è formalizzato dalla seguente matrice:
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{4.8cm}p{4.8cm}}
+    \toprule
+    & \textbf{Superclass Instance Method} & \textbf{Superclass Static Method} \\
+    \midrule
+    \textbf{Subclass Instance Method} & \textbf{Overrides} (Polimorfismo dinamico) & \textbf{Errore di compilazione} \\
+    \addlinespace
+    \textbf{Subclass Static Method} & \textbf{Errore di compilazione} & \textbf{Hides} (Nascondimento statico) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Evoluzione delle Interfacce e Retrocompatibilità}
+
+\paragraph{La Motivazione Architetturale: Interface Evolution.}
+Prima dell'introduzione dei metodi \texttt{default}, l'evoluzione delle API pubbliche presentava una criticità strutturale: \textbf{aggiungere un nuovo metodo astratto a un'interfaccia già distribuita rompeva istantaneamente tutto il codice client preesistente}, poiché ogni classe concreta era forzata a implementarlo per poter compilare.
+
+\begin{cbox}{Il Problema dell'Evoluzione delle API (Esempio Oracle)}
+Si consideri un'interfaccia originaria rilasciata in una libreria di sistema:
+\begin{lstlisting}[language=Java]
+public interface DoIt {
+    void doSomething(int i, double x);
+    int doSomethingElse(String s);
+}
+\end{lstlisting}
+Per evolvere l'architettura aggiungendo un controllo di validazione (\texttt{didItWork}), l'aggiunta di un semplice metodo astratto causerebbe la rottura di tutti i progetti implementatori terzi:
+\begin{lstlisting}[language=Java]
+public interface DoIt {
+    void doSomething(int i, double x);
+    int doSomethingElse(String s);
+    // Errore nei client legacy: le vecchie classi non compilano piu!
+    boolean didItWork(int i, double x, String s);
+}
+\end{lstlisting}
+\end{cbox}
+
+\noindent Con i metodi \textbf{\texttt{default}}, l'interfaccia può espandere il proprio perimetro funzionale garantendo la piena retrocompatibilità (\textit{backward compatibility}): le classi storiche continuano a compilare ereditando l'implementazione predefinita, mentre le nuove classi possono ridefinirla secolarmente.
+
+\begin{lstlisting}[language=Java]
+public interface DoIt {
+    void doSomething(int i, double x);
+    int doSomethingElse(String s);
+
+    // Integrazione sicura: corpo fornito di default, nessun client esistente si rompe
+    default boolean didItWork(int i, double x, String s) {
+        // Implementazione di fallback predefinita
+        return true;
+    }
+}
+\end{lstlisting}
+
+\subsection{Classi Anonime (Anonymous Classes)}
+
+\paragraph{Definizione e Caratteristiche Fondamentali.}
+Una \textbf{classe anonima} (\textit{anonymous class}) è una classe locale priva di identificatore (senza nome), che viene \textbf{dichiarata e istanziata simultaneamente} all'interno di una singola espressione.
+\begin{itemize}
+    \item \textbf{Scopo primario}: consente di rendere il codice più compatto e leggibile quando una determinata implementazione serve \textbf{una sola volta} (\textit{one-off / disposable use});
+    \item \textbf{Dichiarazione in-line}: la definizione della classe è incorporata direttamente nell'espressione in cui l'oggetto viene creato e passato come parametro;
+    \item \textbf{Eredità e Contratti}: una classe anonima non può estendere esplicitamente una classe e contemporaneamente implementare un'interfaccia; deve estendere esattamente una classe preesistente oppure implementare una specifica interfaccia;
+    \item \textbf{Regole di Scoping}: condivide le medesime regole di visibilità delle classi locali (accesso ai membri d'istanza della classe contenitrice in contesti non-statici, cattura delle sole variabili locali \texttt{final} o \textit{effectively final}).
+\end{itemize}
+
+\subsection{Gestione degli Eventi e Listener in Java GUI}
+
+\paragraph{Architettura a Eventi nelle Interfacce Grafiche (Swing/AWT).}
+Nelle interfacce grafiche orientate agli oggetti, il flusso di controllo è guidato dagli eventi (\textit{Event-Driven}). I componenti grafici interagiscono secondo il pattern architetturale basato su:
+\begin{itemize}
+    \item \textbf{Sorgenti di Evento (\textit{Event Sources})}: componenti UI (come \texttt{JButton}, \texttt{JTextField}, \texttt{JCheckBox}) in grado di rilevare interazioni fisiche dell'utente (click del mouse, digitazione di testo, ridimensionamento);
+    \item \textbf{Ascoltatori di Evento (\textit{Event Listeners})}: oggetti preposti a intercettare tali notifiche e a eseguire la corrispondente logica di reazione;
+    \item \textbf{Disaccoppiamento $N:1$}: più sorgenti grafiche possono condividere il medesimo listener qualora debbano compiere azioni simili, così come un singolo componente può notificare una moltitudine di listener indipendenti.
+\end{itemize}
+
+\paragraph{L'Interfaccia \texttt{ActionListener}.}
+Nel caso specifico della pressione di un pulsante (\texttt{JButton}), il contratto standard della libreria Java è rappresentato dall'interfaccia \texttt{ActionListener}:
+\begin{lstlisting}[language=Java]
+public interface ActionListener extends EventListener {
+    public void actionPerformed(ActionEvent e);
+}
+\end{lstlisting}
+\begin{itemize}
+    \item L'interfaccia definisce un unico metodo astratto: \texttt{actionPerformed(ActionEvent e)};
+    \item L'oggetto \texttt{ActionEvent} contiene i metadati associati all'accadimento: ad esempio, il metodo \texttt{e.getActionCommand()} restituisce la stringa di comando o l'etichetta testuale associata al pulsante premuto.
+\end{itemize}
+
+\subsection{Caso Studio SimpleCalc: I Tre Approcci a Confronto}
+
+\noindent Per comprendere appieno la convergenza tra classi interne, scoping e il pattern Strategy, si analizza la realizzazione di una calcolatrice semplificata (\texttt{SimpleCalc}). L'interfaccia grafica comprende un campo di testo (\texttt{numberCalc}) e un insieme di pulsanti disposti su una griglia:
+\begin{itemize}
+    \item Pulsanti numerici da \texttt{1} a \texttt{9};
+    \item Pulsanti operatore (\texttt{+} e \texttt{-});
+    \item Pulsante di calcolo finale (\texttt{=}).
+\end{itemize}
+
+\noindent Java consente di implementare l'interfaccia \texttt{ActionListener} per i pulsanti secondo tre strategie distinte, ciascuna appropriata per una specifica configurazione di riuso e accoppiamento:
+\begin{enumerate}
+    \item Implementazione direttamente all'interno della \textbf{classe contenitrice} (\textit{outer class as listener});
+    \item Implementazione tramite \textbf{member inner class};
+    \item Implementazione tramite \textbf{classe anonima} (\textit{anonymous inner class}).
+\end{enumerate}
+
+\paragraph{Approccio 1: Implementazione nella Classe Contenitrice.}
+Quando una molteplicità di componenti grafici compie esattamente la medesima azione di base, la soluzione più lineare consiste nel far implementare \texttt{ActionListener} direttamente alla classe contenitrice principale (\texttt{SimpleCalc}).
+
+\noindent È il caso dei tasti numerici da \texttt{1} a \texttt{9}: alla pressione di uno qualsiasi di essi, il numero corrispondente deve essere semplicemente visualizzato nel \texttt{JTextField}.
+\begin{lstlisting}[language=Java]
+public class SimpleCalc implements ActionListener {
+    private JFrame guiFrame;
+    private JTextField numberCalc;
+    private JPanel buttonPanel;
+
+    public SimpleCalc() {
+        guiFrame = new JFrame();
+        numberCalc = new JTextField();
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(4, 3));
+        guiFrame.add(buttonPanel, BorderLayout.CENTER);
+
+        // Creazione iterativa dei bottoni numerici
+        for (int i = 1; i < 10; i++) {
+            addButton(buttonPanel, String.valueOf(i));
+        }
+    }
+
+    private void addButton(Container parent, String name) {
+        JButton button = new JButton(name);
+        button.setActionCommand(name);
+        // Registrazione: la classe stessa gestisce l'evento tramite 'this'
+        button.addActionListener(this);
+        parent.add(button);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        // Intercetta l'etichetta del bottone premuto e aggiorna il display
+        String action = event.getActionCommand();
+        numberCalc.setText(action);
+    }
+}
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{Vantaggio}: centralizza la gestione in un unico punto senza creare classi ausiliarie;
+    \item \textbf{Limite}: scala male se i pulsanti devono compiere compiti eterogenei, costringendo a lunghe catene di \texttt{if-else} per distinguere la sorgente dell'evento.
+\end{itemize}
+
+\paragraph{Approccio 2: Implementazione con Member Inner Class.}
+Quando i componenti svolgono operazioni logiche affini che condividono una struttura comune ma differiscono per parametri interni, l'uso di una \textbf{member inner class} rappresenta la scelta architetturale più coesa.
+
+\noindent I pulsanti di addizione (\texttt{+}) e sottrazione (\texttt{-}) memorizzano il primo operando e impostano il codice dell'operazione. La classe interna \texttt{OperatorAction} incapsula il discriminante numerico (\texttt{operator}), avendo al contempo accesso diretto ai campi privati dell'outer class (\texttt{currentCalc} e \texttt{calcOperation}):
+\begin{lstlisting}[language=Java]
+public class SimpleCalc {
+    private JTextField numberCalc;
+    private int currentCalc = 0;
+    private int calcOperation = 0; // 1 = addizione, 2 = sottrazione
+
+    // Member Inner Class: parametrizzabile e dotata di accesso allo stato outer
+    private class OperatorAction implements ActionListener {
+        private int operator;
+
+        public OperatorAction(int operator) {
+            this.operator = operator;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            if (!numberCalc.getText().isEmpty()) {
+                currentCalc = Integer.parseInt(numberCalc.getText());
+                calcOperation = operator;
+            }
+        }
+    }
+
+    private void setupOperators(JPanel buttonPanel) {
+        JButton additionButton = new JButton("+");
+        additionButton.setActionCommand("+");
+        additionButton.addActionListener(new OperatorAction(1));
+        buttonPanel.add(additionButton);
+
+        JButton subtractionButton = new JButton("-");
+        subtractionButton.setActionCommand("-");
+        subtractionButton.addActionListener(new OperatorAction(2));
+        buttonPanel.add(subtractionButton);
+    }
+}
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{Vantaggio}: elimina la duplicazione di codice; l'operazione è parametrizzata tramite costruttore preservando l'information hiding verso l'esterno;
+    \item \textbf{Legame d'istanza}: ogni istanza di \texttt{OperatorAction} è legata all'oggetto \texttt{SimpleCalc} chiamante e ne muta direttamente lo stato interno.
+\end{itemize}
+
+\paragraph{Approccio 3: Implementazione con Classe Anonima.}
+Spesso un determinato pulsante ha un comportamento del tutto unico ed esclusivo nell'intero sistema. Creare una classe dedicata (anche interna) per un'operazione invocata in un solo punto causerebbe una \textbf{proliferazione ingiustificata di classi nominali}, appesantendo la leggibilità del progetto.
+
+\noindent Il pulsante di uguaglianza (\texttt{=}) deve prelevare il secondo operando, valutare \texttt{calcOperation}, calcolare il risultato finale e aggiornare il testo a video. Costituisce il candidato naturale per una \textbf{classe anonima}:
+\begin{lstlisting}[language=Java]
+JButton equalsButton = new JButton("=");
+
+// Dichiarazione e istanziazione in-line di una classe anonima
+equalsButton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        if (!numberCalc.getText().isEmpty()) {
+            int number = Integer.parseInt(numberCalc.getText());
+            if (calcOperation == 1) {
+                int result = currentCalc + number;
+                numberCalc.setText(String.valueOf(result));
+            } else if (calcOperation == 2) {
+                int result = currentCalc - number;
+                numberCalc.setText(String.valueOf(result));
+            }
+        }
+    }
+});
+\end{lstlisting}
+
+\begin{cbox}{Riflessione Teorica: L'Illusione del Passaggio di Codice}
+Dal punto di vista della sintassi, il programmatore percepisce la classe anonima come la trasmissione di un \textbf{blocco di codice al volo} passato come argomento al metodo \texttt{addActionListener}.
+
+\medskip
+\noindent \textbf{La realtà computazionale sottostante}:
+\begin{itemize}
+    \item In Java non si stanno passando puntatori a funzione né indirizzi di memoria;
+    \item Il compilatore sintetizza a tempo di compilazione una vera e propria classe anonima (denominata internamente \texttt{SimpleCalc\$1.class}) che implementa l'interfaccia \texttt{ActionListener};
+    \item A runtime viene istanziato un oggetto concreto di tale classe anonima e il suo riferimento d'oggetto viene passato come parametro formale polimorfico.
+\end{itemize}
+\end{cbox}
+
+\subsection{Sintesi Architetturale: Dalle Classi Anonime alle Lambda}
+
+\paragraph{La Convergenza verso lo Strategy Pattern.}
+L'evoluzione delle tecniche di scoping in Java analizzate nel modulo illustra come il linguaggio abbia progressivamente affinato il supporto al pattern Strategy:
+\begin{itemize}
+    \item \textbf{C++ / C}: uso di puntatori a funzione o template (scelte rapide, ma prive di incapsulamento integrato o vincolate a tempo di compilazione);
+    \item \textbf{Smalltalk}: chiusure lessicali pure (\textit{blocks}) capaci di catturare l'ambiente circostante in modo del tutto trasparente;
+    \item \textbf{Java Standard (Pre-Java 8)}: incapsulamento rigoroso tramite classi annidate, locali e anonime. La strategia algoritmica viene trattata come un \textbf{oggetto polimorfo} che implementa un'interfaccia contrattuale;
+    \item \textbf{Java Moderno (Java 8+)}: introduzione delle \textbf{espressioni Lambda} e dei riferimenti a metodo (\textit{Method References}), che offrono lo "zucchero sintattico" ideale per sintetizzare interfacce a singolo metodo astratto (\textit{Functional Interfaces} o SAM -- \textit{Single Abstract Method}), colmando definitivamente il divario espressivo con i blocchi Smalltalk pur conservando la sicurezza del sistema di tipi orientato agli oggetti.
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{3.4cm}p{4.2cm}p{3.4cm}}
+    \toprule
+    \textbf{Strategia di Scoping} & \textbf{Visibilità del Tipo} & \textbf{Accoppiamento con l'Outer Class} & \textbf{Caso d'Uso Ottimale} \\
+    \midrule
+    \textbf{Outer as Listener} & Pubblica / Package & Totale (è la classe stessa a rispondere) & Molteplici componenti con comportamento identico (es. tastierino 1--9). \\
+    \addlinespace
+    \textbf{Member Inner Class} & Privata / Limitata & Accede a campi d'istanza dell'outer via \texttt{Outer.this} & Operazioni correlate parametrizzate (es. operatori aritemetici \texttt{+} e \texttt{-}). \\
+    \addlinespace
+    \textbf{Anonymous Class} & Locale all'espressione & Accede al contesto outer e a variabili (effectively) final & Comportamenti univoci e monouso (\textit{one-off}), come il tasto \texttt{=}. \\
     \bottomrule
 \end{tabular}
 \end{center}
