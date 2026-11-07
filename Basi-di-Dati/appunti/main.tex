@@ -17,7 +17,7 @@
 \usepackage{gensymb}
 \usepackage{centernot}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
 \usepackage{mdframed}
 \usepackage{listings}
 \usepackage[T1]{fontenc}
@@ -612,6 +612,1299 @@ END;
     \item \textbf{Costi Economici e Complessità}: le licenze enterprise sono onerose, richiedono server potenti e personale altamente qualificato (i DBA) per l'amministrazione.
     \item \textbf{Struttura Impegnativa (\textit{Overhead})}: le funzioni di controllo transazionale, sicurezza e logging sono sempre attive e consumano risorse. Per compiti minuscoli o file di log elementari, un semplice file di testo gestito dal sistema operativo può risultare più veloce ed economico rispetto a un intero DBMS.
 \end{itemize}
+
+\newpage
+
+\section{Architettura dei DBMS}
+
+\subsection{Dal DBMS ai Suoi Componenti}
+\subsubsection{Il DBMS come Scatola Nera}
+
+\noindent \textbf{Definizione e Ruolo.} Un \textbf{DBMS} (\textit{DataBase Management System}) è il software che permette di creare e gestire basi di dati. Il suo compito non si limita a conservare le informazioni: deve offrire un modo \textbf{efficiente} e \textbf{persistente} per crearle, recuperarle, aggiornarle e gestirle, anche quando le dimensioni sono enormi e gli utenti che vi accedono sono molti.
+
+\medskip
+\noindent \textbf{Il Punto di Vista dell'Utente.} Per chi interroga la base di dati, il DBMS è una sorta di \textbf{scatola nera}: si scrive una query SQL e si ottiene una tabella di risultati. L'utente non vede come i record siano disposti sui blocchi del disco, quali indici vengano consultati né quali algoritmi di join siano stati scelti.
+
+\medskip
+\noindent \textbf{Esempio Introduttivo.} Si consideri la relazione \textbf{Employees}(\underline{Name}, \textit{Surname}, \textit{Gender}, \textit{Wage}):
+
+\begin{center}
+\small
+\begin{tabular}{llcc}
+    \toprule
+    \textbf{Name} & \textbf{Surname} & \textbf{Gender} & \textbf{Wage} \\
+    \midrule
+    Mary   & Smith   & F & 1700 \\
+    James  & Johnson & M & 1200 \\
+    Michael& Williams& M & 1550 \\
+    Susan  & Brown   & F & 1500 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent Se l'utente esegue la query:
+
+\begin{lstlisting}[language=SQL]
+SELECT Surname, Wage
+FROM   Employees
+WHERE  Wage > 1500;
+\end{lstlisting}
+
+\noindent ottiene il risultato:
+
+\begin{center}
+\small
+\begin{tabular}{lc}
+    \toprule
+    \textbf{Surname} & \textbf{Wage} \\
+    \midrule
+    Smith   & 1700 \\
+    Williams& 1550 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{La Domanda Fondamentale.} Tra la tabella di partenza e quella di arrivo c'è un blocco ``?'' che rappresenta il DBMS. Che cosa deve fare internamente per trasformare la prima tabella nella seconda? Non basta ``scorrere le righe'': occorre capire dove sono salvate, come leggere solo i blocchi necessari, come eseguire il filtro e come restituire il risultato nel minor tempo possibile.
+
+\begin{cbox}{Le Funzioni che l'Architettura Deve Realizzare}
+\noindent Un DBMS deve rispondere a domande diverse, ciascuna delle quali corrisponde a un preciso problema di progetto:
+\begin{itemize}
+    \item \textbf{Ricerca delle tuple}: come trovare rapidamente i record che soddisfano una condizione, senza leggere ogni volta l'intero file?
+    \item \textbf{Aggiornamento delle tuple}: come modificare un record in modo sicuro, senza riscrivere l'intera base di dati?
+    \item \textbf{Ordine di esecuzione delle query}: chi decide in quale sequenza eseguire le operazioni di una query complessa, e come scegliere il piano più conveniente?
+    \item \textbf{Accessi ripetuti alle stesse locazioni disco}: come evitare di rileggere più volte lo stesso blocco quando più operazioni lo richiedono?
+    \item \textbf{Operazioni concorrenti di lettura e scrittura}: come impedire che due transazioni si sovrascrivano a vicenda?
+    \item \textbf{Controllo degli accessi}: come garantire che ogni utente veda e modifichi solo i dati per cui possiede i privilegi?
+    \item \textbf{Recupero dai disastri}: come ripristinare uno stato coerente dopo un guasto hardware, un crash del sistema o un'interruzione di corrente?
+    \item \textbf{Interfacce applicative}: come permettere a programmi esterni di dialogare con la base di dati in modo stabile e controllato?
+\end{itemize}
+\end{cbox}
+
+\subsubsection{Cosa Serve per Implementare un DBMS Relazionale}
+
+\noindent \textbf{Requisiti Minimi.} Per realizzare un DBMS relazionale bisogna innanzitutto:
+\begin{itemize}
+    \item \textbf{memorizzare le relazioni come tabelle}, con un nome, un insieme di attributi e una chiave primaria, ad esempio $R(\underline{A}, B, C)$, $S(\underline{A}, B)$ e $T(\underline{A}, B)$;
+    \item \textbf{eseguire interrogazioni SQL}, anche quando coinvolgono più relazioni e condizioni complesse.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Due Query di Riferimento.} Le seguenti interrogazioni sono semplici da leggere, ma richiedono al DBMS scelte algoritmiche tutt'altro che banali:
+
+\begin{lstlisting}[language=SQL, caption={Selezione su una sola relazione}]
+SELECT A, B
+FROM   R
+WHERE  B = 2000;
+\end{lstlisting}
+
+\begin{lstlisting}[language=SQL, caption={Join su tre relazioni}]
+SELECT R.A, T.B
+FROM   R, S, T
+WHERE  R.B = S.A
+  AND  S.B = T.A;
+\end{lstlisting}
+
+\noindent Nel primo caso il DBMS deve decidere se esiste un indice sull'attributo $B$ oppure se conviene scandire l'intera tabella. Nel secondo caso deve scegliere l'ordine dei join, quali relazioni caricare prima in memoria, quali indici sfruttare e come combinare i risultati intermedi senza materializzare prodotti cartesiani enormi.
+
+\medskip
+\noindent \textbf{Dalla Funzione al Componente.} L'architettura interna del DBMS nasce proprio dall'esigenza di separare queste responsabilità: la \textbf{comprensione e l'ottimizzazione delle query}, la \textbf{gestione fisica dei dati} e la \textbf{correttezza delle operazioni nel tempo}. A queste tre aree corrispondono i tre macrocomponenti descritti nella sezione seguente.
+
+\subsection{I Tre Macrocomponenti dell'Architettura}
+
+\noindent \textbf{Visione d'Insieme.} L'architettura di un DBMS relazionale è composta da tre parti principali:
+\begin{itemize}
+    \item \textbf{Query Processor} (in verde): riceve le interrogazioni, le traduce in un piano di esecuzione e ne coordina l'esecuzione;
+    \item \textbf{Resource Manager} (in arancione): gestisce la memoria secondaria, i file, i record, i blocchi e gli indici;
+    \item \textbf{Transaction Manager} (in rosa): garantisce atomicità, isolamento e durabilità delle transazioni.
+\end{itemize}
+
+\noindent A questi si aggiungono due \textbf{strutture condivise} (in azzurro), il \textbf{Buffer} e la \textbf{Lock table}, mentre i dati risiedono stabilmente nella \textbf{Secondary Memory} (in rosso). La figura seguente riassume l'architettura completa e i principali flussi di comandi e dati.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    proc/.style={draw=black, rectangle, rounded corners=1.5pt, minimum width=3cm, minimum height=0.8cm, align=center, inner sep=3pt},
+    query/.style={proc, fill=green!25},
+    res/.style={proc, fill=orange!30},
+    trans/.style={proc, fill=pink!45},
+    shared/.style={draw=black, ellipse, minimum width=2.8cm, minimum height=0.9cm, align=center, fill=blue!15, inner sep=2pt},
+    mem/.style={draw=black, rectangle, rounded corners=4pt, minimum width=4.2cm, minimum height=0.95cm, align=center, fill=red!20},
+    cmd/.style={-{Latex[length=2.2mm]}, thick},
+    dat/.style={-{Latex[length=2.2mm]}, thick, dashed}
+]
+    % Attori
+    \node (admin) at (-5.6,5.0) {\textbf{Amministratore}};
+    \node (user) at (0,5.0) {\textbf{Utente / Applicazione}};
+
+    % Query processor e DDL
+    \node[query] (ddl) at (-5.6,3.9) {DDL compiler};
+    \node[query] (qc) at (0,3.9) {Query compiler};
+    \node[query] (ee) at (0,2.7) {Execution engine};
+
+    % Resource manager
+    \node[res] (idx) at (0,1.6) {Index/File/Record\\manager};
+    \node[res] (bufm) at (0,0.4) {Buffer manager};
+    \node[res] (stor) at (0,-0.8) {Storage manager};
+    \node[mem] (disk) at (0,-2.2) {Secondary Memory};
+
+    % Transaction manager
+    \node[trans] (tm) at (4.9,3.9) {Transaction\\manager};
+    \node[trans] (log) at (4.9,2.7) {Logging and\\recovery};
+    \node[trans] (cc) at (8.6,2.7) {Concurrency\\control};
+
+    % Strutture condivise
+    \node[shared] (buffer) at (4.1,0.4) {Buffer};
+    \node[shared] (lock) at (8.6,0.8) {Lock table};
+
+    % Comandi e dati
+    \draw[cmd] (admin) -- (ddl);
+    \draw[cmd] (user) -- (qc);
+    \draw[cmd] (qc) -- (ee);
+    \draw[cmd] (ddl.south) |- (ee.west);
+    \draw[cmd, <->] (ee) -- (idx);
+    \draw[cmd, <->] (idx) -- (bufm);
+    \draw[cmd, <->] (bufm) -- (stor);
+    \draw[cmd, <->] (stor) -- (disk);
+    \draw[cmd] (tm) -- (log);
+    \draw[cmd] (tm.east) -| (cc.north);
+    \draw[cmd, <->] (cc) -- (lock);
+    \draw[cmd] (ee.east) -- (log.west);
+
+    % Dati e metadati
+    \draw[dat] (qc.east) .. controls (2.2,3.9) and (3.2,1.6) .. (buffer.north west);
+    \draw[dat] (ee.east) .. controls (2.1,2.7) and (3.1,1.4) .. (buffer.north);
+    \draw[dat] (log.south) .. controls (4.9,1.4) and (5.7,1.1) .. (buffer.east);
+    \draw[dat] (cc.south) .. controls (8.0,1.6) and (6.2,0.8) .. (buffer.south east);
+    \draw[dat, <->] (bufm.east) -- (buffer.west);
+    \draw[dat] (disk.west) -- ++(-2.6,0) |- (ddl.south);
+
+    % Legenda
+    \draw[cmd] (6.4,-1.6) -- (7.4,-1.6) node[right, font=\small] {comandi e dati};
+    \draw[dat] (6.4,-2.1) -- (7.4,-2.1) node[right, font=\small] {dati e metadati};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent \textbf{Il Percorso di una Query.} La figura può essere letta come una catena di passaggi:
+\begin{enumerate}
+    \item l'\textbf{utente} o l'\textbf{applicazione} invia una query SQL al \textbf{Query compiler};
+    \item il Query compiler produce un \textbf{piano di esecuzione} e lo consegna all'\textbf{Execution engine};
+    \item l'Execution engine richiede i record all'\textbf{Index/File/Record manager}, che conosce schema, file e indici;
+    \item il \textbf{Buffer manager} verifica se i blocchi necessari sono già in memoria; in caso contrario li chiede allo \textbf{Storage manager}, che li legge dalla \textbf{Secondary Memory};
+    \item il \textbf{Transaction manager} coordina il logging e il controllo della concorrenza, usando il \textbf{Buffer} e la \textbf{Lock table} come strutture condivise;
+    \item i risultati risalgono la catena e vengono restituiti all'utente.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Il Ruolo dell'Amministratore.} L'\textbf{amministratore} della base di dati non passa dal Query compiler per modificare lo schema: utilizza il \textbf{DDL compiler}, che traduce i comandi di definizione dei dati (\texttt{CREATE}, \texttt{ALTER}, \texttt{DROP}) e aggiorna il \textbf{catalogo} con i metadati della base di dati. Anche il DDL compiler dialoga con l'Execution engine e con la memoria secondaria, perché la definizione dello schema deve essere registrata in modo persistente.
+
+\medskip
+\noindent \textbf{Legenda dei Flussi.} Le frecce continue rappresentano \textbf{comandi e dati} scambiati tra i componenti; le frecce tratteggiate rappresentano \textbf{dati e metadati} scambiati con il Buffer e con la memoria secondaria. La distinzione è importante: non tutto ciò che circola nel sistema è un comando SQL; una parte rilevante del traffico riguarda pagine, record, indici, statistiche e record di log.
+
+\subsection{Query Processor}
+\subsubsection{Query Compiler: dal Testo al Piano di Esecuzione}
+
+\noindent \textbf{Perché è il Componente Critico.} Il \textbf{Query Processor} è il componente che incide maggiormente sulle prestazioni complessive. Due query che restituiscono lo stesso risultato possono avere costi molto diversi a seconda di come vengono tradotte ed eseguite. Il Query Processor è formato da due unità:
+\begin{itemize}
+    \item il \textbf{Query Compiler}, che traduce la query in un \textbf{piano di esecuzione};
+    \item l'\textbf{Execution Engine}, che esegue materialmente le operazioni del piano.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Le Tre Fasi della Compilazione.} Il Query Compiler non si limita a controllare la sintassi: costruisce una rappresentazione intermedia, la verifica semanticamente e la riscrive in una forma più efficiente. Le fasi sono:
+\begin{enumerate}
+    \item \textbf{Parsing}: esegue il \textbf{controllo sintattico} della query e costruisce un \textbf{albero sintattico}. In questa fase il sistema verifica che le parole chiave siano usate correttamente e che la struttura della query sia valida.
+    \item \textbf{Preprocessing}: esegue i \textbf{controlli semantici} (esistenza delle tabelle e degli attributi, compatibilità dei tipi, risoluzione dei nomi ambigui) e trasforma l'albero sintattico in un \textbf{albero di operazioni algebriche}, cioè in un'espressione dell'algebra relazionale.
+    \item \textbf{Optimization}: trasforma l'espressione iniziale nella \textbf{migliore sequenza di operazioni} possibile, sfruttando le equivalenze dell'algebra relazionale, gli indici disponibili e le statistiche del catalogo.
+\end{enumerate}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    phase/.style={draw=blue-violet, fill=ghostwhite, rounded corners=2pt, minimum width=2.65cm, minimum height=0.9cm, align=center},
+    arr/.style={-{Latex[length=2mm]}, thick, draw=blue-violet}
+]
+    \node[phase] (sql) {Query SQL};
+    \node[phase, right=0.45cm of sql] (parse) {Parsing\\\textit{controllo sintattico}};
+    \node[phase, right=0.45cm of parse] (pre) {Preprocessing\\\textit{controllo semantico}};
+    \node[phase, right=0.45cm of pre] (opt) {Optimization\\\textit{piano migliore}};
+    \node[phase, right=0.45cm of opt, fill=green!20] (plan) {Query plan\\\textit{sequenza di operazioni}};
+
+    \draw[arr] (sql) -- (parse);
+    \draw[arr] (parse) -- (pre);
+    \draw[arr] (pre) -- (opt);
+    \draw[arr] (opt) -- (plan);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\begin{cbox}{Esempio di Compilazione e Ottimizzazione}
+\noindent Si consideri la query:
+\begin{lstlisting}[language=SQL]
+SELECT A, B
+FROM   R1, R2
+WHERE  C = D AND C = 'c';
+\end{lstlisting}
+\medskip
+\noindent \textbf{Traduzione algebrica.} Il preprocessing produce un'espressione del tipo:
+\[
+\pi_{A,B}\Big(\sigma_{C=D}\big(\sigma_{C='c'}(R_1) \bowtie R_2\big)\Big)
+\]
+\medskip
+\noindent \textbf{Ottimizzazione.} L'ottimizzatore può anticipare la selezione su $R_1$ prima del join, riducendo drasticamente il numero di tuple intermedie. La sequenza di operazioni diventa:
+\[
+\sigma_{C='c'}(R_1), \qquad \bowtie R_2, \qquad \sigma_{C=D}, \qquad \pi_{A,B}
+\]
+\medskip
+\noindent \textbf{Perché è conveniente.} Filtrare $R_1$ prima del join significa portare in memoria molte meno tuple. Inoltre, se esiste un indice su $R_1.C$, il DBMS può evitare una scansione completa della tabella. L'ottimizzatore confronta più piani alternativi e sceglie quello con il costo stimato più basso, usando le statistiche salvate nel catalogo.
+\end{cbox}
+
+\subsubsection{Execution Engine e Piano di Esecuzione}
+
+\noindent \textbf{Che Cosa Fa l'Execution Engine.} Una volta scelto il piano, l'\textbf{Execution Engine} esegue ciascuna operazione della sequenza, interagendo con quasi tutti gli altri componenti:
+\begin{itemize}
+    \item con l'\textbf{Index/File/Record manager}, per ottenere i record delle relazioni;
+    \item con il \textbf{Buffer manager}, per caricare e rilasciare i blocchi in memoria;
+    \item con lo \textbf{scheduler} e il \textbf{Transaction manager}, per rispettare i lock e registrare le modifiche nel log;
+    \item con il \textbf{Log manager}, per garantire la durabilità delle operazioni.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Il Piano non è un Programma Fisso.} Lo stesso piano logico può essere realizzato con algoritmi diversi: un join può usare un ciclo annidato, un hash join o un merge join; una selezione può usare un indice oppure una scansione sequenziale. L'Execution Engine sceglie l'implementazione concreta in base al piano ricevuto e alle risorse disponibili.
+
+\medskip
+\noindent \textbf{Separazione tra Logica e Fisica.} Il Query Processor lavora soprattutto a livello \textbf{logico}: ragiona su tabelle, attributi, predicati e operazioni algebriche. Il Resource Manager lavora a livello \textbf{fisico}: ragiona su file, blocchi, pagine, record e indici. Questa separazione è la stessa che, a livello di progetto concettuale, permette l'indipendenza dei dati.
+
+\subsection{Resource Manager}
+\subsubsection{I Tre Gestori delle Risorse}
+
+\noindent \textbf{Dati su Memoria Secondaria.} I dati di una base di dati risiedono normalmente nella \textbf{memoria secondaria} (dischi magnetici, SSD o storage in rete) per garantire la persistenza. Il \textbf{Resource Manager} sa \textbf{dove} si trovano i dati (file, record, pagine) e \textbf{come recuperarli rapidamente} (indici, strutture di accesso). Comprende tre gestori principali.
+
+\medskip
+\noindent \textbf{1. Index/File/Record Manager.} Conosce lo \textbf{schema} della base di dati e le \textbf{strutture dati} che consentono un accesso efficiente ai record. È il componente che sa, ad esempio, che la tabella \texttt{Employees} è memorizzata in un certo file, che i record hanno una certa dimensione e che sull'attributo \texttt{Surname} esiste un indice a albero B+.
+
+\medskip
+\noindent \textbf{2. Buffer Manager.} Partiziona la \textbf{memoria centrale} in \textbf{buffer} (o frame) nei quali vengono trasferiti i blocchi letti dal disco. Il buffer è una copia temporanea dei blocchi più usati: se un blocco è già presente, il DBMS evita un nuovo accesso al disco. Il Buffer Manager decide quali blocchi caricare, quali espellere quando la memoria è piena e quando riscrivere su disco i blocchi modificati (\textit{dirty pages}).
+
+\medskip
+\noindent \textbf{3. Storage Manager.} Tiene traccia della \textbf{posizione dei file} sul disco e ottiene i blocchi che contengono un file su richiesta del Buffer Manager. È il livello più vicino all'hardware: traduce le operazioni sui file in letture e scritture di blocchi fisici.
+
+\begin{cbox}{Le Informazioni che Circolano nel Resource Manager}
+\noindent I vari componenti possono aver bisogno di tipi diversi di informazione:
+\begin{center}
+\small
+\begin{tabular}{@{}lp{6.2cm}p{4.4cm}@{}}
+    \toprule
+    \textbf{Tipo di informazione} & \textbf{Contenuto} & \textbf{Utilizzo tipico} \\
+    \midrule
+    \textbf{Data} & Le tuple effettive delle relazioni. & Esecuzione delle query e degli aggiornamenti. \\
+    \addlinespace
+    \textbf{Metadata} & Schema, catalogo, vincoli, tipi, nomi di tabelle e colonne. & Parsing, preprocessing, verifica dei vincoli. \\
+    \addlinespace
+    \textbf{Index} & Strutture di accesso (es. alberi B+, hash) associate agli attributi. & Ricerca rapida di record e intervalli di valori. \\
+    \addlinespace
+    \textbf{Log records} & Storia delle modifiche, con stato prima e dopo. & Rollback, commit, recovery dopo un guasto. \\
+    \addlinespace
+    \textbf{Statistics} & Cardinalità delle relazioni, distribuzione dei valori, numero di blocchi. & Stima dei costi e scelta del piano di esecuzione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsubsection{Il Viaggio di un Record: dal Disco al Buffer}
+
+\noindent \textbf{La Sequenza Fisica.} Quando l'Execution Engine deve valutare una selezione su una relazione, la richiesta scende lungo la gerarchia del Resource Manager:
+\begin{enumerate}
+    \item l'Execution Engine chiede all'\textbf{Index/File/Record manager} i record che soddisfano una certa condizione;
+    \item l'Index/File/Record manager individua i \textbf{blocchi} che contengono quei record, eventualmente usando un indice;
+    \item il \textbf{Buffer manager} controlla se i blocchi sono già presenti in memoria;
+    \item se non lo sono, chiede allo \textbf{Storage manager} di leggerli dalla \textbf{memoria secondaria};
+    \item i blocchi vengono copiati nel buffer e l'Execution Engine può esaminare i record e applicare il predicato.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Perché il Buffer è Centrale.} L'accesso al disco è ordini di grandezza più lento dell'accesso alla memoria centrale. Se due query diverse leggono gli stessi blocchi, il Buffer permette di riutilizzarli senza tornare al disco. Questo è il motivo per cui il Buffer Manager è una delle componenti più importanti per le prestazioni: la sua politica di sostituzione (ad esempio LRU o Clock) determina quanti accessi fisici vengono evitati.
+
+\begin{cbox}{L'Unità di Lavoro del Resource Manager: il Blocco}
+\noindent Il disco non viene letto byte per byte: il trasferimento avviene per \textbf{blocchi} (o pagine) di dimensione fissa. Di conseguenza:
+\begin{itemize}
+    \item il costo di un'operazione si misura in \textbf{numero di blocchi letti o scritti}, non in numero di righe;
+    \item leggere un solo record richiede comunque il trasferimento dell'intero blocco che lo contiene;
+    \item un indice è conveniente quando permette di saltare molti blocchi e di leggere solo quelli che contengono i record cercati.
+\end{itemize}
+\medskip
+\noindent Questa è la ragione per cui, nei capitoli successivi, lo studio degli indici e delle strutture fisiche parte sempre dal costo in blocchi.
+\end{cbox}
+
+\subsection{Transaction Manager}
+\subsubsection{Transazioni: Unità di Lavoro}
+
+\noindent \textbf{Oltre la Singola Istruzione SQL.} Le operazioni su una base di dati raramente consistono in una sola istruzione SQL: molto spesso una singola azione applicativa richiede una \textbf{serie} di query e aggiornamenti correlati. Si consideri il classico esempio del bonifico bancario:
+
+\begin{lstlisting}[language=SQL, caption={Due aggiornamenti che devono essere eseguiti insieme}]
+UPDATE BankAccount
+SET    Balance = Balance + 500
+WHERE  AccountNumber = 12202;
+
+UPDATE BankAccount
+SET    Balance = Balance - 500
+WHERE  AccountNumber = 42177;
+\end{lstlisting}
+
+\noindent Se il sistema si interrompe tra il primo e il secondo aggiornamento, i 500 euro risultano creati dal nulla. Per evitare questo problema, le due istruzioni vengono raggruppate in una \textbf{transazione}:
+
+\begin{lstlisting}[language=SQL, caption={Transazione esplicita per il bonifico}]
+START TRANSACTION;
+
+UPDATE BankAccount
+SET    Balance = Balance + 500
+WHERE  AccountNumber = 12202;
+
+UPDATE BankAccount
+SET    Balance = Balance - 500
+WHERE  AccountNumber = 42177;
+
+COMMIT;
+\end{lstlisting}
+
+\medskip
+\noindent \textbf{Le Garanzie della Transazione.} Raggruppare più query in una transazione significa trattarle come un'\textbf{unità di lavoro} che deve essere eseguita in modo \textbf{atomico} e in \textbf{apparente isolamento} rispetto alle altre transazioni. Inoltre il DBMS deve garantire la \textbf{durabilità}: il lavoro di una transazione confermata non deve andare perduto, nemmeno in caso di guasto.
+
+\medskip
+\noindent \textbf{Le Tre Responsabilità del Transaction Manager.} Il Transaction Manager coordina tre funzioni distinte:
+\begin{itemize}
+    \item \textbf{Logging and recovery}: registra le modifiche e ripristina uno stato coerente dopo un crash;
+    \item \textbf{Concurrency control}: regola l'accesso simultaneo ai dati da parte di più transazioni;
+    \item \textbf{Gestione della Lock table}: mantiene le informazioni sui lock concessi e sulle attese.
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    tbox/.style={draw=blue-violet, fill=pink!35, rounded corners=2pt, minimum width=3.1cm, minimum height=0.85cm, align=center},
+    shared/.style={draw=blue-violet, fill=blue!12, ellipse, minimum width=2.8cm, minimum height=0.8cm, align=center},
+    arr/.style={-{Latex[length=2mm]}, thick, draw=blue-violet}
+]
+    \node[tbox] (tm) at (0,2.2) {Transaction manager};
+    \node[tbox] (log) at (-2.1,1.0) {Logging and recovery};
+    \node[tbox] (cc) at (2.1,1.0) {Concurrency control};
+    \node[shared] (lock) at (2.1,-0.5) {Lock table};
+
+    \draw[arr] (tm) -- (log);
+    \draw[arr] (tm) -| (cc);
+    \draw[arr, <->] (cc) -- (lock);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\subsubsection{Logging e Recovery}
+
+\noindent \textbf{Il Log delle Modifiche.} Per garantire la durabilità, il \textbf{Log Manager} scrive separatamente su disco ogni cambiamento della base di dati. Il log è un file sequenziale che registra, per ogni operazione, la transazione che l'ha eseguita, l'oggetto modificato e i valori prima e dopo la modifica.
+
+\medskip
+\noindent \textbf{Il Ruolo del Buffer.} Inizialmente il Log Manager scrive il log nei \textbf{buffer} e negozia con il \textbf{Buffer Manager} per assicurarsi che i buffer vengano scritti su disco, dove i dati possono sopravvivere a un crash. Non è necessario scrivere immediatamente ogni pagina di dati: è però indispensabile che il log contenga informazioni sufficienti per ricostruire l'operazione.
+
+\medskip
+\noindent \textbf{Il Recovery Manager.} Indipendentemente da quando avviene un guasto o un crash, il \textbf{Recovery Manager} esamina le modifiche registrate nel log e riporta la base di dati a uno stato coerente:
+\begin{itemize}
+    \item le transazioni \textbf{confermate} (\textit{committed}) vengono riapplicate se i loro effetti non sono ancora su disco (\textbf{REDO});
+    \item le transazioni \textbf{non confermate} (\textit{uncommitted}) vengono annullate, ripristinando i valori precedenti (\textbf{UNDO}).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Write-Ahead Logging.} Il principio fondamentale è che la parte \textit{before state} di una modifica deve essere scritta nel log \textbf{prima} che il dato corrispondente venga scritto su disco, mentre la parte \textit{after state} deve essere scritta \textbf{prima} del commit. In questo modo il sistema può sempre annullare un'operazione incompleta o rifare un'operazione confermata. Il dettaglio di queste tecniche (checkpoint, UNDO/REDO, ARIES) sarà ripreso nella parte dedicata all'affidabilità.
+
+\subsubsection{Controllo della Concorrenza e Deadlock}
+
+\noindent \textbf{Isolamento Apparente.} Una transazione deve \textbf{apparire} come se fosse eseguita in isolamento, ma nella realtà molti sistemi hanno numerose transazioni in esecuzione contemporanea. Il \textbf{Concurrency-Control Manager} deve garantire che le singole azioni di più transazioni vengano eseguite in un ordine tale che l'effetto complessivo sia lo stesso di un'esecuzione \textbf{seriale}, cioè una transazione alla volta.
+
+\medskip
+\noindent \textbf{Il Ruolo dello Scheduler e dei Lock.} Un tipico \textbf{scheduler} mantiene \textbf{lock} su porzioni della base di dati, impedendo a due transazioni di accedere alla stessa porzione in modi che interagirebbero male. Lo scheduler influisce sull'esecuzione delle query e delle altre operazioni, vietando l'accesso alle parti bloccate. La \textbf{Lock table} è la struttura che registra quali transazioni possiedono un lock su quali risorse e quali sono in attesa.
+
+\medskip
+\noindent \textbf{Deadlock.} Poiché le transazioni competono per le risorse attraverso i lock, possono entrare in una situazione in cui nessuna riesce a procedere perché ciascuna attende qualcosa che è posseduto da un'altra: questa situazione si chiama \textbf{deadlock}. Il Transaction Manager ha la responsabilità di intervenire e cancellare, fare \textit{rollback} o \textit{abort} di una o più transazioni, in modo che le altre possano proseguire.
+
+\begin{cbox}{Deadlock: Esempio Minimo}
+\noindent Si considerino due transazioni $T_1$ e $T_2$ e due risorse $A$ e $B$:
+\begin{itemize}
+    \item $T_1$ ha ottenuto un lock su $A$ e attende un lock su $B$;
+    \item $T_2$ ha ottenuto un lock su $B$ e attende un lock su $A$.
+\end{itemize}
+\medskip
+\noindent Nessuna delle due può rilasciare la risorsa che l'altra attende: il sistema è in stallo. Il DBMS può risolvere il problema con un \textbf{timeout}, con la rilevazione di un ciclo nel \textbf{grafo delle attese} oppure con tecniche di prevenzione. In ogni caso, una delle transazioni viene abortita e le sue risorse vengono rilasciate, permettendo all'altra di completare.
+\end{cbox}
+
+\subsection{Sintesi: Chi Fa Cosa}
+
+\noindent \textbf{La Mappa delle Responsabilità.} La tabella seguente collega le funzioni elencate all'inizio del capitolo ai componenti dell'architettura che se ne occupano:
+
+\begin{center}
+\small
+\begin{tabular}{p{7.1cm}p{8.2cm}}
+    \toprule
+    \textbf{Funzione del DBMS} & \textbf{Componente principale} \\
+    \midrule
+    Ricerca e aggiornamento delle tuple & Query Processor e Index/File/Record Manager \\
+    \addlinespace
+    Ordine di esecuzione delle query & Query Compiler, in particolare la fase di ottimizzazione \\
+    \addlinespace
+    Accessi ripetuti alle stesse locazioni disco & Buffer Manager \\
+    \addlinespace
+    Letture e scritture concorrenti & Concurrency-Control Manager e Lock table \\
+    \addlinespace
+    Controllo degli accessi & Sottosistema di autorizzazione del DBMS, basato su catalogo e privilegi \\
+    \addlinespace
+    Recupero dopo un disastro & Logging and Recovery \\
+    \addlinespace
+    Interfacce applicative & Query Processor e API del DBMS \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{I Tre Pilastri.} In sintesi, l'architettura di un DBMS può essere letta come la cooperazione di tre pilastri:
+\begin{itemize}
+    \item \textbf{Query Processor}: garantisce che le interrogazioni siano comprese, tradotte ed eseguite con un piano efficiente;
+    \item \textbf{Resource Manager}: garantisce che i dati vengano letti e scritti nel modo più conveniente rispetto alla memoria secondaria;
+    \item \textbf{Transaction Manager}: garantisce che le operazioni siano corrette anche in presenza di guasti e di accessi concorrenti.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Un Sistema a Strati.} Ogni componente ha una responsabilità precisa, ma tutti cooperano attraverso strutture condivise: il \textbf{catalogo} (metadati), il \textbf{buffer} (blocchi in memoria), la \textbf{lock table} (stato dei lock) e il \textbf{log} (storia delle modifiche). Comprendere questa architettura significa capire non solo \textit{che cosa} fa un DBMS, ma anche \textit{dove} e \textit{perché} lo fa, e quindi essere in grado di motivare le scelte di progetto che stanno dietro a un sistema di gestione di basi di dati.
+
+\newpage
+
+\section{Transazioni e Controllo della Concorrenza}
+
+\noindent \textbf{Il Ponte con l'Architettura.} Nella Sezione~2 il \textbf{Transaction Manager} è stato presentato come il componente che garantisce atomicità, isolamento e durabilità delle operazioni. In quel contesto le transazioni sono state soltanto introdotte, con l'esempio del bonifico bancario e con un rapido accenno a log, lock e deadlock. Questa sezione riprende quel filo e lo svolge in modo sistematico: chiarisce che cosa sia una transazione, perché la concorrenza sia inevitabile, quali anomalie possono nascere dall'esecuzione intrecciata e quali meccanismi il DBMS mette in campo per evitare che tali anomalie compromettano la correttezza dei dati. L'obiettivo non è imparare a memoria una lista di sigle, ma capire il patto che il DBMS stipula con l'utente: l'utente scrive programmi corretti e dichiara i confini logici del proprio lavoro; il DBMS si occupa di far sembrare che quel lavoro sia avvenuto in modo esclusivo, anche quando migliaia di altre operazioni sono in corso.
+
+\subsection{Dalle Query alle Transazioni}
+
+\noindent \textbf{Un DBMS è un sistema multiutente.} Un DBMS non viene quasi mai utilizzato da una sola persona alla volta. In una banca, in un'azienda o in un grande portale web, molti utenti accedono contemporaneamente agli stessi dati, ciascuno attraverso un programma scritto in un linguaggio di interrogazione ad alto livello, tipicamente SQL. Il programmatore non vede i blocchi del disco né i lock: scrive istruzioni che leggono e modificano tuple, e si aspetta che il sistema gli restituisca un comportamento prevedibile.
+
+\medskip
+\noindent \textbf{Due operazioni elementari.} Per ragionare in modo astratto, si può ridurre un programma a una sequenza di due sole primitive:
+\begin{itemize}
+    \item $read(X)$: legge l'oggetto di base di dati chiamato $X$ e ne porta il valore nella memoria del programma;
+    \item $write(X)$: scrive nel DBMS un nuovo valore per l'oggetto $X$.
+\end{itemize}
+L'oggetto $X$ può essere un attributo, una tupla, una pagina o un'intera tabella: il livello di granularità verrà precisato di volta in volta. Ciò che conta è che ogni programma reale, anche il più complesso, si traduce in un intreccio di letture e scritture.
+
+\medskip
+\noindent \textbf{La transazione come unità di lavoro.} Una \textbf{transazione} rappresenta l'esecuzione di un programma utente nel DBMS e comprende una o più operazioni di lettura e scrittura. La transazione non è una singola istruzione SQL: è piuttosto un \textbf{contenitore logico} che raggruppa tutte le operazioni che devono essere considerate come un tutto unico. Per questo motivo il programmatore deve indicare esplicitamente dove il contenitore si apre, con \texttt{START TRANSACTION}, e dove si chiude, con \texttt{COMMIT} se il lavoro è stato completato correttamente, oppure con \texttt{ABORT} (o \texttt{ROLLBACK}) se va annullato.
+
+\medskip
+\noindent \textbf{Il bonifico bancario.} L'esempio classico è il trasferimento di 500 euro dal conto numero 42177 al conto numero 12202. L'operazione sembra una sola azione dal punto di vista dell'utente, ma richiede due aggiornamenti distinti:
+
+\begin{lstlisting}[language=SQL, caption={Il bonifico come transazione esplicita}]
+START TRANSACTION;
+
+UPDATE BankAccount
+SET    Balance = Balance + 500
+WHERE  AccountNumber = 12202;
+
+UPDATE BankAccount
+SET    Balance = Balance - 500
+WHERE  AccountNumber = 42177;
+
+COMMIT;
+\end{lstlisting}
+
+\noindent Se il sistema si fermasse tra il primo e il secondo aggiornamento, i 500 euro risulterebbero creati dal nulla: il conto destinatario sarebbe stato incrementato, quello mittente non ancora decrementato. Analogamente, se il primo aggiornamento venisse annullato per un errore ma il secondo no, i 500 euro sparirebbero. La transazione serve esattamente a impedire questi stati intermedi: o entrambe le modifiche diventano definitive, oppure nessuna delle due lascia traccia.
+
+\begin{cbox}{Perché i confini espliciti sono una scelta di progetto}
+\noindent Il DBMS non può indovinare quali istruzioni appartengano allo stesso lavoro. Se ogni istruzione fosse una transazione a sé, il bonifico sarebbe composto da due transazioni indipendenti e il sistema potrebbe fermarsi dopo la prima. Se invece l'intero programma fosse una sola transazione, anche un'operazione accessoria o un'interazione con l'utente finirebbe dentro il perimetro atomico, allungando inutilmente la durata dei lock. Il programmatore deve quindi tracciare il confine nel punto giusto: abbastanza ampio da includere tutte le modifiche che devono essere atomiche, abbastanza stretto da non trattenere risorse oltre il necessario.
+\end{cbox}
+
+\medskip
+\noindent \textbf{I due grandi problemi.} Una volta introdotta la transazione, restano due problemi distinti, che saranno i due fili conduttori dell'intera sezione:
+\begin{enumerate}
+    \item \textbf{esecuzione concorrente}: più transazioni vogliono leggere e scrivere gli stessi oggetti nello stesso intervallo di tempo;
+    \item \textbf{recupero dopo un guasto} (\textit{crash recovery}): il sistema può interrompersi in qualsiasi momento, anche nel bel mezzo di una transazione.
+\end{enumerate}
+Il primo problema riguarda la \textbf{correttezza nel presente}, cioè il fatto che le transazioni in corso non si danneggino a vicenda. Il secondo riguarda la \textbf{correttezza nel tempo}, cioè il fatto che il lavoro già confermato non vada perduto e che il lavoro incompleto venga annullato.
+
+\subsection{Perché la Concorrenza}
+
+\noindent \textbf{Il disco è lento, la CPU non deve aspettare.} Un accesso al disco richiede un tempo che è ordini di grandezza superiore a un'operazione in memoria centrale. Se il DBMS eseguisse una transazione alla volta, la CPU resterebbe inattiva per la maggior parte del tempo, in attesa che i blocchi richiesti arrivino dalla memoria secondaria. Per sfruttare l'hardware, il sistema esegue quindi più transazioni in modo \textbf{intrecciato} (\textit{interleaved}): mentre una transazione attende un blocco dal disco, la CPU può far avanzare un'altra transazione che ha i suoi dati già in memoria.
+
+\medskip
+\noindent \textbf{La concorrenza è una necessità, non un lusso.} In un sistema reale la concorrenza non serve soltanto a migliorare le prestazioni: è imposta dal fatto che gli utenti sono molti e agiscono nello stesso momento. Due sportelli bancari possono avviare due bonifici nello stesso istante; due applicazioni web possono aggiornare lo stesso magazzino; un report può essere letto mentre qualcuno inserisce nuovi ordini. Il DBMS non può mettere in fila tutti gli utenti senza degradare in modo inaccettabile il servizio.
+
+\medskip
+\noindent \textbf{Il requisito fondamentale.} Il prezzo dell'intreccio è che l'utente non deve \textbf{percepire} la molteplicità delle transazioni in corso. Dal punto di vista di chi esegue un bonifico, la propria transazione deve sembrare sola nel sistema: nessun altro deve poter leggere un saldo intermedio, nessuna modifica altrui deve inserirsi tra le due \texttt{UPDATE}. In altre parole, l'esecuzione concorrente deve essere \textbf{equivalente} a un'esecuzione sequenziale, anche se l'ordine effettivo delle operazioni è completamente diverso.
+
+\medskip
+\noindent \textbf{Quando una transazione non termina come previsto.} La concorrenza non è l'unica fonte di complicazioni. Una transazione può non arrivare al \texttt{COMMIT} per un evento imprevisto: un vincolo di integrità violato, un'eccezione sollevata dal programma, un guasto hardware, una caduta della rete. In tutti questi casi il DBMS deve garantire due cose: le altre transazioni non devono subire gli effetti di un'esecuzione parziale, e la base di dati deve rimanere in uno stato coerente. È qui che entrano in gioco le proprietà ACID e i meccanismi di recovery.
+
+\begin{cbox}{Che cosa sarebbe successo senza controllo della concorrenza}
+\noindent Si immagini che due bonifici opposti partano contemporaneamente dallo stesso conto. Senza alcun controllo, entrambi i programmi potrebbero leggere lo stesso saldo iniziale, calcolare ciascuno il nuovo saldo e riscriverlo: l'ultima scrittura cancellerebbe l'effetto della prima. Il conto risulterebbe movimentato una volta sola, anche se l'utente ha autorizzato due operazioni. Questo è il tipico \textbf{lost update}, che sarà analizzato nel dettaglio più avanti. Il controllo della concorrenza esiste per rendere impossibili scenari di questo tipo.
+\end{cbox}
+
+\subsection{Le Proprietà ACID}
+
+\noindent \textbf{Quattro promesse.} Per garantire un'esecuzione concorrente sicura e un recupero corretto dopo i guasti, ogni transazione deve rispettare quattro proprietà, note con l'acronimo \textbf{ACID}: \textit{Atomicity}, \textit{Consistency}, \textit{Isolation}, \textit{Durability}. Non sono quattro sinonimi di ``correttezza'': ciascuna descrive un aspetto diverso del contratto tra utente e DBMS, e ciascuna è realizzata da meccanismi diversi.
+
+\medskip
+\noindent \textbf{Atomicity (atomicità).} Una transazione è un'unità atomica: o tutte le sue operazioni vengono eseguite, oppure nessuna. Non deve esistere uno stato della base di dati in cui una transazione è rimasta ``a metà''. L'atomicità non significa che le operazioni avvengano tutte nello stesso istante: significa che il loro effetto complessivo è indivisibile. Se il bonifico riesce, entrambi i saldi cambiano; se fallisce, nessuno dei due cambia. Il meccanismo che rende possibile questo è il \textbf{log}: prima di modificare i dati, il DBMS registra abbastanza informazioni per poter tornare indietro.
+
+\medskip
+\noindent \textbf{Consistency (consistenza).} Tutte le transazioni devono preservare la consistenza della base di dati, cioè rispettare i vincoli e le aspettative sulle relazioni tra i dati. La responsabilità principale è dell'utente: è il programmatore che decide, ad esempio, che la somma degli stipendi non può superare il budget disponibile, o che il saldo di un conto non può diventare negativo. Il DBMS può verificare i vincoli dichiarati, ma non può inventare la semantica dell'applicazione. Il contributo del sistema è garantire che la transazione parta da uno stato consistente e arrivi a uno stato consistente, anche se durante l'esecuzione attraversa stati intermedi non consistenti.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    state/.style={circle, draw=black, fill=green!25, minimum size=4.2mm, inner sep=1pt},
+    bad/.style={circle, draw=black, fill=red!20, minimum size=4.2mm, inner sep=1pt},
+    move/.style={-{Latex[length=2mm]}, thick, dashed, draw=black!70}
+]
+    \draw[thick] (0,0) ellipse (5.3 and 2.5);
+    \draw[thick] (1.5,-2.55) -- (0.4,2.55);
+    \node[state] (s1) at (3.1,1.4) {};
+    \node at (3.55,1.65) {$S_1$};
+    \node[bad] (s2) at (-1.2,1.6) {};
+    \node at (-1.55,1.85) {$S_2$};
+    \node[bad] (s3) at (-3.0,0.2) {};
+    \node at (-3.35,0.45) {$S_3$};
+    \node[state] (s4) at (2.5,0.0) {};
+    \node at (2.95,0.25) {$S_4$};
+    \node[bad] (s5) at (-1.0,-1.7) {};
+    \node at (-1.35,-1.45) {$S_5$};
+    \node[state] (s6) at (3.2,-1.6) {};
+    \node at (3.65,-1.35) {$S_6$};
+
+    \draw[move] (s1) to[bend left=8] (s2);
+    \draw[move] (s2) to[bend left=8] (s3);
+    \draw[move] (s3) to[bend left=8] (s4);
+    \draw[move] (s4) to[bend left=8] (s5);
+    \draw[move] (s5) to[bend left=8] (s6);
+
+    \node[align=center, text width=2.3cm, text=red!65!black] at (-7.0,0) {vincoli\\non soddisfatti};
+    \node[align=center, text width=2.3cm, text=green!45!black] at (7.0,0) {vincoli\\soddisfatti};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent La figura mostra il percorso di una transazione nello spazio degli stati della base di dati. La transazione parte da uno stato in cui i vincoli sono soddisfatti ($S_1$), può attraversare stati intermedi in cui non lo sono ($S_2$, $S_3$, $S_5$) e termina in uno stato nuovamente consistente ($S_6$). Ciò che il DBMS non può permettere è che la transazione si fermi in uno degli stati intermedi: sarebbe come lasciare il bonifico a metà.
+
+\medskip
+\noindent \textbf{Isolation (isolamento).} Ogni transazione deve apparire come se fosse eseguita in assenza delle altre. L'isolamento non richiede che le operazioni siano realmente sequenziali: richiede che il \textbf{risultato} sia equivalente a quello di un'esecuzione sequenziale. È il DBMS a garantirlo, attraverso lo scheduler e i protocolli di controllo della concorrenza, assicurandosi che l'esito complessivo dello schedule sia lo stesso di un'esecuzione una-transazione-alla-volta. Il DBMS non garantisce però che le transazioni vengano eseguite in un ordine specifico: l'ordine è una conseguenza delle scelte dello scheduler e non un diritto dell'utente.
+
+\medskip
+\noindent \textbf{Durability (durabilità).} Una volta che una transazione ha modificato la base di dati e le sue modifiche sono state confermate con il \texttt{COMMIT}, tali modifiche non devono mai andare perdute a causa di un guasto successivo. La durabilità è la controparte dell'atomicità: l'atomicità protegge dai lavori incompleti, la durabilità protegge i lavori completati. Anche in questo caso il meccanismo centrale è il log, scritto su memoria stabile prima che il \texttt{COMMIT} venga restituito all'utente.
+
+\begin{cbox}{Chi garantisce che cosa}
+\noindent La tabella riassume la divisione delle responsabilità. È utile tenerla a mente perché chiarisce un punto spesso frainteso: il DBMS non ``rende corretto'' un programma scorretto. Se la transazione viola la logica dell'applicazione, nessun meccanismo di locking può salvarla.
+\begin{center}
+\small
+\begin{tabular}{@{}lp{6.0cm}p{6.0cm}@{}}
+    \toprule
+    \textbf{Proprietà} & \textbf{Chi la garantisce} & \textbf{Meccanismo principale} \\
+    \midrule
+    \textbf{Atomicità} & Il DBMS & Log delle modifiche e \textit{rollback} delle operazioni non confermate. \\
+    \addlinespace
+    \textbf{Consistenza} & L'utente, con il supporto del DBMS & Vincoli di integrità, asserzioni, controllo dei tipi e logica applicativa. \\
+    \addlinespace
+    \textbf{Isolamento} & Il DBMS & Scheduler, lock o timestamp, protocolli di serializzabilità. \\
+    \addlinespace
+    \textbf{Durabilità} & Il DBMS & Write-Ahead Logging, \texttt{COMMIT} sincrono, \textit{redo} al riavvio. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\medskip
+\noindent \textbf{I casi di abort.} Una transazione può essere interrotta in tre modi principali. Il primo è un'\textbf{anomalia interna} dovuta all'esecuzione: il DBMS rileva una condizione che rende impossibile proseguire e ferma la transazione. Il secondo è un'\textbf{eccezione sollevata dalla transazione stessa}: il programma si accorge di un problema e decide di sospendersi, ad esempio perché un vincolo applicativo non è più rispettato. Il terzo è un \textbf{crash di sistema}: un guasto hardware, software o di rete interrompe bruscamente tutto, senza che la transazione possa reagire.
+
+\medskip
+\noindent \textbf{Come si annulla un abort.} Una transazione abortita potrebbe lasciare la base di dati in uno stato inconsistente. Il DBMS garantisce l'atomicità attraverso un \textbf{file di log} di tutte le operazioni eseguite. Quando avviene un abort, il sistema consulta il log e riporta la base di dati all'ultimo stato consistente precedente all'abort, annullando le operazioni della transazione. Lo stesso log garantisce anche la durabilità: se la transazione era stata confermata, le sue operazioni possono essere riapplicate dopo un crash. Il log è quindi il tessuto connettivo tra atomicità e durabilità, e sarà il protagonista della sezione sul recovery.
+
+\subsection{Schedule e Serializzabilità}
+
+\noindent \textbf{La transazione come sequenza di operazioni.} Una transazione è una sequenza di operazioni di lettura e scrittura su oggetti della base di dati: valori di attributi, tuple, pagine, tabelle. Ogni transazione deve specificare la propria azione finale: \texttt{commit} se è stata completata con successo, \texttt{abort} se deve essere annullata. Tra l'inizio e la fine, le operazioni possono essere eseguite in un ordine che il DBMS decide, ma l'ordine interno alla singola transazione deve essere rispettato: non si può scrivere un valore prima di averlo letto, se il programma prevede quella dipendenza.
+
+\medskip
+\noindent \textbf{Che cos'è uno schedule.} Uno \textbf{schedule} $S$ è una sequenza di azioni (letture, scritture, \texttt{commit} e \texttt{abort}) prese da un insieme di transazioni. L'ordine delle azioni in $S$ deve essere compatibile con l'ordine delle azioni nella transazione corrispondente: se $T_1$ prevede $read(A)$ prima di $write(A)$, anche nello schedule $read(A)$ deve precedere $write(A)$. Uno schedule rappresenta quindi l'esecuzione cronologica concreta delle azioni delle transazioni coinvolte. Uno schedule si dice \textbf{completo} se include l'operazione di \texttt{commit} o di \texttt{abort} per ogni transazione coinvolta.
+
+\medskip
+\noindent \textbf{Schedule seriale.} Uno schedule è \textbf{seriale} se, per ogni transazione, tutte le sue operazioni vengono eseguite consecutivamente, cioè se in ogni istante è attiva una sola transazione. In uno schedule seriale non c'è alcun intreccio: $T_1$ viene eseguita per intero, poi $T_2$, poi eventualmente $T_3$, e così via. L'ordine tra le transazioni è arbitrario, ma una volta scelto viene rispettato fino in fondo.
+
+\medskip
+\noindent \textbf{Schedule serializzabile.} Uno schedule è \textbf{serializzabile} se il suo effetto su una qualsiasi istanza consistente della base di dati è garantito essere identico a quello di un qualche schedule seriale completo. In altre parole, uno schedule serializzabile può intrecciare le operazioni come vuole, purché il risultato finale sia lo stesso che si sarebbe ottenuto eseguendo le transazioni una dopo l'altra in un certo ordine. La serializzabilità è la definizione formale di ciò che l'isolamento promette: non ``nessun intreccio'', ma ``intreccio innocuo''.
+
+\smallskip
+\noindent Per confrontare gli schedule si considerino due transazioni che operano sugli stessi oggetti $A$ e $B$, con stato iniziale $A=50$ e $B=50$:
+\[
+T_1:\; read(A),\; A:=A+100,\; write(A),\; read(B),\; B:=B+100,\; write(B)
+\]
+\[
+T_2:\; read(A),\; A:=A\times 2,\; write(A),\; read(B),\; B:=B\times 2,\; write(B)
+\]
+
+\noindent I quattro esempi seguenti mostrano la differenza tra ``seriale'' e ``serializzabile''.
+
+\medskip
+\noindent \textbf{Esempio $S_1$: schedule seriale $T_2$ poi $T_1$.} Le operazioni di $T_2$ precedono tutte quelle di $T_1$. Il valore finale è $A=200$, $B=200$.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+     & \texttt{read(A)}       &      &      \\
+     & $A := A \times 2$      &      &      \\
+     & \texttt{write(A)}      & 100  &      \\
+     & \texttt{read(B)}       &      &      \\
+     & $B := B \times 2$      &      &      \\
+     & \texttt{write(B)}      &      & 100  \\
+    \texttt{read(A)}       &      &      &      \\
+    $A := A + 100$         &      &      &      \\
+    \texttt{write(A)}      &      & 200  &      \\
+    \texttt{read(B)}       &      &      &      \\
+    $B := B + 100$         &      &      &      \\
+    \texttt{write(B)}      &      &      & 200  \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Esempio $S_2$: schedule seriale $T_1$ poi $T_2$.} Le operazioni di $T_1$ precedono tutte quelle di $T_2$. Il valore finale è $A=300$, $B=300$. L'ordine tra le due transazioni è diverso rispetto a $S_1$, ma entrambi gli schedule sono seriali.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+    \texttt{read(A)}       &      &      &      \\
+    $A := A + 100$         &      &      &      \\
+    \texttt{write(A)}      &      & 150  &      \\
+    \texttt{read(B)}       &      &      &      \\
+    $B := B + 100$         &      &      &      \\
+    \texttt{write(B)}      &      &      & 150  \\
+     & \texttt{read(A)}       &      &      \\
+     & $A := A \times 2$      &      &      \\
+     & \texttt{write(A)}      & 300  &      \\
+     & \texttt{read(B)}       &      &      \\
+     & $B := B \times 2$      &      &      \\
+     & \texttt{write(B)}      &      & 300  \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Esempio $S_3$: serializzabile ma non seriale.} Lo schedule intreccia le due transazioni: $T_1$ scrive $A$, poi $T_2$ legge e riscrive $A$; successivamente $T_1$ scrive $B$ e infine $T_2$ legge e riscrive $B$. Il valore finale è $A=300$, $B=300$, esattamente lo stesso di $S_2$. Lo schedule non è seriale, perché le operazioni delle due transazioni si alternano, ma è serializzabile perché il suo effetto coincide con quello dello schedule seriale $T_1$ prima di $T_2$.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+    \texttt{read(A)}       &      &      &      \\
+    $A := A + 100$         &      &      &      \\
+    \texttt{write(A)}      &      & 150  &      \\
+     & \texttt{read(A)}       &      &      \\
+     & $A := A \times 2$      &      &      \\
+     & \texttt{write(A)}      & 300  &      \\
+    \texttt{read(B)}       &      &      &      \\
+    $B := B + 100$         &      &      &      \\
+    \texttt{write(B)}      &      &      & 150  \\
+     & \texttt{read(B)}       &      &      \\
+     & $B := B \times 2$      &      &      \\
+     & \texttt{write(B)}      &      & 300  \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Esempio $S_4$: non serializzabile.} Lo schedule intreccia le operazioni in modo diverso: $T_1$ scrive $A$, poi $T_2$ legge e riscrive $A$; quindi $T_2$ legge e riscrive $B$, e solo alla fine $T_1$ legge e riscrive $B$. Il valore finale è $A=300$, $B=200$. Nessuno dei due schedule seriali produce questo risultato: $T_1$ prima di $T_2$ produce $(300,300)$, mentre $T_2$ prima di $T_1$ produce $(200,200)$. Lo schedule $S_4$ non è quindi serializzabile.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+    \texttt{read(A)}       &      &      &      \\
+    $A := A + 100$         &      &      &      \\
+    \texttt{write(A)}      &      & 150  &      \\
+     & \texttt{read(A)}       &      &      \\
+     & $A := A \times 2$      &      &      \\
+     & \texttt{write(A)}      & 300  &      \\
+     & \texttt{read(B)}       &      &      \\
+     & $B := B \times 2$      &      &      \\
+     & \texttt{write(B)}      &      & 100  \\
+    \texttt{read(B)}       &      &      &      \\
+    $B := B + 100$         &      &      &      \\
+    \texttt{write(B)}      &      &      & 200  \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{La morale degli esempi}
+\noindent La differenza tra $S_3$ e $S_4$ non dipende dal numero di intrecci, ma dalla \textbf{struttura delle dipendenze}. In $S_3$ ogni operazione di $T_2$ vede il risultato dell'operazione corrispondente di $T_1$: $T_2$ si comporta come se fosse eseguita dopo $T_1$. In $S_4$, invece, $T_2$ vede la scrittura di $A$ prodotta da $T_1$, mentre $T_1$ vede la scrittura di $B$ prodotta da $T_2$: le due transazioni si aspettano ordini opposti, e nessuna esecuzione seriale può riprodurre questo intreccio. La serializzabilità è quindi una proprietà dell'\textbf{effetto complessivo}, non della forma esteriore dello schedule.
+\end{cbox}
+
+\subsection{Le Anomalie dell'Esecuzione Interleaved}
+
+\noindent \textbf{Anche transazioni corrette possono produrre un risultato scorretto.} Il punto più importante di tutta la sezione è il seguente: l'esecuzione intrecciata di due transazioni che, prese singolarmente, sono consistenti e che terminano entrambe con un \texttt{commit}, può lasciare la base di dati in uno stato inconsistente. Non c'è bisogno che una transazione sia scritta male: basta che le sue operazioni si inseriscano in un ordine sfortunato rispetto a quelle di un'altra. Le anomalie principali sono quattro: la lettura sporca (\textit{dirty read}), la lettura non ripetibile (\textit{unrepeatable read}), l'aggiornamento perduto (\textit{lost update}) e la lettura fantasma (\textit{phantom}). A queste si aggiunge il problema delle transazioni abortite, che mostra perché non basta annullare una transazione per essere al sicuro.
+
+\subsubsection{Write-Read: la Lettura Sporca (Dirty Read)}
+
+\noindent \textbf{Definizione.} Si ha un conflitto \textbf{Write-Read} quando una transazione $T_2$ legge un oggetto scritto da $T_1$, ma $T_1$ non ha ancora effettuato il \texttt{commit}. Il valore letto da $T_2$ è un valore ``sporco'', cioè un valore che potrebbe non diventare mai definitivo. Se $T_1$ abortisce, $T_2$ ha letto qualcosa che, dal punto di vista logico, non è mai esistito.
+
+\medskip
+\noindent \textbf{Un esempio concreto.} Si considerino le due transazioni
+\[
+T_1:\; A:=A+100,\quad B:=B-100
+\]
+\[
+T_2:\; A:=A\times 1.06,\quad B:=B\times 1.06
+\]
+con stato iniziale $A=100$ e $B=100$. $T_1$ simula un trasferimento di 100 da $B$ ad $A$; $T_2$ simula l'applicazione di un interesse del 6 per cento a entrambi i conti.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+    \texttt{read(A)}       &      & 100  & 100  \\
+    \texttt{write(A)}      &      & 200  & 100  \\
+     & \texttt{read(A)}       & 200  & 100  \\
+     & \texttt{write(A)}      & 212  & 100  \\
+     & \texttt{read(B)}       & 212  & 100  \\
+     & \texttt{write(B)}      & 212  & 106  \\
+     & \texttt{commit}        & 212  & 106  \\
+    \texttt{read(B)}       &      & 212  & 106  \\
+    \texttt{write(B)}      &      & 212  & 6    \\
+    \texttt{commit}        &      & 212  & 6    \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è un problema.} $T_1$ ha scritto $A=200$ ma non ha ancora scalato $B$: la base di dati si trova in uno stato intermedio in cui i 100 euro sembrano creati dal nulla. $T_2$ legge $A$ in quello stato intermedio, ma legge $B$ prima che $T_1$ lo modifichi: applica quindi l'interesse a un'istantanea incoerente, in cui $A=200$ e $B=100$. Poi $T_1$ riprende, legge il $B$ già modificato da $T_2$ e sottrae 100, ottenendo 6. Il risultato finale è $(A,B)=(212,6)$, che non coincide con nessuna delle due esecuzioni seriali: $T_1$ prima di $T_2$ produrrebbe $(212,0)$, mentre $T_2$ prima di $T_1$ produrrebbe $(206,6)$. Lo schedule mescola i due ordini e non è serializzabile. Se $T_1$ abortisse dopo la lettura di $T_2$, il problema sarebbe ancora più evidente: $T_2$ avrebbe confermato un valore costruito su una scrittura che il DBMS ha poi cancellato.
+
+\subsubsection{Read-Write: la Lettura Non Ripetibile (Unrepeatable Read)}
+
+\noindent \textbf{Definizione.} Si ha un conflitto \textbf{Read-Write} quando una transazione $T_2$ scrive un oggetto letto da $T_1$, ma $T_1$ non ha ancora effettuato il \texttt{commit}. La conseguenza tipica è che, se $T_1$ ripete la lettura dello stesso oggetto, ottiene un valore diverso: la lettura non è ripetibile all'interno della stessa transazione.
+
+\medskip
+\noindent \textbf{Un esempio concreto.} Si considerino
+\[
+T_1:\; A:=A+1
+\]
+\[
+T_2:\; A:=A-1
+\]
+con $A=50$. $T_1$ legge $A=50$, poi $T_2$ legge lo stesso valore, scrive 49 e conferma. A questo punto $T_1$ scrive 51, basandosi sul valore 50 che aveva letto in precedenza, e conferma.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ \\
+    \midrule
+    \texttt{read(A)}       &      & 50 \\
+     & \texttt{read(A)}       & 50 \\
+     & \texttt{write(A)}      & 49 \\
+     & \texttt{commit}        & 49 \\
+    \texttt{write(A)}      &      & 51 \\
+    \texttt{commit}        &      & 51 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è un problema.} Il valore finale dovrebbe essere 50: $+1$ e $-1$ si annullano. Invece è 51, perché la scrittura di $T_1$ si basa su un valore ormai superato e cancella l'effetto di $T_2$. L'aggiornamento di $T_2$ va perduto. Inoltre, se $T_1$ rileggesse $A$ dopo il \texttt{commit} di $T_2$, otterrebbe 49 invece di 50: la stessa query, eseguita due volte nella stessa transazione, restituirebbe due risposte diverse. Questo è particolarmente grave in un'applicazione che calcola un totale leggendo più volte la stessa tabella.
+
+\subsubsection{Write-Write: l'Aggiornamento Perduto (Lost Update)}
+
+\noindent \textbf{Definizione.} Si ha un conflitto \textbf{Write-Write} quando una transazione $T_2$ scrive un oggetto scritto da $T_1$, ma $T_1$ non ha ancora effettuato il \texttt{commit}. Le due scritture si sovrappongono e l'ultima cancella l'effetto della prima, senza che nessuna delle due transazioni ne sia consapevole.
+
+\medskip
+\noindent \textbf{Un esempio concreto.} Si considerino
+\[
+T_1:\; A:=1000,\quad B:=1000
+\]
+\[
+T_2:\; A:=2000,\quad B:=2000
+\]
+con $A=0$ e $B=0$. Entrambe le transazioni vogliono mantenere l'uguaglianza tra $A$ e $B$: al termine di ciascuna, i due valori sono uguali. Nello schedule intrecciato, però, $T_1$ scrive $A$, poi $T_2$ scrive $A$ e $B$ e conferma; infine $T_1$ scrive $B$ e conferma.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llcc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & $\boldsymbol{A}$ & $\boldsymbol{B}$ \\
+    \midrule
+    \texttt{write(A)}      &      & 1000 & 0    \\
+     & \texttt{write(A)}      & 2000 & 0    \\
+     & \texttt{write(B)}      & 2000 & 2000 \\
+     & \texttt{commit}        & 2000 & 2000 \\
+    \texttt{write(B)}      &      & 2000 & 1000 \\
+    \texttt{commit}        &      & 2000 & 1000 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è un problema.} Alla fine dello schedule $A=2000$ e $B=1000$: l'uguaglianza è violata, anche se ciascuna transazione, isolatamente, la rispettava. L'effetto è quello di un aggiornamento perduto: la scrittura di $B$ da parte di $T_1$ sovrascrive quella di $T_2$, mentre la scrittura di $A$ da parte di $T_2$ sovrascrive quella di $T_1$. Nessuna delle due transazioni ha visto lo stato intermedio dell'altra, eppure il risultato complessivo è incoerente.
+
+\subsubsection{Phantom: la Lettura Fantasma}
+
+\noindent \textbf{Definizione.} L'anomalia \textbf{phantom} si verifica quando una transazione legge un oggetto (ad esempio una tabella) in due momenti diversi e scopre che l'oggetto non è più lo stesso, perché un'altra transazione ha inserito o cancellato delle tuple. Non è una singola tupla che cambia valore: è l'\textbf{insieme} delle tuple che cambia, e la tupla ``fantasma'' compare o scompare tra le due letture.
+
+\medskip
+\noindent \textbf{Un esempio concreto.} $T_1$ legge l'insieme $X$ delle tuple che soddisfano una certa condizione; $T_2$ legge lo stesso insieme; $T_1$ inserisce (o cancella) una tupla $a$ in $X$; infine $T_2$ rilegge $X$ e trova un insieme diverso.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llc@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & \textbf{Contenuto di $X$} \\
+    \midrule
+    \texttt{read(X)}          &      & $\{a,b,c\}$ \\
+     & \texttt{read(X)}          & $\{a,b,c\}$ \\
+    \texttt{insert/delete(a,X)} &      & $\{a,b,c,d\}$ \\
+     & \texttt{read(X)}          & $\{a,b,c,d\}$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è un problema.} $T_2$ ha osservato due volte lo stesso oggetto logico, ma ha ottenuto due risposte diverse. Se la transazione sta calcolando un totale, una media o una decisione basata sulla cardinalità dell'insieme, il risultato dipende dal momento in cui la lettura avviene. Il nome ``fantasma'' rende bene l'idea: la tupla inserita da $T_1$ non era presente nella prima fotografia e appare nella seconda, come un fantasma che si materializza. Le anomalie phantom sono particolarmente insidiose perché riguardano predicati e intervalli, non solo singoli valori.
+
+\subsubsection{Transazioni Abortite e Cancellazione a Cascata}
+
+\noindent \textbf{Annullare non basta.} In linea di principio, tutte le azioni di una transazione abortita devono essere cancellate. In alcuni casi, però, questo è impossibile: se un'altra transazione ha già letto un valore scritto dalla transazione abortita ed è già andata in \texttt{commit}, non si può ``rimangiare'' il valore senza violare la durabilità. Il problema è noto come \textbf{cancellazione a cascata} (\textit{cascading abort}).
+
+\medskip
+\noindent \textbf{Un esempio concreto.} $T_1$ legge e scrive $A$; $T_2$ legge il valore di $A$ scritto da $T_1$ (senza che $T_1$ abbia confermato), poi scrive $A$ e $B$ e conferma; infine $T_1$ legge e scrive $B$ e abortisce.
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ \\
+    \midrule
+    \texttt{read(A)}  &      \\
+    \texttt{write(A)} &      \\
+     & \texttt{read(A)}  \\
+     & \texttt{write(A)} \\
+     & \texttt{read(B)}  \\
+     & \texttt{write(B)} \\
+     & \texttt{commit}   \\
+    \texttt{read(B)}  &      \\
+    \texttt{write(B)} &      \\
+    \texttt{abort}    &      \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è un problema.} $T_2$ ha letto un valore di $A$ che non avrebbe dovuto leggere, perché $T_1$ non aveva ancora confermato. Quando $T_1$ abortisce, l'effetto corretto sarebbe quello di annullare anche $T_2$, ma $T_2$ è già confermata: annullarla violerebbe la durabilità. La soluzione ``insoddisfacente'' di abortire $T_2$ mostra che il problema non si risolve a valle: va impedito a monte, evitando che una transazione possa leggere dati non confermati. È esattamente ciò che fanno i protocolli di locking ``strict'', che trattengono i lock fino al \texttt{commit}.
+
+\begin{cbox}{La lezione delle anomalie}
+\noindent Le anomalie non sono casi patologici rari: sono il motivo per cui il DBMS non può limitarsi a eseguire le operazioni nell'ordine in cui arrivano. Ogni anomalia corrisponde a un modo in cui due transazioni possono ``vedersi'' a metà del lavoro. Il controllo della concorrenza consiste nel vietare queste interferenze, o nel consentirle solo quando sono innocue. La tabella seguente riassume il nesso tra anomalia e operazioni coinvolte.
+\begin{center}
+\small
+\begin{tabular}{@{}lp{5.4cm}p{6.2cm}@{}}
+    \toprule
+    \textbf{Anomalia} & \textbf{Operazioni coinvolte} & \textbf{Effetto tipico} \\
+    \midrule
+    \textbf{Dirty read} & $T_1$ scrive, $T_2$ legge prima del \texttt{commit} di $T_1$. & $T_2$ legge un valore che potrebbe non esistere mai. \\
+    \addlinespace
+    \textbf{Unrepeatable read} & $T_1$ legge, $T_2$ scrive prima del \texttt{commit} di $T_1$. & Una seconda lettura di $T_1$ restituisce un valore diverso. \\
+    \addlinespace
+    \textbf{Lost update} & $T_1$ scrive, $T_2$ scrive prima del \texttt{commit} di $T_1$. & Una delle due scritture cancella l'altra. \\
+    \addlinespace
+    \textbf{Phantom} & $T_1$ legge un insieme, $T_2$ inserisce o cancella tuple. & L'insieme letto cambia tra due letture. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{cbox}
+
+\subsection{Parametri e Livelli di Isolamento}
+
+\noindent \textbf{Non tutti gli utenti hanno le stesse esigenze.} Un conto corrente richiede un isolamento molto forte: nessuno deve vedere un saldo intermedio. Un report statistico, invece, può tollerare una lettura leggermente ``sporca'' pur di non bloccare gli aggiornamenti. Per questo i DBMS permettono di configurare il comportamento delle transazioni attraverso alcuni parametri. Il più importante è il \textbf{livello di isolamento}; ad esso si affiancano la modalità di accesso e la modalità di gestione delle istruzioni.
+
+\medskip
+\noindent \textbf{ACCESS MODE.} La modalità di accesso stabilisce quali permessi ha la transazione sulle tabelle che utilizza. Con \texttt{READ ONLY} la transazione può solo leggere: qualsiasi tentativo di modifica genera un errore. Con \texttt{READ WRITE} la transazione può sia leggere sia scrivere. La scelta non è solo una questione di sicurezza: dichiarare una transazione come \texttt{READ ONLY} permette al DBMS di ottimizzare i lock e di ridurre i conflitti, perché sa che la transazione non produrrà scritture.
+
+\medskip
+\noindent \textbf{STATEMENT MODE.} La modalità di gestione delle istruzioni specifica l'azione da intraprendere quando una transazione termina. È un parametro più tecnico, che riguarda il modo in cui il DBMS chiude il lavoro e libera le risorse; nella pratica il comportamento più comune è che il \texttt{COMMIT} o l'\texttt{ABORT} esplicito segnino la fine della transazione e che le risorse vengano rilasciate di conseguenza.
+
+\medskip
+\noindent \textbf{I quattro livelli di isolamento.} Il livello di isolamento specifica quanto il DBMS deve proteggere una transazione dalle altre, e va dal più permissivo al più restrittivo. Aumentando il livello cresce la protezione, ma cresce anche il costo in termini di lock, attese e possibilità di deadlock.
+
+\medskip
+\noindent \textbf{READ UNCOMMITTED.} È il livello più basso. La transazione richiede lock per scrivere gli oggetti, ma non richiede lock per leggere. Può quindi leggere modifiche non ancora confermate da altre transazioni: è il regno della \textit{dirty read}. È il livello più veloce, ma anche il meno sicuro.
+
+\medskip
+\noindent \textbf{READ COMMITTED.} La transazione richiede lock per scrivere e lock condivisi per leggere. Garantisce che ogni dato letto sia già confermato nel momento in cui viene letto: la \textit{dirty read} non è possibile. Restano però possibili la lettura non ripetibile e l'aggiornamento perduto, perché i lock di lettura possono essere rilasciati prima della fine della transazione.
+
+\medskip
+\noindent \textbf{REPEATABLE READ.} La transazione richiede lock per leggere e per scrivere qualsiasi oggetto e li rilascia soltanto al \texttt{commit}. In questo modo una lettura ripetuta all'interno della stessa transazione restituisce sempre lo stesso valore. Non sono ammessi lock a livello di tabella per la scansione, il che lascia aperta la possibilità di anomalie phantom.
+
+\medskip
+\noindent \textbf{SERIALIZABLE.} È il livello più alto: come il precedente, ma include anche lock a livello di tabella per la scansione. In questo modo anche le tuple che compaiono o scompaiono durante una scansione vengono protette, e le anomalie phantom diventano impossibili. È il livello che garantisce la serializzabilità piena, al prezzo di una maggiore contesa e di un numero più alto di deadlock.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcccc@{}}
+    \toprule
+    \textbf{Livello} & \shortstack{\textbf{Dirty read}\\\textbf{(W-R)}} & \shortstack{\textbf{Lost update}\\\textbf{(W-W)}} & \shortstack{\textbf{Unrepeatable}\\\textbf{read (R-W)}} & \textbf{Phantom} \\
+    \midrule
+    \textbf{READ UNCOMMITTED} & può accadere & può accadere & può accadere & può accadere \\
+    \addlinespace
+    \textbf{READ COMMITTED}   & non accade   & può accadere & può accadere & può accadere \\
+    \addlinespace
+    \textbf{REPEATABLE READ}  & non accade   & non accade   & non accade   & può accadere \\
+    \addlinespace
+    \textbf{SERIALIZABLE}     & non accade   & non accade   & non accade   & non accade   \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Come leggere la tabella.} Ogni riga corrisponde a un livello di isolamento, ogni colonna a una delle anomalie viste nella sezione precedente. La sigla tra parentesi ricorda il tipo di conflitto: W-R per Write-Read, W-W per Write-Write, R-W per Read-Write. Il livello \texttt{SERIALIZABLE} è l'unico che elimina tutte le anomalie; scendendo di livello il DBMS accetta qualche compromesso pur di aumentare il parallelismo. La scelta del livello è quindi un tipico compromesso tra correttezza e prestazioni, e va fatta conoscendo la semantica dell'applicazione.
+
+\begin{cbox}{Attenzione alla terminologia}
+\noindent In alcuni testi e in alcune slide la colonna ``Read-Write'' viene associata all'aggiornamento perduto e la colonna ``Write-Write'' alla lettura non ripetibile. La sostanza non cambia, ma è importante fissare la corrispondenza usata qui, coerente con la classificazione dei conflitti: \textbf{Write-Read} = dirty read, \textbf{Read-Write} = unrepeatable read, \textbf{Write-Write} = lost update. Quando si consulta una tabella di livelli di isolamento, conviene sempre controllare le etichette delle colonne prima di trarre conclusioni.
+\end{cbox}
+
+\subsection{Controllo della Concorrenza}
+
+\noindent \textbf{Il compito del controllo della concorrenza.} Il DBMS deve garantire l'assenza di conflitti e, quando una transazione viene abortita, deve assicurarne il \textit{rollback}. Esistono diverse famiglie di approcci, che si distinguono per il momento in cui intervengono e per il costo che impongono al sistema. Le tre principali sono l'approccio \textbf{restrittivo}, l'approccio \textbf{ottimistico} e il \textbf{timestamping}.
+
+\subsubsection{Approccio Restrittivo e Strict Two-Phase Locking}
+
+\noindent \textbf{L'idea.} L'approccio restrittivo cerca schedule serializzabili evitando i conflitti attraverso protocolli di \textbf{locking}. Prima di leggere o scrivere un oggetto, una transazione deve ottenere un permesso esclusivo o condiviso su quell'oggetto; se il permesso è già in mano a un'altra transazione, la richiesta viene messa in attesa. Il prezzo è la possibile attesa e il possibile deadlock; il vantaggio è una garanzia forte e relativamente semplice da implementare.
+
+\medskip
+\noindent \textbf{Strict Two-Phase Locking (Strict 2PL).} Il protocollo più diffuso è lo \textbf{Strict 2PL}. Le sue regole sono poche ma decisive:
+\begin{itemize}
+    \item se una transazione vuole leggere o scrivere un oggetto, deve prima richiedere un lock su quell'oggetto (condiviso per la lettura, esclusivo per la scrittura);
+    \item dopo aver rilasciato un lock, una transazione non può richiederne di nuovi;
+    \item la transazione rilascia tutti i suoi lock soltanto al momento del \texttt{commit} (o dell'\texttt{abort}).
+\end{itemize}
+La seconda regola è la vera ``fase doppia'': la vita di una transazione si divide in una \textbf{fase di acquisizione}, in cui i lock vengono presi e mai rilasciati, e una \textbf{fase di rilascio}, che coincide con la fine della transazione. La terza regola è ciò che rende il protocollo \textbf{strict}: i lock non vengono rilasciati man mano che l'oggetto non serve più, ma restano fino alla conclusione. È questa strettezza che impedisce a un'altra transazione di leggere valori non confermati e che evita le cancellazioni a cascata.
+
+\medskip
+\noindent \textbf{Lock condivisi e lock esclusivi.} Il protocollo distingue due tipi di lock:
+\begin{itemize}
+    \item $S(A)$: \textbf{shared lock}, necessario per leggere $A$;
+    \item $X(A)$: \textbf{exclusive lock}, necessario per scrivere $A$.
+\end{itemize}
+Un lock condiviso blocca le richieste di lock esclusivo da parte di altre transazioni, ma non blocca altre richieste condivise: più lettori possono convivere. Un lock esclusivo blocca qualsiasi richiesta, sia condivisa sia esclusiva. La compatibilità è riassunta nella tabella seguente.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+    \toprule
+    \textbf{Lock posseduto} & \textbf{Nuova richiesta $S(A)$} & \textbf{Nuova richiesta $X(A)$} \\
+    \midrule
+    $S(A)$ & compatibile & conflitto \\
+    \addlinespace
+    $X(A)$ & conflitto & conflitto \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Cosa garantisce.} Lo Strict 2PL garantisce la serializzabilità. In particolare:
+\begin{itemize}
+    \item se le transazioni accedono a oggetti \textbf{diversi}, possono essere intrecciate liberamente, perché non c'è contesa;
+    \item se almeno due transazioni vogliono accedere allo \textbf{stesso} oggetto e almeno una vuole modificarlo, devono essere eseguite in modo seriale, perché il lock esclusivo impedisce la sovrapposizione.
+\end{itemize}
+Il \textbf{Lock Manager} tiene traccia, per ogni oggetto della base di dati, degli accessi esclusivi e condivisi in una struttura chiamata \textbf{lock table}. La lock table è una delle strutture condivise dell'architettura vista nella Sezione~2, e cresce e si contrae man mano che le transazioni acquisiscono e rilasciano lock.
+
+\medskip
+\noindent \textbf{Le due fasi.} La figura seguente visualizza l'andamento tipico del numero di lock posseduti da una transazione: nella fase di acquisizione il numero cresce, poi resta stabile finché la transazione non conclude, e infine crolla a zero con il rilascio di tutti i lock al \texttt{commit}.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[font=\footnotesize]
+    \draw[-{Latex[length=2mm]}, thick] (0,0) -- (9.2,0) node[right] {tempo};
+    \draw[-{Latex[length=2mm]}, thick] (0,0) -- (0,3.4) node[above] {lock posseduti};
+    \fill[green!25] (0.4,0.25) -- (2.9,2.9) -- (6.4,2.9) -- (6.4,0.25) -- cycle;
+    \draw[thick] (0.4,0.25) -- (2.9,2.9) -- (6.4,2.9) -- (6.4,0.25);
+    \draw[dashed] (6.4,0) -- (6.4,2.9);
+    \node at (1.55,1.5) {acquisizione};
+    \node at (4.65,2.2) {mantenimento};
+    \node at (7.6,1.2) {rilascio};
+    \node[below] at (6.4,0) {\texttt{commit}};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Un esempio di schedule.} Si considerino le due sequenze
+\[
+T_1:\; S(A),\, R(A),\, X(A),\, W(A),\, X(B),\, R(B),\, W(B),\, \texttt{commit}
+\]
+\[
+T_2:\; X(A),\, R(A),\, W(A),\, X(B),\, R(B),\, W(B),\, \texttt{commit}
+\]
+$T_1$ legge $A$ con un lock condiviso, poi lo promuove a esclusivo per scrivere. $T_2$ vuole subito un lock esclusivo su $A$: poiché $T_1$ lo possiede, $T_2$ deve attendere. Solo dopo il \texttt{commit} di $T_1$, che rilascia tutti i lock, $T_2$ può procedere.
+
+\begin{center}
+\small
+\begin{tabular}{@{}llp{7.2cm}@{}}
+    \toprule
+    $\boldsymbol{T_1}$ & $\boldsymbol{T_2}$ & \textbf{Stato dei lock} \\
+    \midrule
+    $S(A)$ &  & $T_1$ possiede $S(A)$. \\
+    $R(A)$ &  & $T_1$ legge $A$. \\
+    $X(A)$ &  & $T_1$ promuove $S(A)$ a $X(A)$. \\
+     & $X(A)$ & $T_2$ attende: $X(A)$ è incompatibile con il lock di $T_1$. \\
+    $W(A)$ &  & $T_1$ scrive $A$. \\
+    $X(B)$ &  & $T_1$ acquisisce $X(B)$. \\
+    $R(B), W(B)$ &  & $T_1$ legge e scrive $B$. \\
+    \texttt{commit} &  & $T_1$ rilascia tutti i lock. \\
+     & $X(A)$ & $T_2$ ottiene finalmente $X(A)$. \\
+     & $R(A), W(A)$ & $T_2$ procede. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Perché è corretto.} $T_2$ non può leggere il valore di $A$ scritto da $T_1$ prima che $T_1$ abbia confermato, perché il lock esclusivo resta in mano a $T_1$ fino al \texttt{commit}. Lo schedule risultante è equivalente a quello seriale $T_1$ prima di $T_2$. Il costo è l'attesa di $T_2$, ma l'attesa è esattamente ciò che garantisce l'isolamento.
+
+\subsubsection{Deadlock: Prevenzione e Rilevamento}
+
+\noindent \textbf{Il lato oscuro dei lock.} Un controllo della concorrenza basato sui lock può produrre \textbf{deadlock}: una situazione in cui due o più transazioni si bloccano a vicenda, ciascuna in attesa di un lock posseduto da un'altra. Il DBMS deve prevenire o risolvere questi stalli, altrimenti il sistema si ferma.
+
+\medskip
+\noindent \textbf{Prevenzione basata sulle priorità.} Un modo per prevenire il deadlock è assegnare a ogni transazione una \textbf{priorità} basata sul tempo di inizio, cioè sul suo \textbf{timestamp}: la transazione più vecchia ha priorità maggiore. Se $T_i$ richiede un lock posseduto da $T_j$, il lock manager può adottare due politiche speculari:
+\begin{itemize}
+    \item \textbf{Wait-Die}: se $T_i$ è la transazione più vecchia, $T_i$ attende; altrimenti $T_i$ viene uccisa e riavviata più tardi, con un ritardo casuale ma con lo stesso timestamp.
+    \item \textbf{Wound-Wait}: se $T_i$ è la transazione più vecchia, $T_j$ viene uccisa e riavviata più tardi, con un ritardo casuale ma con lo stesso timestamp; altrimenti $T_i$ attende.
+\end{itemize}
+In entrambi i casi la transazione ``giovane'' è quella che paga il prezzo, e il riavvio conserva il timestamp originale per non perdere l'ordinamento di priorità.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{5.4cm}p{5.4cm}@{}}
+    \toprule
+    \textbf{Politica} & $\boldsymbol{T_i}$ \textbf{più vecchia di} $\boldsymbol{T_j}$ & $\boldsymbol{T_i}$ \textbf{più giovane di} $\boldsymbol{T_j}$ \\
+    \midrule
+    \textbf{Wait-Die} & $T_i$ attende. & $T_i$ viene uccisa e riavviata. \\
+    \addlinespace
+    \textbf{Wound-Wait} & $T_j$ viene uccisa e riavviata. & $T_i$ attende. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Rilevamento tramite grafo delle attese.} Se i deadlock sono rari, il DBMS può lasciarli accadere e risolverli quando si presentano. Il Lock Manager mantiene una struttura chiamata \textbf{waits-for graph} (grafo delle attese): i nodi sono le transazioni, e c'è un arco da $T_i$ a $T_j$ se $T_i$ sta aspettando un lock posseduto da $T_j$. Un ciclo nel grafo indica un deadlock. Il grafo viene analizzato periodicamente e, quando si trova un ciclo, si abortisce una delle transazioni coinvolte, la \textbf{vittima}, rilasciandone i lock e permettendo alle altre di proseguire.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    node distance=4.2cm,
+    t/.style={draw=black, ellipse, minimum width=2.2cm, minimum height=0.9cm, align=center},
+    arr/.style={-{Latex[length=2mm]}, thick}
+]
+    \node[t, fill=pink!45] (t1) at (0,0) {$T_1$};
+    \node[t, fill=blue!15] (t2) at (5.2,0) {$T_2$};
+    \draw[arr, bend left=28] (t1) to node[above] {attende $B$ da $T_2$} (t2);
+    \draw[arr, bend left=28] (t2) to node[below] {attende $A$ da $T_1$} (t1);
+    \node[text=red!65!black, align=center] at (2.6,-2.1) {ciclo nel grafo $\Longrightarrow$ deadlock};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Il timeout.} Un'alternativa più semplice al grafo è il \textbf{timeout}: se una transazione attende un lock per un tempo superiore a una soglia prefissata, il lock manager presume che sia in deadlock e la abortisce. È una soluzione facile da implementare ma imprecisa: una transazione lenta ma non bloccata potrebbe essere uccisa ingiustamente, mentre un deadlock potrebbe impiegare molto tempo prima di essere rilevato. Per questo i sistemi più sofisticati preferiscono il grafo delle attese.
+
+\subsubsection{Controllo Ottimistico e Timestamping}
+
+\noindent \textbf{L'ipotesi opposta.} Il locking è un approccio \textbf{pessimistico}: presuppone che i conflitti siano frequenti e li previene trattenendo le risorse. L'approccio \textbf{ottimistico} parte dall'ipotesi opposta: le transazioni, nella maggior parte dei casi, non entrano in conflitto. Conviene quindi lasciarle correre senza lock e verificare solo al momento del \texttt{commit} se il loro comportamento è stato serializzabile. Se la verifica fallisce, la transazione viene abortita e riavviata; se riesce, le sue modifiche vengono applicate.
+
+\medskip
+\noindent \textbf{Le tre fasi della validazione.} Il controllo ottimistico basato su \textbf{validation} prevede tre fasi:
+\begin{enumerate}
+    \item \textbf{Read}: la transazione viene eseguita leggendo i dati dalla base di dati e scrivendo le modifiche in un'area privata, senza toccare i dati condivisi;
+    \item \textbf{Validation}: prima del \texttt{commit}, il DBMS verifica che non ci siano stati conflitti con altre transazioni. Se ci sono, la transazione viene abortita e riavviata automaticamente;
+    \item \textbf{Write}: se la validazione riesce, i dati scritti nell'area privata vengono copiati nella base di dati.
+\end{enumerate}
+La validazione confronta tipicamente l'insieme degli oggetti letti e l'insieme degli oggetti scritti dalla transazione con quelli delle transazioni che hanno confermato nel frattempo. Se una transazione concorrente ha scritto un oggetto che la nostra transazione ha letto, o ha scritto un oggetto che la nostra transazione vuole scrivere, la serializzabilità è a rischio e la transazione va abortita. Il vantaggio è che non ci sono attese durante l'esecuzione; lo svantaggio è che il costo si paga alla fine, con possibili riavvii.
+
+\medskip
+\noindent \textbf{Timestamping.} Un secondo approccio ottimistico è il \textbf{timestamping}: a ogni transazione viene assegnato il timestamp $TS$ del suo tempo di inizio. Per ogni operazione $a$ eseguita da $T_i$, il sistema confronta $TS(T_i)$ con il timestamp $TS(T_j)$ delle transazioni che hanno eseguito operazioni in conflitto. Se $a$ confligge con un'operazione $a'$ di $T_j$ e $TS(T_i) < TS(T_j)$, allora $a$ deve essere eseguita prima di $a'$; se l'ordine effettivo viola questa regola, $T_i$ viene abortita e riavviata con un timestamp maggiore. In sostanza, il timestamp definisce l'ordine seriale ``ufficiale'', e il sistema rifiuta tutte le esecuzioni che non lo rispettano. Anche qui non ci sono lock e non ci sono attese, ma possono esserci abort frequenti se le transazioni entrano in conflitto.
+
+\begin{cbox}{Restrittivo o ottimistico?}
+\noindent Non esiste una scelta universalmente migliore. Il locking è preferibile quando i conflitti sono frequenti e le transazioni sono brevi, perché evita riavvii costosi. L'approccio ottimistico è conveniente quando i conflitti sono rari e le transazioni sono lunghe, perché elimina le attese e sfrutta meglio il parallelismo. Molti DBMS reali combinano i due approcci, oppure offrono all'utente la possibilità di scegliere il livello di isolamento e il comportamento in caso di conflitto.
+\end{cbox}
+
+\subsection{Crash Recovery}
+
+\noindent \textbf{Il ruolo del Logging and Recovery Manager.} Il \textbf{Logging and Recovery Manager} deve garantire due proprietà complementari. La prima è l'\textbf{atomicità}: le operazioni compiute da transazioni non confermate devono essere annullate. La seconda è la \textbf{persistenza} (o durabilità): le operazioni compiute da transazioni confermate devono sopravvivere ai crash di sistema. Il recovery non è un'operazione accessoria: è ciò che rende credibile il \texttt{COMMIT} e ciò che permette al DBMS di ripartire dopo un guasto senza perdere o inventare dati.
+
+\medskip
+\noindent \textbf{Il principio del Write-Ahead Logging.} Il principio fondamentale è il \textbf{Write-Ahead Logging} (WAL): ogni modifica a un oggetto della base di dati deve essere prima registrata nel file di log, poi il log deve essere scritto su memoria secondaria, e solo alla fine la pagina modificata può essere aggiornata. In questo modo, se il sistema si guasta, il log contiene sempre abbastanza informazioni per annullare o rifare l'operazione. La parte \textit{before state} di una modifica deve essere nel log prima che il dato corrispondente venga scritto su disco; la parte \textit{after state} deve essere nel log prima del \texttt{COMMIT}. Il WAL è ciò che permette al DBMS di non dover scrivere ogni pagina su disco immediatamente, mantenendo comunque la possibilità di recuperare.
+
+\subsubsection{ARIES: Analysis, Redo, Undo}
+
+\noindent \textbf{Che cos'è ARIES.} \textbf{ARIES} (\textit{Advanced Recovery and Integrated Extraction System}) è un algoritmo di recovery eseguito dal Logging and Recovery Manager al momento del riavvio dopo un crash. È utilizzato da IBM DB2, Microsoft SQL Server e molti altri DBMS. ARIES si basa su tre principi e si articola in tre fasi.
+
+\medskip
+\noindent \textbf{I tre principi.}
+\begin{enumerate}
+    \item \textbf{Write-Ahead Logging}: ogni modifica deve essere registrata nel log e il log deve essere scritto su memoria stabile prima che la pagina modificata venga aggiornata.
+    \item \textbf{Repeating History durante il Redo}: al riavvio il sistema viene riportato allo stato in cui si trovava immediatamente prima del crash, ripetendo tutte le operazioni registrate, comprese quelle delle transazioni che erano ancora attive. Solo dopo si annullano le operazioni delle transazioni non confermate.
+    \item \textbf{Logging Changes During Undo}: le modifiche effettuate durante l'undo vengono a loro volta registrate nel log, attraverso i \textbf{Compensation Log Record} (CLR). In questo modo, se il sistema si guasta di nuovo durante il recovery, l'operazione di undo non viene ripetuta in modo errato.
+\end{enumerate}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    phase/.style={draw=black, rounded corners=2pt, minimum width=3.3cm, minimum height=1.2cm, align=center, inner sep=3pt},
+    arr/.style={-{Latex[length=2mm]}, thick}
+]
+    \node[phase, fill=blue!15] (a) at (0,0) {\textbf{Analysis}\\ ricostruisce DPT e TT};
+    \node[phase, fill=orange!30, right=0.9cm of a] (r) {\textbf{Redo}\\ ripete la storia};
+    \node[phase, fill=red!20, right=0.9cm of r] (u) {\textbf{Undo}\\ annulla i perdenti};
+    \draw[arr] (a) -- (r);
+    \draw[arr] (r) -- (u);
+    \node[below=0.25cm of a, text width=3.3cm, align=center] {dal checkpoint al crash};
+    \node[below=0.25cm of r, text width=3.3cm, align=center] {dal \textit{recLSN} minimo al crash};
+    \node[below=0.25cm of u, text width=3.3cm, align=center] {in ordine inverso di LSN};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Analysis.} La fase di analisi determina il punto del log da cui iniziare il redo (l'inizio del log oppure l'ultimo checkpoint), individua le pagine del buffer pool che contengono dati modificati e non ancora scritti su disco, e identifica le transazioni che erano attive al momento del crash. In pratica ricostruisce la fotografia del sistema al momento del guasto, partendo dal checkpoint più recente e scorrendo il log fino alla fine.
+
+\medskip
+\noindent \textbf{Redo.} La fase di redo riporta la base di dati allo stato in cui si trovava al momento del crash. ARIES parte dal \textbf{minimo LSN} tra quelli registrati nella Dirty Page Table e ripete tutte le azioni fino al crash, comprese quelle delle transazioni che poi saranno annullate. Questo è il significato di ``repeating history'': non si cerca di indovinare quali operazioni siano state effettivamente scritte su disco, si riapplicano tutte le operazioni registrate, verificando per ogni pagina se il suo LSN è già sufficiente. Il redo è quindi idempotente e può essere ripetuto più volte senza effetti collaterali.
+
+\medskip
+\noindent \textbf{Undo.} La fase di undo annulla le operazioni delle transazioni che erano attive al momento del crash e che non erano state confermate. L'annullamento avviene in \textbf{ordine inverso} rispetto all'ordine di esecuzione, seguendo la catena dei \textit{Previous LSN}. Per ogni operazione annullata viene scritto un \textbf{CLR}, che registra che quella modifica è già stata annullata e impedisce di ripetere l'undo in caso di un secondo crash durante il recovery.
+
+\subsubsection{Il File di Log e le Strutture di Supporto}
+
+\noindent \textbf{Che cosa contiene il log.} Il file di log registra tutte le azioni compiute dal DBMS. È organizzato fisicamente in record memorizzati su \textbf{memoria stabile}, cioè su un supporto che si presume sopravviva ai crash e ai guasti hardware. I record sono ordinati sequenzialmente e identificati da un numero univoco, il \textbf{Log Sequence Number} (LSN). L'LSN è monotonicamente crescente e permette di identificare e accedere ai record in modo preciso. La parte più recente del log, chiamata \textbf{log tail}, è mantenuta nei buffer di log e salvata periodicamente su memoria stabile; il log e i dati vengono scritti su disco con gli stessi meccanismi, anche se con tempistiche diverse.
+
+\medskip
+\noindent \textbf{Il formato di un record.} Ogni record di log ha una struttura del tipo
+\[
+\langle \text{LSN},\; \text{Transaction ID},\; \text{Page ID},\; \text{Redo},\; \text{Undo},\; \text{Previous LSN} \rangle
+\]
+dove i campi hanno il significato seguente.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{10.4cm}@{}}
+    \toprule
+    \textbf{Campo} & \textbf{Significato} \\
+    \midrule
+    \textbf{LSN} & Identificatore univoco e crescente del record nel log. \\
+    \addlinespace
+    \textbf{Transaction ID} & Identifica la transazione che ha prodotto la modifica. \\
+    \addlinespace
+    \textbf{Page ID} & Identifica la pagina della base di dati modificata. \\
+    \addlinespace
+    \textbf{Redo} & Informazioni necessarie per riapplicare la modifica (\textit{after state}). \\
+    \addlinespace
+    \textbf{Undo} & Informazioni necessarie per annullare la modifica (\textit{before state}). \\
+    \addlinespace
+    \textbf{Previous LSN} & Riferimento al record precedente della stessa transazione; permette di risalire la catena all'indietro. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Le due tabelle del recovery.} Oltre al log, ARIES mantiene due strutture in memoria che vengono ricostruite durante l'analisi:
+\begin{itemize}
+    \item la \textbf{Dirty Page Table} (DPT): registra gli identificatori di tutte le pagine modificate e non ancora riscritte su memoria stabile, insieme al primo LSN che ha reso ``sporca'' ciascuna pagina (\textit{recLSN});
+    \item la \textbf{Transaction Table} (TT): registra gli identificatori di tutte le transazioni attualmente in esecuzione e l'LSN dell'ultima voce di log da esse prodotta.
+\end{itemize}
+Queste due tabelle sono il ponte tra il log e lo stato della memoria: la DPT dice quali pagine potrebbero aver bisogno di redo, la TT dice quali transazioni potrebbero aver bisogno di undo.
+
+\medskip
+\noindent \textbf{I tipi di record.} Il log non contiene solo le modifiche ai dati. Un record viene scritto per ciascuno dei seguenti eventi.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{9.6cm}@{}}
+    \toprule
+    \textbf{Evento} & \textbf{Contenuto e scopo del record} \\
+    \midrule
+    \textbf{Page Update} & Registra una modifica di pagina con il valore vecchio e il valore nuovo, prima che la pagina venga effettivamente modificata. \\
+    \addlinespace
+    \textbf{Commit} & Registra che una transazione è terminata con successo; il log tail viene scritto su memoria stabile. \\
+    \addlinespace
+    \textbf{Abort} & Registra che una transazione è stata abortita e avvia l'undo delle sue operazioni. \\
+    \addlinespace
+    \textbf{End} & Registra la conclusione delle operazioni di finalizzazione dopo un commit o un abort. \\
+    \addlinespace
+    \textbf{CLR} & Compensation Log Record: registra che un'operazione è già stata annullata durante un undo e non deve essere annullata di nuovo. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Checkpoint e Tempo di Recovery}
+
+\noindent \textbf{Perché servono i checkpoint.} Senza checkpoint, dopo un crash il recovery dovrebbe scorrere l'intero log dall'inizio, con un costo che cresce in modo inaccettabile al crescere della vita del sistema. Un \textbf{checkpoint} è una ``fotografia'' dello stato della base di dati e delle strutture di recovery: permette di iniziare l'analisi da un punto recente invece che dall'inizio del log, riducendo drasticamente il tempo di ripristino.
+
+\medskip
+\noindent \textbf{Il checkpoint fuzzy di ARIES.} ARIES non sospende il sistema per fare il checkpoint. Adotta un \textbf{fuzzy checkpoint}, economico in termini di prestazioni, che non interrompe il funzionamento normale e non richiede di scrivere tutte le pagine del buffer pool. La procedura si articola in tre passi:
+\begin{enumerate}
+    \item viene scritto nel log un record di \textbf{begin-checkpoint};
+    \item viene scritto un record di \textbf{end-checkpoint} che contiene la Dirty Page Table e la Transaction Table;
+    \item dopo che il record di end-checkpoint è stato scritto su memoria stabile, un \textbf{Master Record} contenente l'LSN del begin-checkpoint viene scritto in una posizione nota della memoria stabile.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Come riduce il tempo di recovery.} Quando il sistema si riavvia, il recovery legge il Master Record, trova l'LSN del begin-checkpoint e sa che può iniziare l'analisi da lì, senza risalire all'inizio del log. La DPT e la TT contenute nell'end-checkpoint forniscono una base di partenza già pronta, che viene raffinata scorrendo i record successivi fino al crash. Il risparmio è tanto maggiore quanto più il sistema resta in funzione: senza checkpoint il log diventerebbe un archivio enorme da rileggere per intero, con checkpoint si rilegge solo la parte successiva all'ultima fotografia.
+
+\begin{cbox}{Checkpoint e durabilità}
+\noindent Un checkpoint non è un ``salvataggio'' nel senso comune del termine e non rende automaticamente durabili le transazioni in corso. È un punto di riferimento per il recovery: le transazioni confermate prima del checkpoint hanno i loro effetti garantiti, mentre le transazioni ancora attive dovranno essere annullate. La durabilità resta affidata al WAL e alla scrittura del record di \texttt{commit} su memoria stabile; il checkpoint serve a rendere il recovery più veloce, non a sostituire il log.
+\end{cbox}
+
+\subsection{Sintesi Finale}
+
+\noindent \textbf{La mappa dei meccanismi.} Dopo aver visto le anomalie e i protocolli, è utile ricomporre il quadro. La tabella seguente collega ogni concetto introdotto nella sezione al meccanismo che il DBMS mette in campo per garantirlo.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lp{9.8cm}@{}}
+    \toprule
+    \textbf{Concetto} & \textbf{Meccanismo del DBMS} \\
+    \midrule
+    \textbf{Atomicità} & Log delle modifiche con valori before/after; undo delle transazioni non confermate. \\
+    \addlinespace
+    \textbf{Consistenza} & Vincoli di integrità, asserzioni e logica applicativa; stati intermedi ammessi, stato finale consistente. \\
+    \addlinespace
+    \textbf{Isolamento} & Scheduler e protocolli di concorrenza: lock, timestamp, validazione. \\
+    \addlinespace
+    \textbf{Durabilità} & Write-Ahead Logging, scrittura del record di commit, redo dopo il crash. \\
+    \addlinespace
+    \textbf{Serializzabilità} & Strict 2PL oppure validazione ottimistica; equivalenza con uno schedule seriale. \\
+    \addlinespace
+    \textbf{Assenza di dirty read} & Lock trattenuti fino al \texttt{commit} (strictness); nessun rilascio anticipato. \\
+    \addlinespace
+    \textbf{Gestione del deadlock} & Prevenzione wait-die/wound-wait; rilevamento con grafo delle attese e rollback della vittima. \\
+    \addlinespace
+    \textbf{Recovery rapido} & Checkpoint fuzzy con Dirty Page Table e Transaction Table; Master Record. \\
+    \addlinespace
+    \textbf{Ordinamento del log} & LSN monotonicamente crescente e catena dei Previous LSN. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Il cerchio si chiude.} Tutti questi meccanismi sono già presenti, almeno come caselle, nell'architettura della Sezione~2. Il \textbf{Transaction Manager} coordina le tre funzioni che abbiamo visto in azione: il \textbf{Logging and Recovery Manager} scrive il log, gestisce i checkpoint e ripristina lo stato dopo un crash; il \textbf{Concurrency-Control Manager} decide l'ordine delle operazioni, concede o nega i lock e rileva i deadlock; la \textbf{Lock table} è la struttura condivisa che registra chi possiede cosa e chi sta aspettando. Il \textbf{Buffer Manager}, dal canto suo, collabora con il recovery perché le pagine sporche e i log tail devono essere scritti su disco nel momento giusto, rispettando il WAL.
+
+\medskip
+\noindent \textbf{Che cosa deve ricordare chi progetta un'applicazione.} La prima lezione è che la correttezza non è solo una proprietà delle singole query: è una proprietà dell'\textbf{insieme} delle operazioni concorrenti. La seconda è che il DBMS offre garanzie precise, ma non gratuite: ogni livello di isolamento è un compromesso tra sicurezza e prestazioni, e ogni transazione troppo lunga aumenta la contesa e il rischio di deadlock. La terza è che il \texttt{COMMIT} è un impegno: dopo il \texttt{COMMIT} il DBMS promette che le modifiche sopravvivranno, e questa promessa si paga con la scrittura del log e con il lavoro di recovery. Capire questo patto significa capire perché le transazioni, il controllo della concorrenza e il crash recovery non sono tre argomenti separati, ma tre facce dello stesso problema: mantenere coerente e persistente lo stato di una base di dati condivisa.
 
 \newpage
 

@@ -2248,177 +2248,388 @@ Il neurone corticale ha un \textbf{albero dendritico} che raccoglie gli ingressi
     \item \textbf{risolvere problemi pratici} difficili con le tecniche algoritmiche, \emph{anche se il cervello funziona in modo diverso}: le reti artificiali sono ispirate al cervello, non ne sono una copia fedele.
 \end{itemize}
 
-\subsection{Topologie di rete e tipi di strato}
 
-\subsubsection{Feed-forward, strati densi e strati convolutivi}
 
-\paragraph{Reti feed-forward e ricorrenti}
-Se il grafo della rete è \textbf{aciclico} si parla di rete \textbf{feed-forward}: l'informazione va solo dall'ingresso all'uscita. Se ci sono \textbf{cicli} la rete è \textbf{ricorrente} (l'uscita di un neurone può tornare a influenzare se stesso nel tempo; utili per le sequenze, ma non trattate nel corso).
+%\subsection{Topologie di rete e tipi di strato}
 
-\paragraph{Strati (layer)}
-In una rete feed-forward i neuroni sono organizzati in \textbf{strati}. Con \textbf{più di uno strato nascosto} la rete è \textbf{profonda} (\emph{deep}); con uno solo (o nessuno) è \textbf{superficiale} (\emph{shallow}). Con $L$ strati la rete calcola una composizione di funzioni
-$$f(\mathbf{x}) = f_L\big(\cdots f_2\big(f_1(\mathbf{x})\big)\cdots\big)$$
-dove ogni $f_k$ è lo strato $k$-esimo.
+%\subsubsection{Feed-forward, strati densi e strati convolutivi}
 
-\paragraph{Lo strato come componente: tensori in ingresso e in uscita}
-Oltre al neurone, il mattone principale di una rete è lo \textbf{strato} (\emph{layer}), che contiene i neuroni. Uno strato prende in ingresso e restituisce in uscita dei \textbf{tensori}, cioè array \emph{multidimensionali}. Davanti a ogni strato bisogna quindi chiedersi: \emph{che tensore ricevo in ingresso e che tensore mi serve in uscita?}
+%\paragraph{Reti feed-forward e ricorrenti}
+%Se il grafo della rete è \textbf{aciclico} si parla di rete \textbf{feed-forward}: l'informazione va solo dall'ingresso all'uscita. Se ci sono \textbf{cicli} la rete è \textbf{ricorrente} (l'uscita di un neurone può tornare a influenzare se stesso nel tempo; utili per le sequenze, ma non trattate nel corso).
 
-È come incastrare i pezzi del Lego: l'uscita di uno strato deve avere la forma (\emph{shape}) che l'ingresso dello strato successivo si aspetta, altrimenti i componenti non combaciano.
+%\paragraph{Strati (layer)}
+%In una rete feed-forward i neuroni sono organizzati in \textbf{strati}. Con \textbf{più di uno strato nascosto} la rete è \textbf{profonda} (\emph{deep}); con uno solo (o nessuno) è \textbf{superficiale} (\emph{shallow}). Con $L$ strati la rete calcola una composizione di funzioni
+%$$f(\mathbf{x}) = f_L\big(\cdots f_2\big(f_1(\mathbf{x})\big)\cdots\big)$$
+%dove ogni $f_k$ è lo strato $k$-esimo.
 
-Perché multidimensionali? Un'immagine 2D ha tipicamente anche la dimensione dei \textbf{canali} (ad es.\ RGB, 3 canali), che può variare da uno strato all'altro: l'ingresso è già un tensore 3D (altezza $\times$ larghezza $\times$ canali). Con un lotto (\emph{batch}) di immagini si aggiunge una quarta dimensione.
+%\paragraph{Lo strato come componente: tensori in ingresso e in uscita}
+%Oltre al neurone, il mattone principale di una rete è lo \textbf{strato} (\emph{layer}), che contiene i neuroni. Uno strato prende in ingresso e restituisce in uscita dei \textbf{tensori}, cioè array \emph{multidimensionali}. Davanti a ogni strato bisogna quindi chiedersi: \emph{che tensore ricevo in ingresso e che tensore mi serve in uscita?}
 
-\paragraph{Strato denso (fully connected)}
-Ogni neurone dello strato $k-1$ è collegato a \textbf{ciascun} neurone dello strato $k$. Per un singolo neurone con $n$ ingressi
-$$I^n \cdot W^n + B^1 = O^1$$
-e vettorizzando si calcolano $m$ uscite in parallelo con un'unica moltiplicazione matriciale:
-$$I^n \cdot W^{n\times m} + B^m = O^m$$
-(poi si applica l'attivazione elemento per elemento). Le dimensioni: $I$ vettore riga $1\times n$, $W$ matrice $n\times m$ (colonna $j$ = pesi del neurone $j$), $B$ vettore $1\times m$.
+%È come incastrare i pezzi del Lego: l'uscita di uno strato deve avere la forma (\emph{shape}) che l'ingresso dello strato successivo si aspetta, altrimenti i componenti non combaciano.
 
-\begin{ibox}{Esempio: quanti parametri?}
-Immagine MNIST appiattita ($n=784$) in uno strato denso con $m=128$ neuroni: $W$ ha $784\cdot128 = 100\,352$ pesi più $128$ bias, cioè \textbf{100\,480 parametri} in un solo strato.
-\end{ibox}
+%Perché multidimensionali? Un'immagine 2D ha tipicamente anche la dimensione dei \textbf{canali} (ad es.\ RGB, 3 canali), che può variare da uno strato all'altro: l'ingresso è già un tensore 3D (altezza $\times$ larghezza $\times$ canali). Con un lotto (\emph{batch}) di immagini si aggiunge una quarta dimensione.
 
-\noindent Gli strati densi lavorano su ingressi \textbf{piatti} (non strutturati): l'\textbf{ordine} degli elementi in ingresso è \textbf{irrilevante}. Se si permutano allo stesso modo i pixel di tutte le immagini, la rete (riaddestrata) funziona uguale: lo strato non sa nulla di «pixel vicini».
+%\paragraph{Strato denso (fully connected)}
+%Ogni neurone dello strato $k-1$ è collegato a \textbf{ciascun} neurone dello strato $k$. Per un singolo neurone con $n$ ingressi
+%$$I^n \cdot W^n + B^1 = O^1$$
+%e vettorizzando si calcolano $m$ uscite in parallelo con un'unica moltiplicazione matriciale:
+%$$I^n \cdot W^{n\times m} + B^m = O^m$$
+%(poi si applica l'attivazione elemento per elemento). Le dimensioni: $I$ vettore riga $1\times n$, $W$ matrice $n\times m$ (colonna $j$ = pesi del neurone $j$), $B$ vettore $1\times m$.
 
-\paragraph{Strato convolutivo}
-Ogni neurone dello strato $k-1$ è collegato a un sottoinsieme \emph{fisso e piccolo} di neuroni dello strato $k$ tramite un \textbf{kernel} parametrico che viene fatto scorrere (\emph{convoluto}) su tutto lo strato precedente:
-\begin{enumerate}[1.]
-    \item si sposta il kernel $K$ su una porzione $M$ dell'ingresso di uguale dimensione;
-    \item si calcola il prodotto scalare $M\cdot K$ (ed eventualmente si somma un bias);
-    \item si sposta il kernel e si ripete.
-\end{enumerate}
-La dimensione dell'uscita dipende solo dal \emph{numero di volte} in cui si applica il kernel. L'ingresso è \textbf{strutturato} (le posizioni contano) e la struttura si riflette nell'uscita.
+%\begin{ibox}{Esempio: quanti parametri?}
+%Immagine MNIST appiattita ($n=784$) in uno strato denso con $m=128$ neuroni: $W$ ha $784\cdot128 = 100\,352$ pesi più $128$ bias, cioè \textbf{100\,480 parametri} in un solo strato.
+%\end{ibox}
 
-\begin{center}
-    \includegraphics[width=0.5\textwidth]{img/convoluzione.png}\\
-    {\small Convoluzione 2D: il kernel (qui un filtro \emph{emboss}) centrato sul pixel sorgente produce il nuovo valore come somma pesata del pixel e dei suoi vicini.}
-\end{center}
+%\noindent Gli strati densi lavorano su ingressi \textbf{piatti} (non strutturati): l'\textbf{ordine} degli elementi in ingresso è \textbf{irrilevante}. Se si permutano allo stesso modo i pixel di tutte le immagini, la rete (riaddestrata) funziona uguale: lo strato non sa nulla di «pixel vicini».
 
-\begin{ibox}{Esempio 1D}
-Ingresso $\mathbf{x}=(1,2,3,4,5)$, kernel $K=(1,0,-1)$ (lunghezza 3, passo 1):
-\begin{align*}
-(1,2,3)\cdot(1,0,-1) &= 1-3 = -2\\
-(2,3,4)\cdot(1,0,-1) &= 2-4 = -2\\
-(3,4,5)\cdot(1,0,-1) &= 3-5 = -2
-\end{align*}
-Uscita $(-2,-2,-2)$, lunga $5-3+1=3$. Questo kernel misura la \emph{variazione} locale (un rilevatore di bordi): su un ingresso costante darebbe $0$, su una rampa dà un valore costante.
-\end{ibox}
+%\paragraph{Strato convolutivo}
+%Ogni neurone dello strato $k-1$ è collegato a un sottoinsieme \emph{fisso e piccolo} di neuroni dello strato $k$ tramite un \textbf{kernel} parametrico che viene fatto scorrere (\emph{convoluto}) su tutto lo strato precedente:
+%\begin{enumerate}[1.]
+%    \item si sposta il kernel $K$ su una porzione $M$ dell'ingresso di uguale dimensione;
+%    \item si calcola il prodotto scalare $M\cdot K$ (ed eventualmente si somma un bias);
+%    \item si sposta il kernel e si ripete.
+%\end{enumerate}
+%La dimensione dell'uscita dipende solo dal \emph{numero di volte} in cui si applica il kernel. L'ingresso è \textbf{strutturato} (le posizioni contano) e la struttura si riflette nell'uscita.
 
-\begin{center}
-\begin{tikzpicture}[x=0.8cm,y=0.8cm, every node/.style={font=\small}]
-    \foreach \i/\v in {0/1,1/2,2/3,3/4,4/5}{\node[draw, minimum size=0.7cm] at (\i,1.6) {\v};}
-    \fill[orange!25, opacity=0.8] (-0.4,1.2) rectangle (2.4,2.0);
-    \draw[thick, orange!80!black] (-0.4,1.2) rectangle (2.4,2.0);
-    \foreach \i/\v in {0/-2,1/-2,2/-2}{\node[draw, minimum size=0.7cm] at (\i+1,0) {\v};}
-    \draw[->, thick, orange!80!black] (1,1.1) -- (1,0.5);
-    \node[left] at (-0.6,1.6) {ingresso};
-    \node[left] at (0.4,0) {uscita};
-    \node[orange!80!black, right] at (4.6,1.6) {kernel $(1,0,-1)$};
-\end{tikzpicture}
-\end{center}
+%\begin{center}
+%    \includegraphics[width=0.5\textwidth]{img/convoluzione.png}\\
+%    {\small Convoluzione 2D: il kernel (qui un filtro \emph{emboss}) centrato sul pixel sorgente produce il nuovo valore come somma pesata del pixel e dei suoi vicini.}
+%\end{center}
 
-\noindent \textbf{Perché è potente.} Lo stesso kernel (stessi pesi) è riutilizzato in ogni posizione: un rilevatore di bordi serve ovunque nell'immagine. Il numero di parametri non dipende dalla dimensione dell'ingresso: un kernel $3\times3$ ha solo $9$ pesi (+1 bias), contro i $784\cdot784\approx6\cdot10^5$ di uno strato denso che mantenga $784$ uscite da un'immagine $28\times28$. Meno parametri, meno overfitting e struttura spaziale sfruttata.
+%\begin{ibox}{Esempio 1D}
+%Ingresso $\mathbf{x}=(1,2,3,4,5)$, kernel $K=(1,0,-1)$ (lunghezza 3, passo 1):
+%\begin{align*}
+%(1,2,3)\cdot(1,0,-1) &= 1-3 = -2\\
+%(2,3,4)\cdot(1,0,-1) &= 2-4 = -2\\
+%(3,4,5)\cdot(1,0,-1) &= 3-5 = -2
+%\end{align*}
+%Uscita $(-2,-2,-2)$, lunga $5-3+1=3$. Questo kernel misura la \emph{variazione} locale (un rilevatore di bordi): su un ingresso costante darebbe $0$, su una rampa dà un valore costante.
+%\end{ibox}
 
-\begin{center}
-\small
-\begin{tabular}{lll}
-    \toprule
-    & \textbf{Denso} & \textbf{Convolutivo} \\
-    \midrule
-    Collegamenti & ogni neurone con tutti i precedenti & solo con un piccolo vicinato (kernel) \\
-    Pesi & uno per ogni coppia & condivisi in tutte le posizioni \\
-    Ingresso & piatto, ordine irrilevante & strutturato (immagini, serie temporali) \\
-    Uscita & dimensione scelta liberamente & dipende da quante volte si applica il kernel \\
-    \bottomrule
-\end{tabular}
-\end{center}
+%\begin{center}
+%\begin{tikzpicture}[x=0.8cm,y=0.8cm, every node/.style={font=\small}]
+%    \foreach \i/\v in {0/1,1/2,2/3,3/4,4/5}{\node[draw, minimum size=0.7cm] at (\i,1.6) {\v};}
+%    \fill[orange!25, opacity=0.8] (-0.4,1.2) rectangle (2.4,2.0);
+%    \draw[thick, orange!80!black] (-0.4,1.2) rectangle (2.4,2.0);
+%    \foreach \i/\v in {0/-2,1/-2,2/-2}{\node[draw, minimum size=0.7cm] at (\i+1,0) {\v};}
+%    \draw[->, thick, orange!80!black] (1,1.1) -- (1,0.5);
+%    \node[left] at (-0.6,1.6) {ingresso};
+%    \node[left] at (0.4,0) {uscita};
+%    \node[orange!80!black, right] at (4.6,1.6) {kernel $(1,0,-1)$};
+%\end{tikzpicture}
+%\end{center}
 
-\subsection{Tuffo nel Deep Learning}
+%\noindent \textbf{Perché è potente.} Lo stesso kernel (stessi pesi) è riutilizzato in ogni posizione: un rilevatore di bordi serve ovunque nell'immagine. Il numero di parametri non dipende dalla dimensione dell'ingresso: un kernel $3\times3$ ha solo $9$ pesi (+1 bias), contro i $784\cdot784\approx6\cdot10^5$ di uno strato denso che mantenga $784$ uscite da un'immagine $28\times28$. Meno parametri, meno overfitting e struttura spaziale sfruttata.
 
-\subsubsection{Obiettivi, strumenti e storia}
+%\begin{center}
+%\small
+%\begin{tabular}{lll}
+%    \toprule
+%    & \textbf{Denso} & \textbf{Convolutivo} \\
+%    \midrule
+%    Collegamenti & ogni neurone con tutti i precedenti & solo con un piccolo vicinato (kernel) \\
+%    Pesi & uno per ogni coppia & condivisi in tutte le posizioni \\
+%    Ingresso & piatto, ordine irrilevante & strutturato (immagini, serie temporali) \\
+%    Uscita & dimensione scelta liberamente & dipende da quante volte si applica il kernel \\
+%    \bottomrule
+%\end{tabular}
+%\end{center}
 
-\paragraph{Un primo esempio}
-Un primo esempio pratico di rete addestrata (demo dal vivo a lezione).
+%\subsection{Tuffo nel Deep Learning}
 
-\paragraph{Capire il DL}
-Gli obiettivi del corso su questo tema:
+%\subsubsection{Obiettivi, strumenti e storia}
+
+%\paragraph{Un primo esempio}
+%Un primo esempio pratico di rete addestrata (demo dal vivo a lezione).
+
+%\paragraph{Capire il DL}
+%Gli obiettivi del corso su questo tema:
+%\begin{itemize}
+%    \item capire i \textbf{diversi strati} e il loro scopo;
+%    \item capire come gli strati si organizzano in \textbf{architetture} rilevanti;
+%    \item capire le diverse \textbf{applicazioni} del DL e le soluzioni specifiche;
+%    \item capire i principali \textbf{problemi e costi} (dati, calcolo, overfitting).
+%\end{itemize}
+
+%\paragraph{Framework}
+%\textbf{TensorFlow/Keras} (Google Brain), \textbf{PyTorch} (Facebook), \textbf{MXNet} (Apache). Fanno la differenziazione automatica (calcolano da soli i gradienti, quindi non si derivano a mano come fatto per la regressione logistica) e girano su GPU. Nel corso si usa principalmente \textbf{Keras}.
+
+%\paragraph{Cenni storici: l'eredità}
+%\begin{center}
+%\small
+%\begin{tabular}{rl}
+%    \toprule
+%    \textbf{Anno} & \textbf{Idea} \\
+%    \midrule
+%    1958 & percettrone \\
+%    1975 & backpropagation \\
+%    1980 & strati convolutivi \\
+%    1992 & max-pooling \\
+%    1997 & LSTM \\
+%    \bottomrule
+%\end{tabular}
+%\end{center}
+%Progresso \emph{estremamente lento}: le idee di base c'erano da decenni, ma mancavano dati e potenza di calcolo.
+
+%\paragraph{La rivoluzione del Deep Learning}
+%Dal 2011 in poi le pietre miliari si susseguono rapidamente:
+%\begin{center}
+%\small
+%\begin{tabular}{rl@{\hspace{1.2cm}}rl}
+%    \toprule
+%    2011 & \textbf{Google Brain foundation} & 2017 & \textbf{PyTorch release} \\
+%    2012 & ReLU e Dropout & 2017 & Mask-RCNN \\
+%    2012 & ImageNet Competition & 2017 & PPO \\
+%    2013 & DQN & 2018 & Transformers \\
+%    2014 & Inception v1 & 2018 & BERT \\
+%    2015 & \textbf{TensorFlow release} & 2018 & GPT \\
+%    2015 & Keras release & 2018 & Soft Actor Critic \\
+%    2015 & Batch normalization & 2020 & OpenAI Jukebox \\
+%    2015 & YOLO v1 & 2020 & Vision Transformer \\
+%    2015 & \textbf{OpenAI foundation} & 2021 & \textbf{MXNet release} \\
+%    2016 & Residual connections & 2022 & DALL-E \\
+%    \bottomrule
+%\end{tabular}
+%\end{center}
+%\noindent Le cause della svolta: \textbf{più dati} (es.\ ImageNet), \textbf{più calcolo} (GPU), \textbf{migliori trucchi} (ReLU, Dropout, batch normalization, connessioni residuali) e \textbf{framework} aperti che hanno abbassato la barriera d'ingresso.
+
+%\paragraph{Il panorama a inizio secolo e nell'era del DL}
+%All'inizio del 2000 i campi dell'IA erano separati ma con intersezioni: rappresentazione della conoscenza, sistemi esperti e programmazione a vincoli (AI «classica»); SVM, modelli bayesiani e clustering (ML); NLP, visione, OCR, robotica. Le reti neurali (NN) erano un'area piccola, all'incrocio fra questi campi.
+
+%\begin{center}
+%\begin{tikzpicture}[every node/.style={font=\small}]
+%    \draw (-2.8,0.6) ellipse (2cm and 1.1cm) node[above=0.7cm] {AI};
+%    \draw (1.2,1.2) ellipse (2cm and 1cm) node[above=0.7cm] {ML};
+%    \draw (0,2.3) ellipse (0.8cm and 1.3cm) node[above=1cm] {NLP};
+%    \draw (1.6,-0.5) ellipse (2cm and 0.8cm) node[right=1cm] {Vision};
+%    \draw (-0.3,-1.4) ellipse (1.8cm and 0.55cm) node {Robotics};
+%    \draw (-0.3,-0.2) circle (0.5cm) node {NN};
+%    \draw (3.4,0.4) circle (0.45cm) node {OCR};
+%    \draw[very thick, green!50!black] (0.4,-0.3) ellipse (3.3cm and 1.8cm);
+%    \node[green!40!black, font=\small\bfseries] at (4.6,2.0) {Deep Learning};
+%    \draw[green!50!black, very thick] (4.2,1.8) -- (3.4,1.2);
+%\end{tikzpicture}
+%\end{center}
+
+%\noindent Con la rivoluzione del DL il disegno cambia: le reti neurali profonde invadono quasi tutti gli altri campi (visione, NLP, robotica, OCR e parte del ML), diventando la tecnica dominante. Resta fuori buona parte della AI simbolica classica.
+
+%\begin{cbox}{Riepilogo del capitolo}
+%\begin{itemize}
+%    \item \textbf{Neurone} $=\varphi(\mathbf{w}\cdot\mathbf{x}+b)$; con $\varphi=\sigma$ è una regressione logistica. Attivazioni: soglia, sigmoide, tanh, ReLU.
+%    \item Ispirazione biologica (dendriti $\to$ somma $\to$ soglia $\to$ assone) ma il cervello è poco profondo e molto parallelo.
+%    \item \textbf{Feed-forward} (aciclica) vs \textbf{ricorrente} (con cicli); \textbf{deep} se ha più di uno strato nascosto.
+%    \item \textbf{Strato denso}: tutti con tutti, $I\cdot W+B=O$, ingresso piatto. \textbf{Strato convolutivo}: kernel condiviso, ingresso strutturato, pochi parametri.
+%    \item Idee note dal 1958, ma la \textbf{rivoluzione} parte nel 2011--2012 grazie a dati, GPU, nuovi trucchi e framework (Keras, PyTorch, \dots).
+%\end{itemize}
+%\end{cbox}
+
+\subsection{Layer lineare/denso}
+Per comprendere a fondo il funzionamento di un layer in una rete neurale artificiale, dobbiamo analizzare in dettaglio i seguenti aspetti:
 \begin{itemize}
-    \item capire i \textbf{diversi strati} e il loro scopo;
-    \item capire come gli strati si organizzano in \textbf{architetture} rilevanti;
-    \item capire le diverse \textbf{applicazioni} del DL e le soluzioni specifiche;
-    \item capire i principali \textbf{problemi e costi} (dati, calcolo, overfitting).
+    \item \textbf{La dimensione del tensore di input e del tensore di output}: comprendere la forma (\textit{shape}) dei dati che entrano ed escono dal layer (compresa la gestione del batch);
+    \item \textbf{Le operazioni algebriche compiute dal layer} (``cosa fa''): analizzare la trasformazione matematica (prodotto matriciale e somma del bias) applicata ai vettori di ingresso.
 \end{itemize}
 
-\paragraph{Framework}
-\textbf{TensorFlow/Keras} (Google Brain), \textbf{PyTorch} (Facebook), \textbf{MXNet} (Apache). Fanno la differenziazione automatica (calcolano da soli i gradienti, quindi non si derivano a mano come fatto per la regressione logistica) e girano su GPU. Nel corso si usa principalmente \textbf{Keras}.
+\noindent Il \textbf{\textit{layer lineare}} (o \textit{layer denso} / \textit{Fully Connected}) rappresenta il blocco costruttivo fondamentale del Deep Learning. L'idea di base parte da un singolo neurone artificiale che riceve in input un vettore di caratteristiche, ne calcola il prodotto scalare con un vettore di pesi, aggiunge un termine di offset chiamato \textit{bias} e restituisce uno scalare in output.
 
-\paragraph{Cenni storici: l'eredità}
-\begin{center}
-\small
-\begin{tabular}{rl}
-    \toprule
-    \textbf{Anno} & \textbf{Idea} \\
-    \midrule
-    1958 & percettrone \\
-    1975 & backpropagation \\
-    1980 & strati convolutivi \\
-    1992 & max-pooling \\
-    1997 & LSTM \\
-    \bottomrule
-\end{tabular}
-\end{center}
-Progresso \emph{estremamente lento}: le idee di base c'erano da decenni, ma mancavano dati e potenza di calcolo.
+\noindent Schematicamente, per un singolo neurone con input di dimensione $N$:
 
-\paragraph{La rivoluzione del Deep Learning}
-Dal 2011 in poi le pietre miliari si susseguono rapidamente:
-\begin{center}
-\small
-\begin{tabular}{rl@{\hspace{1.2cm}}rl}
-    \toprule
-    2011 & \textbf{Google Brain foundation} & 2017 & \textbf{PyTorch release} \\
-    2012 & ReLU e Dropout & 2017 & Mask-RCNN \\
-    2012 & ImageNet Competition & 2017 & PPO \\
-    2013 & DQN & 2018 & Transformers \\
-    2014 & Inception v1 & 2018 & BERT \\
-    2015 & \textbf{TensorFlow release} & 2018 & GPT \\
-    2015 & Keras release & 2018 & Soft Actor Critic \\
-    2015 & Batch normalization & 2020 & OpenAI Jukebox \\
-    2015 & YOLO v1 & 2020 & Vision Transformer \\
-    2015 & \textbf{OpenAI foundation} & 2021 & \textbf{MXNet release} \\
-    2016 & Residual connections & 2022 & DALL-E \\
-    \bottomrule
-\end{tabular}
-\end{center}
-\noindent Le cause della svolta: \textbf{più dati} (es.\ ImageNet), \textbf{più calcolo} (GPU), \textbf{migliori trucchi} (ReLU, Dropout, batch normalization, connessioni residuali) e \textbf{framework} aperti che hanno abbassato la barriera d'ingresso.
+\[
+I^N \cdot W^N + B^1 = O^1
+\]
 
-\paragraph{Il panorama a inizio secolo e nell'era del DL}
-All'inizio del 2000 i campi dell'IA erano separati ma con intersezioni: rappresentazione della conoscenza, sistemi esperti e programmazione a vincoli (AI «classica»); SVM, modelli bayesiani e clustering (ML); NLP, visione, OCR, robotica. Le reti neurali (NN) erano un'area piccola, all'incrocio fra questi campi.
-
-\begin{center}
-\begin{tikzpicture}[every node/.style={font=\small}]
-    \draw (-2.8,0.6) ellipse (2cm and 1.1cm) node[above=0.7cm] {AI};
-    \draw (1.2,1.2) ellipse (2cm and 1cm) node[above=0.7cm] {ML};
-    \draw (0,2.3) ellipse (0.8cm and 1.3cm) node[above=1cm] {NLP};
-    \draw (1.6,-0.5) ellipse (2cm and 0.8cm) node[right=1cm] {Vision};
-    \draw (-0.3,-1.4) ellipse (1.8cm and 0.55cm) node {Robotics};
-    \draw (-0.3,-0.2) circle (0.5cm) node {NN};
-    \draw (3.4,0.4) circle (0.45cm) node {OCR};
-    \draw[very thick, green!50!black] (0.4,-0.3) ellipse (3.3cm and 1.8cm);
-    \node[green!40!black, font=\small\bfseries] at (4.6,2.0) {Deep Learning};
-    \draw[green!50!black, very thick] (4.2,1.8) -- (3.4,1.2);
-\end{tikzpicture}
-\end{center}
-
-\noindent Con la rivoluzione del DL il disegno cambia: le reti neurali profonde invadono quasi tutti gli altri campi (visione, NLP, robotica, OCR e parte del ML), diventando la tecnica dominante. Resta fuori buona parte della AI simbolica classica.
-
-\begin{cbox}{Riepilogo del capitolo}
+\noindent Dove:
 \begin{itemize}
-    \item \textbf{Neurone} $=\varphi(\mathbf{w}\cdot\mathbf{x}+b)$; con $\varphi=\sigma$ è una regressione logistica. Attivazioni: soglia, sigmoide, tanh, ReLU.
-    \item Ispirazione biologica (dendriti $\to$ somma $\to$ soglia $\to$ assone) ma il cervello è poco profondo e molto parallelo.
-    \item \textbf{Feed-forward} (aciclica) vs \textbf{ricorrente} (con cicli); \textbf{deep} se ha più di uno strato nascosto.
-    \item \textbf{Strato denso}: tutti con tutti, $I\cdot W+B=O$, ingresso piatto. \textbf{Strato convolutivo}: kernel condiviso, ingresso strutturato, pochi parametri.
-    \item Idee note dal 1958, ma la \textbf{rivoluzione} parte nel 2011--2012 grazie a dati, GPU, nuovi trucchi e framework (Keras, PyTorch, \dots).
+    \item $I^N$ è il vettore riga di input di dimensione $1 \times N$;
+    \item $W^N$ è il vettore di pesi di dimensione $N \times 1$;
+    \item $B^1$ è il bias (uno scalare);
+    \item $O^1$ è l'output scalare risultante dal prodotto interno più il bias.
 \end{itemize}
-\end{cbox}
 
+\noindent Questa operazione può essere estesa e ripetuta in parallelo per $M$ neuroni differenti, i quali condividono lo stesso vettore di input ma utilizzano matrici di pesi differenti e bias dedicati a ciascun neurone:
+
+\[
+I^N \cdot W^{N\times M} + B^M = O^M
+\]
+
+\noindent In questa formulazione matriciale:
+\begin{itemize}
+    \item $I^N \in \mathbb{R}^{1 \times N}$ è il vettore di input;
+    \item $W^{N \times M} \in \mathbb{R}^{N \times M}$ è la matrice dei pesi, dove ogni colonna $j$ contiene i pesi del $j$-esimo neurone;
+    \item $B^M \in \mathbb{R}^{1 \times M}$ è il vettore dei bias, contenente un valore per ogni neurone di output;
+    \item $O^M \in \mathbb{R}^{1 \times M}$ è il vettore riga di output contenente le attivazioni degli $M$ neuroni.
+\end{itemize}
+
+\noindent Sinossi delle dimensioni e dei parametri del layer:
+\begin{center}
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Proprietà} & \textbf{Valore / Dimensione} \\
+        \hline
+        input dimension & $N$ \\
+        spec & $\text{Dense}(M)$ \\
+        output dimension & $M$ \\
+        parameters & $N\cdot M + M = M(N + 1)$\\
+        \hline
+    \end{tabular}
+\end{center}
+
+\noindent Tipicamente, durante la fase di addestramento e inferenza, non si processa un singolo dato alla volta ma un \textbf{Batch} di dimensione $B$. Di conseguenza:
+\begin{itemize}
+    \item La dimensione dell'input diventa una matrice $B \times N$ (dove $B$ è il numero di campioni nel batch);
+    \item La dimensione dell'output diventa una matrice $B \times M$;
+    \item L'operazione diventa $I^{B \times N} \cdot W^{N \times M} + B^M = O^{B \times M}$, in cui il vettore di bias $B^M$ viene sommato a ciascuna riga della matrice risultante mediante la tecnica del \textit{broadcasting}.
+\end{itemize}
+
+\noindent \textbf{Nota sui FLOPS}: volendo possiamo calcolare il numero di operazioni in virgola mobile (\texttt{FLOPS}, \textit{Floating Point Operations}) richieste dal forward pass. Per una matrice di input $B \times N$ e una matrice dei pesi $N \times M$:
+\begin{itemize}
+    \item La moltiplicazione matriciale richiede circa $2 \cdot B \cdot N \cdot M$ operazioni (moltiplicazioni e addizioni accumulate);
+    \item L'aggiunta del bias richiede ulteriori $B \cdot M$ addizioni;
+    \item Totale FLOPS $\approx 2 \cdot B \cdot N \cdot M$.
+\end{itemize}
+
+\noindent Un problema rilevante del layer lineare è la sua \textbf{elevata espressività}: poiché collega ogni singolo input a ogni singolo output, il numero di parametri cresce rapidamente al crescere delle dimensioni ($N \cdot M + M$). Se il modello ha troppi parametri rispetto ai dati disponibili, aumenta notevolmente il rischio di \textbf{overfitting} (memorizzazione del rumore dei dati di training a scapito della capacità di generalizzazione). Inoltre, la pura combinazione di più layer lineari rimane una trasformazione lineare, rendendo indispensabile l'inserimento di \textit{funzioni di attivazione non lineari} tra un layer e l'altro per apprendere relazioni complesse.
+
+\paragraph{Demo} Concetti chiave operativi nell'implementazione pratica:
+\begin{itemize}
+    \item \textit{Optimizer}: algoritmi (es. SGD, Adam) che gestiscono l'aggiornamento dei parametri della rete basandosi sul calcolo dei gradienti tramite discesa del gradiente;
+    \item \textit{Normalizzazione in }\texttt{float32}: rappresentazione dei dati e dei parametri nel formato standard a 32 bit a virgola mobile, ideale per bilanciare la precisione numerica e la velocità di calcolo sulle GPU;
+    \item \textit{Conversione della matrice di input ad array monodimensionale}: operazione di \textit{flattening} (appiattimento) necessaria quando si passano dati multidimensionali (come immagini 2D o 3D) a un layer denso, convertendoli in un singolo vettore di dimensione $N$.
+\end{itemize}
+
+\subsection{Espressività e Training}
+Per comprendere i limiti teorici delle reti neurali e il motivo per cui utilizziamo architetture profonde, partiamo ponendoci le seguenti domande fondamentali:
+\begin{itemize}
+    \item \textit{Possiamo calcolare una qualunque funzione per mezzo di Reti Neurali?}
+    \item \textit{Abbiamo davvero bisogno di \textbf{deep} network (reti profonde)?}
+    \item \textit{Possiamo calcolare una qualunque funzione usando un singolo neurone?}
+\end{itemize}
+
+\noindent Consideriamo il caso semplice di un singolo neurone con threshold binario (funzione di attivazione a gradino), chiamato \textbf{perceptron} (percettrone):
+\[
+\text{output} = \begin{cases}
+    1 & \texttt{if }\sum_i w_ix_i + b \ge 0 \\
+    0 & \text{altrimenti}
+\end{cases} \implies \begin{cases}
+    1 & \texttt{if }\sum_i w_ix_i \ge -b \\
+    0 & \text{altrimenti}
+\end{cases}
+\]
+
+\noindent Chiamiamo poi \textbf{iperpiano} nello spazio delle variabili di input $x_i$ l'insieme dei punti che soddisfano l'equazione di confine:
+\[
+\sum_i w_ix_i + b = 0
+\]
+Ad esempio, nello spazio bidimensionale ($x_1, x_2$), l'equazione $-\frac{1}{2}x_1 + x_2 + 1 = 0$ rappresenta una retta che divide il piano cartesiano in due regioni disgiunte (corrispondenti a output $1$ per i punti sopra/da un lato della retta, e $0$ per i punti dall'altro lato)\footnote{Per invertire la notazione e cambiare quale semispazio restituisce $1$, basta invertire il segno di tutti i parametri: \[ \sum_i w_ix_i + b \le 0 \iff \sum_i -w_ix_i - b \ge 0 \].}.
+
+\paragraph{NAND e XOR} Con un singolo perceptron possiamo rappresentare soltanto problemi \textbf{linearmente separabili}. Ad esempio, possiamo facilmente costruire la porta logica \texttt{NAND}:
+\[
+\textit{nand}(x_1,x_2) = \begin{cases}
+    1 & \texttt{if } w_1x_1 + w_2x_2 + b \ge 0 \\
+    0 & \textit{altrimenti}
+\end{cases}
+\]
+Graficamente, il problema si riduce a: \textit{posso trovare una retta che separa i valori corrispondenti a \texttt{1} (punti verdi) dai valori corrispondenti a \texttt{0} (punto rosso)?}
+
+\begin{center}
+    \begin{tikzpicture}[scale=2.5]
+    % Assi cartesiani
+    \draw[->, thick] (0,0) -- (1.6,0) node[right] {\(x_2\)};
+    \draw[->, thick] (0,0) -- (0,1.6) node[above] {\(x_1\)};
+
+    % Retta di decisione NAND (es. 3 - 2x1 - 2x2 = 0 => x1 + x2 = 1.5)
+    \draw[dashed, blue, thick] (-0.2, 1.7) -- (1.7, -0.2) node[above right] {\(-2x_1-2x_2+3=0\)};
+
+    % Punti Verdi (Output = 1)
+    \filldraw[fill=green!80!black, draw=black, thick] (0,0) circle (1.5pt);
+    \filldraw[fill=green!80!black, draw=black, thick] (0,1) circle (1.5pt);
+    \filldraw[fill=green!80!black, draw=black, thick] (1,0) circle (1.5pt);
+
+    % Punto Rosso (Output = 0)
+    \filldraw[fill=red, draw=black, thick] (1,1) circle (1.5pt);
+
+    % Etichette del testo
+    \node[below left] at (0,0) {(0,0) $\to$ 1};
+    \node[left] at (0,1) {(0,1) $\to$ 1};
+    \node[below] at (1,0) {(1,0) $\to$ 1};
+    \node[right] at (1,1) {(1,1) $\to$ 0};
+    \end{tikzpicture}
+\end{center}
+
+\noindent Ovviamente sì! Esistono infinite rette separatrici. Ad esempio, scegliendo i pesi $w_1 = -2, w_2 = -2$ e bias $b = 3$, otteniamo la retta $-2x_1 - 2x_2 + 3 = 0$:
+\[
+\textit{output} = \begin{cases}
+    1 & \texttt{if }-2x_1-2x_2+3 \ge 0 \\
+    0 & \textit{altrimenti}
+\end{cases}
+\]
+
+\noindent Possiamo quindi realizzare qualunque circuito logico con un singolo perceptron? La risposta è \textbf{NO!}. La funzione logica \texttt{XOR} (OR esclusivo) non è linearmente separabile. Graficamente, infatti, non esiste alcuna retta in grado di separare contemporaneamente i punti verdi (\texttt{true}) dai punti rossi (\texttt{false}):
+
+\begin{center}
+    \begin{tikzpicture}[scale=2.5]
+    % Assi cartesiani
+    \draw[->, thick] (0,0) -- (1.6,0) node[right] {\(x_2\)};
+    \draw[->, thick] (0,0) -- (0,1.6) node[above] {\(x_1\)};
+
+    % Punti Verdi (Output = 1)
+    \filldraw[fill=green!80!black, draw=black, thick] (0,1) circle (1.5pt);
+    \filldraw[fill=green!80!black, draw=black, thick] (1,0) circle (1.5pt);
+
+    % Punti Rossi (Output = 0)
+    \filldraw[fill=red, draw=black, thick] (0,0) circle (1.5pt);
+    \filldraw[fill=red, draw=black, thick] (1,1) circle (1.5pt);
+
+    % Etichette del testo
+    \node[below left] at (0,0) {(0,0) $\to$ 0};
+    \node[left] at (0,1) {(0,1) $\to$ 1};
+    \node[below] at (1,0) {(1,0) $\to$ 1};
+    \node[right] at (1,1) {(1,1) $\to$ 0};
+    \end{tikzpicture}
+\end{center}
+
+\newpage
+
+\paragraph{Multi layering} Sappiamo che possiamo costruire la porta logica \texttt{NAND} con un singolo perceptron e che la porta \texttt{NAND} è un connettivo logico \textbf{universale} (con cui è possibile rappresentare qualsiasi funzione booleana). \textit{Perché allora il singolo perceptron è incompleto?} 
+
+La risposta è che per calcolare funzioni non linearmente separabili dobbiamo \textbf{\textit{comporre}} più perceptron organizzandoli su più strati (\textbf{Multi-Layer Perceptron}).
+
+\noindent Vediamolo graficamente per la funzione \texttt{XOR}: utilizzando due perceptron nel primo layer nascosto, possiamo tracciare \textbf{due rette di decisione parallele} per delimitare la regione dello spazio contenente i valori positivi:
+
+\begin{center}
+    \begin{tikzpicture}[scale=2.5]
+    % Assi cartesiani
+    \draw[->, thick] (0,0) -- (1.6,0) node[right] {\(x_1\)};
+    \draw[->, thick] (0,0) -- (0,1.6) node[above] {\(x_2\)};
+
+    % --- RETTE PARALLELE ED EQUIDISTANTI ---
+    % Retta superiore (separatore 1)
+    \draw[thick, blue] (-0.4, 0.1) -- (1.6, 2.1) node[above left] {Retta 1};
+    
+    % Retta inferiore (separatore 2)
+    \draw[thick, blue] (-0.4, -0.9) -- (1.6, 1.1) node[below right] {Retta 2};
+
+    % --- PUNTI ---
+    % Punti Verdi (Output = 1) - compresi tra le due rette
+    \filldraw[fill=green!80!black, draw=black, thick] (0,1) circle (1.5pt);
+    \filldraw[fill=green!80!black, draw=black, thick] (1,0) circle (1.5pt);
+
+    % Punti Rossi (Output = 0) - esterni alle due rette
+    \filldraw[fill=red, draw=black, thick] (0,0) circle (1.5pt);
+    \filldraw[fill=red, draw=black, thick] (1,1) circle (1.5pt);
+
+    % Etichette dei punti
+    \node[below left] at (0,0) {\((0,0)\)};
+    \node[left] at (0,1) {\((0,1)\)};
+    \node[below] at (1,0) {\((1,0)\)};
+    \node[right] at (1,1) {\((1,1)\)};
+    \end{tikzpicture}
+\end{center}
+
+\noindent \textbf{Considerazioni teoriche (Teorema di Approssimazione Universale)}:
+\begin{itemize}
+    \item Si può dimostrare che, teoricamente, usando \textbf{\textit{solamente due layer}} (un layer nascosto sufficientemente ampio con attivazioni non lineari e un layer di output) è possibile approssimare qualsiasi funzione continua con precisione arbitraria;
+    \item Il problema fondamentale delle reti "superficiali" (\textit{shallow networks}) è il \textbf{numero di neuroni necessari}: per rappresentare funzioni molto complesse con soli due layer occorrerebbe un numero esponenziale di neuroni nel layer nascosto;
+    \item È quindi nettamente preferibile costruire architetture con \textbf{\textit{più layer e usare meno neuroni per layer}} (ovvero è computazionalmente ed parametricamente più efficiente crescere in \textbf{profondità/lunghezza} piuttosto che in \textbf{larghezza}). Le reti profonde apprendono infatti rappresentazioni gerarchiche composte, riducendo drasticamente il numero totale di parametri necessari.
+\end{itemize}
 \end{document}

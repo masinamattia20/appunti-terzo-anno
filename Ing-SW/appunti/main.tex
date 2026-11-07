@@ -211,7 +211,7 @@
 \end{itemize}
 \end{cbox}
 
-\subsection{Rischi, Qualità e AI}
+\subsection{Rischi, Qualità e AI}\label{subsec:rischi-qualita-ai}
 \noindent \textbf{Rischi del software:} di sviluppo; difetti nel software operativo; di esercizio; \textbf{allucinazioni durante la generazione AI}.
 
 \noindent \textbf{Caso studio -- CrowdStrike (19 luglio 2024):} aggiornamento difettoso di Falcon Sensor $\to$ 8,5 milioni di sistemi Windows bloccati, $\ge$10 miliardi \$ di danni (aerei, banche, ospedali).
@@ -220,12 +220,14 @@
 
 \begin{cbox}{AI e Software: Punti da Ricordare}
 \begin{itemize}
-    \item \textbf{Sicurezza}: circa il 45\% del codice generato da LLM contiene vulnerabilità (Veracode 2025).
+    \item \textbf{Sicurezza}: circa il 45\% dei campioni di codice generato da LLM analizzati presenta vulnerabilità (Veracode 2025).
     \item \textbf{Studio METR 2025} (16 sviluppatori esperti, 246 task): con strumenti AI risultano \textbf{19\% più lenti}, ma percepiscono di essere +20\% più veloci. \textit{Percezione $\neq$ realtà misurata}.
     \item \textbf{Gartner}: rischio di ``agent-washing''; $>$40\% dei progetti agentici abbandonato entro il 2027.
     \item L'AI cambia il modo di lavorare, \textbf{non l'esigenza di verifica, responsabilità e comprensione profonda}.
 \end{itemize}
 \end{cbox}
+
+\noindent Il tema è ripreso e sviluppato sistematicamente nella Sezione~\ref{sec:qualita-software}, dedicata ai modelli di qualità, alle metriche, alla verifica e alla qualità del codice generato da LLM.
 
 \noindent \textbf{Visione della disciplina:} il software è infrastruttura cruciale di complessità enorme; servono innovazione continua e processi collaborativi (Agile \& DevOps); non è neutrale (responsabilità etica); è una costruzione sociale, fatta da team interdisciplinari \textit{per le persone}.
 
@@ -4972,10 +4974,12 @@ In Scrum, quindi, non si affronta una fase per volta: \textbf{in ogni singolo ci
     \item \textbf{Ruoli Pig (I Veri Impegnati)}: hanno la responsabilità diretta dell'esito del progetto e sono i soli membri operativi dello Scrum Team (\textbf{Product Owner}, \textbf{Scrum Master}, \textbf{Development Team}). Possono intervenire e votare nelle riunioni operative.
     \item \textbf{Ruoli Chicken (I Coinvolti / Interessati)}: sono gli stakeholder esterni (utenti finali, clienti, management aziendale, esperti di dominio, auditor). Hanno interesse nel successo del prodotto ma non compiono il lavoro quotidiano nello sprint.
 \end{itemize}
+\medskip
+\noindent \textit{Nota storica}: la metafora è stata \textbf{rimossa dalla Scrum Guide già nel 2011}, perché rischiava di escludere gli stakeholder dalla conversazione. La Guida 2020 non parla più di ``pigs \& chickens'': distingue lo \textbf{Scrum Team} (PO, Developers, Scrum Master) dagli \textbf{stakeholder}, e l'Expansion Pack del 2025 aggiunge la figura del \textbf{Supporter}. Il concetto utile che resta è uno solo: chi risponde del risultato e chi no.
 \end{cbox}
 
 \medskip
-\noindent \textbf{Lo Scrum Team: Dimensioni e i Tre Ruoli Chiave.} Uno Scrum Team tipico è composto da un numero ridotto di persone (generalmente $\mathbf{5 \pm 2}$, o comunque tra 3 e 9 membri). Non esistono gerarchie interne: l'intero gruppo è egualmente responsabile del risultato finale. Le responsabilità sono distribuite su tre ruoli distinti:
+\noindent \textbf{Lo Scrum Team: Dimensioni e i Tre Ruoli Chiave.} Uno Scrum Team tipico è composto da un numero ridotto di persone: la Scrum Guide 2020 indica \textbf{tipicamente 10 persone o meno}, mentre le edizioni classiche parlavano di $\mathbf{5 \pm 2}$ o di 3--9 sviluppatori. Non esistono gerarchie interne né sotto-team: l'intero gruppo è egualmente responsabile del risultato finale. Le responsabilità sono distribuite su tre ruoli distinti:
 
 \paragraph{1. Product Owner (PO) -- La Voce del Cliente e del Valore.}
 Il Product Owner rappresenta gli interessi del committente e degli utenti finali:
@@ -4984,7 +4988,7 @@ Il Product Owner rappresenta gli interessi del committente e degli utenti finali
     \item Identifica e massimizza il valore economico e pratico per l'utente finale;
     \item Gestisce e ordina per priorità gli elementi del \textit{Product Backlog};
     \item Decide le date e i contenuti dei rilasci;
-    \item Accetta o rifiuta i risultati del lavoro al termine dello sprint, verificando il rispetto dei requisiti;
+    \item Verifica il valore dei risultati del lavoro al termine dello sprint e decide se rilasciarli; la conformità alla \textit{Definition of Done} resta però responsabilità dei Developers, non del PO;
     \item Fa da ponte tra il team tecnico e gli stakeholder esterni.
 \end{itemize}
 
@@ -5129,8 +5133,8 @@ Il \textbf{Daily Scrum} è l'incontro quotidiano di coordinamento del team di sv
 \begin{itemize}
     \item \textbf{Durata massima di 15 minuti}: si svolge preferibilmente sempre alla stessa ora e nello stesso luogo, rigorosamente \textbf{in piedi} (\textit{stand-up}) per evitare che la discussione si prolunghi;
     \item \textbf{Nessun problem-solving}: non serve a risolvere problemi tecnici sul momento né a progettare soluzioni (queste attività vengono affrontate subito dopo, solo dalle persone direttamente interessate);
-    \item \textbf{Aperto a tutti, ma parlano solo i ``pigs''}: chiunque nell'organizzazione può assistere come osservatore silenzioso, ma hanno diritto di parola esclusivamente i membri operativi (\textit{Development Team}, \textit{Scrum Master}, \textit{Product Owner});
-    \item \textbf{Non è un report per lo Scrum Master}: non si tratta di una rendicontazione gerarchica al capo, bensì di un momento di sincronizzazione orizzontale in cui ogni membro assume un impegno pubblico verso i colleghi rispondendo a tre domande:
+    \item \textbf{Partecipazione (Guida 2020)}: il Daily è un \textbf{evento dei Developers}; il Product Owner e lo Scrum Master vi partecipano come Developers solo se stanno lavorando a elementi dello Sprint Backlog. La vecchia regola secondo cui ``parlano solo i pigs'' è stata superata con la rimozione della metafora nel 2011;
+    \item \textbf{Non è un report per lo Scrum Master}: non si tratta di una rendicontazione gerarchica al capo, bensì di un momento di sincronizzazione orizzontale in cui ogni membro assume un impegno pubblico verso i colleghi. La Guida 2020 lascia \textbf{libera la struttura}; la classica sequenza di tre domande resta un'opzione utile:
     \begin{enumerate}
         \item \textit{Che cosa ho fatto ieri per aiutare il team a raggiungere lo Sprint Goal?}
         \item \textit{Che cosa farò oggi?}
@@ -5204,7 +5208,7 @@ Al termine di ogni singolo sprint il risultato tangibile deve consistere in un \
 \paragraph{Il Rituale della Sprint Review (Ispezione del Prodotto).}
 La \textbf{Sprint Review} è l'incontro formale di chiusura dello sprint dedicato all'ispezione dell'incremento software appena realizzato:
 \begin{itemize}
-    \item \textbf{Durata e perimetro}: dura al massimo 3 ore (circa 60--90 minuti per sprint bisettimanali). È condotta dallo Scrum Team al completo (\textit{Dev Team}, \textit{SM}, \textit{PO}); le slide del corso evidenziano inoltre la possibile estensione ad altri stakeholder, committenti e utenti finali interessati al processo;
+    \item \textbf{Durata e perimetro}: dura al massimo 4 ore per uno sprint di un mese (circa 60--90 minuti per sprint bisettimanali; le edizioni precedenti indicavano 3 ore). È condotta dallo Scrum Team al completo (\textit{Dev Team}, \textit{SM}, \textit{PO}); le slide del corso evidenziano inoltre la possibile estensione ad altri stakeholder, committenti e utenti finali interessati al processo;
     \item \textbf{Dimostrazione dal vivo (No Slides!)}: il team non presenta documenti teorici o diapositive riassuntive, bensì mostra il \textbf{software reale funzionante} attraverso una demo interattiva delle nuove funzionalità;
     \item \textbf{Verifica del Backlog}: il PO formalizza quali storie risultano completate con successo e quali eventualmente non hanno soddisfatto la DoD;
     \item \textbf{Feedback immediato}: la discussione serve a raccogliere le reazioni del cliente, sulla base delle quali il Product Owner adatta e riordina le priorità del Product Backlog per i cicli successivi.
@@ -5542,7 +5546,7 @@ Nella teoria dell'ingegneria del software sorge spontaneo il confronto tra i due
 \end{tabular}
 \end{center}
 
-\subsection{I Processi Agili}
+\subsection{I Processi Agili}\label{sec:processi-agili}
 
 \noindent Lo sviluppo del software non costituisce una mera sequenza di compiti tecnici di codifica, bensì un'\textbf{attività sociale complessa} che intreccia problematiche ingegneristiche e dinamiche organizzative. Comprendere e formalizzare i bisogni reali del committente richiede conversazioni continue, rinegoziazioni e coordinamento di competenze eterogenee. Un manufatto software non deve unicamente risultare privo di difetti sintattici o architetturali (\textit{costruire il software correttamente}), ma deve risolvere un problema concreto generando valore tangibile per utenti e organizzazione (\textit{costruire il software giusto}).
 
@@ -5696,6 +5700,136 @@ I criteri di business stabiliscono regole univoche su durate, costi ed esiti del
 
 \noindent Il cliente e le figure di business chiariscono le regole di dominio; il team di sviluppo si assume la responsabilità ingegneristica di tradurle in \textbf{verifiche automatiche e ripetibili} all'interno della suite di test.
 
+\paragraph{Il Testing Automatico: Perché il Debugging Non Basta.}
+Il \textbf{debugging} è una pratica lunga, noiosa e dai risultati incerti, che ogni programmatore tende spontaneamente a evitare. La domanda ingegneristica è dunque un'altra: come assicurare, o quantomeno migliorare, la qualità del codice in un contesto di \textit{programming in the large}, facendo svolgere il lavoro sporco al computer? La risposta è il \textbf{testing automatico}.
+\begin{itemize}
+    \item \textbf{Il test è l'unico strumento di verifica oggettiva} a disposizione del programmatore: l'esecuzione manuale del programma una o due volte non dimostra nulla, se non che quel singolo cammino, con quei dati, non ha prodotto un errore evidente;
+    \item \textbf{Approccio metodico}: occorre sostituire l'ispezione estemporanea con una batteria di verifiche ripetibili, eseguibili a costo quasi nullo dopo ogni modifica al codice;
+    \item \textbf{Distribuzione dell'impegno}: circa il \textbf{70\% dei test} di un progetto dovrebbe essere costituito da \textbf{test di unità}, mentre i test manuali andrebbero ridotti all'osso; automatizzare il più possibile è ciò che consente di risparmiare tempo nel medio periodo.
+\end{itemize}
+
+\paragraph{Unit Testing: Definizione e Caratteristiche.}
+Per \textbf{unit testing} si intende l'attività di testing (prova, collaudo) di singole unità software. Per \textbf{unità software} si intende il minimo componente di un programma dotato di funzionamento autonomo, vale a dire tipicamente una singola funzione, una singola classe o un singolo metodo nella programmazione a oggetti.
+
+\noindent Un test di unità di qualità possiede cinque proprietà non negoziabili:
+\begin{enumerate}
+    \item \textbf{automatizzato e ripetibile}: nessun intervento manuale e medesimo esito a parità di condizioni iniziali;
+    \item \textbf{facile da implementare}: il costo di scrittura non deve superare il valore della verifica che introduce;
+    \item \textbf{facile da eseguire}: un solo comando (\textit{Run $\to$ Run Test}) deve lanciare l'intera suite;
+    \item \textbf{rapido nell'esecuzione}: la suite viene eseguita centinaia di volte al giorno, quindi i tempi devono restare nell'ordine dei secondi;
+    \item \textbf{parte integrante del progetto}: il codice di test entra a pieno titolo nel repository, ne segue il versionamento ed è soggetto agli stessi standard di qualità del codice di produzione.
+\end{enumerate}
+
+\paragraph{Il Ciclo di Scrittura di un Test e le Tre A.}
+La scrittura dei test non è un'attività lasciata all'improvvisazione: segue un ciclo esplicito, strutturalmente analogo a un \texttt{do-while} che termina quando non si trovano più difetti.
+\begin{enumerate}
+    \item \textbf{Scegliere l'obiettivo}: cosa devo testare, e con quale livello di granularità?
+    \item \textbf{Scrivere un codice di controllo efficace}: l'asserzione deve essere in grado di distinguere il comportamento corretto da quello errato;
+    \item \textbf{Eseguire il codice di test};
+    \item \textbf{Se il test non passa, eseguire il debug} e ripetere il ciclo finché non emergono nuovi difetti.
+\end{enumerate}
+
+\noindent La metodologia di scrittura del singolo test unitario si riassume nell'acronimo \textbf{AAA} (\textit{Arrange--Act--Assert}), le cosiddette \textbf{tre A} dei test:
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{11.2cm}}
+    \toprule
+    \textbf{Fase} & \textbf{Cosa si fa} \\
+    \midrule
+    \textbf{Arrange (organizzare)} & Predisporre il contesto: quali oggetti servono, quali dati di input fornire, quale stato iniziale imporre al sistema. \\
+    \addlinespace
+    \textbf{Act (agire)} & Richiamare la funzione o il metodo oggetto del test, ottenendo un risultato osservabile. \\
+    \addlinespace
+    \textbf{Assert (affermare)} & Verificare che il risultato coincida con quello atteso, mediante un'asserzione esplicita. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Esempio concreto su una classe di conto bancario (Java + JUnit):
+\begin{lstlisting}[language=Java]
+// Arrange: preparo l'oggetto e lo stato iniziale
+BankAccount account = new BankAccount().withBalance(10);
+
+// Act: eseguo l'operazione da verificare
+account.addMoney(10);
+
+// Assert: controllo il risultato atteso
+assertEquals(20, account.getBalance());
+\end{lstlisting}
+
+\paragraph{Da Dove Iniziare: Happy Path, Sad Path e Valori Limite.}
+L'ordine di scrittura dei test segue un criterio di valore decrescente:
+\begin{itemize}
+    \item \textbf{Happy Path}: il caso più semplice e favorevole, quello che porta il maggior valore e consente di far nascere l'interfaccia del componente partendo dal suo utilizzo reale;
+    \item \textbf{Sad Path}: i casi con input errato o operazioni non ammesse, che verificano la robustezza e la gestione esplicita degli errori;
+    \item \textbf{Boundary Conditions} (casi limite): zero, stringa vuota, \texttt{null}, valore massimo o minimo rappresentabile; sono storicamente la sorgente più frequente di difetti, perché violano le assunzioni implicite del programmatore.
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+// Boundary: saldo nullo e versamento nullo
+BankAccount account = new BankAccount().withBalance(0);
+account.addMoney(0);
+assertThat("Balance must be 0", account.getBalance(), is(0));
+
+// Sad path: input non valido
+account.addMoney(null);
+assertThrown(account.getBalance());
+\end{lstlisting}
+
+\paragraph{Code Coverage: Quando Smettere di Testare.}
+La condizione di uscita ``finché non si trovano più bug'' non è verificabile in modo diretto: nella pratica si lavora finché si ha tempo e si è \textit{ragionevolmente sicuri} di non trovare nuovi difetti. Esiste tuttavia un indicatore oggettivo, la \textbf{Code Coverage} (copertura del codice), che misura in che percentuale il codice di produzione è stato effettivamente attraversato dall'esecuzione della suite.
+\begin{itemize}
+    \item \textbf{Cosa misura}: quante istruzioni, rami decisionali e metodi sono stati eseguiti almeno una volta dai test; è una metrica di \textit{esecuzione}, non di correttezza delle asserzioni;
+    \item \textbf{Come si usa}: come indicatore di zone scoperte da indagare, non come obiettivo fine a sé stesso; una copertura del 100\% con asserzioni deboli non dimostra nulla;
+    \item \textbf{Valore pratico}: consente di dire, con un dato e non con un'impressione, quanto si è stati bravi a testare il codice, e di fissare una soglia minima nella Definition of Done.
+\end{itemize}
+
+\paragraph{I Framework di Test Automation.}
+La scelta dello strumento dipende principalmente dal linguaggio di programmazione utilizzato e, secondariamente, dall'IDE impiegato. Il panorama è dominato dal modello \textbf{xUnit}, nato con JUnit per Java e poi replicato in praticamente ogni ecosistema:
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{11.2cm}}
+    \toprule
+    \textbf{Linguaggio} & \textbf{Framework di riferimento} \\
+    \midrule
+    \textbf{Java} & \textbf{JUnit}, standard de facto, giunto alla quinta release denominata \textit{Jupiter}; l'intera famiglia di cloni è nota come \textbf{xUnit} (CppUnit, PHPUnit, \dots). \\
+    \addlinespace
+    \textbf{Python} & \texttt{unittest}, considerato lo standard e largamente impiegato dai professionisti, affiancato da librerie alternative. \\
+    \addlinespace
+    \textbf{JavaScript} & Nessun vincitore unico: \textbf{Jest}, \textbf{Puppeteer}, \textbf{Mocha}, \textbf{Jasmine}, \textbf{QUnit}; richiedono tutti un minimo di configurazione e l'integrazione con l'IDE non è sempre immediata. \\
+    \addlinespace
+    \textbf{C/C++} & Caso più complesso per la natura compilata del linguaggio: \textbf{CppUnit}, \textbf{GoogleTest}, \textbf{Boost.Test} (parte della libreria Boost) e il minimalista \textbf{Catch2}. \\
+    \addlinespace
+    \textbf{C\#} & \textbf{MSTest} (offerto da Microsoft), \textbf{NUnit} (porting di JUnit, molto veloce) e \textbf{xUnit.net} (open source, forse il più completo). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{JUnit 5 (Jupiter) e il Supporto degli IDE}
+\begin{itemize}
+    \item JUnit è talmente influente da aver dettato la forma di tutti i sistemi di test successivi; la versione 5 permette di eseguire, tramite il motore \textbf{JUnit Vintage}, anche i test scritti con le release precedenti;
+    \item tutti i principali IDE (Eclipse, NetBeans, IntelliJ IDEA) sono preconfigurati per lavorare con JUnit quasi \textit{out-of-the-box}; in Visual Studio Code occorre un po' di lavoro manuale di configurazione;
+    \item la struttura di un test case è minimale: un metodo annotato con \texttt{@Test}, che contiene le tre fasi \texttt{Arrange}, \texttt{Act} e \texttt{Assert}. Le asserzioni disponibili includono \texttt{assertTrue}, \texttt{assertFalse} e \texttt{assertEquals}, quest'ultimo il più flessibile perché overloadato sui tipi primitivi, su \texttt{String} e su \texttt{Object}.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Le Proprietà di un Buon Test.}
+Un test mal progettato è peggio di nessun test: costa manutenzione e genera falsi allarmi. Le proprietà attese da un test unitario sono le seguenti:
+\begin{itemize}
+    \item \textbf{Veloce}: i test vanno lanciati centinaia di volte, quindi l'intera suite deve restare rapida;
+    \item \textbf{Ripetibile}: a parità di condizioni iniziali l'esito deve essere identico, senza dipendenze da orologio, rete o ordine di esecuzione;
+    \item \textbf{Indipendente}: nessun test deve dipendere dall'esito o dagli effetti collaterali di un altro, altrimenti la diagnosi del guasto diventa un rebus;
+    \item \textbf{Isolato dal codice di produzione}: separazione dei progetti (o almeno delle directory \texttt{src} e \texttt{test}); molti strumenti non impongono questa separazione e collocano i test accanto ai sorgenti, e a volte classi di test vengono promosse a classi applicative;
+    \item \textbf{Rifattorizzato}: anche il codice di test va ripulito, applicando le stesse primitive di testing (helper, fixture, builder) del codice di produzione;
+    \item \textbf{Non distruttivo}: preserva le condizioni iniziali e non altera lo stato condiviso (nessun \texttt{DROP TABLE} su un database reale, nessuna cancellazione di file);
+    \item \textbf{Self-verified}: l'esito è binario e automatico, senza interpretazione umana; se il test fallisce deve essere chiaro il perché, e a tal fine si inserisce un messaggio esplicativo nelle asserzioni;
+    \item \textbf{Timely}: viene scritto nel momento giusto, cioè prima del codice che deve verificare, e si esegue in un tempo ragionevole.
+\end{itemize}
+
+\begin{cbox}{Chi testa il test? Il Ruolo del RED}
+Domanda legittima: chi controlla che i test siano corretti? La risposta è interna al ciclo TDD: \textbf{è il RED che verifica il test}. Un test che non è mai stato rosso, infatti, potrebbe non verificare assolutamente nulla: potrebbe essere sempre verde per un errore di configurazione, per un'asserzione vacua o perché l'oggetto invocato non è quello atteso. Osservare il fallimento \textit{per la ragione giusta} prima di scrivere il codice di produzione è l'unica prova che il test sia effettivamente in grado di rilevare il difetto.
+\end{cbox}
+
 \paragraph{Test-Driven Development (TDD): Il Ciclo Red-Green-Refactor.}
 Nel paradigma XP, i test non rappresentano una fase a valle della codifica, bensì il \textbf{motore primario di progettazione e implementazione del software}. Il \textbf{Test-Driven Development (TDD)} inverte il flusso convenzionale articolandosi attraverso micro-cicli iterativi composti da tre fasi rigorose:
 
@@ -5715,6 +5849,92 @@ Nel paradigma XP, i test non rappresentano una fase a valle della codifica, bens
 \end{center}
 
 \noindent Una singola user story non viene implementata in un blocco monolitico, ma scaturisce dalla concatenazione progressiva di molteplici cicli TDD a grana fine.
+
+\paragraph{Le Tre Regole del TDD.}
+Perché il ciclo non degeneri in una scrittura di test a posteriori mascherata, il TDD è vincolato a tre regole formulate da Kent Beck:
+\begin{enumerate}
+    \item \textbf{Non scrivere codice di produzione prima di aver scritto un test rosso}: il test è il primo artefatto, non l'ultimo;
+    \item \textbf{Non scrivere più di un test che fallisce alla volta}: un errore di compilazione è a tutti gli effetti un fallimento, e accumulare rossi rende indeterminata la causa del guasto;
+    \item \textbf{Non scrivere più codice di produzione di quello strettamente necessario a far passare il test correntemente rosso}: la generalizzazione arriva dopo, nella fase di refactoring.
+\end{enumerate}
+
+\paragraph{Perché (e Quando Non) Fare TDD.}
+Il TDD non è una panacea: il bilancio va valutato su entrambi i piatti della bilancia.
+\begin{center}
+\small
+\begin{tabular}{p{7cm}p{7cm}}
+    \toprule
+    \textbf{Vantaggi} & \textbf{Problemi e Limiti} \\
+    \midrule
+    \textbf{Design evolutivo del codice}: l'interfaccia nasce dall'uso e tende spontaneamente a essere usabile e disaccoppiata. & \textbf{Più codice da scrivere e manutenere}: la suite di test è un artefatto di prima classe e va aggiornata a ogni evoluzione. \\
+    \addlinespace
+    \textbf{Focus su un unico aspetto utile}: si affronta un comportamento per volta, riducendo il carico cognitivo. & \textbf{Difficile da applicare all'integration testing}: i confini dell'unità sono sfumati e le dipendenze esterne complicano il ciclo. \\
+    \addlinespace
+    \textbf{Sicurezza sul codice di produzione}: ogni modifica è coperta da una rete di regressione sempre disponibile. & \textbf{Richiede un cambio di mentalità}: il programmatore deve accettare di scrivere codice che inizialmente non compila o fallisce. \\
+    \addlinespace
+    \textbf{Documentazione sempre aggiornata}: i test descrivono in modo eseguibile il comportamento atteso del sistema. & \textbf{Difficile da applicare al codice legacy}: senza test preesistenti manca la rete di sicurezza necessaria a rifattorizzare. \\
+    \addlinespace
+    \textbf{Espressività e ritmo}: il ciclo dà sfogo alla creatività e scandisce la giornata in incrementi brevi e conclusi. & \textbf{Refactoring spesso posto in secondo piano}: sotto pressione, la terza fase viene saltata e il design degrada silenziosamente. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Refactoring: Ristrutturare Senza Cambiare il Comportamento.}
+La terza fase del ciclo RGR richiede una definizione rigorosa:
+\begin{quote}
+    \textit{<<Refactoring is a disciplined technique for restructuring an existing body of code, altering its internal structure without changing its external behavior>>} (Martin Fowler).
+\end{quote}
+\noindent Ovvero: l'esecuzione di azioni di ristrutturazione del codice volte a migliorarne la struttura interna, abbassandone la complessità senza modificarne le funzionalità.
+\begin{itemize}
+    \item \textbf{Trasformazioni piccole e controllabili}: il refactoring si basa su una sequenza di trasformazioni che preservano il comportamento; ciascuna è limitata e quindi poco rischiosa, ma la loro composizione può produrre una ristrutturazione significativa;
+    \item \textbf{La rete di sicurezza dei test}: dopo ogni passo la suite certifica l'invarianza funzionale; è questo che rende il refactoring un'operazione a basso rischio e non una riscrittura avventata;
+    \item \textbf{Benefici}: impedisce il degrado del design, elimina il codice duplicato, rende il codice più comprensibile per il team (e per chi lo valuta), aiuta a trovare difetti (un test che fallisce è già metà dell'opera) e, nel medio periodo, velocizza lo sviluppo;
+    \item \textbf{Punto di partenza: i code smell}. Non si rifattorizza per gusto personale, ma a partire da \textit{<<insieme di caratteristiche che il codice sorgente può avere e che sono generalmente riconosciute come probabili indicazioni di un difetto di programmazione>>}. I code smell \textbf{non sono bug} (il software funziona correttamente): sono debolezze che ne riducono la qualità. Il catalogo di riferimento è \url{https://refactoring.guru/refactoring/smells}.
+\end{itemize}
+
+\paragraph{Esempio Pratico: la String Calculator Kata.}
+La palestra classica per il TDD è la \textit{String Calculator Kata} di Roy Osherove: costruire una calcolatrice che sommi i numeri contenuti in una stringa di testo. I requisiti crescono un passo per volta, e proprio questa crescita progressiva è il punto: ogni passo è un ciclo RGR completo.
+\begin{enumerate}
+    \item \textbf{Setup}: progetto Java, classe \texttt{StringCalculator}, directory \texttt{test} marcata come \textit{Test source root}, dipendenza \texttt{org.junit.jupiter:junit-jupiter} e prima esecuzione della classe di test;
+    \item \textbf{Primo test (RED)}: dichiarare la firma del metodo che si intende sviluppare (es. \texttt{int add(String s)}) e scrivere un test elementare che la richiami in modo sintatticamente corretto. Il caso di partenza è l'Happy Path: stringa vuota $\to$ 0;
+    \item \textbf{Primo test (GREEN)}: il test che produce il maggior valore con il minimo sforzo è il calcolo di un singolo valore, meglio se di una classe di valori (evitando il microtest). Il codice deve essere il minimo sufficiente a rendere verde;
+    \item \textbf{Secondo test (RED)}: estendere le funzionalità del metodo (un numero, poi due numeri separati da virgola), mantenendo verdi i test precedenti;
+    \item \textbf{Secondo test (GREEN) e Refactoring}: generalizzare a $n$ numeri, eliminare i valori hardcoded, documentare con Javadoc; i test devono rimanere verdi;
+    \item \textbf{Terzo test (RED)}: dare robustezza al codice gestendo gli errori del programmatore e dell'utente (\texttt{null}, stringa vuota, input malformato).
+\end{enumerate}
+
+\noindent La struttura di un test case JUnit e una possibile soluzione (non statica) sono le seguenti:
+\begin{lstlisting}[language=Java]
+@Test
+public void nomeDelTest() {
+    // Arrange: setup delle variabili
+    // Act: invocazione del metodo o della funzione
+    // Assert: una o piu' istruzioni di controllo
+}
+
+public class StringCalculatorTest {
+
+    @Test
+    public void emptyStringReturnsZero() {
+        StringCalculator calculator = new StringCalculator();
+        assertEquals(0, calculator.add(""));
+    }
+
+    @Test
+    public void singleNumberIsReturnedAsIs() {
+        StringCalculator calculator = new StringCalculator();
+        assertEquals(1, calculator.add("1"));
+    }
+
+    @Test
+    public void twoNumbersAreSummed() {
+        StringCalculator calculator = new StringCalculator();
+        assertEquals(3, calculator.add("1,2"));
+    }
+}
+\end{lstlisting}
+
+\noindent Il valore didattico della kata non risiede nel risultato (una calcolatrice è banale), ma nella disciplina del processo: ogni funzionalità nasce da un test rosso, ogni generalizzazione è autorizzata da un test verde e ogni passo è abbastanza piccolo da poter essere invertito.
 
 \paragraph{Piccoli Incrementi e Rilasci Frequenti.}
 L'approccio agile stabilisce una netta distinzione concettuale tra due dimensioni del ciclo di sviluppo:
@@ -5745,6 +5965,9 @@ La tendenza spontanea di molti architetti software consiste nel sovra-ingegneriz
 \end{enumerate}
 \noindent Il design deve sostenere con rigore i requisiti e i vincoli noti oggi. Anticipare scenari futuri non dimostrati appesantisce il sistema, moltiplica i costi di manutenzione e aumenta il debito tecnico. Qualora emergano rischi tecnici critici o incertezze su librerie esterne, il team non inserisce architetture speculative nel codice principale, bensì conduce brevi esperimenti mirati denominati \textbf{Spike architetturali}.
 
+\paragraph{Il Ritmo dello Sviluppo: la Tecnica del Pomodoro.}
+Il pair programming solleva un problema preliminare di ritmo: come introdurre una cadenza sostenibile nella giornata dello sviluppatore e, insieme, uno strumento per misurare il tempo effettivamente speso? Quale unità di misura adottare? La risposta più diffusa è la \textbf{tecnica del Pomodoro}: il lavoro viene suddiviso in intervalli brevi e rigorosamente timeboxed (tradizionalmente 25 minuti), separati da pause altrettanto brevi, durante i quali la coppia non si concede interruzioni. L'unità ``pomodoro'' diventa così sia un'unità di misura dello sforzo sia un'unità di rotazione dei ruoli tra driver e navigator.
+
 \paragraph{Pair Programming: Ruoli, Rotazione ed Evidenze Empiriche.}
 La pratica del \textbf{Pair Programming} prevede che due sviluppatori lavorino congiuntamente alla progettazione, codifica e verifica del software condividendo un'unica postazione di lavoro. L'interazione si struttura mediante una chiara alternanza di ruoli operativi:
 \begin{itemize}
@@ -5752,6 +5975,17 @@ La pratica del \textbf{Pair Programming} prevede che due sviluppatori lavorino c
     \item \textbf{Navigatore}: osserva il lavoro da una prospettiva strategica a medio termine, valuta percorsi alternativi, rileva errori logici, anticipa rischi architetturali e verifica l'allineamento con i criteri di accettazione;
     \item \textbf{Scambio continuo}: i ruoli non sono statici; i componenti della coppia discutono apertamente e si scambiano frequentemente la tastiera per mantenere attiva l'attenzione di entrambi. La rotazione periodica delle coppie all'interno del team favorisce inoltre la fertilizzazione incrociata delle competenze e abbatte i silos conoscitivi.
 \end{itemize}
+
+\noindent Il \textbf{driver} ha mouse e tastiera, scrive i test e il codice e mantiene una visione di breve periodo; il \textbf{navigator} tiene una \textit{todo-list}, annota i test mancanti e i refactoring possibili e mantiene una visione di lungo periodo. La complementarità è esattamente questa: chi scrive non può contemporaneamente controllare l'orizzonte, e chi controlla non deve distrarsi sui dettagli sintattici.
+
+\paragraph{Stili di Conduzione della Coppia.}
+Non esiste un solo modo di fare pair programming: la letteratura ne distingue quattro varianti, caratterizzate da un diverso bilanciamento tra autonomia del driver e controllo del navigator:
+\begin{enumerate}
+    \item \textbf{Classica}: il driver scrive il codice, il navigator commenta e controlla ad alto livello;
+    \item \textbf{Hard}: il navigator detta le idee e il driver le esegue, secondo il principio per cui \textit{<<for an idea to go from your head into the computer it must go through someone else's hands>>};
+    \item \textbf{Tour}: il driver compie tutte le scelte raccontando ciò che fa, mentre il navigator segue il ragionamento e ne verifica la coerenza;
+    \item \textbf{Mob} (\textit{Mob Programming}): un intero gruppo partecipa come navigator, con un solo driver alla tastiera.
+\end{enumerate}
 
 \noindent \textbf{Cosa dimostra l'evidenza empirica.}
 L'efficacia del pair programming è stata oggetto di numerosi studi sperimentali e industriali, sintetizzati nella meta-analisi di riferimento di Hannay et al. (2009):
@@ -5773,6 +6007,57 @@ L'efficacia del pair programming è stata oggetto di numerosi studi sperimentali
 
 \noindent \textit{Valutazione ingegneristica}: durata del compito e sforzo complessivo sono grandezze ortogonali. Il pair programming non è una pratica da imporre ciecamente su compiti banali o ripetitivi, ma si rivela economicamente vantaggioso sui task ad alta complessità concettuale, dove il costo dello sforzo aggiuntivo è ampiamente compensato dalla riduzione dei difetti e dalla tempestività di consegna.
 
+\paragraph{Evidenza Industriale: un Confronto Diretto.}
+Accanto alla meta-analisi accademica, il caso industriale classico riportato in letteratura confronta due progetti della medesima organizzazione, sviluppati rispettivamente da solisti e da coppie:
+\begin{center}
+\small
+\begin{tabular}{p{4.6cm}p{5.0cm}p{5.0cm}}
+    \toprule
+    \textbf{Metrica} & \textbf{Progetto 1: solisti} & \textbf{Progetto 2: coppie} \\
+    \midrule
+    Dimensione (KLOC) & 20 & 520 \\
+    \addlinespace
+    Team & 4 & 12 \\
+    \addlinespace
+    Sforzo (mesi persona) & 4 & 72 \\
+    \addlinespace
+    Produttività (KLOC/mese persona) & 5 & 7,2 \\
+    \addlinespace
+    Produttività (KLOC/mese coppia) & n.d. & 14,4 \\
+    \addlinespace
+    Difetti ai test di unità & 107 (5,34 difetti/KLOC) & 183 (0,4 difetti/KLOC) \\
+    \addlinespace
+    Difetti ai test di integrazione & 46 (2,3 difetti/KLOC) & 82 (0,2 difetti/KLOC) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il dato interessante non è il numero assoluto di difetti (cresciuto, perché il progetto è molto più grande), ma la loro \textbf{densità}: da 5,34 a 0,4 difetti per KLOC sui test di unità e da 2,3 a 0,2 sui test di integrazione, con una produttività per coppia quasi tripla rispetto a quella individuale. Il confronto non è un esperimento controllato e va letto come indicazione, non come legge; converge però con la meta-analisi nel mostrare che il beneficio del pair programming è soprattutto qualitativo.
+
+\paragraph{Tracciabilità della Coppia: il Trailer \texttt{Co-authored-by}.}
+Il pair programming produce un artefatto di processo altrimenti invisibile: chi ha scritto cosa, e insieme a chi. Git non registra nativamente la paternità condivisa, ma la convenzione introdotta da GitHub e ormai acquisita da tutti gli strumenti consiste nell'aggiungere al messaggio di commit un trailer per ciascun coautore:
+\begin{lstlisting}[language=bash]
+$ git commit -m "Esempio di commit.
+
+Co-authored-by: piffy <piffy@gmail.com>
+Co-authored-by: prof.missiroli <prof.missiroli@unimore.it>"
+\end{lstlisting}
+
+\paragraph{Buone Norme di Convivenza e Rotazione delle Coppie.}
+La coppia è un'unità produttiva, ma anche un contesto sociale, e richiede una disciplina relazionale esplicita:
+\begin{itemize}
+    \item \textbf{non interrompere}: lasciar concludere il pensiero del compagno prima di intervenire;
+    \item \textbf{suggerire, non imporre}: formulare le osservazioni come domande (\textit{<<cosa ne pensi?>>}) invece che come correzioni;
+    \item \textbf{appuntarsi i problemi emersi}: mantenere una checklist condivisa di criticità, test mancanti e refactoring possibili, così da non perderli nel flusso del lavoro;
+    \item \textbf{igiene personale} e rispetto degli spazi condivisi.
+\end{itemize}
+
+\noindent Due precisazioni organizzative completano il quadro:
+\begin{itemize}
+    \item \textbf{le coppie non sono necessariamente fisse}: molti contesti impongono una turnazione stretta, che amalgama gli stili di programmazione ed elimina la \textit{silo culture}, cioè la concentrazione esclusiva della conoscenza in pochi individui;
+    \item \textbf{anche il miglior pilota ha bisogno di riposo}: conviene cambiare ruolo ogni 2--3 pomodori, affrontare user story diverse e assegnare alle coppie i compiti che conoscono meno, così che la conoscenza circoli invece di consolidarsi.
+\end{itemize}
+
 \paragraph{Integrazione Continua (Continuous Integration).}
 La pratica dell'\textbf{Integrazione Continua (CI)} prescrive che ciascun membro del team faccia confluire frequentemente le proprie modifiche nella linea di sviluppo principale e condivisa (\textit{main trunk}). 
 \begin{itemize}
@@ -5787,6 +6072,14 @@ In XP non esistono moduli o file di codice ``blindati'' o di proprietà esclusiv
     \item \textbf{Responsabilità condivisa}: chiunque rilevi un margine di miglioramento o un bug in qualsiasi componente ha il diritto e il dovere professionale di modificarlo e rifattorizzarlo;
     \item \textbf{Fattori abilitanti}: la proprietà collettiva non è anarchia; è resa sostenibile unicamente dalla presenza della rete di sicurezza dei test automatici, dall'integrazione continua e dal rispetto rigoroso degli \textbf{standard di codifica};
     \item \textbf{Il ruolo dei commenti}: il codice deve essere auto-esplicativo tramite nomi precisi di classi e metodi. I commenti non devono parafrasare ciò che il codice fa già in modo ovvio, bensì spiegare \textbf{perché} è stata adottata una determinata scelta, documentare vincoli esterni non apparenti o motivare perché una soluzione alternativa apparentemente ovvia sia errata.
+\end{itemize}
+
+\paragraph{Gli Standard di Codifica: Chi Li Sceglie e Come.}
+Gli standard di codifica non sono imposizioni calate dall'alto, ma \textbf{regole approvate dal team di sviluppo}, e costituiscono uno dei fattori abilitanti della proprietà collettiva: senza una forma condivisa il codice dell'uno risulta illeggibile all'altro.
+\begin{itemize}
+    \item \textbf{Appoggiarsi a standard esistenti}, già integrati nell'IDE, invece di inventarne di nuovi: l'uso di Javadoc (o analoghi) per la documentazione e l'adozione di standard affermati come Google e Oracle per Java, PEP per Python, Google e CKAN per JavaScript;
+    \item \textbf{Ogni team può darsi regole specifiche}, purché motivate e condivise: il formato delle variabili alla polacca (\texttt{int64Hello}, \texttt{szInput}), il limite di 16 righe per metodo, il divieto di metodi statici a favore del Singleton;
+    \item \textbf{Il confine tra convenzione e idiosincrasia}: regole troppo personali non migliorano la leggibilità e finiscono per essere percepite come burocrazia; lo standard è utile nella misura in cui riduce l'attrito cognitivo del gruppo, non nella misura in cui rispecchia il gusto di chi lo ha proposto.
 \end{itemize}
 
 \paragraph{Ritmo Sostenibile (Sustainable Pace).}
@@ -5834,6 +6127,34 @@ def test_due_mesi():
 \noindent \textbf{Principio fondamentale}: codice e test perfettamente coerenti tra loro possono essere entrambi completamente errati rispetto al bisogno reale. Il controllo della verità deve rimanere ancorato all'\textbf{oracolo esterno} concordato con il cliente nei criteri di accettazione (\texttt{assert prezzo(2) == 60}).
 \end{cbox}
 
+\paragraph{AI Pair Programming: una Coppia Diversa?}
+Una declinazione recente e controversa consiste nell'affiancare allo sviluppatore un assistente generativo, trattato come un secondo membro della coppia. Il ciclo operativo ricalca i due ruoli tradizionali:
+\begin{itemize}
+    \item \textbf{Codifica (come driver)}: si scrive il codice normalmente, prestando attenzione ai suggerimenti ricevuti (istruzioni, blocchi, autocompletamenti);
+    \item \textbf{Direzione (come navigator)}: si formulano commenti o istruzioni in linguaggio naturale (es. \textit{<<crea un endpoint REST per il login>>}) e si attende la proposta;
+    \item \textbf{Controllo e test}: si rilegge, si verifica e si raffina, senza accettare mai le proposte alla cieca.
+\end{itemize}
+
+\noindent Il bilancio della pratica è ambivalente:
+\begin{center}
+\small
+\begin{tabular}{p{7cm}p{7cm}}
+    \toprule
+    \textbf{Vantaggi} & \textbf{Svantaggi} \\
+    \midrule
+    \textbf{Programmazione più veloce}: suggerisce codice, completa funzioni e scrive le parti ripetitive. & \textbf{Rischio di dipendenza eccessiva}: delegare troppo indebolisce capacità di problem solving, debug e competenze fondamentali. \\
+    \addlinespace
+    \textbf{Maggiore concentrazione e continuità}: non ci si interrompe di continuo per cercare sintassi, esempi o codice di base. & \textbf{Bug nascosti}: il codice generato può sembrare corretto ma contenere difetti difficili da individuare, inefficienze o vulnerabilità. \\
+    \addlinespace
+    \textbf{Supporto all'apprendimento}: i suggerimenti aiutano a scoprire nuovi modi di risolvere i problemi e a esplorare framework sconosciuti. & \textbf{Limiti nella logica complessa}: su domini specialistici le proposte restano generiche e non rispondono pienamente alle esigenze. \\
+    \addlinespace
+    \textbf{Prototipazione delle idee}: consente di testare rapidamente la validità di un'idea senza scrivere da zero la prima versione. & \textbf{Problemi di riservatezza}: il codice transita su server esterni, con rischi sui progetti sensibili o proprietari. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Resta aperta una domanda di natura metodologica: \textit{il pair programming con l'IA è davvero pair programming?} La risposta non è scontata, perché manca il secondo soggetto umano che condivide responsabilità, contesto e conseguenze delle scelte. Ai posteri l'ardua sentenza.
+
 \paragraph{Organizzazione del Lavoro nel Progetto del Corso.}
 A recepimento dei principi agili ed XP analizzati, l'organizzazione operativa per lo sviluppo dei progetti di laboratorio prevede standard chiari:
 \begin{itemize}
@@ -5841,6 +6162,502 @@ A recepimento dei principi agili ed XP analizzati, l'organizzazione operativa pe
     \item \textbf{Sincronizzazione Quotidiana}: un breve momento di allineamento giornaliero (ispirato allo standup) per coordinare avanzamento, carichi e impedimenti emersi;
     \item \textbf{Automazione e Riscontro}: esecuzione automatica di build e test a ogni commit, associata a dimostrazioni periodiche del software funzionante e sessioni di riflessione per adattare continuamente il modo di lavorare del gruppo.
 \end{itemize}
+
+\subsection{Scrum Guide 2020: aggiornamenti, impegni e anti-pattern}
+
+\noindent La trattazione precedente ricostruisce Scrum nella sua impostazione classica. La \textbf{Scrum Guide 2020} (Schwaber e Sutherland) ha però precisato diversi punti e introdotto un elemento nuovo, il \textbf{Product Goal}, che nelle edizioni precedenti non esisteva. Questa sezione raccoglie gli aggiornamenti e gli aspetti complementari che completano il quadro: la mappa degli elementi, le responsabilità aggiornate, gli impegni associati agli artefatti, le timebox, la lettura del backlog e gli anti-pattern più frequenti.
+
+\noindent \textbf{Framework, non metodologia.} Scrum è volutamente \textbf{incompleto}: fornisce regole e responsabilità, non un manuale passo-passo. Le \textbf{regole sono immutabili}, mentre le pratiche (stime, user story, board, burndown) sono scelte dal team e possono variare. Ne discende un corollario importante: \textbf{applicare solo alcune parti di Scrum è possibile, ma il risultato non è Scrum}. Un team che fa il Daily e salta la Retrospective, o che usa il backlog senza Product Goal, sta adottando un insieme di rituali, non il framework.
+\begin{quote}
+    \textit{<<Scrum è un framework leggero che aiuta persone, team e organizzazioni a generare valore attraverso soluzioni adattive per problemi complessi.>>}
+\end{quote}
+
+\paragraph{Scrum in una pagina: responsabilità, eventi, artefatti, impegni.}
+La Guida organizza Scrum attorno a quattro categorie. Ogni artefatto ha un \textbf{impegno} (\textit{commitment}) che ne esplicita il senso e rende il progresso osservabile.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{4.0cm}p{4.0cm}p{3.4cm}}
+    \toprule
+    \textbf{Responsabilità} & \textbf{Eventi} & \textbf{Artefatti} & \textbf{Impegni} \\
+    \midrule
+    Product Owner & Sprint (contenitore) & Product Backlog & Product Goal \\
+    \addlinespace
+    Developers & Sprint Planning & Sprint Backlog & Sprint Goal \\
+    \addlinespace
+    Scrum Master & Daily Scrum & Increment & Definition of Done \\
+    \addlinespace
+     & Sprint Review &  &  \\
+    \addlinespace
+     & Sprint Retrospective &  &  \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La corrispondenza è biunivoca: \textbf{Product Backlog $\to$ Product Goal}, \textbf{Sprint Backlog $\to$ Sprint Goal}, \textbf{Increment $\to$ Definition of Done}. Non è un dettaglio terminologico: significa che ogni artefatto senza un impegno esplicito è destinato a diventare un contenitore opaco, senza un criterio condiviso per dire se sta avanzando.
+
+\paragraph{Lo Scrum Team secondo la Guida 2020.}
+Rispetto alle edizioni classiche cambia la terminologia e cambia il perimetro delle responsabilità:
+\begin{itemize}
+    \item \textbf{Un solo Scrum Team}: non esistono sotto-team. Il vecchio \textit{Development Team} non è un gruppo dentro il team, ma una delle tre responsabilità dello stesso Scrum Team;
+    \item \textbf{Dimensioni}: tipicamente \textbf{10 persone o meno}, abbastanza piccolo da restare agile e abbastanza grande da completare lavoro significativo. Team più grandi si organizzano in più Scrum Team coordinati;
+    \item \textbf{Cross-funzionale}: il team possiede al proprio interno tutte le competenze necessarie a creare valore in ogni Sprint;
+    \item \textbf{Auto-gestito (\textit{self-managing})}: non solo si auto-organizza su \textit{come} fare il lavoro, ma decide anche \textit{chi} fa cosa, \textit{quando} e \textit{come}. È un passo oltre il vecchio ``team auto-organizzato'';
+    \item \textbf{Coeso e responsabile in toto}: nessuna gerarchia interna, un solo obiettivo alla volta (il Product Goal) e responsabilità collettiva su sviluppo, verifica, manutenzione, sperimentazione e ricerca.
+\end{itemize}
+
+\noindent La Guida 2020 parla di \textbf{accountabilities} (responsabilità) e non di ``ruoli'': l'enfasi si sposta da chi ricopre una casella organizzativa a \textbf{chi risponde di cosa}.
+
+\begin{cbox}{Product Owner: una persona, non un comitato}
+\begin{itemize}
+    \item È responsabile di \textbf{massimizzare il valore} del prodotto e del ritorno dell'investimento;
+    \item \textbf{Sviluppa e comunica esplicitamente il Product Goal};
+    \item Crea e comunica chiaramente gli elementi del Product Backlog e li \textbf{ordina} in base a valore, rischio e dipendenze;
+    \item Garantisce che il Product Backlog sia \textbf{trasparente, visibile e compreso};
+    \item Rappresenta gli stakeholder ed è la loro interfaccia verso il team;
+    \item È l'\textbf{unico} che può cancellare uno Sprint, e solo se il suo obiettivo diventa obsoleto;
+    \item Può delegare parte del lavoro, ma \textbf{resta lui/lei a rispondere}: chi vuole cambiare il backlog deve convincere il PO.
+\end{itemize}
+\medskip
+\noindent \textbf{Cosa è cambiato}: la Definition of Done non è più ``del PO''. È un impegno dell'Increment, definito dall'organizzazione o dallo Scrum Team. Il PO verifica il \textbf{valore}, non solo la conformità formale.
+\end{cbox}
+
+\noindent I \textbf{Developers} si impegnano a creare in ogni Sprint qualsiasi aspetto di un Increment utilizzabile. Ne rispondono \textbf{collettivamente}: creano il piano dello Sprint (Sprint Backlog), instillano qualità aderendo alla Definition of Done, adattano ogni giorno il piano verso lo Sprint Goal e si considerano reciprocamente responsabili come professionisti. Sono cross-funzionali, auto-gestiti (nessuno, nemmeno lo Scrum Master, dice loro come trasformare il backlog in Increment), alla pari (competenze specialistiche individuali, responsabilità collettiva) e \textbf{stabili} durante lo Sprint.
+
+\paragraph{Scrum Master: un leader che serve.}
+Lo Scrum Master è responsabile dell'efficacia dello Scrum Team e dell'adozione di Scrum. Non è un capo progetto: non assegna compiti, non valuta le persone e non decide il ``cosa'' né impone il ``come''. Serve tre soggetti distinti:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{11.4cm}}
+    \toprule
+    \textbf{Interlocutore} & \textbf{Cosa fa lo Scrum Master} \\
+    \midrule
+    \textbf{Scrum Team} & Coaching su auto-gestione e cross-funzionalità; focus su Increment di valore conformi alla DoD; rimozione degli impedimenti; eventi positivi, produttivi e nel timebox. \\
+    \addlinespace
+    \textbf{Product Owner} & Tecniche per definire il Product Goal e gestire il backlog; elementi di backlog chiari e concisi; pianificazione empirica del prodotto; facilitazione della collaborazione con gli stakeholder. \\
+    \addlinespace
+    \textbf{Organizzazione} & Guida e coaching nell'adozione di Scrum; pianificazione e consiglio delle implementazioni; diffusione dell'approccio empirico; rimozione delle barriere tra stakeholder e team. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Chi è nel team e chi no: da ``pigs \& chickens'' a stakeholder e supporter.}
+La metafora di maiali e galline è stata rimossa dalla Guida già nel 2011, perché rischiava di escludere gli stakeholder. L'Expansion Pack del 2025 (Coleman, Jocham, Sutherland) propone due figure esterne:
+\begin{itemize}
+    \item \textbf{Stakeholder}: chiunque sia interessato o influenzato dal prodotto (clienti, utenti, legislatori, finanziatori); la definizione include anche entità non umane, come la legge o un sistema di IA;
+    \item \textbf{Supporter}: uno stakeholder che agisce da \textbf{agente di cambiamento} (management, HR, finanza) e rimuove i fattori che demotivano il team.
+\end{itemize}
+Né l'uno né l'altro ha responsabilità \textit{dentro} lo Scrum Team. Il concetto utile che sopravvive alla metafora è quindi uno solo: distinguere chi risponde del risultato da chi è portatore di interesse.
+
+\paragraph{Cosa è cambiato rispetto alle edizioni classiche.}
+La tabella seguente riassume le differenze più rilevanti, utili anche per interpretare materiali didattici e certificazioni basati su versioni precedenti.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{5.4cm}p{6.4cm}}
+    \toprule
+    \textbf{Prima} & \textbf{Scrum Guide 2020} & \textbf{Nota} \\
+    \midrule
+    Development Team come sotto-team & Un solo Scrum Team; i Developers sono una responsabilità & Niente sotto-team né gerarchie \\
+    \addlinespace
+    ``Ruoli'' & ``Accountabilities'' (responsabilità) & Enfasi su chi risponde di cosa \\
+    \addlinespace
+    Team auto-organizzante & Team auto-gestito (\textit{self-managing}) & Decide chi, come e anche cosa fare \\
+    \addlinespace
+    Team di 3--9 sviluppatori & Scrum Team tipicamente $\leq 10$ persone & Team più grandi $\to$ più Scrum Team \\
+    \addlinespace
+    Daily con tre domande obbligatorie & Formato libero, focalizzato sullo Sprint Goal & Le tre domande restano un'opzione \\
+    \addlinespace
+    ``Pigs \& chickens'' & Rimossi già nel 2011 & Metafora considerata escludente \\
+    \addlinespace
+    --- & Product Goal: nuovo impegno del Product Backlog & Obiettivo di medio-lungo termine \\
+    \addlinespace
+    Burndown, story point, DoR & Non menzionati nella Guida & Pratiche complementari, non prescritte \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Eventi e timebox.}
+Tutti gli eventi sono occasioni formali di ispezione e adattamento; esistono per ridurre la necessità di altre riunioni. Le timebox indicate valgono per uno Sprint di un mese e si accorciano proporzionalmente per Sprint più brevi.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{4.6cm}p{3.2cm}p{4.0cm}}
+    \toprule
+    \textbf{Evento} & \textbf{Chi partecipa} & \textbf{Timebox} & \textbf{Scopo} \\
+    \midrule
+    Sprint Planning & Scrum Team (+ invitati) & max 8 ore & Perché, cosa e come: Sprint Goal e Sprint Backlog \\
+    \addlinespace
+    Daily Scrum & Developers (PO e SM se lavorano su elementi) & 15 minuti, ogni giorno & Ispezionare il progresso verso lo Sprint Goal \\
+    \addlinespace
+    Sprint Review & Scrum Team e stakeholder & max 4 ore & Ispezionare il risultato e adattare il Product Backlog \\
+    \addlinespace
+    Sprint Retrospective & Scrum Team & max 3 ore & Migliorare qualità ed efficacia del modo di lavorare \\
+    \addlinespace
+    Refinement & Scrum Team (+ stakeholder) & attività continua, non evento & Dettagliare, stimare e ordinare il Product Backlog \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il \textbf{Refinement} non è un evento formale con una timebox propria: è un'attività continua che non dovrebbe assorbire più del 10\% del tempo del team. La Guida 2020 non lo elenca tra gli eventi canonici, ma lo cita esplicitamente come attività di manutenzione del Product Backlog.
+
+\paragraph{La Sprint Review non è una demo formale.}
+La Review non è una presentazione con slide né un collaudo di accettazione: è una \textbf{sessione di lavoro} in cui il team mostra il software funzionante e i progressi verso il Product Goal, si discute ciò che è cambiato nell'ambiente (mercato, utenti, vincoli) e si decide insieme cosa fare dopo. Il Product Backlog può essere adattato sulla base del feedback. Due conseguenze pratiche: i rilasci possono avvenire anche prima della Review, che quindi non è un ``cancello'' verso la produzione; e la durata massima è di \textbf{4 ore} per uno Sprint di un mese, non di 3 come nelle edizioni precedenti.
+
+\paragraph{Lo Sprint: proprietà e regole.}
+Lo Sprint è il contenitore di tutti gli altri eventi e il battito cardiaco di Scrum:
+\begin{itemize}
+    \item \textbf{Durata fissa e costante} ($\leq 1$ mese): crea un ritmo sostenibile e una finestra di pianificazione prevedibile;
+    \item \textbf{Contiene tutto il lavoro}: Planning, Daily, sviluppo, Review e Retrospective avvengono dentro lo Sprint;
+    \item \textbf{Nessuna modifica che metta a rischio lo Sprint Goal}: la qualità non diminuisce e l'ambito non viene stravolto dall'esterno;
+    \item \textbf{Lo scope può essere chiarito e rinegoziato con il PO}: il lavoro emergente si gestisce tramite il dialogo, non con un cambio unilaterale del Goal;
+    \item \textbf{La composizione del team non cambia} durante lo Sprint;
+    \item \textbf{Cancellazione}: solo il Product Owner, e solo se lo Sprint Goal diventa obsoleto (ad esempio perché il mercato è cambiato). È un evento raro e costoso.
+\end{itemize}
+
+\paragraph{Sprint Planning: perché, cosa, come.}
+La pianificazione risponde a tre domande in sequenza:
+\begin{enumerate}
+    \item \textbf{Perché?} Perché questo Sprint ha valore? Il PO propone come aumentare il valore e tutto il team definisce lo \textbf{Sprint Goal};
+    \item \textbf{Cosa?} Cosa si può completare? I Developers selezionano elementi dal Product Backlog in base alla capacità e alla performance passata;
+    \item \textbf{Come?} Come si farà il lavoro? I Developers scompongono gli elementi in compiti di un giorno o meno.
+\end{enumerate}
+\noindent \textbf{Input}: Product Backlog, ultimo Increment, capacità e performance del team. \textbf{Output}: lo Sprint Backlog, cioè \textbf{Sprint Goal + elementi selezionati + piano di consegna}. Il ``perché'' non è un ornamento: senza una ragione esplicita, la selezione degli elementi degenera in una lista della spesa e il team perde il criterio per rinegoziare lo scope.
+
+\noindent \textbf{Dalla storia ai compiti.} Una user story da \textbf{5 story point} non si implementa in blocco: viene scomposta in task tecnici, ciascuno stimato in ore e di norma non superiore a un giorno. Un esempio tipico:
+\begin{center}
+\small
+\begin{tabular}{p{9.0cm}p{2.0cm}}
+    \toprule
+    \textbf{Task tecnico} & \textbf{Stima} \\
+    \midrule
+    Codificare il livello intermedio & 8 h \\
+    Codificare l'interfaccia utente & 4 h \\
+    Scrivere le fixture di test & 4 h \\
+    Codificare la classe \texttt{Foto} & 6 h \\
+    Aggiornare i test di prestazione & 4 h \\
+    \midrule
+    \textbf{Totale} & \textbf{26 h} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent Il totale (26 h) è il lavoro stimato residuo che alimenta il burndown; la stima viene aggiornata ogni giorno, perché il lavoro emerge mentre si sviluppa. I task non sono assegnati dall'alto: i Developers se li distribuiscono con logica pull.
+
+\begin{cbox}{Sprint Goal: un obiettivo, non un elenco di storie}
+Lo Sprint Goal è l'unico obiettivo dello Sprint: un impegno dei Developers che lascia flessibilità sul lavoro esatto necessario a raggiungerlo.
+\begin{itemize}
+    \item Viene creato durante lo Sprint Planning e aggiunto allo Sprint Backlog;
+    \item dà coerenza e favorisce la collaborazione invece di iniziative separate;
+    \item se il lavoro cambia, si rinegozia lo \textbf{scope} con il PO, non il Goal;
+    \item buona pratica: renderlo \textbf{SMART} (specifico, misurabile, raggiungibile, rilevante, a tempo).
+\end{itemize}
+\medskip
+\noindent \textbf{Esempi efficaci}: \textit{<<Un giocatore può iniziare una partita a scacchi in rete e completare almeno 10 mosse senza errori>>}; \textit{<<Scoprire qual è il modo migliore di far registrare un nuovo utente>>}; \textit{<<Rendere disponibile ai clienti il carrello elettronico>>}.
+\medskip
+
+\noindent \textbf{Esempio inefficace}: \textit{<<Completare le storie 12, 14, 15 e 21>>}. È un elenco di attività, non un obiettivo: non dice perché quelle storie insieme producono valore.
+\end{cbox}
+
+\paragraph{Artefatti e impegni.}
+I tre artefatti non sono documenti burocratici, ma strumenti di trasparenza. Ognuno ha un impegno che ne definisce il significato:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{6.0cm}p{6.0cm}}
+    \toprule
+    \textbf{Artefatto} & \textbf{Contenuto} & \textbf{Impegno associato} \\
+    \midrule
+    \textbf{Product Backlog} & Lista emergente e ordinata di ciò che serve per migliorare il prodotto; unica fonte di lavoro. & \textbf{Product Goal}: stato futuro del prodotto, obiettivo di lungo termine, uno alla volta. \\
+    \addlinespace
+    \textbf{Sprint Backlog} & Sprint Goal (perché) + elementi selezionati (cosa) + piano (come). Appartiene ai Developers. & \textbf{Sprint Goal}: unico obiettivo dello Sprint; dà flessibilità sul lavoro preciso. \\
+    \addlinespace
+    \textbf{Increment} & Passo concreto verso il Product Goal; si somma ai precedenti e deve essere utilizzabile. & \textbf{Definition of Done}: descrizione formale dello stato dell'Increment quando soddisfa la qualità richiesta. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il \textbf{Product Goal} è l'elemento davvero nuovo della Guida 2020: fornisce un bersaglio di medio-lungo periodo al quale gli Sprint Goal contribuiscono a piccoli passi. Senza Product Goal, il backlog rischia di diventare una sequenza di richieste scollegate; senza Sprint Goal, ogni Sprint rischia di essere una lista di task senza una direzione comune.
+
+\paragraph{Il Product Backlog è un iceberg.}
+Il backlog non è piatto: gli elementi in cima sono piccoli, dettagliati e pronti; quelli in fondo sono grandi, vaghi e stimati solo grossolanamente. La metafora dell'iceberg rende bene l'idea:
+\begin{itemize}
+    \item \textbf{Superficie}: elementi piccoli e dettagliati, realizzabili entro uno Sprint e pronti per la selezione;
+    \item \textbf{Zona intermedia}: elementi medi, stimati a grandi linee, da raffinare quando si avvicinano alla cima;
+    \item \textbf{Profondità}: \textit{epic} grandi e vaghe, che verranno scomposte durante il refinement.
+\end{itemize}
+\noindent Le proprietà di un buon backlog sono riassunte dall'acronimo \textbf{DEEP}:
+\begin{center}
+\textbf{D}etailed appropriately (\textit{dettagliato in modo appropriato}) \quad -- \quad \textbf{E}stimated (\textit{stimato}) \quad -- \quad \textbf{E}mergent (\textit{emergente}) \quad -- \quad \textbf{P}rioritized (\textit{prioritizzato}).
+\end{center}
+\noindent In particolare: è \textbf{ordinato} dal PO per valore, rischio e dipendenze; è \textbf{emergente} e non sarà mai ``completo''; viene \textbf{raffinato} continuamente; è \textbf{stimato da chi farà il lavoro}, cioè dai Developers; gli elementi realizzabili entro uno Sprint sono di norma \textbf{pronti} per la selezione.
+
+\begin{center}
+\small
+\begin{tabular}{p{0.8cm}p{8.2cm}p{2.6cm}p{2.2cm}}
+    \toprule
+    \textbf{\#} & \textbf{Elemento del backlog} & \textbf{Tipo} & \textbf{Stima (SP)} \\
+    \midrule
+    1 & Come ospite voglio prenotare una camera & Storia & 3 \\
+    2 & Come ospite voglio cancellare una prenotazione & Storia & 5 \\
+    3 & Come ospite voglio cambiare le date di una prenotazione & Storia & 3 \\
+    4 & Come impiegato voglio il report RevPAR (ricavo per camera disponibile) & Storia & 8 \\
+    5 & Migliorare la gestione delle eccezioni & Tecnico & 8 \\
+    6 & Programma fedeltà per clienti abituali & Epic & $\sim 30$ \\
+    7 & Integrazione con portali di prenotazione esterni & Epic & $\sim 50$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent L'esempio mostra tre cose: non tutti gli elementi sono user story (ci sono lavoro tecnico, bug ed esperimenti); le epic in fondo verranno scomposte durante il refinement; le stime in fondo sono volutamente grossolane, perché la precisione prematura è essa stessa uno spreco.
+
+\paragraph{Sprint Backlog e Scrum board.}
+Lo Sprint Backlog è composto da \textbf{Sprint Goal + elementi selezionati + piano}. È proprietà esclusiva dei Developers, è visibile come immagine in tempo reale del lavoro dello Sprint ed è \textbf{emergente}: si aggiunge lavoro man mano che si scopre, e gli elementi poco chiari si stimano larghi per poi scomporsi. Sul board vale la logica \textbf{pull}: ciascuno prende il lavoro, nessuno lo assegna. La board non è un cruscotto per il management, ma uno strumento di coordinamento orizzontale del team.
+
+\paragraph{Definition of Done: regole della Guida e rapporto con la DoR.}
+La Definition of Done è l'impegno dell'Increment. La Guida 2020 fissa tre regole operative:
+\begin{itemize}
+    \item Se l'organizzazione ha uno \textbf{standard} di Done, il team lo adotta come \textbf{minimo};
+    \item Se un elemento \textbf{non soddisfa la DoD}, non è un Increment: torna nel Product Backlog;
+    \item Più team sullo stesso prodotto devono condividere una \textbf{DoD comune}, altrimenti gli incrementi non sono integrabili.
+\end{itemize}
+\noindent La \textbf{Definition of Ready (DoR)} è invece una \textbf{pratica complementare}, non prevista dalla Guida. È utile se serve a chiarire che cosa rende una storia selezionabile (comprensione condivisa, criteri di accettazione testabili, stima, dimensione compatibile con uno Sprint, dipendenze note), ma non deve diventare un cancello burocratico che blocca il flusso. La differenza è netta: la \textbf{DoD} è un impegno formale dell'Increment; la \textbf{DoR} è una convenzione di lavoro del team.
+
+\paragraph{Leggere il burndown chart.}
+Il burndown confronta il lavoro residuo con il tempo trascorso. Oltre all'andamento ideale e alla curva reale, è utile saper interpretare i segnali tipici:
+\begin{itemize}
+    \item \textbf{Sopra l'ideale all'inizio}: è spesso fisiologico, perché il lavoro emerge nei primi giorni e vengono scoperti nuovi task;
+    \item \textbf{Linea piatta per giorni}: segnale d'allarme, indica impedimenti non rimossi o stime non aggiornate;
+    \item \textbf{Discesa troppo rapida}: possibile sovrastima o riduzione non dichiarata dello scope, da discutere in Retrospective;
+    \item \textbf{Lavoro residuo a fine Sprint}: ciò che non è Done \textbf{torna nel Product Backlog}; lo Sprint non si ``allunga'' per recuperarlo.
+\end{itemize}
+
+\paragraph{Problemi tipici e anti-pattern.}
+Scrum è facile da imitare e difficile da praticare. Gli errori più diffusi non riguardano le cerimonie, ma la sostanza del comportamento organizzativo:
+
+\begin{center}
+\small
+\begin{tabular}{p{4.0cm}p{11.0cm}}
+    \toprule
+    \textbf{Anti-pattern} & \textbf{Manifestazione e conseguenza} \\
+    \midrule
+    \textbf{Scrum di facciata} & Si eseguono i rituali senza valori agili né empirismo: il team fa le riunioni, ma non ispeziona né adatta nulla. \\
+    \addlinespace
+    \textbf{DoD debole} & L'Increment non è testato a fine Sprint; il ``quasi fatto'' si accumula come debito invisibile. \\
+    \addlinespace
+    \textbf{Backlog non pronto} & Storie vaghe all'inizio dello Sprint, che costringono a scoprire i requisiti mentre si sviluppa. \\
+    \addlinespace
+    \textbf{PO assente o ``proxy''} & Nessuno decide davvero sul valore; il team negozia con un intermediario senza mandato. \\
+    \addlinespace
+    \textbf{SM come capo} & Assegna compiti e chiede rendiconti al Daily: tradisce il ruolo di leader che serve. \\
+    \addlinespace
+    \textbf{Velocity come obiettivo} & Stime gonfiate e confronti tra team; la metrica smette di essere uno strumento e diventa un bersaglio. \\
+    \addlinespace
+    \textbf{Poco supporto} & Management e stakeholder non partecipano: il team resta isolato e le decisioni organizzative non lo raggiungono. \\
+    \addlinespace
+    \textbf{Scaling caotico} & Scrum of Scrums senza reale coordinamento: più team, più riunioni, nessuna integrazione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Scrum come pratica Essence}
+
+\noindent Il kernel di Essence non sostituisce Scrum: lo descrive con un vocabolario neutro, rendendo confrontabili metodi diversi. Una pratica come Scrum si scompone in \textbf{elementi Essence} (Alpha di pratica, prodotti di lavoro, attività, pattern) e si ``aggancia'' agli Alpha del kernel. Per Scrum valgono le seguenti corrispondenze:
+\begin{itemize}
+    \item \textbf{Alpha di pratica}: \textbf{Sprint} (sotto-Alpha di \textit{Work}) e \textbf{Product Backlog Item} (sotto-Alpha di \textit{Requirements});
+    \item \textbf{Prodotti di lavoro}: Product Backlog, Sprint Backlog, Increment, Definition of Done;
+    \item \textbf{Attività}: Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective, Refinement;
+    \item \textbf{Pattern (ruoli)}: Product Owner, Scrum Master, Developers.
+\end{itemize}
+
+\noindent Il vantaggio è che gli eventi Scrum non sono più descritti come mere cerimonie, ma come \textbf{azioni che fanno avanzare gli Alpha del kernel}:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.5cm}p{11.5cm}}
+    \toprule
+    \textbf{Evento} & \textbf{Avanzamento degli Alpha} \\
+    \midrule
+    Sprint Planning & \textit{Work} $\to$ \textit{Under Control}; \textit{Requirements} $\to$ \textit{Coherent}. \\
+    \addlinespace
+    Daily Scrum & \textit{Work} $\to$ \textit{Under Control}; \textit{Team} $\to$ \textit{Collaborating}. \\
+    \addlinespace
+    Sprint Review & \textit{Software System} $\to$ \textit{Demonstrable} / \textit{Usable}; \textit{Stakeholders} $\to$ \textit{In Agreement}. \\
+    \addlinespace
+    Sprint Retrospective & \textit{Way of Working} $\to$ \textit{In Place} / \textit{Working Well}; \textit{Team} $\to$ \textit{Performing}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Lo stato degli Alpha rende il progresso osservabile \textbf{indipendentemente dal metodo}: è utile per confrontare Scrum con altre pratiche o per comporlo con esse (ad esempio Scrum + XP). Lo stesso team può essere letto con tre pattern Essence: \textbf{Product Ownership} (possiede il prodotto, gestisce visione ed evoluzione, costruisce la rete degli stakeholder, mostra il prodotto e ottiene l'accettazione), \textbf{Agile Team} (si auto-gestisce, sceglie il proprio Way of Working, collabora e condivide conoscenza, mantiene un passo sostenibile) e \textbf{Scrum Master} (facilita adozione ed evoluzione del Way of Working, non decide il ``cosa'' né impone il ``come'', guida le retrospettive, rimuove ostacoli e protegge il team).
+
+\subsection{Scrum e LLM}
+
+\noindent L'ultima frontiera discussa dalle slide riguarda l'uso dei \textbf{modelli linguistici di grandi dimensioni (LLM)} dentro Scrum. La domanda non è solo tecnica (``l'IA sa scrivere una user story?''), ma soprattutto \textbf{organizzativa}: chi risponde del risultato quando il lavoro è generato da un modello?
+
+\paragraph{Cosa dicono le guide.}
+La \textbf{Scrum Guide 2020} resta la versione ufficiale e \textbf{non menziona l'IA}: le responsabilità sono descritte per persone. Lo \textbf{Scrum Guide Expansion Pack} (2025, v2026.1) è un complemento alla Guida che introduce i \textbf{Product Developers}, la \textbf{Definition of Outcome Done} e una sezione dedicata all'IA. I principi sono netti:
+\begin{itemize}
+    \item \textbf{Responsabilità umana chiara} per tutti i risultati: \textit{human in the loop};
+    \item L'IA è un \textbf{partner decisionale potente ma supervisionato}: non scavalca l'empirismo né l'etica;
+    \item \textbf{Sperimentazione responsabile}: prove piccole e reversibili, ispezionate e adattate.
+\end{itemize}
+\noindent In pratica: il \textbf{Product Owner} e lo \textbf{Scrum Master devono essere umani}; i \textbf{Product Developers possono essere umani o automatizzati}, purché almeno uno sia umano. La responsabilità dei risultati resta comunque umana.
+
+\begin{cbox}{Definition of Outcome Done}
+L'Expansion Pack affianca alla Definition of Done una \textbf{Definition of Outcome Done}: non basta che l'Increment sia tecnicamente completo, occorre che produca l'\textbf{esito} atteso per utente e organizzazione. È il corrispettivo, sul piano del prodotto, di ciò che la DoD è sul piano della qualità tecnica: senza un criterio di esito, ``Done'' rischia di significare solo ``compilato e testato''.
+\end{cbox}
+
+\paragraph{Cosa fanno davvero i team: evidenze 2025.}
+Uno studio su 49 professionisti brasiliani (Perkusich et al., XP 2026) fotografa gli usi reali degli LLM nella gestione Scrum:
+
+\begin{center}
+\small
+\begin{tabular}{p{9.2cm}p{5.0cm}}
+    \toprule
+    \textbf{Uso dell'LLM nella pratica Scrum} & \textbf{Percentuale di rispondenti} \\
+    \midrule
+    Raffinare lo Sprint Goal & 77\% \\
+    Definire requisiti non funzionali & 76\% \\
+    Riassumere gli eventi & 68\% \\
+    Sintetizzare il feedback della Review & 64\% \\
+    Preparare agende degli eventi & 54\% \\
+    Identificare impedimenti & 48\% \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent I problemi riportati sono altrettanto significativi: \textbf{81\%} segnala output ``quasi corretti, ma non del tutto''; \textbf{63\%} rischi di riservatezza dei dati; \textbf{59\%} allucinazioni e difficoltà di validazione. Sono esattamente i tre motivi per cui l'IA non può essere trattata come un membro del team con responsabilità autonoma.
+
+\paragraph{LLM come Product Owner.}
+L'LLM può aiutare a:
+\begin{itemize}
+    \item trasformare note e interviste in \textbf{bozze di user story};
+    \item proporre \textbf{criteri di accettazione} e casi limite;
+    \item sintetizzare il feedback degli stakeholder dopo la Review;
+    \item individuare ambiguità, duplicati e dipendenze nel backlog;
+    \item fare da \textbf{sparring partner} per mettere in discussione le ipotesi del PO.
+\end{itemize}
+\noindent Non può però sostituire:
+\begin{itemize}
+    \item la responsabilità del \textbf{valore} e del ROI;
+    \item la negoziazione con stakeholder in conflitto;
+    \item la visione e il \textbf{Product Goal} (scelta strategica);
+    \item la fiducia e il mandato dell'organizzazione;
+    \item la decisione finale sull'ordine del backlog.
+\end{itemize}
+\noindent Le evidenze confermano il limite: Zhang et al. (2024, Austrian Post) mostrano che agenti ``PO'' e ``Requirements Engineer'' migliorano la qualità percepita delle storie, ma aggiungono contenuti fuori scope, quindi serve la revisione del PO. Yoon et al. (2025) rilevano che le priorità sono corrette solo nel \textbf{55--71\%} dei casi, con forte variabilità tra sessioni (GPT-4: 44--92\%). Un modello che sbaglia una priorità su tre non è un PO: è un assistente che propone.
+
+\paragraph{LLM come Scrum Master.}
+L'LLM può aiutare a:
+\begin{itemize}
+    \item raccogliere e sintetizzare gli aggiornamenti del Daily;
+    \item rilevare impedimenti ricorrenti e anomalie di flusso;
+    \item preparare agende e formati per la Retrospective;
+    \item analizzare metriche (lead time, WIP, burndown);
+    \item allenare il team sulle regole di Scrum (coach di primo livello).
+\end{itemize}
+\noindent Non può sostituire:
+\begin{itemize}
+    \item empatia e lettura delle dinamiche di gruppo;
+    \item gestione dei conflitti e sicurezza psicologica;
+    \item cambiamento organizzativo e rapporti con il management;
+    \item rimozione di ostacoli fisici e politici;
+    \item il ruolo di \textbf{leader che serve}.
+\end{itemize}
+\noindent Un caso didattico (EDULEARN 2024) mostra un uso plausibile: ogni studente risponde alle domande del Daily tramite prompt; l'LLM sintetizza, segnala i blocchi e propone soluzioni; il docente riceve un report e interviene sugli impedimenti che l'LLM non sa risolvere. L'IA automatizza la \textbf{raccolta} e la \textbf{sintesi}, non la cura delle persone.
+
+\paragraph{Il team come controllore dell'IA generativa.}
+Il punto di equilibrio non è ``IA al posto del team'', ma \textbf{IA dentro un processo controllato dal team}. Lo schema è sempre lo stesso: l'IA produce bozze, il team specifica, verifica, valida e decide.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{5.4cm}p{7.0cm}}
+    \toprule
+    \textbf{Fase} & \textbf{Cosa produce l'IA} & \textbf{Cosa fa il team} \\
+    \midrule
+    \textbf{Specifica} & Bozze di user story da note e interviste, con criteri di accettazione. & Definisce Sprint Goal, contesto, vincoli e criteri di accettazione \textbf{nel prompt}; verifica che la storia sia quella giusta. \\
+    \addlinespace
+    \textbf{Verifica} & Codice, refactoring, casi di test, dati di prova, test di regressione. & Code review, test indipendenti, analisi statica e di sicurezza; controlla che i test non siano generati dallo stesso prompt del codice. \\
+    \addlinespace
+    \textbf{Validazione} & --- & Con PO e stakeholder: la storia porta il valore atteso? Il comportamento è corretto nell'ambiente reale? \\
+    \addlinespace
+    \textbf{Decisione} & --- & Accetta solo ciò che soddisfa la DoD; ne risponde il team, non il modello. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent I Developers cambiano ruolo: da autori di ogni riga a \textbf{progettisti, revisori e garanti della qualità}. L'IA può essere un Developer automatizzato, ma almeno un Developer resta umano; PO e SM restano umani (Expansion Pack).
+
+\paragraph{Una Definition of Done per il codice generato.}
+Se il codice è generato, la DoD deve includere controlli specifici. Sei clausole minime:
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{11.6cm}}
+    \toprule
+    \textbf{Clausola} & \textbf{Contenuto} \\
+    \midrule
+    \textbf{Revisione umana} & Ogni modifica generata è letta e capita da almeno un Developer. \\
+    \addlinespace
+    \textbf{Test indipendenti} & I test non sono generati dallo stesso prompt che ha scritto il codice. \\
+    \addlinespace
+    \textbf{Sicurezza} & Analisi statica e dei segreti; nessuna dipendenza inventata (\textit{package hallucination}). \\
+    \addlinespace
+    \textbf{Licenze} & Verificata la provenienza e la compatibilità delle licenze del codice e delle dipendenze. \\
+    \addlinespace
+    \textbf{Riservatezza} & Nessun dato personale o confidenziale inserito nei prompt. \\
+    \addlinespace
+    \textbf{Tracciabilità} & Nella pull request si dichiara l'uso dell'IA e il prompt rilevante. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Un caso reale: il codice costa poco, la valutazione no.}
+Weber, Zimmermann e Franceschetti (2026) riportano un'esperienza di sviluppo assistito: in 3 giorni vengono prodotte \textbf{41 user story e 415 test}; a luglio 2026 si arriva a \textbf{62 storie, 804 test e circa 9.000 righe}, tutte scritte dall'assistente. Il software è usato per correggere un esame reale. Il processo segue quattro passi, ciascuno con un \textbf{gate} umano o automatico:
+\begin{enumerate}
+    \item \textbf{User story}: l'IA redige, l'umano approva i criteri di accettazione (\textit{gate umano});
+    \item \textbf{Specifica nel prompt}: che cosa, perché, architettura e test attesi (\textit{gate umano});
+    \item \textbf{Build test-first}: l'IA implementa e porta i test da rosso a verde (\textit{gate dei test});
+    \item \textbf{Validazione}: l'app viene eseguita su dati reali e l'umano giudica (\textit{gate umano}).
+\end{enumerate}
+\noindent La \textbf{catena di tracciabilità} collega ogni anello al precedente: persona $\to$ vincolo non negoziabile $\to$ criterio di accettazione $\to$ specifica nel prompt $\to$ asserzione di test $\to$ comportamento verificato. Non è un lusso documentale: è ciò che permette di rispondere alla domanda ``perché questo codice esiste?''.
+
+\noindent Le \textbf{cinque lezioni} dell'esperienza:
+\begin{enumerate}
+    \item Un processo con \textbf{gate} e tracciabile dalla persona al comportamento verificato (DoD);
+    \item Specifica il \textbf{conoscibile}, scopri il resto con un prototipo funzionante (refinement e Review);
+    \item \textbf{Valida nell'ambiente reale}, non solo contro i mock (DoD);
+    \item Metti i gate \textbf{all'assistente}, non solo al lavoro: branch protetto, pull request, CI (DoD);
+    \item \textbf{Registra decisioni e ipotesi}: ADR e note di passaggio tra sessioni (Retrospective).
+\end{enumerate}
+
+\noindent I dati riportati sono impressionanti proprio perché mostrano il contrario di una scorciatoia: sui commit con specifica nel prompt, solo il \textbf{13\%} aveva un gate imposto per convenzione, mentre l'\textbf{81\%} aveva un gate imposto dallo strumento; con il gate, \textbf{26 modifiche su 27} avevano anche un test. Il caso negativo è altrettanto istruttivo: \textbf{4 funzioni superavano la suite ma fallivano nell'uso}, perché i mock non esercitavano browser, API del modello e SDK. \textbf{Test verdi non significano sistema funzionante}: la DoD deve includere la validazione nell'ambiente reale. Attenzione però: si tratta di un solo caso, un solo sviluppatore e dati auto-riportati; non è una legge generale.
+
+\paragraph{Chi decide, chi assiste.}
+La tabella finale sintetizza la divisione delle responsabilità:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{3.6cm}p{4.4cm}p{3.0cm}}
+    \toprule
+    \textbf{Decisione} & \textbf{Chi decide e ne risponde} & \textbf{Contributo possibile dell'LLM} & \textbf{Rischio principale} \\
+    \midrule
+    Product Goal e ordine del backlog & Product Owner & Analisi del feedback, proposte di ordinamento & Priorità incoerenti \\
+    \addlinespace
+    Sprint Goal & Scrum Team & Riformulazione, verifica SMART & Obiettivo generico \\
+    \addlinespace
+    Stime e piano dello Sprint & Developers & Scomposizione in task, dipendenze & Falsa precisione \\
+    \addlinespace
+    User story, codice e test & Team, controllore dell'IA & Genera bozze di storie, codice e test & ``Quasi corretto'' $\neq$ Done \\
+    \addlinespace
+    Accettazione dell'Increment & Scrum Team via DoD & Controlli automatici, checklist & Fiducia eccessiva \\
+    \addlinespace
+    Miglioramento del processo & Scrum Team, facilitato dallo SM & Sintesi e pattern dalle retrospettive & Perdita del confronto umano \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La conclusione è la stessa della Guida: l'IA \textbf{amplia le capacità del team ma non sostituisce la responsabilità umana}. Il criterio operativo non è ``quanto codice genera'', ma ``quanto è controllabile e verificabile ciò che genera''.
 
 % =============================================================================
 % MODULO 2: ARCHITETTURE SOFTWARE (SLIDE 1 - 17: PRIMO 25%)
@@ -6738,6 +7555,627 @@ La definizione dell'architettura non scaturisce in forma perfetta al primo tenta
     \bottomrule
 \end{tabular}
 \end{center}
+
+% =============================================================================
+% SEZIONE: LA QUALITÀ DEL SOFTWARE
+% =============================================================================
+
+\newpage
+
+\section{La Qualità del Software}\label{sec:qualita-software}
+
+\noindent La qualità del software non è una proprietà unica e oggettiva, ma il \textbf{grado in cui il prodotto soddisfa i bisogni, espliciti e impliciti, dei suoi stakeholder} (ISO/IEC 25010). La definizione è volutamente relazionale: lo stesso sistema può essere eccellente per l'utente finale, inaccettabile per chi deve mantenerlo e troppo costoso per chi lo commissiona. La qualità va quindi prima \textbf{definita}, poi \textbf{misurata} e infine \textbf{verificata}; non è un attributo che si possa ``aggiungere'' alla fine sotto forma di collaudo.
+
+\paragraph{Che cos'è la qualità? Dipende da chi guarda.}
+Non esiste una sola risposta alla domanda ``che cos'è un buon software?'': ogni stakeholder proietta sulla qualità i propri bisogni e le proprie responsabilità.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{12.4cm}}
+    \toprule
+    \textbf{Stakeholder} & \textbf{Che cosa intende per qualità} \\
+    \midrule
+    \textbf{Utente} & \textit{<<Adatto ai miei bisogni, facile da usare>>}: efficacia, semplicità, assenza di attriti nell'uso quotidiano. \\
+    \addlinespace
+    \textbf{Tester} & \textit{<<Senza difetti>>}: comportamento conforme alla specifica, robustezza sui casi limite, assenza di regressioni. \\
+    \addlinespace
+    \textbf{Sviluppatore} & \textit{<<Facile da capire e modificare>>}: codice leggibile, modulare, testabile, con dipendenze chiare. \\
+    \addlinespace
+    \textbf{Committente} & \textit{<<Deve costare poco e durare a lungo>>}: convenienza economica, manutenibilità nel tempo, ritorno dell'investimento. \\
+    \addlinespace
+    \textbf{Operations} & \textit{<<Veloce, sempre disponibile, su Mac e su PC>>}: prestazioni, affidabilità, portabilità, osservabilità in esercizio. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La sintesi operativa è che la qualità è \textbf{multidimensionale} e richiede un modello condiviso: senza un vocabolario comune, ogni stakeholder misura cose diverse e il team finisce per ottimizzare una dimensione a scapito delle altre.
+
+\subsection{Perché la qualità conta: errori, difetti e guasti}
+
+\paragraph{Quando il software sbaglia.}
+La storia dell'ingegneria del software è punteggiata di guasti che hanno avuto conseguenze economiche, ambientali o umane. Non si tratta di curiosità: sono casi paradigmatici che mostrano come un difetto localizzato possa propagarsi fino a un comportamento osservabile catastrofico.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{3.0cm}p{10.6cm}}
+    \toprule
+    \textbf{Anno} & \textbf{Caso} & \textbf{Guasto e causa} \\
+    \midrule
+    1985--87 & Therac-25 & Radioterapia: sovradosaggi letali per una \textit{race condition} nel software di controllo della macchina. \\
+    \addlinespace
+    1996 & Ariane 5 & Il razzo si autodistrugge dopo circa 40 secondi: \textit{overflow} nella conversione da 64 a 16 bit di codice riusato dal vettore precedente. \\
+    \addlinespace
+    1999 & Mars Climate Orbiter & Sonda persa: un modulo produce valori in unità imperiali, un altro li interpreta in unità metriche. \\
+    \addlinespace
+    2012 & Knight Capital & Codice obsoleto riattivato in produzione: circa 440 milioni di dollari persi in 45 minuti. \\
+    \addlinespace
+    2024 & CrowdStrike & Un aggiornamento difettoso di un sensore di sicurezza blocca circa 8,5 milioni di PC Windows nel mondo. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\footnotesize Fonte: raccolte storiche del \textit{RISKS Digest} (ACM), attivo dal 1985. Il caso CrowdStrike è già stato introdotto nella Sezione~\ref{subsec:rischi-qualita-ai}.
+
+\paragraph{Errore, difetto, guasto: tre concetti distinti.}
+La terminologia della norma IEEE 610.12 distingue con precisione la causa, la manifestazione interna e l'effetto osservabile:
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\scriptsize\sffamily,
+    box/.style={draw, rounded corners=3pt, text width=3.6cm, minimum height=1.45cm, align=center, fill=orange!5},
+    ar/.style={-{Stealth[scale=0.9]}}
+]
+    \node[box] (err) {\textbf{Errore} (\textit{error})\\[2pt] azione umana sbagliata: interpretazione errata della specifica};
+    \node[box, right=1.0cm of err] (fault) {\textbf{Difetto} (\textit{fault}, ``bug'')\\[2pt] imperfezione nel codice o in un documento};
+    \node[box, right=1.0cm of fault] (fail) {\textbf{Guasto} (\textit{failure})\\[2pt] comportamento osservabile non previsto dalla specifica};
+    \draw[ar] (err) -- node[above]{causa} (fault);
+    \draw[ar] (fault) -- node[above]{causa} (fail);
+\end{tikzpicture}
+\end{center}
+
+\noindent Il caso Mars Climate Orbiter esemplifica la catena: il team usa libbre-forza$\cdot$secondo invece di newton$\cdot$secondo (\textbf{errore}); il modulo calcola gli impulsi nell'unità sbagliata (\textbf{difetto}); la traiettoria risulta errata e la sonda si perde (\textbf{guasto}). La distinzione non è accademica: si correggono gli errori con la formazione e i processi, i difetti con revisioni e test, i guasti con il monitoraggio e la risposta operativa.
+
+\paragraph{Perché il software è difettoso.}
+Alcuni ordini di grandezza aiutano a calibrare le aspettative:
+
+\begin{itemize}
+    \item \textbf{circa 1 errore ogni 10 righe} di codice, in media, anche per programmatori esperti;
+    \item \textbf{circa il 50\%} degli errori di codifica viene catturato dal compilatore;
+    \item \textbf{circa il 15\%} degli errori è ancora presente nel sistema quando viene consegnato al cliente.
+\end{itemize}
+
+\noindent La conseguenza metodologica è netta: \textbf{la qualità non si aggiunge alla fine, si costruisce con filtri successivi}. Revisioni, compilatore, analisi statica, test e ispezioni sono barriere poste in serie; ogni barriera riduce la probabilità che un difetto raggiunga l'utente, ma nessuna è sufficiente da sola.
+
+\paragraph{Non tutti i difetti pesano uguale.}
+La distribuzione dei difetti non è uniforme rispetto alla frequenza dei guasti che provocano: pochi difetti ``comuni'' causano la maggior parte dei guasti, mentre una lunga coda di difetti rari completa il quadro. Ne derivano alcune conseguenze operative:
+
+\begin{itemize}
+    \item il \textbf{MTTF} (tempo medio al guasto) dipende soprattutto dai difetti più frequenti, non dal numero totale di difetti;
+    \item togliere difetti a caso non migliora necessariamente l'affidabilità: conta quali difetti si rimuovono;
+    \item conviene testare secondo il \textbf{profilo d'uso reale} degli utenti, non secondo l'intuizione del programmatore;
+    \item è più informativo \textbf{misurare i guasti} effettivamente osservati che limitarsi a contare i difetti trovati.
+\end{itemize}
+
+\noindent Queste osservazioni sono note come \textit{legge di Adams} e trovano conferma negli studi di Fenton, Pfleeger e Glass: l'affidabilità è una proprietà statistica del prodotto in esercizio, non una semplice somma di difetti corretti.
+
+\subsection{Modelli e misure della qualità}
+
+\paragraph{Qualità del processo, interna, esterna e in uso.}
+La qualità si può osservare a quattro livelli, legati da una catena di influenza:
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\scriptsize\sffamily,
+    box/.style={draw, rounded corners=3pt, text width=2.9cm, minimum height=1.5cm, align=center, fill=orange!5},
+    ar/.style={-{Stealth[scale=0.9]}}
+]
+    \node[box] (proc) {\textbf{Qualità del processo}\\ come sviluppiamo\\ \textit{es. \% di codice revisionato}};
+    \node[box, right=1.1cm of proc] (int) {\textbf{Qualità interna}\\ visibile a chi costruisce\\ \textit{es. complessità, duplicazione}};
+    \node[box, right=1.1cm of int] (ext) {\textbf{Qualità esterna}\\ visibile eseguendo il sistema\\ \textit{es. tempo di risposta, guasti}};
+    \node[box, right=1.1cm of ext] (use) {\textbf{Qualità in uso}\\ nel contesto reale\\ \textit{es. efficacia, soddisfazione}};
+    \draw[ar] (proc) -- node[above, font=\tiny]{influenza} (int);
+    \draw[ar] (int) -- node[above, font=\tiny]{influenza} (ext);
+    \draw[ar] (ext) -- node[above, font=\tiny]{influenza} (use);
+\end{tikzpicture}
+\end{center}
+
+\noindent La qualità \textbf{interna} si misura senza eseguire il software (ispezioni, analisi statica, metriche sul codice); la qualità \textbf{esterna} si misura eseguendolo (test funzionali, prestazionali, di affidabilità); la qualità \textbf{in uso} si misura con utenti reali nel contesto operativo, ed è normata separatamente dalla ISO/IEC 25019:2023. Un buon processo favorisce una buona qualità interna, che a sua volta favorisce quella esterna e quella in uso, ma la catena non è deterministica: un codice elegante può fallire l'uso reale e un codice brutto può risultare accettabile per l'utente.
+
+\paragraph{ISO/IEC 25010:2023: il modello di qualità del prodotto.}
+La norma SQuaRE definisce un modello di riferimento per la qualità del prodotto, articolato in caratteristiche e sottocaratteristiche. La versione 2023 introduce la \textbf{safety} e rinomina alcune voci rispetto alla edizione precedente.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{9.6cm}p{3.0cm}}
+    \toprule
+    \textbf{Caratteristica} & \textbf{Sottocaratteristiche e significato} & \textbf{Note 2023} \\
+    \midrule
+    \textbf{Idoneità funzionale} & Completezza, correttezza: il prodotto fornisce le funzioni richieste con risultati corretti. & \\
+    \addlinespace
+    \textbf{Efficienza prestazionale} & Tempi di risposta, utilizzo delle risorse, capacità: il prodotto è rapido ed efficiente nelle condizioni dichiarate. & \\
+    \addlinespace
+    \textbf{Compatibilità} & Coesistenza, interoperabilità: il prodotto convive con altri sistemi e scambia informazioni con essi. & \\
+    \addlinespace
+    \textbf{Capacità di interazione} & Riconoscimento, apprendimento, operabilità, protezione dagli errori, estetica, accessibilità. & ex \textit{usabilità} \\
+    \addlinespace
+    \textbf{Affidabilità} & Disponibilità, tolleranza ai guasti, recuperabilità: il prodotto opera senza interruzioni e si riprende dagli errori. & \\
+    \addlinespace
+    \textbf{Security} & Riservatezza, integrità, non ripudio, responsabilità, autenticità: il prodotto protegge dati e accessi. & \\
+    \addlinespace
+    \textbf{Manutenibilità} & Modularità, riusabilità, analizzabilità, modificabilità, testabilità: il prodotto si può comprendere, correggere ed evolvere. & \\
+    \addlinespace
+    \textbf{Flessibilità} & Adattabilità, installabilità, sostituibilità: il prodotto si adatta a contesti e piattaforme diverse. & ex \textit{portabilità} \\
+    \addlinespace
+    \textbf{Safety} & Assenza di rischi inaccettabili per persone, beni e ambiente durante l'uso del sistema. & nuova nel 2023 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{Come usare ISO/IEC 25010}
+\begin{itemize}
+    \item \textbf{Come checklist in analisi}: per ogni caratteristica pertinente ci deve essere almeno un requisito esplicito; una caratteristica senza requisito è un rischio non governato.
+    \item \textbf{Requisiti misurabili}: ogni requisito di qualità va reso verificabile indicando metrica, soglia e condizioni di misura (es. ``tempo di risposta al 95$^\circ$ percentile inferiore a 2 secondi con 500 utenti concorrenti'').
+    \item \textbf{Le sottocaratteristiche suggeriscono le metriche}: la modularità si misura con l'accoppiamento, la testabilità con la copertura, l'affidabilità con il MTTF, l'efficienza con il throughput.
+    \item \textbf{Non è una classifica}: il modello non dice quale caratteristica sia più importante; la priorità dipende dal dominio, dal contratto e dagli stakeholder.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Misurare: necessario, ma con giudizio.}
+Due avvertenze classiche accompagnano qualsiasi piano di misura:
+
+\begin{cbox}{Due avvertenze sulla misura}
+\begin{quote}
+\textit{``Non puoi controllare ciò che non puoi misurare.''}\\
+--- T. DeMarco, \textit{Controlling Software Projects}, 1982
+\end{quote}
+\begin{quote}
+\textit{``Quando una misura diventa un obiettivo, smette di essere una buona misura.''}\\
+--- legge di Goodhart, nella formulazione di M. Strathern (1997)
+\end{quote}
+\noindent Esempi tipici di metriche gonfiate: copertura aumentata con test privi di asserzioni, \textit{velocity} gonfiata, righe di codice usate come proxy della produttività.
+\end{cbox}
+
+\paragraph{Che cosa si misura.}
+Le metriche si distribuiscono su tre famiglie, ciascuna con un destinatario privilegiato:
+
+\begin{center}
+\small
+\begin{tabular}{p{5.2cm}p{5.2cm}p{5.2cm}}
+    \toprule
+    \textbf{Risorse} & \textbf{Processo} & \textbf{Prodotto} \\
+    \midrule
+    tempo, sforzo, costi & come lavoriamo & cosa abbiamo costruito \\
+    \addlinespace
+    mesi-persona; costo preventivo vs consuntivo; livelli di staff & \% difetti trovati per fase; \textit{cycle time}, \textit{velocity}; stabilità dei requisiti & LOC, \textit{function point}; complessità ciclomatica; copertura, difetti per KLOC \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Chi guarda cosa}: lo \textbf{sviluppatore} guarda copertura e difetti dei propri test; il \textbf{team} guarda stato dei requisiti, test superati e difetti aperti; l'\textbf{organizzazione} guarda difetti rilasciati per gravità e accuratezza delle stime. Una metrica utile a un livello può essere fuorviante a un altro: la copertura è uno strumento di diagnosi per lo sviluppatore, non un obiettivo di business.
+
+\paragraph{Una metrica di prodotto: la complessità ciclomatica.}
+La \textbf{complessità ciclomatica} di McCabe (1976) misura il numero di cammini linearmente indipendenti nel grafo di controllo di un programma. Si calcola come
+\[
+V(G) = E - N + 2,
+\]
+dove $E$ è il numero di archi e $N$ il numero di nodi del grafo. Un programma con $V(G)=1$ è una sequenza senza diramazioni; ogni decisione aggiunge un cammino indipendente.
+
+\begin{lstlisting}[language=Java]
+int P = leggiInput();
+int Q = leggiInput();
+if (P + Q > 10) {
+    System.out.println("Large");
+}
+if (P > 50) {
+    System.out.println("P Large");
+}
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\scriptsize\sffamily,
+    nd/.style={draw, rounded corners=2pt, minimum width=1.9cm, minimum height=0.55cm, fill=orange!5},
+    dec/.style={draw, diamond, aspect=2, minimum width=1.5cm, minimum height=0.65cm, fill=yellow!10, inner sep=1pt},
+    ar/.style={-{Stealth[scale=0.85]}}
+]
+    \node[nd] (n1) at (0,0) {read P, Q};
+    \node[dec] (n2) at (0,-1.25) {P+Q>10?};
+    \node[nd] (n3) at (-2.4,-2.55) {print ``Large''};
+    \node[dec] (n4) at (0,-3.85) {P>50?};
+    \node[nd] (n5) at (2.4,-5.15) {print ``P Large''};
+    \node[circle, draw, minimum size=0.5cm] (n6) at (0,-6.35) {};
+    \draw[ar] (n1) -- (n2);
+    \draw[ar] (n2) -- node[left]{sì} (n3);
+    \draw[ar] (n2) -- node[right]{no} (n4);
+    \draw[ar] (n3) |- (n4);
+    \draw[ar] (n4) -- node[above]{sì} (n5);
+    \draw[ar] (n4) -- node[right]{no} (n6);
+    \draw[ar] (n5) |- (n6);
+\end{tikzpicture}
+\end{center}
+
+\noindent Nel grafo ci sono $N=6$ nodi e $E=7$ archi, quindi
+\[
+V(G) = 7 - 6 + 2 = 3.
+\]
+Un valore elevato segnala un metodo difficile da testare e da comprendere: la complessità ciclomatica è utile come \textbf{indicatore di rischio}, non come divieto assoluto. Altre metriche di prodotto sono le LOC, i \textit{function point} e le metriche orientate agli oggetti di Chidamber e Kemerer (accoppiamento tra classi, profondità dell'ereditarietà).
+
+\paragraph{Goal-Question-Metric (GQM).}
+Il metodo \textbf{GQM} di Basili, Caldiera e Rombach (1994) lega la misura agli obiettivi: non si raccolgono dati ``perché potrebbero servire'', ma si parte da un obiettivo, si formulano le domande che servono a valutarlo e solo alla fine si scelgono le metriche.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{5.4cm}p{8.0cm}}
+    \toprule
+    \textbf{Livello} & \textbf{Domanda guida} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Goal} & Perché misuriamo? & Valutare l'affidabilità del prodotto. \\
+    \addlinespace
+    \textbf{Question} & Che cosa ci serve sapere? & Qual è la distribuzione dei guasti? Il codice rispetta lo standard? Le revisioni sono efficaci? \\
+    \addlinespace
+    \textbf{Metric} & Che dato raccogliamo? & Numero di guasti per modulo; violazioni per modulo; difetti trovati in revisione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Un piano GQM applicato al progetto di gruppo chiarisce immediatamente la differenza tra una domanda e una metrica:
+
+\begin{itemize}
+    \item \textbf{G}: alla relazione finale devono contribuire tutti i membri del gruppo.
+    \item \textbf{Q1}: quante ore ha lavorato ciascuno? \quad \textbf{M1}: ore registrate da ciascun membro.
+    \item \textbf{Q2}: quanta parte della relazione ha scritto ciascuno? \quad \textbf{M2}: percentuale di sezioni o di commit per autore.
+\end{itemize}
+
+\noindent L'esempio mostra anche un errore frequente: ``percentuale di user story testate'' non risponde alla domanda su chi ha contribuito alla relazione; una metrica va scelta perché è pertinente alla domanda, non perché è facile da raccogliere.
+
+\subsection{Verifica e testing}
+
+\paragraph{Verifica, validazione e livelli di test.}
+I termini \textbf{verifica} e \textbf{validazione} non sono sinonimi:
+
+\begin{itemize}
+    \item \textbf{Verifica}: \textit{<<stiamo costruendo il prodotto nel modo giusto?>>} Riguarda la conformità alla specifica e alle decisioni di progetto; si attua con ispezioni, analisi del codice e test.
+    \item \textbf{Validazione}: \textit{<<stiamo costruendo il prodotto giusto?>>} Riguarda l'accettazione da parte del committente e la soddisfazione del bisogno reale; si attua con test di accettazione, dimostrazioni e uso controllato.
+\end{itemize}
+
+\noindent Ogni livello di specifica definisce i test del livello corrispondente, secondo il modello a V di Boehm (1981):
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{5.2cm}p{6.4cm}}
+    \toprule
+    \textbf{Livello di specifica} & \textbf{Test corrispondente} & \textbf{Che cosa si verifica} \\
+    \midrule
+    Requisiti & Test di accettazione & Conformità al bisogno del committente (validazione). \\
+    \addlinespace
+    Architettura & Test di sistema & Comportamento dell'intero sistema rispetto ai requisiti. \\
+    \addlinespace
+    Progetto dei moduli & Test di integrazione & Interfacce, contratti e collaborazione tra componenti. \\
+    \addlinespace
+    Codice & Test di unità & Correttezza delle singole unità (funzioni, classi, metodi). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Le tecniche si dividono in \textbf{statiche} (ispezioni, revisioni, analisi del codice senza esecuzione) e \textbf{dinamiche} (esecuzione del software con dati di test). Le seconde non sostituiscono le prime: l'analisi statica trova classi di difetti che nessun test dinamico probabilmente raggiungerebbe.
+
+\paragraph{Il testing illumina, non dimostra.}
+Due citazioni classiche riassumono il limite epistemologico del testing:
+
+\begin{cbox}{Il limite del testing}
+\begin{quote}
+\textit{``Il testing può mostrare la presenza di errori, mai dimostrarne l'assenza.''}\\
+--- E. W. Dijkstra, 1970
+\end{quote}
+\begin{quote}
+\textit{``Se l'obiettivo è mostrare l'assenza di errori, ne troveremo pochi; se è mostrarne la presenza, ne troveremo molti.''}\\
+--- G. J. Myers, \textit{The Art of Software Testing}, 1979
+\end{quote}
+\noindent Il testing è quindi un'attività di \textbf{ricerca del difetto}, non una certificazione di correttezza. Un test che passa aumenta la fiducia, ma non dimostra che il programma sia esente da errori.
+\end{cbox}
+
+\paragraph{La piramide dei test.}
+La distribuzione ottimale dello sforzo di test segue una piramide: molti test di unità, un numero intermedio di test di integrazione, pochi test end-to-end.
+
+\begin{center}
+\begin{tikzpicture}[font=\scriptsize\sffamily]
+    \node[draw, fill=orange!25, minimum width=3.4cm, minimum height=0.8cm] (e2e) at (0,2.4) {End-to-end e accettazione};
+    \node[draw, fill=orange!15, minimum width=6.8cm, minimum height=0.9cm] (int) at (0,1.1) {Integrazione e sistema};
+    \node[draw, fill=orange!7, minimum width=10.2cm, minimum height=1.0cm] (unit) at (0,-0.2) {Unità};
+    \node[font=\tiny, align=left, anchor=west] at (5.4,2.4) {pochi, lenti, fragili\\ Selenium, Playwright};
+    \node[font=\tiny, align=left, anchor=west] at (5.4,1.1) {interfacce tra componenti\\ Testcontainers, API test};
+    \node[font=\tiny, align=left, anchor=west] at (5.4,-0.2) {molti, veloci, economici\\ JUnit, pytest};
+\end{tikzpicture}
+\end{center}
+
+\noindent La piramide traduce in pratica un principio economico: il costo di un test cresce e la sua velocità diminuisce salendo di livello. L'anti-pattern opposto è il \textbf{cono gelato} (\textit{ice-cream cone}): molti test manuali ed end-to-end, pochi test di unità. Il risultato è una suite lenta, fragile e costosa da mantenere, che segnala i difetti tardi e con scarsa precisione diagnostica. La pipeline di integrazione continua (Jenkins, GitHub Actions) esegue l'intera piramide a ogni modifica. Il \textbf{Test-Driven Development} e il ciclo Red-Green-Refactor sono analizzati nella Sezione~\ref{sec:processi-agili}; qui il testing è considerato come filtro di qualità lungo tutto il ciclo di vita.
+
+\paragraph{Il circolo vizioso dei test rimandati.}
+Il rifiuto dei test si autoalimenta: \textbf{non scriviamo i test} perché \textbf{non abbiamo tempo}; la pressione cresce perché \textbf{non siamo abbastanza veloci}; modificare il codice diventa \textbf{difficile e rischioso}; quindi \textbf{non scriviamo i test}. Il ciclo si rompe solo accettando un investimento iniziale: la suite automatica riduce il costo delle modifiche future e restituisce tempo, invece di consumarlo. È lo stesso principio per cui il debito tecnico va ripagato presto, prima che gli interessi rendano la correzione impraticabile.
+
+\paragraph{Black-box e white-box.}
+Le tecniche di test si distinguono per il tipo di informazione utilizzata:
+
+\begin{center}
+\small
+\begin{tabular}{p{7.2cm}p{7.2cm}}
+    \toprule
+    \textbf{Black-box (funzionale)} & \textbf{White-box (strutturale)} \\
+    \midrule
+    Deriva dalla \textbf{specifica}: il codice è trattato come una scatola nera. & Deriva dal \textbf{codice sorgente}: la struttura interna guida la scelta dei casi. \\
+    \addlinespace
+    Classi di equivalenza, valori limite, tabelle di decisione, test basati sui casi d'uso. & Copertura dei comandi, delle decisioni e dei cammini; \textit{mutation testing}. \\
+    \addlinespace
+    Verifica il comportamento osservabile rispetto ai requisiti. & Verifica l'esecuzione effettiva delle parti del programma. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il test esaustivo è impossibile: con 10 parametri e 5 valori ciascuno si ottengono $5^{10} \approx 9{,}8$ milioni di combinazioni. La selezione dei casi non è quindi un lusso, ma una necessità metodologica: si scelgono i casi che massimizzano la probabilità di scoprire difetti a parità di costo.
+
+\paragraph{Black-box: classi di equivalenza e valori limite.}
+Si consideri il requisito: \textit{<<un iscritto può avere al massimo 5 prestiti attivi>>}. L'input ``numero di prestiti attivi'' si partiziona in classi di equivalenza: non valida (valori negativi), valida (da 0 a 5) e oltre il limite (maggiore di 5). I valori limite da testare sono $-1$, $0$, $5$ e $6$.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.8cm}p{3.2cm}p{8.6cm}}
+    \toprule
+    \textbf{Caso} & \textbf{Prestiti attivi} & \textbf{Esito atteso} \\
+    \midrule
+    Classe non valida & $-1$ & Errore di input. \\
+    Limite inferiore & $0$ & Prestito concesso. \\
+    Rappresentante della classe valida & $3$ & Prestito concesso. \\
+    Limite superiore & $5$ & Richiesta di un nuovo prestito rifiutata: si è già al massimo. \\
+    Oltre il limite & $6$ & Errore: stato inconsistente. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il test sul limite ha anche un effetto di chiarimento dei requisiti: con 5 prestiti attivi, il sesto va concesso o rifiutato? La risposta non può essere lasciata all'implementazione, deve essere concordata con il committente e scritta nei criteri di accettazione.
+
+\paragraph{White-box: criteri di copertura.}
+I criteri di copertura definiscono che cosa deve essere eseguito dai test. Per il programma dell'esempio sulla complessità ciclomatica valgono i seguenti ordini di grandezza:
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{6.6cm}p{2.4cm}p{3.6cm}}
+    \toprule
+    \textbf{Criterio} & \textbf{Richiede che\dots} & \textbf{Test minimi} & \textbf{Esempio $(P,Q)$} \\
+    \midrule
+    Comandi & ogni comando sia eseguito almeno una volta & 1 & $(60,0)$ \\
+    Decisioni & ogni decisione sia sia vera sia falsa & 2 & $(60,0)$, $(0,0)$ \\
+    Cammini & ogni cammino sia percorso & 4 & $(60,0)$, $(0,0)$, $(5,10)$, $(51,-45)$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La copertura dei comandi è la più debole: un solo test può eseguire tutte le istruzioni senza verificare i rami alternativi. La copertura delle decisioni è più forte, ma non garantisce la copertura delle combinazioni; la copertura dei cammini è la più esigente e cresce in modo esplosivo con la complessità. Il \textbf{teorema di Weyuker} ricorda che, per un programma qualsiasi, è indecidibile stabilire se esista un input che esegue un dato comando, una data decisione o un dato cammino; esistono però sottoproblemi decidibili e la copertura resta un'utile approssimazione.
+
+\begin{cbox}{Copertura $\neq$ qualità dei test}
+Un test senza asserzioni copre il codice ma non verifica nulla. L'80\% di copertura si può raggiungere anche con test vacui: è l'esempio più citato della legge di Goodhart applicata al testing. Il \textbf{mutation testing} introduce piccole modifiche nel codice di produzione e controlla che i test le ``uccidano'': se un mutante sopravvive, la suite non sta verificando quel comportamento. Per la trattazione della code coverage e del ciclo TDD si rimanda alla Sezione~\ref{sec:processi-agili}, dove sono analizzati nel contesto delle pratiche agili.
+\end{cbox}
+
+\paragraph{Analisi statica, quality gate e pipeline.}
+L'analisi statica non esegue il programma: esamina il codice, le dipendenze e la configurazione alla ricerca di difetti, vulnerabilità e \textit{code smell}. Nella pipeline di integrazione continua occupa una posizione precisa tra i test e il rilascio:
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\tiny\sffamily,
+    st/.style={draw, rounded corners=2pt, text width=1.95cm, minimum height=0.85cm, align=center, fill=orange!7},
+    ar/.style={-{Stealth[scale=0.8]}}
+]
+    \node[st] (c) {Commit\\ push o PR};
+    \node[st, right=0.18cm of c] (b) {Build\\ compilazione};
+    \node[st, right=0.18cm of b] (t) {Test\\ unità e integrazione};
+    \node[st, right=0.18cm of t] (s) {Analisi statica\\ bug, vulnerabilità, smell};
+    \node[st, right=0.18cm of s] (q) {Quality gate\\ soglie superate?};
+    \node[st, right=0.18cm of q] (r) {Rilascio\\ deploy};
+    \draw[ar] (c) -- (b);
+    \draw[ar] (b) -- (t);
+    \draw[ar] (t) -- (s);
+    \draw[ar] (s) -- (q);
+    \draw[ar] (q) -- (r);
+\end{tikzpicture}
+\end{center}
+
+\noindent Un \textbf{quality gate} è un insieme di soglie oggettive che il codice deve rispettare per poter essere rilasciato. Un esempio tipico sul codice nuovo: zero nuove vulnerabilità critiche, copertura dei test almeno dell'80\%, righe duplicate inferiori al 3\%. Le soglie non sono universali: vanno decise dal team, possibilmente con un piano GQM, e riviste quando cambiano obiettivi e contesto.
+
+\paragraph{Il debito tecnico.}
+Il \textbf{debito tecnico} è la metafora finanziaria usata da Ward Cunningham (1992) per descrivere il costo futuro delle scorciatoie prese oggi:
+
+\begin{cbox}{Il debito tecnico come debito finanziario}
+\begin{itemize}
+    \item \textbf{Capitale}: la correzione rinviata, cioè il lavoro necessario per riportare il codice a uno stato sano.
+    \item \textbf{Interessi}: ogni modifica futura costa di più, perché deve convivere con la scorciatoia e con la sua complessità accidentale.
+    \item \textbf{Misura}: si stima in tempo di correzione (SonarQube lo calcola a partire dalle violazioni rilevate).
+    \item \textbf{Ripagamento}: si attua con il refactoring, protetto dalla rete di sicurezza dei test automatici.
+\end{itemize}
+\end{cbox}
+
+\noindent Martin Fowler (2009) distingue quattro tipi di debito incrociando due dimensioni: la consapevolezza (\textit{consapevole} vs \textit{involontario}) e l'intenzionalità (\textit{prudente} vs \textit{sconsiderato}).
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{p{2.4cm}p{6.6cm}p{6.6cm}}
+    \toprule
+    & \textbf{Consapevole} & \textbf{Involontario} \\
+    \midrule
+    \textbf{Prudente} & \textit{<<Rilasciamo ora e ne gestiamo le conseguenze>>}: la scorciatoia è una scelta economica documentata. & \textit{<<Ora sappiamo come avremmo dovuto farlo>>}: il debito emerge dall'apprendimento. \\
+    \addlinespace
+    \textbf{Sconsiderato} & \textit{<<Non abbiamo tempo per il progetto>>}: la scorciatoia è imposta dalla fretta. & \textit{<<Che cos'è la stratificazione?>>}: il debito nasce da incompetenza o disattenzione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Non tutto il debito è negativo: un debito prudente e consapevole può essere una scelta razionale per anticipare valore, a condizione che sia tracciato e ripagato. Il debito sconsiderato o involontario, invece, si accumula silenziosamente e riduce la capacità del team di evolvere il prodotto.
+
+\paragraph{SonarQube: l'analisi statica in pratica.}
+SonarQube è uno degli strumenti più diffusi per l'analisi statica continua. Opera in tre contesti complementari:
+
+\begin{itemize}
+    \item \textbf{nell'IDE} (SonarQube for IDE, ex SonarLint): segnala i problemi mentre si scrive il codice;
+    \item \textbf{nella pipeline CI} (SonarQube Server o Cloud): analizza il progetto a ogni push;
+    \item \textbf{nella pull request}: decora la PR con l'esito del quality gate, che può bloccarne il merge.
+\end{itemize}
+
+\noindent Le qualità controllate sono tre, collegate a ISO/IEC 25010:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{13.2cm}}
+    \toprule
+    \textbf{Qualità} & \textbf{Esempi di problemi rilevati} \\
+    \midrule
+    \textbf{Affidabilità} & Possibile \textit{null dereference}, risorsa non chiusa, eccezione non gestita. \\
+    \addlinespace
+    \textbf{Sicurezza} & SQL injection, XSS; i \textit{security hotspot} vanno comunque rivisti manualmente. \\
+    \addlinespace
+    \textbf{Manutenibilità} & Codice duplicato, funzione troppo complessa, debito tecnico stimato. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Ogni problema ha una gravità (\textit{blocker}, \textit{high}, \textit{medium}, \textit{low}, \textit{info}). Per la manutenibilità SonarQube calcola un \textbf{rapporto di debito}:
+\[
+\text{rapporto di debito} = \frac{\text{debito tecnico}}{30\ \text{minuti} \times \text{righe di codice}},
+\]
+a cui corrisponde un rating da A a E.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{2.4cm}p{2.4cm}p{2.4cm}p{2.4cm}p{2.4cm}}
+    \toprule
+    \textbf{Rating} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{E} \\
+    \midrule
+    Rapporto di debito & $\le 5\%$ & $<10\%$ & $<20\%$ & $<50\%$ & $\ge 50\%$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Per affidabilità e sicurezza il rating dipende dal problema più grave rilevato, non dalla media.
+
+\begin{cbox}{Clean as You Code e quality gate ``Sonar way''}
+Il principio \textbf{Clean as You Code} stabilisce che il quality gate giudichi il \textbf{codice nuovo o modificato}: chi tocca il codice lo lascia pulito, mentre il debito pregresso si ripaga gradualmente. Il quality gate predefinito ``Sonar way'' impone quattro condizioni:
+\begin{enumerate}
+    \item zero nuovi problemi e rating A sul codice nuovo;
+    \item 100\% dei nuovi \textit{security hotspot} rivisti da una persona;
+    \item copertura dei test almeno dell'80\% sul codice nuovo;
+    \item righe duplicate non superiori al 3\% nel codice nuovo.
+\end{enumerate}
+\noindent \textbf{Cosa offre}: feedback automatico e ripetibile a ogni pull request, un criterio di rilascio esplicito e condiviso, un gate dedicato ai progetti con codice generato da IA. \textbf{Cosa non garantisce}: la correttezza funzionale (resta compito dei test), l'assenza di errori (falsi positivi e falsi negativi sono possibili) e metriche non aggirabili (l'80\% di copertura si raggiunge anche con test senza asserzioni).
+\end{cbox}
+
+\subsection{La qualità del codice generato da LLM}
+
+\paragraph{Un nuovo autore di codice.}
+I modelli linguistici generativi sono ormai parte stabile del lavoro di sviluppo: circa il \textbf{90\%} dei professionisti dichiara di usare l'IA nel lavoro, il \textbf{59\%} percepisce il codice generato come migliore e solo il \textbf{3\%} dichiara una fiducia alta nell'output. La distanza tra percezione e misura è il punto di partenza di questa sezione: il codice generato va riletto con le stesse lenti — correttezza, sicurezza, manutenibilità, produttività — applicate al codice umano.
+
+\paragraph{Corretto? Dipende da quanto sono buoni i test.}
+La correttezza del codice generato è spesso sopravvalutata dai benchmark con test deboli. Nello studio di Liu et al. (NeurIPS 2023), il passaggio dal benchmark originale HumanEval a HumanEval+ — con circa 80 volte più test — riduce la percentuale di soluzioni considerate corrette di circa il \textbf{19--29\%} su 26 modelli. Il messaggio è generale: \textbf{test deboli sovrastimano la correttezza}, sia nei benchmark sia nei progetti reali. Un modello che ``passa i test'' ha superato quei test, non ha dimostrato la correttezza.
+
+\paragraph{Sicuro? Tre studi, tre metodi, un messaggio.}
+Le evidenze sulla sicurezza non sono confrontabili tra loro per metodi e campioni, ma convergono su una conclusione operativa: il codice generato va trattato come \textbf{codice non fidato}.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{6.8cm}p{5.8cm}}
+    \toprule
+    \textbf{Studio} & \textbf{Tipo, metodo e campione} & \textbf{Risultato principale} \\
+    \midrule
+    Pearce et al., 2022 (IEEE S\&P) & Accademico, revisione tra pari; 1 modello (Copilot); 89 scenari a rischio. & Circa il 40\% dei 1.689 programmi contiene almeno una vulnerabilità CWE. \\
+    \addlinespace
+    Veracode, 2025 & Rapporto industriale non sottoposto a revisione; oltre 100 modelli; 80 compiti OWASP Top 10. & 45\% complessivo; oltre il 70\% per Java; XSS all'86\%; nessun vantaggio per i modelli più grandi. \\
+    \addlinespace
+    Spracklen et al., 2025 (USENIX Security) & Accademico, revisione tra pari; 16 modelli; 576.000 campioni. & Dal 5--22\% nei modelli commerciali (minimo 5,2\%) al 21,7\% negli open source di pacchetti suggeriti che non esistono. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Metodi diversi, numeri non confrontabili, stesso messaggio: analisi statica, verifica delle dipendenze e revisione umana non sono opzionali.
+
+\begin{cbox}{Slopsquatting: il rischio delle dipendenze inventate}
+Un LLM può ``allucinare'' il nome di un pacchetto che non esiste. Un attaccante può registrarlo su un registry pubblico e pubblicarvi codice malevolo, sperando che qualcuno lo installi: è il \textbf{slopsquatting}. Secondo Spracklen et al. la quota di pacchetti inesistenti suggeriti va dal 5,2\% nei modelli commerciali al 21,7\% negli open source. Prima di aggiungere una dipendenza verificare che esista, che sia manutenuta, che la licenza sia compatibile e che il nome non sia un \textit{typosquat}.
+\end{cbox}
+
+\paragraph{Manutenibile? Più codice copiato, meno refactoring.}
+Il rapporto GitClear (\textit{AI Copilot Code Quality: 2025 Data}) analizza 211 milioni di righe modificate tra il 2020 e il 2024 e osserva tre tendenze: i blocchi duplicati di almeno 5 righe sono cresciuti di circa 8 volte nel solo 2024; le righe ``spostate'' — indicatore di refactoring e riuso — sono diminuite del 40\%; nel 2024, per la prima volta, le righe copiate e incollate superano quelle spostate. Più duplicazione significa più debito tecnico, perché ogni correzione va ripetuta in più punti. Il dato va letto con cautela: è un rapporto industriale non sottoposto a revisione e stabilisce una correlazione temporale con la diffusione dell'IA, non un rapporto di causa-effetto.
+
+\paragraph{Produttivo? Percezione e misura divergono.}
+Gli esperimenti controllati mostrano benefici reali, ma circoscritti a compiti e metriche specifiche:
+
+\begin{center}
+\small
+\begin{tabular}{p{4.0cm}p{6.4cm}p{5.6cm}}
+    \toprule
+    \textbf{Studio} & \textbf{Compito e campione} & \textbf{Effetto stimato} \\
+    \midrule
+    Peng et al., 2023 & Un compito: server HTTP in JavaScript. & +55,8\% di velocità di completamento. \\
+    \addlinespace
+    Cui et al., 2025 & 4.867 sviluppatori, 3 aziende, sul campo. & +26\% di pull request completate a settimana. \\
+    \addlinespace
+    Google, 2025 & 96 ingegneri, compito di circa 3 ore. & Circa 21\% più veloci (intervallo di confidenza da circa 0 a 40\%). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Questi studi misurano \textbf{velocità e consegne}, non qualità. I benefici sono maggiori per chi ha meno esperienza e per compiti ben delimitati. Lo studio METR 2025, condotto su 16 sviluppatori esperti e 246 compiti reali in progetti open source maturi, mostra invece un divario impressionante: la previsione prima dell'esperimento era di un miglioramento del 24\%, la percezione dopo era del 20\%, ma la misura reale era una \textbf{riduzione} della velocità del 19\%. Il rapporto DORA 2025 aggiunge che il throughput aumenta, ma aumenta anche l'instabilità delle consegne: l'IA ``amplifica'' i punti di forza e le disfunzioni dell'organizzazione.
+
+\paragraph{Garantire la qualità del codice generato.}
+La risposta ingegneristica non è vietare l'IA, ma inserirla in un processo di filtri verificabili:
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{6.4cm}p{5.4cm}}
+    \toprule
+    \textbf{Filtro} & \textbf{Azione} & \textbf{Domanda di controllo} \\
+    \midrule
+    Revisione umana & Leggere e capire il codice prima di accettarlo. & Chi ha letto questo codice? \\
+    \addlinespace
+    Test indipendenti & Scrivere i test senza guardare l'implementazione; usare valori limite e mutation testing. & I test sono stati scritti senza guardare il codice? \\
+    \addlinespace
+    Analisi statica e di sicurezza & Cercare vulnerabilità, verificare dipendenze e licenze. & Le dipendenze esistono e sono affidabili? \\
+    \addlinespace
+    Quality gate e Definition of Done & Applicare soglie oggettive e criteri di accettazione condivisi. & Chi ne risponde? \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il punto critico è l'\textbf{indipendenza dell'oracolo}: se il modello genera sia il codice sia i test, un errore di comprensione del dominio può riflettersi in entrambi e produrre una suite verde ma sbagliata. I test vanno ancorati ai criteri di accettazione concordati con il committente, non alla coerenza interna tra due output dello stesso modello.
+
+\paragraph{Un piano GQM per valutare un assistente IA nel team.}
+Anche l'impatto dell'IA va misurato con un piano GQM, non con impressioni. Un esempio di goal: \textit{valutare l'effetto dell'assistente IA sulla qualità del prodotto, dal punto di vista del team, nel prossimo semestre}.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{6.6cm}p{6.4cm}}
+    \toprule
+    \textbf{Caratteristica} & \textbf{Domanda} & \textbf{Metrica dalla pipeline} \\
+    \midrule
+    \textbf{Correttezza} & I difetti dopo il rilascio aumentano? & Difetti post-rilascio per KLOC, prima e dopo. \\
+    \addlinespace
+    \textbf{Sicurezza} & Introduciamo più vulnerabilità? & Nuove vulnerabilità per pull request; dipendenze sconosciute. \\
+    \addlinespace
+    \textbf{Manutenibilità} & Il codice si duplica o si complica? & Percentuale di duplicazione; complessità ciclomatica media; debito stimato. \\
+    \addlinespace
+    \textbf{Produttività} & Consegniamo più valore, in modo stabile? & Lead time; tasso di rilasci falliti; tempo di revisione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Da evitare: ``righe generate dall'IA'' come metrica di successo. È un classico caso di legge di Goodhart: misurare il volume di output incentiva l'output, non il valore.
+
+\subsection{Sintesi}
+
+\begin{cbox}{Tre idee da portare a casa}
+\begin{enumerate}
+    \item \textbf{La qualità si definisce, poi si misura.} Stakeholder, ISO/IEC 25010 come checklist, metriche scelte con GQM; attenzione alla legge di Goodhart.
+    \item \textbf{Il testing illumina, non dimostra.} Più filtri in serie: unità, integrazione, analisi statica, quality gate; la copertura è significativa solo se i test hanno asserzioni.
+    \item \textbf{Con gli LLM i principi diventano urgenti.} Codice da leggere, testare in modo indipendente e analizzare: sicurezza, dipendenze e debito tecnico non possono essere delegati al modello.
+\end{enumerate}
+\end{cbox}
+
+\noindent La qualità non è un costo aggiuntivo da sostenere a fine progetto, ma una proprietà da progettare lungo tutto il ciclo di vita: nei requisiti (idoneità funzionale e metriche), nell'architettura (modularità e testabilità), nel codice (leggibilità e assenza di duplicazione), nei test (copertura significativa) e nell'esercizio (monitoraggio dei guasti). Le tecniche e le metriche presentate in questa sezione sono gli strumenti con cui tale proprietà viene resa osservabile e governabile.
 
 \newpage
 
@@ -7714,5 +9152,721 @@ L'evoluzione delle tecniche di scoping in Java analizzate nel modulo illustra co
     \bottomrule
 \end{tabular}
 \end{center}
+
+\newpage
+
+\section{Software Engineering in Python}
+
+\begin{cbox}{Principi del Linguaggio}
+\begin{itemize}
+    \item \textbf{Multiparadigma}: scripting, imperativo, orientato agli oggetti e funzionale.
+    \item \textbf{Dinamicamente tipizzato}: i tipi sono associati ai valori a runtime, non alle variabili.
+    \item \textbf{Garbage collected}: la memoria degli oggetti non più raggiungibili è recuperata automaticamente.
+    \item \textbf{``Batteries included''}: la libreria standard copre una vastissima gamma di esigenze.
+    \item \textbf{Basato su macchina virtuale}: esecuzione ``in un certo senso'' interpretata tramite un bytecode intermedio.
+\end{itemize}
+\end{cbox}
+
+\subsection{Lo Zen di Python}
+
+\noindent Lo \textbf{Zen of Python} di Tim Peters sintetizza la filosofia del linguaggio e, indirettamente, i criteri di qualità del codice che l'ingegneria del software persegue: leggibilità, esplicitazione e rifiuto dell'ambiguità.
+
+\begin{cbox}{The Zen of Python}
+\begin{itemize}
+    \item \textit{Beautiful is better than ugly.}
+    \item \textit{Explicit is better than implicit.}
+    \item \textit{Simple is better than complex.}
+    \item \textit{Complex is better than complicated.}
+    \item \textit{Flat is better than nested.}
+    \item \textit{Sparse is better than dense.}
+    \item \textit{Readability counts.}
+    \item \textit{Special cases aren't special enough to break the rules.}
+    \item \textit{Although practicality beats purity.}
+    \item \textit{Errors should never pass silently.}
+    \item \textit{Unless explicitly silenced.}
+    \item \textit{In the face of ambiguity, refuse the temptation to guess.}
+    \item \textit{There should be one -- and preferably only one -- obvious way to do it.}
+    \item \textit{Although that way may not be obvious at first unless you're Dutch.}
+    \item \textit{Now is better than never.}
+    \item \textit{Although never is often better than *right* now.}
+    \item \textit{If the implementation is hard to explain, it's a bad idea.}
+    \item \textit{If the implementation is easy to explain, it may be a good idea.}
+    \item \textit{Namespaces are one honking great idea -- let's do more of those!}
+\end{itemize}
+\end{cbox}
+
+\subsection{I Quattro Paradigmi di Python}
+
+\noindent Python viene esplorato nei suoi \textbf{quattro paradigmi} -- scripting, imperativo, funzionale e orientato agli oggetti -- ciclando sulla sintassi e sulla semantica del linguaggio per ottenere una visione complessiva e rivedere i principi fondamentali dell'ingegneria del software.
+
+\subsection{Scripting: REPL, Indentazione e Tipizzazione Dinamica}
+
+\noindent La prospettiva di scripting espone alle \textbf{strutture di controllo fondamentali} del linguaggio: variabili, \texttt{if}, blocchi tramite indentazione, \texttt{while}, \texttt{for}, collezioni e iterazioni. L'interprete interattivo (REPL) consente di sperimentare immediatamente ogni costrutto.
+
+\begin{lstlisting}[language=Python]
+print("Hello World!")
+4 + 3
+x = 7 + 1
+x ** 2
+
+the_world_is_flat = True
+if the_world_is_flat:
+    print("Be careful not to fall off!")
+\end{lstlisting}
+
+\noindent A differenza dei linguaggi a blocchi delimitati da parentesi graffe, in Python la \textbf{struttura del codice è determinata dall'indentazione}: ometterla produce un errore esplicito.
+
+\begin{lstlisting}[language=Python]
+if the_world_is_flat:
+print("Be careful not to fall off!")
+# IndentationError: expected an indented block
+\end{lstlisting}
+
+\noindent La \textbf{tipizzazione dinamica} è applicata e verificata a runtime: una variabile può cambiare tipo, ma le operazioni restano controllate e producono un \texttt{TypeError} quando i tipi sono incompatibili.
+
+\begin{lstlisting}[language=Python]
+x = "a string"
+x = 1
+print(x)          # 1
+
+y = 1 + "a string"
+# TypeError: unsupported operand type(s) for +: 'int' and 'str'
+\end{lstlisting}
+
+\subsection{Operatori Matematici e Tipi Numerici}
+
+\noindent La matematica segue in larga parte le convenzioni usuali, con alcune specificità rilevanti per l'ingegneria del software.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.2cm}p{3.2cm}p{8.8cm}}
+    \toprule
+    \textbf{Operatore} & \textbf{Esempio} & \textbf{Significato} \\
+    \midrule
+    \texttt{+} & \texttt{3 + 4} $\to$ \texttt{7} & Somma. \\
+    \addlinespace
+    \texttt{-} & \texttt{6 - 3.4} $\to$ \texttt{2.6} & Sottrazione. \\
+    \addlinespace
+    \texttt{*} & \texttt{4 * 7.0} $\to$ \texttt{28.0} & Moltiplicazione (promozione a float). \\
+    \addlinespace
+    \texttt{/} & \texttt{7 / 3} $\to$ \texttt{2.333...} & Divisione reale. \\
+    \addlinespace
+    \texttt{//} & \texttt{7 // 3} $\to$ \texttt{2} & Divisione intera (\textit{floor}). \\
+    \addlinespace
+    \texttt{\%} & \texttt{7 \% 3} $\to$ \texttt{1} & Modulo (resto). \\
+    \addlinespace
+    \texttt{**} & \texttt{7 ** 3} $\to$ \texttt{343} & Elevamento a potenza. \\
+    \addlinespace
+    \texttt{\_} & \texttt{3 + \_} $\to$ \texttt{346} & Nell'interprete, l'ultimo risultato calcolato. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Stringhe: Sintassi, Indicizzazione e Slicing}
+
+\noindent Le stringhe sono \textbf{immutabili} e supportano virgolette singole, doppie o triple (per testi su più righe), sequenze di escape in stile C, concatenazione tramite \texttt{+} e ripetizione tramite \texttt{*}.
+
+\begin{lstlisting}[language=Python]
+x = 'strings can be single quoted '
+y = "or double quoted "
+x + y + "and joined with + "
+
+z = ''' strings can span
+multiple lines using triple
+quotes '''
+
+w = 'And I can add \n special chars like in C'
+c = 'concatenation ' 'is done just sequencing strings'
+2 * ' and the n* operator repeats the string n times'
+\end{lstlisting}
+
+\noindent L'indicizzazione parte da \texttt{0}; gli indici negativi contano dalla fine. Lo \textbf{slicing} \texttt{[start:end:step]} include l'inizio ed esclude la fine, e consente passi anche negativi per invertire la stringa.
+
+\begin{lstlisting}[language=Python]
+e = 'My Example of Python'
+e[0]        # 'M'
+e[-1]       # 'n'
+e[3:5]      # 'Ex'
+e[-4:-1]    # 'tho'
+e[11:]      # 'of Python'
+e[2:10:2]   # ' xml'
+e[::2]      # 'M xml fPto'
+e[::-1]     # 'nohtyP fo elpmaxE yM'
+\end{lstlisting}
+
+\noindent Un accesso fuori intervallo produce \texttt{IndexError}. Poiché le stringhe sono immutabili, non si può assegnare un carattere tramite indice: per modificare una stringa occorre costruirne una nuova.
+
+\begin{lstlisting}[language=Python]
+e[20]       # IndexError: string index out of range
+e[0] = 'T'  # TypeError: 'str' object does not support item assignment
+
+w = 'T' + e[1:]
+len(w)      # 20
+\end{lstlisting}
+
+\subsection{Interpolazione di Stringhe}
+
+\noindent L'\textbf{interpolazione} è il processo di inserimento di variabili o espressioni all'interno di una stringa tramite segnaposto; è utile per messaggi, report e log. Python offre tre meccanismi principali, storicamente sovrapposti.
+
+\paragraph{Operatore \texttt{\%}.} È il metodo più antico, basato su specificatori di formato. Funziona, ma è poco leggibile e soggetto a errori, soprattutto con le tuple.
+
+\begin{lstlisting}[language=Python]
+name = "Jane"
+age = 25
+
+print("Hello, %s!" % name)
+print("Hello, %s! You're %s." % (name, age))
+print("Hello, %(name)s!" % {"name": "Jane"})
+print("Balance: $%.2f" % 5425.9292)   # $5425.93
+print("Age: %5s" % 35)                # allineato a destra
+
+print("Data: %s" % ("John", 35))
+# TypeError: not all arguments converted during string formatting
+print("Data: %s" % (("John", 35),))   # Data: ('John', 35)
+\end{lstlisting}
+
+\paragraph{Metodo \texttt{str.format()}.} Introdotto in Python 2.6/3.0, usa parentesi graffe e supporta argomenti posizionali, indicizzati e nominali, oltre al \textit{mini-language} di formattazione.
+
+\begin{lstlisting}[language=Python]
+print("Hello, {}! You're {}.".format(name, age))
+print("Hello, {1}! You're {0}.".format(age, name))
+print("Hello, {name}! You're {age}.".format(name="Jane", age=25))
+
+person = {"name": "Jane", "age": 25}
+print("Hello, {name}! You're {age}.".format(**person))
+
+print("Balance: ${:.2f}".format(5425.9292))  # $5425.93
+print("{:=^30}".format("Centered"))           # centrato con '='
+print("{:>5}".format(42))                     # '   42'
+\end{lstlisting}
+
+\paragraph{F-strings.} Introdotte in Python 3.6 (PEP 498), sono \textbf{formatted string literals}: il prefisso \texttt{f} abilita l'inserimento diretto di espressioni tra graffe, valutate a runtime.
+
+\begin{lstlisting}[language=Python]
+print(f"Hello, {name}! You're {age} years old.")
+print(f"{2 * 21}")                            # 42
+print(f"Uppercased: {name.upper()}")          # JANE
+print(f"{[2**n for n in range(3, 9)]}")       # [8, 16, 32, 64, 128, 256]
+
+balance = 5425.9292
+print(f"Balance: ${balance:.2f}")             # $5425.93
+print(f"{'Centered string':=^30}")            # ======Centered string======
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{4.4cm}p{7.4cm}}
+    \toprule
+    \textbf{Metodo} & \textbf{Sintassi} & \textbf{Caratteristiche} \\
+    \midrule
+    \texttt{\%} & \texttt{"Hello, \%s!" \% name} & Formattazione limitata; soggetto a errori con le tuple. \\
+    \addlinespace
+    \texttt{.format()} & \texttt{"Hello, \{\}".format(name)} & Più potente; argomenti posizionali/nominali e mini-language. \\
+    \addlinespace
+    \texttt{f-strings} & \texttt{f"Hello, \{name\}!"} & Massima leggibilità; supporta espressioni; veloce; mini-language. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Linea guida}: preferire le f-strings nel codice moderno; usare \texttt{.format()} solo per compatibilità con Python $\le$ 3.6; evitare l'operatore \texttt{\%} nel nuovo codice.
+
+\subsection{Collezioni: le Quattro Strutture Fondamentali}
+
+\noindent Python non ha array nel senso dei linguaggi C-like. Offre quattro tipi di collezione di base, in parte con sintassi simile a quella delle stringhe.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.8cm}p{3.4cm}p{8cm}}
+    \toprule
+    \textbf{Tipo} & \textbf{Ordinamento e mutabilità} & \textbf{Caratteristiche} \\
+    \midrule
+    \textbf{Liste} & Ordinate, mutabili & Ammettono duplicati. \\
+    \addlinespace
+    \textbf{Tuple} & Ordinate, immutabili & Ammettono duplicati. \\
+    \addlinespace
+    \textbf{Insiemi} & Non ordinati, mutabili & Nessun duplicato; membri immutabili. \\
+    \addlinespace
+    \textbf{Dizionari} & Ordinati, mutabili & Nessun duplicato; coppie chiave-valore. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Liste}
+
+\noindent Le liste sono \textbf{collezioni ordinate e mutabili} di elementi, indicizzabili e affettabili con la stessa sintassi delle stringhe.
+
+\begin{lstlisting}[language=Python]
+odd = [1, 3, 5, 7, 9]
+odd[0]        # 1
+odd[-1]       # 9
+odd[1:3]      # [3, 5]
+odd[:2] + odd[2:]   # [1, 3, 5, 7, 9]
+len(odd)      # 5
+\end{lstlisting}
+
+\noindent A differenza delle stringhe, le liste sono \textbf{modificabili}: è possibile assegnare un elemento, aggiungerne in coda, sostituire o eliminare intere sezioni tramite slicing.
+
+\begin{lstlisting}[language=Python]
+odd = [1, 3, 5, 7, 9]
+odd[2] = 20
+odd.append(11)            # [1, 3, 20, 7, 9, 11]
+odd[3:5] = [100, 200, 300]
+odd[1:3] = []             # rimuove la sezione
+odd[:] = []               # svuota la lista
+\end{lstlisting}
+
+\noindent Le liste possono essere \textbf{annidate} ed \textbf{eterogenee}: possono contenere altre liste e valori di tipo diverso.
+
+\begin{lstlisting}[language=Python]
+a = [1, 2, 3]
+b = [10, 20]
+c = [90, 800, -34]
+n = [a, b, c]
+n[2][1]       # 800
+
+z = [1, "xxx", 3]
+z[1]          # 'xxx'
+\end{lstlisting}
+
+\paragraph{Semantica dei Riferimenti: Alias, Copie Superficiali e Profonde.}
+L'assegnazione tra liste non copia i dati: copia il \textbf{riferimento} allo stesso oggetto. Questo è un punto critico per l'ingegneria del software, perché modifica attraverso un alias si riflette su tutte le variabili che puntano allo stesso oggetto.
+
+\begin{lstlisting}[language=Python]
+x = [1, 2, 3, 4]
+y = x
+y[2] = 200
+x             # [1, 2, 200, 4]  -> stesso oggetto
+\end{lstlisting}
+
+\noindent Il metodo \texttt{copy()} produce una \textbf{copia superficiale}: viene creato un nuovo contenitore esterno, ma gli oggetti annidati restano condivisi.
+
+\begin{lstlisting}[language=Python]
+w = x.copy()
+w[1] = 350
+w             # [1, 350, 200, 4]
+x             # [1, 2, 200, 4]
+
+z = [11, 22, 33]
+k = [121, 132, 143, 154]
+j = [z, k]
+i = j.copy()
+k[1] = 222
+i             # [[11, 22, 33], [121, 222, 143, 154]]
+j             # [[11, 22, 33], [121, 222, 143, 154]]
+i[0] = [5, 8, 13]
+i             # [[5, 8, 13], [121, 222, 143, 154]]
+j             # [[11, 22, 33], [121, 222, 143, 154]]
+\end{lstlisting}
+
+\noindent Solo la \textbf{copia profonda} (\texttt{copy.deepcopy}) duplica ricorsivamente anche gli oggetti annidati, rendendo le due strutture completamente indipendenti.
+
+\begin{lstlisting}[language=Python]
+import copy
+dc = copy.deepcopy(j)
+k[1] = 423
+j             # [[11, 22, 33], [121, 423, 143, 154]]
+dc            # [[11, 22, 33], [121, 222, 143, 154]]
+\end{lstlisting}
+
+\begin{cbox}{Implicazioni Ingegneristiche dell'Aliasing}
+\begin{itemize}
+    \item \textbf{Effetti collaterali nascosti}: una funzione che modifica una lista ricevuta come parametro altera anche la struttura del chiamante.
+    \item \textbf{Copie difensive}: quando un oggetto mutabile attraversa un confine architetturale (API, modulo, thread), valutare esplicitamente se condividere il riferimento o copiarlo.
+    \item \textbf{Costo delle copie}: la copia profonda è ricorsiva e potenzialmente costosa; va usata con consapevolezza delle dimensioni e della frequenza.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Appartenenza e Cancellazione.} L'operatore \texttt{in} verifica l'appartenenza; \texttt{pop}, \texttt{remove}, \texttt{del} e \texttt{clear} offrono modalità diverse di rimozione.
+
+\begin{lstlisting}[language=Python]
+aList = [1, 2, 3, 5, 0, 9, 0, 7, 1, 5]
+3 in aList        # True
+12 in aList       # False
+
+aList.pop(2)      # restituisce 3 e lo rimuove
+aList.pop(-3)     # restituisce 7
+aList.remove(5)   # rimuove la prima occorrenza di 5
+del aList[1]      # rimuove per indice
+aList.clear()     # svuota la lista
+\end{lstlisting}
+
+\subsubsection{Tuple}
+
+\noindent Le \textbf{tuple} sono collezioni \textbf{ordinate e immutabili} di elementi, con sintassi simile a quella degli array. Possono contenere valori eterogenei e oggetti mutabili annidati.
+
+\begin{lstlisting}[language=Python]
+aTuple = ("touple", 2, 9, [10, 2, 3], "start")
+aTuple[0]        # 'touple'
+aTuple[-1]       # 'start'
+aTuple[2:]       # (9, [10, 2, 3], 'start')
+
+aTuple[1] = "tryToChange"
+# TypeError: 'tuple' object does not support item assignment
+aTuple.append(3)
+# AttributeError: 'tuple' object has no attribute 'append'
+\end{lstlisting}
+
+\noindent L'immutabilità impedisce la modifica in place, ma non la creazione di una \textbf{nuova} tupla tramite concatenazione: l'alias della tupla originale continua a puntare al vecchio oggetto.
+
+\begin{lstlisting}[language=Python]
+anAlias = aTuple
+aTuple = aTuple + (1, 2, 3)
+aTuple        # ('touple', 2, 9, [10, 2, 3], 'start', 1, 2, 3)
+anAlias       # ('touple', 2, 9, [10, 2, 3], 'start')
+
+aTuple = aTuple + (3)
+# TypeError: can only concatenate tuple (not "int") to tuple
+aTuple = aTuple + (3,)    # tupla di un solo elemento
+len(aTuple)               # 9
+2 in aTuple               # True
+12 not in aTuple          # True
+\end{lstlisting}
+
+\noindent \textbf{Attenzione ai riferimenti}: l'immutabilità è \textbf{superficiale}. Se una tupla contiene una lista, il contenuto della lista resta mutabile e le modifiche sono visibili attraverso tutte le tuple che la referenziano.
+
+\begin{lstlisting}[language=Python]
+a = [3, 4, 5]
+b = (a, 6)
+a[0] = 1
+b             # ([1, 4, 5], 6)
+
+c = b
+a[1] = 10
+b             # ([1, 10, 5], 6)
+c             # ([1, 10, 5], 6)
+
+c = b.copy()
+# AttributeError: 'tuple' object has no attribute 'copy'
+
+import copy
+d = copy.deepcopy(b)
+a[2] = 8
+b             # ([1, 10, 8], 6)
+d             # ([1, 10, 5], 6)
+\end{lstlisting}
+
+\noindent \textbf{Scorciatoie e conversioni.} L'operatore \texttt{+=} su una tupla produce una nuova tupla; la conversione \texttt{tuple(lista)} crea una tupla con i valori correnti, scollegata dalle successive modifiche della lista.
+
+\begin{lstlisting}[language=Python]
+aTuple += (55,)
+aList = [1, 2, 3]
+aConvertedTuple = tuple(aList)
+aList[2] = 5
+aList             # [1, 2, 5]
+aConvertedTuple   # (1, 2, 3)
+\end{lstlisting}
+
+\subsubsection{Insiemi (Sets)}
+
+\noindent Gli \textbf{insiemi} sono collezioni \textbf{non ordinate e senza duplicati}, i cui elementi devono essere \textbf{immutabili} (hashable). L'ordine di stampa non è significativo.
+
+\begin{lstlisting}[language=Python]
+aSet = {1, 2, "red"}
+anotherSet = {3, 4, "green", 4, "green"}
+anotherSet          # {3, 4, 'green'}
+
+1 in aSet           # True
+"green" in aSet     # False
+"green" in anotherSet  # True
+
+oneIsLikeTrue = {1, True, "green"}
+oneIsLikeTrue       # {1, 'green'}
+len(oneIsLikeTrue)  # 2
+\end{lstlisting}
+
+\noindent \texttt{True} vale \texttt{1} nel confronto di uguaglianza, quindi i due valori collassano in un unico elemento. Le operazioni insiemistiche classiche sono \textbf{unione} (\texttt{|}) e \textbf{intersezione} (\texttt{\&}); l'operatore \texttt{+} non è definito.
+
+\begin{lstlisting}[language=Python]
+aThirdSet = aSet | anotherSet
+aThirdSet                     # {1, 2, 3, 4, 'green', 'red'}
+aFourthSet = aThirdSet & {2, 3, 200, 'green'}
+aFourthSet                    # {2, 3, 'green'}
+
+aSetFromAList = set([9, 8, 7])
+aSetFromATuple = set((6, 5, 4))
+aSetFromATuple + aSetFromAList
+# TypeError: unsupported operand type(s) for +: 'set' and 'set'
+\end{lstlisting}
+
+\noindent Elementi mutabili come liste, dizionari o altri insiemi non possono appartenere a un insieme, perché non sono hashable; una tupla di valori immutabili invece sì.
+
+\begin{lstlisting}[language=Python]
+a = {3, 1, 5, 4}
+b = [10, 11, 12]
+a.add(b)
+# TypeError: unhashable type: 'list'
+
+c = (10, 11, 12)
+a.add(c)
+a             # {1, 3, 4, 5, (10, 11, 12)}
+
+d = {3, 4, 1}
+a.add(d)
+# TypeError: unhashable type: 'set'
+\end{lstlisting}
+
+\subsubsection{Dizionari}
+
+\noindent I \textbf{dizionari} sono collezioni \textbf{ordinate} di coppie \texttt{chiave:valore}, indicizzate tramite chiave; ogni chiave può comparire una sola volta.
+
+\begin{lstlisting}[language=Python]
+aDictionary = {"breed": "Dog", "weight": 8, "name": "Deimon", "age": 3}
+aDictionary["breed"]   # 'Dog'
+len(aDictionary)       # 4
+
+aDictionary.keys()     # dict_keys(['breed', 'weight', 'name', 'age'])
+aDictionary.values()   # dict_values(['Dog', 8, 'Deimon', 3])
+
+aDictionary.update({"weight": 7.5, "color": "blenheim"})
+aDictionary
+# {'breed': 'Dog', 'weight': 7.5, 'name': 'Deimon', 'age': 3, 'color': 'blenheim'}
+\end{lstlisting}
+
+\noindent \texttt{update()} sovrascrive i valori delle chiavi esistenti e aggiunge le nuove. La rimozione può avvenire per ultima coppia inserita (\texttt{popitem}), per chiave (\texttt{pop}), per istruzione \texttt{del} o svuotando tutto.
+
+\begin{lstlisting}[language=Python]
+aDictionary.popitem()      # ('color', 'blenheim')
+aDictionary.pop("weight")  # 7.5
+del aDictionary["age"]
+aDictionary                # {'breed': 'Dog', 'name': 'Deimon'}
+\end{lstlisting}
+
+\subsection{La Funzione \texttt{range}}
+
+\noindent \texttt{range} genera una sequenza di numeri per l'iterazione. Restituisce un oggetto \texttt{range} (non una lista), convertibile con \texttt{list()} quando serve visualizzarlo. Gli argomenti devono essere interi.
+
+\begin{lstlisting}[language=Python]
+list(range(3))            # [0, 1, 2]
+list(range(-4, 5))        # [-4, -3, -2, -1, 0, 1, 2, 3, 4]
+list(range(2, 20, 3))     # [2, 5, 8, 11, 14, 17]
+list(range(2, 20, 7))     # [2, 9, 16]
+list(range(0))            # []
+
+range(4.3)
+# TypeError: 'float' object cannot be interpreted as an integer
+\end{lstlisting}
+
+\subsection{Strutture di Controllo}
+
+\subsubsection{Selezione e Iterazione}
+
+\noindent L'istruzione \texttt{if} si basa interamente sull'indentazione e supporta la catena \texttt{elif}/\texttt{else}. L'esempio risolve un'equazione di secondo grado distinguendo discriminante positivo, nullo e negativo.
+
+\begin{lstlisting}[language=Python]
+import math
+a, b, c = 4, 5, -1
+delta = b**2 - 4*a*c
+
+if delta > 0:
+    x1 = (-b - math.sqrt(delta))/(2*a)
+    x2 = (-b + math.sqrt(delta))/(2*a)
+elif delta == 0:
+    x1 = x2 = -b/(2*a)
+else:
+    x1 = complex(-b, math.sqrt(-delta)/(2*a))
+    x2 = complex(-b, -math.sqrt(-delta)/(2*a))
+\end{lstlisting}
+
+\noindent Il \texttt{while} è il classico ciclo \textbf{testato in testa}; il ramo \texttt{else} viene eseguito solo se il ciclo termina senza \texttt{break}.
+
+\begin{lstlisting}[language=Python]
+i = 5
+factorial = 1
+while i > 1:
+    factorial *= i
+    i -= 1
+else:
+    print("the result is ", factorial)   # the result is 120
+\end{lstlisting}
+
+\subsubsection{\texttt{break}, \texttt{continue} e \texttt{pass}}
+
+\noindent Python offre tre costrutti per gestire il flusso nei cicli. A differenza di \texttt{break} e \texttt{continue}, \texttt{pass} \textbf{non interrompe nulla}: è un'istruzione nulla che serve solo dove la sintassi richiede un blocco.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.2cm}p{8.4cm}p{2.8cm}}
+    \toprule
+    \textbf{Istruzione} & \textbf{Comportamento} & \textbf{Ramo \texttt{else}} \\
+    \midrule
+    \texttt{break} & Termina immediatamente il ciclo. & Non eseguito. \\
+    \addlinespace
+    \texttt{continue} & Salta il resto dell'iterazione corrente e passa alla successiva. & Eseguito se il ciclo termina normalmente. \\
+    \addlinespace
+    \texttt{pass} & Non fa nulla: l'esecuzione prosegue con l'istruzione successiva. & Eseguito se il ciclo termina normalmente. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=Python]
+i = 0
+while i in range(10):
+    i += 1
+    if i == 5:
+        print("i is 5!")
+        break
+        print("break: I should not get here!")   # mai eseguita
+    print("Standard printout for iteration ", i)
+else:
+    print("End of loop break")                   # non eseguito
+\end{lstlisting}
+
+\noindent Con \texttt{continue} l'iterazione corrente viene troncata, ma il ciclo prosegue fino alla condizione di uscita; con \texttt{pass} anche le istruzioni successive dello stesso blocco vengono eseguite.
+
+\begin{lstlisting}[language=Python]
+i = 0
+while i in range(10):
+    i += 1
+    if i == 5:
+        print("i is 5!")
+        continue
+        print("continue: I should not get here!")  # mai eseguita
+    print("Standard printout for iteration ", i)
+else:
+    print("End of loop continue")
+
+i = 0
+while i in range(10):
+    i += 1
+    if i == 5:
+        print("i is 5!")
+        pass
+        print("pass: I should not get here!")       # eseguita!
+    print("Standard printout for iteration ", i)
+else:
+    print("End of loop pass")
+\end{lstlisting}
+
+\noindent L'output evidenzia la differenza: con \texttt{break} il ciclo si ferma a 5; con \texttt{continue} salta solo la stampa dell'iterazione 5; con \texttt{pass} la stampa ``pass: I should not get here!'' viene eseguita, perché \texttt{pass} non altera il flusso.
+
+\subsubsection{Iteratori, Iterabili e Ciclo \texttt{for}}
+
+\noindent Un \textbf{iteratore} è un oggetto che supporta l'iterazione su una collezione: restituisce gli elementi uno alla volta, aggiorna il proprio stato e solleva \texttt{StopIteration} quando non ci sono più elementi. Questa è una tipica situazione in cui le superclassi risultano utili, e mostra la commistione tra scripting e orientamento agli oggetti.
+
+\begin{lstlisting}[language=Python]
+string = "iter"
+stringIterator = iter(string)
+next(stringIterator)        # 'i'
+next(stringIterator)        # 't'
+stringIterator.__next__()   # 'e'
+stringIterator.__next__()   # 'r'
+stringIterator.__next__()
+# StopIteration
+\end{lstlisting}
+
+\noindent Un \textbf{iterabile} è la classe base di tutto ciò che può essere iterato; espone il metodo \texttt{\_\_iter\_\_()} che restituisce un iteratore. La funzione globale \texttt{iter()} e il metodo \texttt{\_\_iter\_\_()} sono duali, così come \texttt{next()} e \texttt{\_\_next\_\_()}. La coppia iterabile--iteratore è alla base dei cicli \texttt{for} e delle list comprehension.
+
+\begin{lstlisting}[language=Python]
+string = "iter"
+stringIterator = string.__iter__()
+next(stringIterator)   # 'i'
+\end{lstlisting}
+
+\noindent Il ciclo \texttt{for} scorre un iteratore: a ogni passo chiama implicitamente \texttt{\_\_next\_\_()} e all'esaurimento intercetta \texttt{StopIteration}. Anche per \texttt{for} valgono \texttt{else}, \texttt{break}, \texttt{continue} e \texttt{pass} con la semantica vista per il \texttt{while}.
+
+\begin{lstlisting}[language=Python]
+string = "iter"
+for i in string:
+    print(i)
+else:
+    print("end of string")
+# i
+# t
+# e
+# r
+# end of string
+\end{lstlisting}
+
+\subsubsection{Argomenti da Riga di Comando}
+
+\noindent Gli argomenti da riga di comando sono disponibili in \texttt{sys.argv}, come in Java; la funzione \texttt{getopt} aiuta a interpretarli come opzioni e argomenti posizionali.
+
+\begin{lstlisting}[language=Python]
+import sys, getopt
+
+print("Argument line: ", sys.argv)
+print("Number of arguments: ", len(sys.argv))
+
+i = 0
+for arg in sys.argv:
+    print("argument ", i, " : ", arg)
+    i += 1
+
+options, arguments = getopt.getopt(sys.argv[1:], "nh:o:")
+for opt, val in options:
+    if opt == "-h":
+        print("Help: ", val)
+    elif opt == "-o":
+        print("Other: ", val)
+    elif opt == "-n":
+        print("n means ", end="")
+        print("\t no arguments")
+    else:
+        print(opt, " and ", val, " are not acceptable")
+
+print("The other arguments are ", arguments)
+\end{lstlisting}
+
+\noindent Esecuzione: \texttt{python3 commandLine.py -o xxx -h help -n a b c}. Nel formato di \texttt{getopt}, \texttt{n} è un'opzione senza valore, mentre \texttt{h:} e \texttt{o:} richiedono un argomento. L'output separa le opzioni riconosciute dagli argomenti posizionali residui (\texttt{['a', 'b', 'c']}).
+
+\subsection{Python come Linguaggio Imperativo}
+
+\subsubsection{Funzioni}
+
+\noindent Le funzioni Python hanno parametri con \textbf{valori di default} e possono restituire più valori tramite una tupla. I parametri sono passati per valore, ma i valori possono essere riferimenti a oggetti mutabili, come in Java.
+
+\begin{lstlisting}[language=Python]
+import math
+
+def secondOrderEquation(a, b=3, c=0.5):
+    delta = b**2 - 4*a*c
+    x1 = (-b - math.sqrt(delta))/(2*a)
+    x2 = (-b + math.sqrt(delta))/(2*a)
+    return a, b, c, x1, x2
+
+print(secondOrderEquation(1, 6, 1))
+print(secondOrderEquation(1, 6))
+print(secondOrderEquation(1))
+print(secondOrderEquation(1, c=-1))
+\end{lstlisting}
+
+\noindent \textit{Nota}: nelle slide la formula del discriminante è scritta \texttt{b*2 - 4*a*c}; la forma corretta è \texttt{b**2 - 4*a*c}. I valori di default vengono valutati \textbf{una sola volta} alla definizione della funzione: non usarli per accumulare stato mutabile.
+
+\paragraph{Funzioni di ordine superiore.} Le funzioni sono oggetti e possono essere passate come parametri ad altre funzioni.
+
+\begin{lstlisting}[language=Python]
+def apply(f, a):
+    return f(a)
+
+def increment(x):
+    return x + 1
+
+def square(x):
+    return x**2
+
+def main():
+    x = apply(increment, 3)
+    y = apply(square, 4)
+    print(x, y)          # 4 16
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\paragraph{Funzioni anonime (\textit{lambda}).} Le espressioni \texttt{lambda} definiscono funzioni anonime, equivalenti a piccole funzioni monouso.
+
+\begin{lstlisting}[language=Python]
+def main():
+    x = apply(lambda x: x + 1, 3)
+    y = apply(lambda x: x**2, 4)
+    print(x, y)          # 4 16
+\end{lstlisting}
+
+\paragraph{Il blocco \texttt{\_\_main\_\_}.} Ogni modulo ha una variabile interna \texttt{\_\_name\_\_}: vale \texttt{"\_\_main\_\_"} se il modulo è invocato direttamente da riga di comando, altrimenti contiene il nome del modulo (il nome del file senza \texttt{.py}). La convenzione \texttt{if \_\_name\_\_ == "\_\_main\_\_": main()} permette di riusare il codice come libreria senza eseguire il programma principale all'importazione.
+
+\begin{lstlisting}[language=Python]
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
 
 \end{document}
