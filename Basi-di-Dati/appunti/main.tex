@@ -7,6 +7,8 @@
 \usepackage{titling}
 \usepackage{xcolor}
 \usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{amsfonts}
 \usepackage[shortlabels]{enumitem}
 \usepackage{latexsym}
@@ -6492,5 +6494,1583 @@ Blocchi letti in media, file di $B$ blocchi:
 \end{tabular}
 \end{center}
 
+
+\newpage
+
+\section{Modellazione Concettuale dei Dati}
+
+\noindent \textbf{Dalla Realtà allo Schema.} Progettare una base di dati non significa scrivere subito \texttt{CREATE TABLE}. Prima occorre capire \textit{quali} informazioni servono, \textit{come} sono collegate tra loro e \textit{quali regole} del mondo reale devono essere rispettate. La \textbf{modellazione concettuale} è la fase in cui si costruisce una rappresentazione della realtà \textbf{indipendente dal DBMS}: non interessa ancora quale software verrà usato, ma che cosa il sistema deve sapere. Lo strumento principale di questa fase è il \textbf{modello Entità-Relazione (E-R)}.
+
+\subsection{La Progettazione nel Ciclo di Vita del Sistema Informativo}
+
+\subsubsection{Il Ciclo di Vita del Software}
+
+\noindent \textbf{La Progettazione Non È un Attività Isolata.} La progettazione di una base di dati è una delle attività del più ampio processo di sviluppo di un \textbf{sistema informativo}. Per capirne il ruolo, bisogna collocarla nel \textbf{ciclo di vita del software}: l'insieme delle attività svolte in sequenza da analisti, architetti software e utenti, sia durante lo sviluppo sia durante l'uso del sistema.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{6.0cm}L{8.8cm}@{}}
+    \toprule
+    \textbf{Fase} & \textbf{Attività Principale} \\
+    \midrule
+    \textbf{Studio di fattibilità} & Definizione dei costi, dei benefici e delle priorità del progetto. \\
+    \addlinespace
+    \textbf{Raccolta e analisi dei requisiti} & Analisi delle proprietà del sistema e dei bisogni informativi degli utenti. \\
+    \addlinespace
+    \textbf{Progettazione} & Definizione della struttura dei dati e dei metodi (i programmi applicativi). \\
+    \addlinespace
+    \textbf{Implementazione} & Realizzazione effettiva del sistema. \\
+    \addlinespace
+    \textbf{Validazione} & Verifica del modello e debugging. \\
+    \addlinespace
+    \textbf{Deployment} & Messa in esercizio del sistema. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Un Processo Iterativo, Non una Linea Retta.} Le fasi non vengono attraversate una sola volta. Se durante la progettazione emerge un requisito poco chiaro, si torna alla raccolta dei requisiti; se la validazione scopre un errore di modello, si torna alla progettazione. Il ciclo di vita è quindi fatto di \textbf{cicli}: ogni ritorno indietro serve a correggere una decisione presa con informazioni incomplete. Questo è il motivo per cui un modello concettuale chiaro è prezioso: rende gli errori visibili \textit{prima} che diventino tabelle, codice e dati reali.
+
+\begin{cbox}{Perché le Fasi Sono Separate}
+\noindent Separare le attività non è una formalità burocratica. Ogni fase ha un \textbf{prodotto} verificabile e un \textbf{linguaggio} adatto al proprio scopo:
+\begin{itemize}
+    \item i requisiti si esprimono in linguaggio naturale, con esempi e casi d'uso;
+    \item la progettazione concettuale usa un modello grafico, comprensibile anche al committente;
+    \item la progettazione logica e fisica usano formalismi tecnici, vicini al DBMS.
+\end{itemize}
+Confondere questi livelli significa mescolare ``che cosa serve'' con ``come lo implemento'', e rendere molto più difficile accorgersi di un errore.
+\end{cbox}
+
+\subsubsection{Progettazione dei Dati e delle Applicazioni}
+
+\noindent \textbf{Due Aspetti Complementari.} La progettazione di un sistema informativo coinvolge due aspetti distinti:
+\begin{itemize}
+    \item la \textbf{progettazione dei dati}, che definisce quali informazioni memorizzare e come organizzarle;
+    \item la \textbf{progettazione dei programmi applicativi}, che definisce le funzioni e le interfacce con cui gli utenti lavorano sui dati.
+\end{itemize}
+I due aspetti vanno progettati insieme, ma i dati hanno un ruolo speciale: sono \textbf{più stabili} del software. Le applicazioni cambiano, i linguaggi invecchiano, le interfacce vengono riscritte; la struttura dei dati e il loro significato restano validi molto più a lungo. Per questo la progettazione dei dati merita un'analisi accurata e un modello esplicito, non una serie di scelte improvvisate durante la scrittura del codice.
+
+\medskip
+\noindent \textbf{Che Cosa Rende ``Buono'' un Progetto.} Un progetto di qualità non nasce dal talento estemporaneo, ma segue una \textbf{metodologia di progetto}. Una buona metodologia prevede:
+\begin{itemize}
+    \item la definizione di \textbf{attività separate}, ciascuna con un obiettivo chiaro;
+    \item \textbf{criteri di scelta} espliciti, per confrontare soluzioni alternative;
+    \item \textbf{modelli di rappresentazione} condivisi, che rendano il progetto leggibile e discutibile;
+    \item \textbf{soluzioni generali} e di facile uso, non trucchi validi solo per il caso singolo.
+\end{itemize}
+
+\begin{cbox}{La Metodologia in Pratica}
+\noindent Applicare una metodologia significa porsi domande nell'ordine giusto:
+\begin{enumerate}
+    \item \textbf{Che cosa} deve rappresentare il sistema? Si raccolgono i requisiti e si costruisce lo schema concettuale.
+    \item \textbf{Con quale modello logico} lo si rappresenta? Si sceglie il modello (ad esempio quello relazionale) e si produce lo schema logico.
+    \item \textbf{Con quale supporto fisico} lo si memorizza? Si scelgono file, indici e parametri del DBMS, ottenendo lo schema fisico.
+\end{enumerate}
+Saltare il primo passo è l'errore più comune: si producono tabelle che funzionano per il primo esempio, ma non reggono l'evoluzione del sistema.
+\end{cbox}
+
+\subsubsection{I Tre Schemi della Progettazione}
+
+\noindent \textbf{Dai Requisiti ai Tre Livelli.} La progettazione di una base di dati si articola in tre fasi, ciascuna delle quali produce uno \textbf{schema} che alimenta la fase successiva. Il punto di partenza è sempre l'insieme dei \textbf{requisiti} raccolti presso gli utenti.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{5.3cm}L{4.7cm}L{4.55cm}@{}}
+    \toprule
+    \textbf{Fase} & \textbf{Domanda Guida} & \textbf{Prodotto} \\
+    \midrule
+    \textbf{Progettazione concettuale} & \textit{Che cosa} deve rappresentare il sistema? & Schema concettuale, indipendente dal DBMS. \\
+    \addlinespace
+    \textbf{Progettazione logica} & \textit{Con quale modello} logico lo rappresento? & Schema logico, ad esempio relazionale. \\
+    \addlinespace
+    \textbf{Progettazione fisica} & \textit{Come} lo memorizzo nel DBMS? & Schema fisico: file, indici, blocchi. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    lev/.style={draw, rectangle, rounded corners=2pt, minimum width=7.4cm, minimum height=1.0cm, align=center, inner sep=4pt},
+    conc/.style={lev, fill=blue!10},
+    log/.style={lev, fill=orange!12},
+    phys/.style={lev, fill=gray!15},
+    arr/.style={-{Latex[length=2.5mm]}, thick},
+    note/.style={font=\small\itshape, text=black!70}
+]
+    \node[conc] (cs) at (0,3.4) {\textbf{Schema concettuale}\\ concetti, entità, relazioni, vincoli del dominio};
+    \node[log]  (ls) at (0,1.8) {\textbf{Schema logico}\\ tabelle, attributi, chiavi nel modello relazionale};
+    \node[phys] (ps) at (0,0.2) {\textbf{Schema fisico}\\ file, indici, blocchi, scelte di memorizzazione};
+
+    \draw[arr] (cs) -- (ls);
+    \draw[arr] (ls) -- (ps);
+
+    \node[note, right=0.5cm of cs] {``WHAT?''};
+    \node[note, right=0.5cm of ls] {``HOW?''};
+    \node[note, right=0.5cm of ps] {dettagli del DBMS};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Che Cosa Contiene Ogni Schema.} Lo \textbf{schema concettuale} descrive la realtà di interesse con concetti comprensibili anche a chi non è informatico: è il risultato dell'analisi del ``che cosa''. Lo \textbf{schema logico} traduce quei concetti nel modello del DBMS scelto, tipicamente il modello relazionale, e introduce tabelle, attributi e vincoli. Lo \textbf{schema fisico} scende nei dettagli di memorizzazione: quali file usare, quali indici creare, come distribuire i dati sui blocchi. Solo l'ultimo livello dipende dalle caratteristiche concrete del prodotto software.
+
+\begin{cbox}{Indipendenza tra i Livelli}
+\noindent Ogni schema è indipendente dai dettagli di quello sottostante, ma non viceversa:
+\begin{itemize}
+    \item lo schema concettuale \textbf{non dipende} dal modello logico né dal DBMS: può essere tradotto in tabelle, in grafi o in documenti;
+    \item lo schema logico \textbf{non dipende} dalla memorizzazione fisica: può essere implementato su dischi diversi, con indici diversi, senza cambiare le tabelle;
+    \item lo schema fisico \textbf{dipende} dal DBMS e dall'hardware, ed è il livello che cambia più facilmente senza toccare il significato dei dati.
+\end{itemize}
+Questa separazione è la stessa \textbf{indipendenza dei dati} introdotta nella Sezione~1, vista però dal lato della progettazione.
+\end{cbox}
+
+\subsection{Modelli dei Dati: Logici e Concettuali}
+
+\subsubsection{Costruttori, Schemi e Istanze}
+
+\noindent \textbf{Che Cos'è un Modello dei Dati.} Un \textbf{modello dei dati} è una collezione di componenti usati per classificare i dati rilevanti e descrivere le operazioni su di essi. Il componente cruciale è il \textbf{costruttore} (\textit{constructor}): un costruttore svolge lo stesso ruolo della definizione di un tipo di dato in un linguaggio di programmazione. Nel \textbf{modello relazionale}, ad esempio, il costruttore principale è la \textbf{relazione}, usata per organizzare insiemi omogenei di tuple (i record).
+
+\medskip
+\noindent \textbf{Schema e Istanza, a Qualsiasi Livello.} Per ogni base di dati si distinguono due aspetti:
+\begin{itemize}
+    \item lo \textbf{schema}, che descrive la struttura dei dati ed è \textbf{invariante nel tempo} (aspetto \textit{intensionale}); nel modello relazionale sono gli attributi delle relazioni;
+    \item l'\textbf{istanza}, cioè i valori concreti presenti in un certo momento, che possono cambiare anche molto rapidamente (aspetto \textit{estensionale}); nel modello relazionale è l'insieme delle tuple.
+\end{itemize}
+La distinzione non vale solo per le tabelle: vale per \textbf{ogni modello}. Anche uno schema concettuale è uno schema, e anche la realtà rappresentata ha una popolazione di istanze che evolve nel tempo.
+
+\begin{cbox}{Schema e Istanza in un Modello Concettuale}
+\noindent Si consideri l'entità \textbf{Employee}:
+\begin{itemize}
+    \item lo \textbf{schema} dice che esiste una classe di oggetti chiamata \textit{Employee}, con certe proprietà comuni;
+    \item l'\textbf{istanza} è un particolare impiegato, ad esempio ``Mario Rossi'', che appartiene a quella classe in un dato momento.
+\end{itemize}
+Lo schema concettuale non elenca tutti gli impiegati possibili: descrive la \textbf{classe}, non le singole persone. Questa è una forma di \textbf{astrazione}: il modello rappresenta ciò che accomuna gli oggetti, non la loro totalità concreta.
+\end{cbox}
+
+\subsubsection{Modelli Logici e Modelli Concettuali}
+
+\noindent \textbf{Due Famiglie di Modelli, Due Scopi Diversi.} I modelli dei dati si dividono in due grandi categorie, usate in momenti diversi della progettazione:
+\begin{itemize}
+    \item i \textbf{modelli logici} organizzano i dati \textit{dentro} il DBMS. Sono il livello di astrazione usato dal software (anche dai \textit{framework} di persistenza) e sono indipendenti dalla progettazione fisica. Esempi: il modello \textbf{relazionale}, il modello a grafo, il modello gerarchico, il modello a oggetti.
+    \item i \textbf{modelli concettuali} rappresentano i dati \textit{indipendentemente} dal sistema. Cercano di descrivere i concetti del mondo reale e si usano nelle fasi preliminari della progettazione. Il più diffuso è il \textbf{modello Entità-Relazione}.
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{4.0cm}L{6.1cm}L{6.3cm}@{}}
+    \toprule
+    \textbf{Aspetto} & \textbf{Modello Logico} & \textbf{Modello Concettuale} \\
+    \midrule
+    \textbf{Scopo} & Organizzare i dati dentro il DBMS. & Descrivere la realtà di interesse. \\
+    \addlinespace
+    \textbf{Dipendenze} & Indipendente dalla fisica, ma legato a un modello di dati. & Indipendente dal sistema e dall'implementazione. \\
+    \addlinespace
+    \textbf{Esempi} & Relazionale, gerarchico, a oggetti, a grafo. & Entità-Relazione. \\
+    \addlinespace
+    \textbf{Quando si usa} & Progettazione logica. & Fasi preliminari, analisi e documentazione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Perché Serve un Modello Concettuale}
+
+\noindent \textbf{Proviamo a Partire dalle Tabelle.} Immaginiamo di voler costruire direttamente il database relazionale, senza passare da un modello concettuale. Sorgono subito quattro problemi:
+\begin{itemize}
+    \item \textbf{Da dove si comincia?} Non c'è un criterio ovvio per decidere quali tabelle creare e in quale ordine.
+    \item \textbf{Si rischia di entrare troppo presto nei dettagli.} Si finisce a discutere di tipi, lunghezze e nomi delle colonne prima di aver capito il dominio.
+    \item \textbf{Bisogna già definire le relazioni tra le tabelle.} Le chiavi esterne e i collegamenti vanno decisi prima di sapere quali associazioni sono realmente importanti.
+    \item \textbf{Il modello relazionale è troppo rigido per modellare.} La tabella impone una forma piatta e uniforme, mentre nella realtà un concetto può essere descritto in modi diversi e le associazioni possono essere più complesse.
+\end{itemize}
+
+\begin{cbox}{Che Cosa Offre un Modello Concettuale}
+\noindent Un modello concettuale non serve solo a ``disegnare boxes''. Offre quattro vantaggi concreti:
+\begin{enumerate}
+    \item \textbf{Ragionare sulla realtà} attraverso un modello indipendente dall'implementazione, senza farsi condizionare dal DBMS.
+    \item \textbf{Definire classi di oggetti} di interesse e le loro \textbf{relazioni}, cioè la struttura del dominio prima della struttura delle tabelle.
+    \item \textbf{Comunicare} con il committente usando rappresentazioni visive efficaci, comprensibili anche a chi non programma.
+    \item \textbf{Documentare} il progetto: lo schema concettuale resta utile anche anni dopo, quando il software è cambiato.
+\end{enumerate}
+\end{cbox}
+
+\subsection{Il Modello Entità-Relazione}
+
+\subsubsection{I Costruttori del Modello}
+
+\noindent \textbf{Un Linguaggio Grafico per la Realtà.} Il \textbf{modello Entità-Relazione (E-R)} è il modello concettuale più usato. Ne esistono molte versioni leggermente diverse, ma tutte condividono un nucleo di costruttori:
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{3.6cm}L{7.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Costruttore} & \textbf{Ruolo} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Entità} & Classe di oggetti con proprietà comuni ed esistenza autonoma. & \textit{Employee}, \textit{City} \\
+    \addlinespace
+    \textbf{Relazione} & Associazione tra due o più entità. & \textit{Exam}, \textit{Residence} \\
+    \addlinespace
+    \textbf{Attributo} & Proprietà di un'entità o di una relazione. & \textit{Name}, \textit{Salary} \\
+    \addlinespace
+    \textbf{Attributo chiave} & Attributo (o insieme di attributi) che identifica univocamente le istanze di un'entità. & \textit{Car(Plate)} \\
+    \addlinespace
+    \textbf{Generalizzazione} & Legame tra una classe generale e le sue specializzazioni. & \textit{Person} $\to$ \textit{Employee} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent In questa sezione partiamo dai primi due costruttori, \textbf{entità} e \textbf{relazioni}, che formano lo scheletro di ogni schema E-R. Gli \textbf{attributi}, le \textbf{cardinalità} e gli \textbf{identificatori} vengono approfonditi nelle Sezioni~8.4,~8.5 e~8.6; la \textbf{generalizzazione} è trattata nella Sezione~8.8.
+
+\subsubsection{Le Entità}
+
+\noindent \textbf{Definizione.} Un'\textbf{entità} è una classe di ``oggetti'' (cose, persone, luoghi) che appartengono alla realtà di interesse, condividono alcune \textbf{proprietà comuni} e hanno un'\textbf{esistenza autonoma}. Sono esempi di entità \textit{Employee}, \textit{City}, \textit{BankAccount}, \textit{SalesOrder} e \textit{Bill}: ciascuna rappresenta un tipo di oggetto del dominio, non un singolo oggetto.
+
+\medskip
+\noindent \textbf{Rappresentazione Grafica.} Nel diagramma E-R un'entità si disegna come un \textbf{rettangolo} con il proprio nome.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.9cm, minimum height=1.0cm, align=center, fill=cyan!12}
+]
+    \node[ent] (e1) at (0,1.4) {\textbf{Employee}};
+    \node[ent] (e2) at (4.2,1.4) {\textbf{Department}};
+    \node[ent] (e3) at (0,0) {\textbf{City}};
+    \node[ent] (e4) at (4.2,0) {\textbf{BankAccount}};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Il Nome dell'Entità.} Ogni entità ha un nome \textbf{univoco all'interno dello schema}. Il nome deve essere \textbf{significativo}, cioè descrivere chiaramente la classe di oggetti rappresentata; per convenzione si usano \textbf{nomi singolari}, ad esempio \textit{Employee} e non \textit{Employees}. Un nome ambiguo o generico (come \textit{Data} o \textit{Oggetto}) costringe chi legge lo schema a indovinare il significato.
+
+\begin{cbox}{Entità non Significa ``Riga di Tabella''}
+\noindent La confusione più frequente è pensare che un'entità corrisponda a una riga di una tabella. Non è così:
+\begin{itemize}
+    \item l'\textbf{entità} è la \textbf{classe} (lo schema): ``Employee'' descrive tutti gli impiegati;
+    \item l'\textbf{istanza dell'entità} è un singolo elemento della classe: ``Mario Rossi'' è un impiegato concreto;
+    \item la \textbf{tabella} è una possibile \textit{implementazione} dell'entità nel modello relazionale, non il concetto stesso.
+\end{itemize}
+Lo schema E-R rappresenta le classi, non le singole istanze: è un'\textbf{astrazione}, e proprio per questo resta valido anche quando i dati concreti cambiano.
+\end{cbox}
+
+\subsubsection{Le Relazioni}
+
+\noindent \textbf{Definizione.} Una \textbf{relazione} (\textit{relationship}) stabilisce un'\textbf{associazione} tra due o più tipi di entità all'interno del modello del dominio. Esempi tipici:
+\begin{itemize}
+    \item \textbf{Residence} tra \textit{Person} e \textit{City}: una persona risiede in una città;
+    \item \textbf{Exam} tra \textit{Student} e \textit{Lecture}: uno studente sostiene un esame per una certa disciplina.
+\end{itemize}
+Lo stesso concetto è chiamato anche \textbf{associazione} o \textbf{correlazione}. La relazione non ``possiede'' i dati: mette in collegamento entità che esistono autonomamente.
+
+\medskip
+\noindent \textbf{Rappresentazione Grafica.} Una relazione si disegna come un \textbf{rombo} collegato da linee alle entità che vi partecipano.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.8cm, minimum height=1.0cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.9, minimum width=3.0cm, minimum height=1.2cm, align=center, fill=cyan!18}
+]
+    \node[ent] (s1) at (0,2.2) {\textbf{Student}};
+    \node[rel] (r1) at (4.2,2.2) {\textbf{Exam}};
+    \node[ent] (l1) at (8.4,2.2) {\textbf{Lecture}};
+
+    \node[ent] (s2) at (0,0) {\textbf{Employee}};
+    \node[rel] (r2) at (4.2,0) {\textbf{Residence}};
+    \node[ent] (l2) at (8.4,0) {\textbf{City}};
+
+    \draw[thick] (s1) -- (r1);
+    \draw[thick] (r1) -- (l1);
+    \draw[thick] (s2) -- (r2);
+    \draw[thick] (r2) -- (l2);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Il Nome della Relazione.} Anche la relazione ha un nome \textbf{univoco nello schema}, scelto in modo \textbf{significativo}. Per convenzione si preferiscono \textbf{nomi singolari} e, quando possibile, \textbf{sostantivi} invece di verbi: \textit{Exam} e non \textit{TakesExam}, \textit{Residence} e non \textit{LivesIn}. Il nome deve descrivere il \textbf{concetto} dell'associazione, non la singola azione compiuta da un'istanza.
+
+\begin{cbox}{Come Leggere una Relazione}
+\noindent La relazione \textbf{Exam} tra \textit{Student} e \textit{Lecture} si legge così:
+\begin{center}
+\textit{Uno studente sostiene un esame per una determinata disciplina.}
+\end{center}
+L'associazione è \textbf{concettuale} e non ha una direzione privilegiata: lo stesso rombo permette di risalire dalla disciplina agli studenti che l'hanno sostenuta e dallo studente alle discipline superate. Non è un puntatore da un record a un altro: è una classe di fatti che coinvolge entrambe le entità.
+\end{cbox}
+
+\subsubsection{Istanza di una Relazione e Arità}
+
+\noindent \textbf{Istanza Binaria e Istanza $n$-aria.} Un'\textbf{istanza di relazione binaria} è una \textbf{coppia} di istanze di entità, una per ciascuna entità coinvolta. Un'\textbf{istanza di relazione $n$-aria} è una \textbf{tupla} di istanze di entità, una per ciascuna delle $n$ entità. In una relazione non possono esistere \textbf{istanze ripetute}: la stessa coppia (o la stessa tupla) non può comparire due volte.
+
+\medskip
+\noindent \textbf{Un Esempio Concreto.} Si considerino le entità \textit{Student} e \textit{Course}, con le rispettive istanze $S_1, S_2, S_3, S_4$ e $C_1, C_2, C_3$. La relazione \textbf{Exam} è popolata dalle seguenti istanze:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcc@{}}
+    \toprule
+    \textbf{Istanza di Exam} & \textbf{Studente} & \textbf{Corso} \\
+    \midrule
+    $E_1$ & $S_1$ & $C_1$ \\
+    $E_2$ & $S_2$ & $C_1$ \\
+    $E_3$ & $S_2$ & $C_2$ \\
+    $E_4$ & $S_3$ & $C_3$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Come Interpretare la Tabella.} Ogni riga è un \textbf{fatto} del dominio: $E_1$ dice che lo studente $S_1$ ha sostenuto un esame per il corso $C_1$, $E_2$ dice che anche $S_2$ ha sostenuto un esame per $C_1$, e così via. Le assenze non sono errori:
+\begin{itemize}
+    \item $S_4$ non compare in nessuna istanza: semplicemente, nella popolazione attuale non ha ancora sostenuto esami;
+    \item $C_3$ compare una sola volta: al momento è associato soltanto a $S_3$;
+    \item $S_2$ compare due volte, ma con corsi diversi: le coppie $(S_2, C_1)$ e $(S_2, C_2)$ sono distinte e quindi entrambe ammesse.
+\end{itemize}
+
+\begin{cbox}{La Relazione è un Insieme di Istanze}
+\noindent La relazione \textbf{Exam} non è la coppia $(S_1, C_1)$: è la \textbf{classe} di tutte le possibili coppie studente-corso che rappresentano un esame sostenuto. Le coppie concrete $E_1, E_2, E_3, E_4$ sono le \textbf{istanze} della relazione in un certo momento. Questa distinzione è la stessa che c'è tra schema e istanza:
+\begin{itemize}
+    \item \textbf{schema della relazione}: ``Exam associa Student e Course'';
+    \item \textbf{istanza della relazione}: l'insieme dei fatti attualmente registrati.
+\end{itemize}
+Poiché una relazione è un insieme, non può contenere duplicati: la stessa coppia $(S_1, C_1)$ non può apparire due volte. Le regole su \textit{quante} istanze può avere ciascuna entità costituiscono la \textbf{cardinalità} delle relazioni, affrontata nella Sezione~8.5.
+\end{cbox}
+
+\subsubsection{Relazioni Multiple e Promozione a Entità}
+
+\noindent \textbf{Più Relazioni tra le Stesse Entità.} Nulla vieta che due entità siano collegate da più relazioni diverse. \textit{Employee} e \textit{City}, per esempio, possono essere associate da \textbf{Workplace} (la città in cui l'impiegato lavora) e da \textbf{Residence} (la città in cui risiede). Sono due fatti distinti, con nomi distinti e cardinalità potenzialmente diverse. Lo schema è corretto purché ogni relazione abbia un nome univoco e un significato chiaro: due rombi con lo stesso nome, o nomi generici come \textit{Relation1} e \textit{Relation2}, rendono il modello ambiguo.
+
+\medskip
+\noindent \textbf{Quando la Relazione Non Basta.} Consideriamo lo schema \textit{Student}--\textit{Exam}--\textit{Course}: \textit{Exam} è una relazione binaria e una sua istanza è una coppia $(S, C)$. Poiché le istanze di una relazione non possono ripetersi, lo schema non riesce a rappresentare il requisito: \textit{``uno studente può sostenere lo stesso esame più volte per lo stesso corso''}. La seconda volta produrrebbe la stessa coppia $(S_1, C_1)$ già presente, e quindi un duplicato vietato.
+
+\medskip
+\noindent \textbf{La Promozione a Entità.} La soluzione è trasformare \textit{Exam} in un'\textbf{entità}, dotata di identità propria, e collegarla a \textit{Student} e \textit{Course} con due relazioni distinte, ad esempio \textbf{Took} e \textbf{Of}. Ora ogni esame è un'istanza autonoma: $E_1$ e $E_5$ possono riferirsi entrambi alla coppia $(S_1, C_1)$ senza essere duplicati, perché sono due esami diversi. Gli attributi propri dell'associazione, come \textit{Date} e \textit{Degree}, si trasferiscono alla nuova entità: è l'esame, ora, a possedere la data e il voto di quel particolare evento.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.4cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.6, minimum width=2.6cm, minimum height=1.1cm, align=center, fill=cyan!18}
+]
+    % Prima: Exam è una relazione
+    \node[anchor=east] at (-1.5,2.7) {\textit{prima}};
+    \node[ent] (s1) at (0,2.7) {\textbf{Student}};
+    \node[rel] (r1) at (4.8,2.7) {\textbf{Exam}};
+    \node[ent] (c1) at (9.6,2.7) {\textbf{Course}};
+    \draw[thick] (s1) -- (r1);
+    \draw[thick] (r1) -- (c1);
+
+    % Dopo: Exam è un'entità
+    \node[anchor=east] at (-1.5,0.7) {\textit{dopo}};
+    \node[ent] (s2) at (0,0.7) {\textbf{Student}};
+    \node[rel] (took) at (2.5,0.7) {\textbf{Took}};
+    \node[ent] (e2) at (4.8,0.7) {\textbf{Exam}};
+    \node[rel] (of) at (7.1,0.7) {\textbf{Of}};
+    \node[ent] (c2) at (9.6,0.7) {\textbf{Course}};
+    \draw[thick] (s2) -- (took);
+    \draw[thick] (took) -- (e2);
+    \draw[thick] (e2) -- (of);
+    \draw[thick] (of) -- (c2);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small Da relazione a entità: in alto \textit{Exam} non distingue due esami dello stesso studente per lo stesso corso; in basso \textit{Exam} diventa un'entità e le due relazioni \textit{Took} e \textit{Of} ne conservano i collegamenti.}
+
+\begin{cbox}{Quando Promuovere una Relazione a Entità}
+\noindent Una relazione va trasformata in entità quando l'associazione ha bisogno di un'identità propria:
+\begin{itemize}
+    \item la stessa coppia di entità deve poter comparire più volte (esami ripetuti, acquisti ripetuti, prenotazioni multiple);
+    \item l'associazione possiede \textbf{attributi propri} e importanti, come la data e il voto di un esame, la quantità di un ordine o il prezzo di una vendita;
+    \item l'associazione ha un \textbf{ciclo di vita} autonomo, cioè nasce, viene modificata e termina indipendentemente dalle entità che collega.
+\end{itemize}
+Promuovere non è un trucco tecnico: è un cambio di prospettiva. Se il fatto ha una propria identità, allora è un'entità.
+\end{cbox}
+
+\subsubsection{Relazioni Ricorsive e Nomi di Ruolo}
+
+\noindent \textbf{Relazioni Ricorsive.} Una relazione è \textbf{ricorsiva} quando coinvolge la \textbf{stessa entità più volte}. L'esempio classico è \textit{Person}--\textit{Acquaintance}--\textit{Person}: una persona conosce un'altra persona. Le due partecipazioni riguardano la stessa entità, ma tipicamente due istanze diverse; in alcuni domini la stessa istanza può comparire in entrambi i ruoli (una persona può essere ``amica di sé stessa'' solo se il dominio lo ammette).
+
+\medskip
+\noindent \textbf{Nomi di Ruolo.} Quando un'entità partecipa più volte a una relazione, le linee vanno etichettate con \textbf{nomi di ruolo} (\textit{role names}) che specificano il ruolo di ciascuna partecipazione. Si consideri la relazione \textbf{Succession} tra \textit{President} e \textit{President}, con i ruoli \textbf{Previous} e \textbf{Next}: il primo presidente precede il secondo.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=3.2cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.7, minimum width=3.2cm, minimum height=1.1cm, align=center, fill=cyan!18}
+]
+    \node[ent] (p) at (0,0) {\textbf{President}};
+    \node[rel] (s) at (0,2.5) {\textbf{Succession}};
+
+    \draw[thick] (p.west) -- ++(-1.5,0) |- (s.west);
+    \draw[thick] (p.east) -- ++(1.5,0) |- (s.east);
+
+    \node[anchor=east] at (-2.7,0.5) {\textbf{Previous}};
+    \node[anchor=west] at (2.7,0.5) {\textbf{Next}};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Interpretazione delle Istanze.} Le istanze della relazione non sono coppie qualsiasi, ma coppie \textbf{ordinate dai ruoli}: \textit{Previous: $S_2$, Next: $S_3$} e \textit{Previous: $S_1$, Next: $S_2$} descrivono la catena di successione $S_1 \to S_2 \to S_3$. Senza i nomi di ruolo, un'istanza $(S_2, S_3)$ sarebbe ambigua: $S_2$ precede $S_3$ o viceversa? I ruoli rendono esplicita la direzione del fatto.
+
+\medskip
+\noindent \textbf{Quando Servono i Ruoli.} In una relazione binaria tra due entità diverse i ruoli sono spesso impliciti nel nome della relazione; in una relazione \textbf{ricorsiva} o quando la stessa entità compare più volte sono \textbf{indispensabili}. Anche in presenza di due relazioni diverse tra le stesse entità i nomi di ruolo aiutano a distinguere i due collegamenti.
+
+\subsubsection{Relazioni $n$-arie}
+
+\noindent \textbf{Associazioni tra Più di Due Entità.} Una relazione \textbf{$n$-aria} associa tre o più entità. L'esempio tipico è \textbf{Provision} tra \textit{Provider}, \textit{Supply} e \textit{Dept.}: un fornitore rifornisce un certo reparto con una certa fornitura.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.8cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.8, minimum width=3.0cm, minimum height=1.1cm, align=center, fill=cyan!18}
+]
+    \node[ent] (prov) at (0,1.6) {\textbf{Provider}};
+    \node[rel] (r) at (4.2,1.6) {\textbf{Provision}};
+    \node[ent] (sup) at (8.4,1.6) {\textbf{Supply}};
+    \node[ent] (dept) at (4.2,-0.2) {\textbf{Dept.}};
+
+    \draw[thick] (prov) -- (r);
+    \draw[thick] (r) -- (sup);
+    \draw[thick] (r) -- (dept);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Istanze di una Relazione $n$-aria.} Ogni istanza è una \textbf{tupla} di istanze di entità, una per ciascuna entità coinvolta. Con i fornitori $F_1, \dots, F_4$, le forniture $P_1, P_2, P_3$ e i reparti $D_1, D_2, D_3$, la relazione \textbf{Provision} può contenere le terne:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+    \toprule
+    \textbf{Istanza di Provision} & \textbf{Provider} & \textbf{Supply} & \textbf{Dept.} \\
+    \midrule
+    $f_1$ & $F_1$ & $P_1$ & $D_1$ \\
+    $f_2$ & $F_2$ & $P_2$ & $D_2$ \\
+    $f_3$ & $F_2$ & $P_1$ & $D_3$ \\
+    $f_4$ & $F_4$ & $P_3$ & $D_2$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Perché Non Bastano le Relazioni Binarie.} Il fatto ``$F_1$ ha fornito $P_1$ al reparto $D_1$'' coinvolge \textbf{simultaneamente} tutti e tre i partecipanti. Una relazione binaria \textit{Provider--Supply} direbbe solo che $F_1$ fornisce $P_1$, senza dire a chi; una relazione \textit{Supply--Dept.} direbbe solo che $P_1$ è usato da $D_1$, senza dire da chi. Combinando le due informazioni si potrebbero ottenere accoppiamenti che non corrispondono ad alcun fatto reale. La relazione $n$-aria esprime direttamente il fatto congiunto e le sue istanze sono terne, non coppie.
+
+\medskip
+\noindent \textbf{Relazioni $n$-arie Ricorsive.} Una relazione $n$-aria può essere anche ricorsiva: \textbf{Match} collega due istanze di \textit{TennisPlayer}, con i ruoli \textbf{Better} e \textbf{Worse}, e una \textit{Surface}. L'istanza ``$T_2$ è meglio di $T_1$ sulla superficie $S_1$'' è una terna ordinata dai ruoli (giocatore migliore, giocatore peggiore, superficie). Questo esempio mostra che arianità e ricorsione sono proprietà indipendenti: una relazione può essere contemporaneamente $n$-aria e ricorsiva.
+
+\subsection{Attributi}
+
+\subsubsection{Definizione e Rappresentazione}
+
+\noindent \textbf{Che Cos'è un Attributo.} Un \textbf{attributo} è una proprietà che appartiene a un'\textbf{entità} oppure a una \textbf{relazione}. Ogni attributo mette in corrispondenza l'entità o la relazione con un valore appartenente a un insieme di valori ammessi, detto \textbf{dominio} (\textit{value set}). Il dominio stabilisce quali valori sono validi: per un voto, i voti ammessi; per una data, le date valide; per un nome, le stringhe accettate dal sistema.
+
+\medskip
+\noindent \textbf{Rappresentazione Grafica.} Nel diagramma E-R un attributo si disegna come un \textbf{piccolo cerchio} collegato al simbolo dell'entità o della relazione, con il nome scritto accanto.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.6cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.8, minimum width=2.8cm, minimum height=1.1cm, align=center, fill=cyan!18},
+    att/.style={draw=blue!60!black, circle, minimum size=0.32cm, fill=cyan!10, inner sep=0pt}
+]
+    \node[ent] (st) at (0,0) {\textbf{Student}};
+    \node[rel] (ex) at (4.6,0) {\textbf{Exam}};
+    \node[ent] (co) at (9.2,0) {\textbf{Course}};
+    \draw[thick] (st) -- (ex);
+    \draw[thick] (ex) -- (co);
+
+    \node[att] (sur) at (-1.0,1.8) {};
+    \node[att] (nam) at (0.8,2.1) {};
+    \node[att] (num) at (0,-1.8) {};
+    \node[above] at (sur) {Surname};
+    \node[above] at (nam) {Name};
+    \node[below] at (num) {Number};
+    \draw (st.north) -- (sur);
+    \draw (st.north) -- (nam);
+    \draw (st.south) -- (num);
+
+    \node[att] (dat) at (3.7,1.8) {};
+    \node[att] (deg) at (5.5,2.1) {};
+    \node[above] at (dat) {Date};
+    \node[above] at (deg) {Degree};
+    \draw (ex.north) -- (dat);
+    \draw (ex.north) -- (deg);
+
+    \node[att] (cnam) at (9.2,1.8) {};
+    \node[att] (code) at (9.2,-1.8) {};
+    \node[above] at (cnam) {Name};
+    \node[below] at (code) {Code};
+    \draw (co.north) -- (cnam);
+    \draw (co.south) -- (code);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\medskip
+\noindent \textbf{Attributi di Entità e Attributi di Relazione.} Nell'esempio, \textit{Surname}, \textit{Name} e \textit{Number} sono attributi dell'entità \textit{Student}; \textit{Name} e \textit{Code} sono attributi dell'entità \textit{Course}; \textit{Date} e \textit{Degree} sono attributi della relazione \textit{Exam}. La distinzione non è estetica: un attributo di relazione descrive una proprietà del \textbf{fatto} che collega le entità, non delle entità prese singolarmente.
+
+\begin{cbox}{Attributo di Chi?}
+\noindent Chiedersi sempre a quale costrutto appartiene un attributo. La data e il voto di un esame dipendono dalla \textbf{coppia} studente-corso:
+\begin{itemize}
+    \item se mettiamo \textit{Date} su \textit{Student}, perdiamo l'informazione su quale esame è stato sostenuto;
+    \item se mettiamo \textit{Degree} su \textit{Course}, perdiamo l'informazione su quale studente ha ottenuto quel voto;
+    \item se li mettiamo su \textit{Exam}, il valore è associato esattamente al fatto ``lo studente $S$ ha sostenuto l'esame del corso $C$''.
+\end{itemize}
+Un attributo appartiene al costrutto che lo determina: entità, relazione o, come vedremo, entità ottenuta promuovendo una relazione.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Valori Concreti.} Nelle istanze, ogni attributo assume un valore del proprio dominio. Per esempio:
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Istanza} & \textbf{Attributi} & \textbf{Valori} \\
+    \midrule
+    \textit{Student} $S_1$ & Number, Surname, Name & 34567, Rossi, Mario \\
+    \textit{Exam} $E_1$ & Date, Degree & 20/06/2014, 26 \\
+    \textit{Course} $C_1$ & Code, Name & Inf205, Databases \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Attributi Composti}
+
+\noindent \textbf{Raggruppare Attributi Affini.} Un \textbf{attributo composto} raggruppa attributi della stessa entità o della stessa relazione che presentano \textbf{somiglianze di significato o di uso}. L'esempio classico è \textbf{Address}, definito da \textit{Road}, \textit{Number} e \textit{ZIP}: i tre attributi semplici descrivono insieme l'indirizzo e vengono trattati come un'unica proprietà.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.6cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    att/.style={draw=blue!60!black, circle, minimum size=0.32cm, fill=cyan!10, inner sep=0pt},
+    comp/.style={draw=blue!60!black, ellipse, minimum width=2.8cm, minimum height=1.0cm, align=center, fill=cyan!10}
+]
+    \node[ent] (e) at (0,1.2) {\textbf{Employee}};
+    \node[att] (sur) at (0,3.0) {};
+    \node[above] at (sur) {Surname};
+    \draw (e.north) -- (sur);
+
+    \node[att] (age) at (2.2,1.2) {};
+    \node[right] at (age) {Age};
+    \draw (e.east) -- (age);
+
+    \node[comp] (addr) at (3.6,-0.6) {\textbf{Address}};
+    \draw (e.south) -- (addr.west);
+
+    \node[att] (road) at (6.2,0.3) {};
+    \node[right] at (road) {Road};
+    \draw (addr.east) -- (road);
+
+    \node[att] (num) at (6.2,-0.6) {};
+    \node[right] at (num) {Number};
+    \draw (addr.east) -- (num);
+
+    \node[att] (zip) at (6.2,-1.5) {};
+    \node[right] at (zip) {ZIP};
+    \draw (addr.east) -- (zip);
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Cosa Cambia.} L'attributo composto non introduce un nuovo tipo di valore: è un modo per rendere lo schema più leggibile e per esplicitare che \textit{Road}, \textit{Number} e \textit{ZIP} vanno considerati insieme. In fase di progettazione logica il composto verrà normalmente \textbf{appiattito} nei suoi componenti, perché il modello relazionale non conosce direttamente gli attributi composti.
+
+\begin{cbox}{Composto non Significa Entità}
+\noindent \textit{Address} è un attributo composto, non un'entità: non ha un'identità autonoma e non esiste indipendentemente dall'impiegato a cui appartiene. Un'entità, invece, ha un'esistenza propria e può essere collegata a molte altre entità. La domanda da porsi è sempre: \textit{questo concetto vive da solo o è una proprietà di qualcos'altro?}
+\end{cbox}
+
+\subsection{Cardinalità}
+
+\subsubsection{Cardinalità di una Relazione}
+
+\noindent \textbf{Definizione.} La \textbf{cardinalità} di una relazione è una coppia di valori associata a \textbf{ciascuna entità} che partecipa alla relazione. Essa specifica il \textbf{numero minimo} e il \textbf{numero massimo} di occorrenze della relazione a cui una singola istanza dell'entità può partecipare.
+
+\medskip
+\noindent \textbf{Un Esempio Numerico.} Si consideri la relazione \textbf{Assignment} tra \textit{Employee} e \textit{Job}, con le cardinalità \textit{Employee} $(1,5)$ e \textit{Job} $(0,50)$:
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.8cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.8, minimum width=3.0cm, minimum height=1.1cm, align=center, fill=cyan!18}
+]
+    \node[ent] (e) at (0,0) {\textbf{Employee}};
+    \node[rel] (r) at (4.2,0) {\textbf{Assignment}};
+    \node[ent] (j) at (8.4,0) {\textbf{Job}};
+    \draw[thick] (e) -- (r);
+    \draw[thick] (r) -- (j);
+    \node[above] at (1.6,0.35) {$(1,5)$};
+    \node[above] at (6.8,0.35) {$(0,50)$};
+\end{tikzpicture}
+\end{center}
+
+\noindent In parole:
+\begin{itemize}
+    \item un \textbf{Employee} ha almeno un lavoro e al massimo cinque: partecipa a un numero di istanze di \textit{Assignment} compreso tra 1 e 5;
+    \item un \textbf{Job} può essere assegnato ad alcun impiegato oppure fino a cinquanta: partecipa a un numero di istanze compreso tra 0 e 50.
+\end{itemize}
+
+\begin{cbox}{Come si Legge la Cardinalità}
+\noindent La cardinalità è scritta accanto all'entità, ma riguarda le \textbf{istanze della relazione} che coinvolgono una singola istanza di quell'entità. Per leggerla correttamente:
+\begin{enumerate}
+    \item individua l'entità a cui la coppia è associata;
+    \item chiediti quante volte una singola istanza di quell'entità può comparire in un'istanza della relazione;
+    \item interpreta il primo numero come \textbf{minimo} (partecipazione obbligatoria o opzionale) e il secondo come \textbf{massimo} (limite superiore).
+\end{enumerate}
+La cardinalità \textbf{non} dice quante istanze esistono nella relazione: dice quante volte una singola istanza dell'entità può partecipare. Un errore comune è leggere $(1,5)$ su \textit{Employee} come ``ci sono cinque impiegati'': il significato è ``ogni impiegato può avere da uno a cinque incarichi''.
+\end{cbox}
+
+\subsubsection{La Notazione $(min,max)$}
+
+\noindent \textbf{Forma Completa e Forma Semplificata.} La notazione completa usa due numeri qualsiasi, come $(1,5)$ o $(0,50)$. Nella pratica didattica si usa spesso una forma semplificata, in cui il minimo è \textbf{0 oppure 1} e il massimo è \textbf{1 oppure N}:
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{2.4cm}L{4.4cm}L{7.6cm}@{}}
+    \toprule
+    \textbf{Cardinalità} & \textbf{Nome} & \textbf{Significato per una Singola Istanza} \\
+    \midrule
+    $(0,1)$ & Opzionale, al massimo uno & L'istanza può non partecipare oppure partecipare a una sola occorrenza. \\
+    \addlinespace
+    $(1,1)$ & Obbligatoria, esattamente uno & L'istanza partecipa sempre e a una sola occorrenza. \\
+    \addlinespace
+    $(0,N)$ & Opzionale, numero qualsiasi & L'istanza può non partecipare oppure partecipare a più occorrenze. \\
+    \addlinespace
+    $(1,N)$ & Obbligatoria, almeno uno & L'istanza partecipa almeno una volta e può partecipare a più occorrenze. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Il Significato di $N$.} Il simbolo $N$ non indica un numero infinito: significa che il modello \textbf{non impone un limite massimo} al numero di occorrenze. Il minimo 0 indica una partecipazione \textbf{opzionale}; il minimo 1 indica una partecipazione \textbf{obbligatoria}. Anche il massimo 1 è un vincolo forte: l'istanza non può partecipare a più di un'occorrenza.
+
+\subsubsection{Classificazione delle Relazioni}
+
+\noindent \textbf{Tre Tipi in Base ai Massimi.} In base alle cardinalità massime, le relazioni binarie si classificano in \textbf{uno-a-uno}, \textbf{uno-a-molti} e \textbf{molti-a-molti}. Il nome descrive quante istanze di un'entità possono essere associate a una singola istanza dell'altra.
+
+\medskip
+\noindent \textbf{Relazioni Molti-a-Molti.} Entrambi i lati hanno massimo $N$: un'istanza di ciascuna entità può essere associata a più istanze dell'altra. Esempi:
+\begin{itemize}
+    \item \textit{Student} $(0,N)$--\textit{Exam}--\textit{Course} $(0,N)$: uno studente può sostenere più esami e un corso può avere più studenti;
+    \item \textit{Mountain} $(0,N)$--\textit{Climb}--\textit{Climber} $(1,N)$: una montagna può essere scalata da più alpinisti; un alpinista scala almeno una montagna;
+    \item \textit{Pilot} $(1,N)$--\textit{Drives}--\textit{Airplane} $(1,N)$: un pilota guida almeno un aereo e un aereo è guidato da almeno un pilota.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Relazioni Uno-a-Molti.} Un lato ha massimo $1$, l'altro ha massimo $N$: un'istanza del primo lato può essere associata a molte istanze del secondo, ma non viceversa. Esempi:
+\begin{itemize}
+    \item \textit{People} $(0,1)$--\textit{Job}--\textit{Firm} $(0,N)$: una persona ha al massimo un lavoro presso un'azienda; un'azienda può avere più dipendenti;
+    \item \textit{Cinema} $(1,1)$--\textit{Place}--\textit{City} $(0,N)$: un cinema si trova in una sola città; una città può avere più cinema;
+    \item \textit{Town} $(1,1)$--\textit{PartOf}--\textit{District} $(1,N)$: un comune appartiene a un solo distretto; un distretto ha almeno un comune.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Relazioni Uno-a-Uno.} Entrambi i lati hanno massimo $1$: un'istanza di un'entità può essere associata ad al massimo un'istanza dell'altra. Esempi:
+\begin{itemize}
+    \item \textit{Person} $(0,1)$--\textit{Holds}--\textit{Pacemaker} $(0,1)$: una persona può avere al massimo un pacemaker e un pacemaker può essere impiantato in al massimo una persona;
+    \item \textit{PersonWithPacemaker} $(1,1)$--\textit{Holds}--\textit{Pacemaker} $(0,1)$: chi ha un pacemaker ne ha esattamente uno; un pacemaker può anche non essere impiantato;
+    \item \textit{PersonWithPacemaker} $(1,1)$--\textit{Holds}--\textit{ImplantedPacemaker} $(1,1)$: ogni persona con pacemaker ha esattamente un pacemaker impiantato e ogni pacemaker impiantato appartiene a esattamente una persona.
+\end{itemize}
+
+\begin{cbox}{La Direzione Conta}
+\noindent Una cardinalità uno-a-molti non è simmetrica. \textit{People} $(0,1)$--\textit{Job}--\textit{Firm} $(0,N)$ significa ``ogni persona ha al massimo un lavoro, ogni azienda può avere molti dipendenti''. Se invertissimo le cardinalità in \textit{People} $(0,N)$--\textit{Job}--\textit{Firm} $(0,1)$, diremmo che ogni azienda può avere al massimo un dipendente, che non è il significato voluto. La cardinalità va sempre letta rispetto all'entità a cui è scritta accanto.
+\end{cbox}
+
+\begin{cbox}{Relazioni Obbligatorie da Entrambi i Lati}
+\noindent Le relazioni con cardinalità $(1,1)$ su entrambi i lati sono \textbf{molto rare}. Impongono che ogni istanza delle due entità partecipi sempre e una sola volta, creando un accoppiamento perfetto tra le due popolazioni. Spesso sono il segnale che le due entità sono in realtà lo stesso concetto, oppure che una è una specializzazione dell'altra. Non sono vietate, ma devono essere giustificate da un requisito preciso e verificate con attenzione.
+\end{cbox}
+
+\subsubsection{Cardinalità degli Attributi}
+
+\noindent \textbf{Opzionalità e Multivalore.} Le cardinalità possono essere associate anche agli \textbf{attributi}, con due scopi:
+\begin{itemize}
+    \item indicare l'\textbf{opzionalità}, cioè se un attributo può mancare (informazione parziale);
+    \item indicare se un attributo è \textbf{multivalore}, cioè se può assumere più valori per la stessa istanza.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=3.0cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    att/.style={draw=blue!60!black, circle, minimum size=0.32cm, fill=cyan!10, inner sep=0pt}
+]
+    \node[ent] (e) at (0,0) {\textbf{Employee}};
+
+    \node[att] (ph) at (3.2,1.4) {};
+    \node[right] at (ph) {Phone};
+    \draw (e.east) -- (ph);
+    \node[above] at (1.9,1.05) {$(0,N)$};
+
+    \node[att] (nm) at (3.2,0) {};
+    \node[right] at (nm) {Name};
+    \draw (e.east) -- (nm);
+
+    \node[att] (dl) at (3.2,-1.4) {};
+    \node[right] at (dl) {Driving Licence \#};
+    \draw (e.east) -- (dl);
+    \node[below] at (1.9,-1.05) {$(0,1)$};
+\end{tikzpicture}
+\end{center}
+
+\medskip
+\noindent \textbf{Lettura dell'Esempio.} Per un \textit{Employee}:
+\begin{itemize}
+    \item \textbf{Phone} $(0,N)$: può non avere telefono oppure averne più di uno; è un attributo \textbf{opzionale e multivalore};
+    \item \textbf{Name}: non ha cardinalità scritta, quindi si assume $(1,1)$; è \textbf{obbligatorio e monovalore};
+    \item \textbf{Driving Licence \#} $(0,1)$: può non avere la patente oppure averne una sola; è \textbf{opzionale e monovalore}.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Regola Predefinita.} Se la cardinalità di un attributo non è indicata, si assume \textbf{$(1,1)$}: l'attributo è obbligatorio e ha un solo valore. Un attributo \textbf{multivalore} non è una relazione: descrive più valori della stessa proprietà (per esempio più numeri di telefono) e in fase di progettazione logica richiederà una struttura separata.
+
+\subsection{Identificatori}
+
+\subsubsection{Identificatore Interno}
+
+\noindent \textbf{Identificare le Occorrenze.} Un \textbf{identificatore} è un modo per \textbf{identificare univocamente} le occorrenze di un'entità. Può essere formato da:
+\begin{itemize}
+    \item \textbf{attributi dell'entità} (\textbf{identificatore interno});
+    \item \textbf{attributi dell'entità più entità esterne} raggiungibili tramite relazioni (\textbf{identificatore esterno}).
+\end{itemize}
+
+\medskip
+\noindent \textbf{Identificatore Interno.} Un identificatore è \textbf{interno} quando usa solo attributi dell'entità. Esempi:
+\begin{itemize}
+    \item \textbf{Car}: l'attributo \textit{Plate} è l'identificatore interno, perché non esistono due automobili con la stessa targa;
+    \item \textbf{Person}: gli attributi \textit{Name}, \textit{Surname} e \textit{Birth Date} possono formare un identificatore interno, assumendo che non esistano due persone con la stessa terna di nome, cognome e data di nascita.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.6cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    att/.style={draw=blue!60!black, circle, minimum size=0.32cm, fill=cyan!10, inner sep=0pt},
+    key/.style={draw=blue!60!black, circle, minimum size=0.32cm, fill=blue!60!black, inner sep=0pt}
+]
+    \node[ent] (c) at (0,0) {\textbf{Car}};
+    \node[key] (plate) at (2.4,1.1) {};
+    \node[right] at (plate) {\textbf{Plate}};
+    \draw[thick] (c.east) -- (plate);
+    \node[att] (model) at (2.4,-0.3) {};
+    \node[right] at (model) {Model};
+    \draw (c.east) -- (model);
+\end{tikzpicture}
+\end{center}
+
+\noindent {\small L'attributo chiave \textit{Plate} è evidenziato con un cerchio pieno; \textit{Model} è un attributo ordinario, con cerchio vuoto.}
+
+\medskip
+\noindent \textbf{Identificatori Composti.} Un identificatore può essere composto da \textbf{più attributi}: nessuno di essi, da solo, è sufficiente a distinguere le istanze, ma la loro combinazione sì. Nel caso di \textit{Person}, nome e cognome da soli non bastano (esistono omonimie), mentre nome, cognome e data di nascita insieme possono bastare se il dominio lo garantisce.
+
+\begin{cbox}{Identificatore e Chiave Primaria}
+\noindent L'identificatore è un concetto del modello \textbf{concettuale}; la \textbf{chiave primaria} è la sua traduzione nel modello \textbf{relazionale}. In fase concettuale ci interessa la regola del dominio: ``questa combinazione di proprietà distingue ogni istanza''. In fase logica sceglieremo quali attributi dichiarare come chiave primaria. Ogni entità deve avere almeno un identificatore, ma può averne più di uno: in quel caso parliamo di identificatori candidati.
+\end{cbox}
+
+\subsubsection{Identificatore Esterno}
+
+\noindent \textbf{Quando gli Attributi Non Bastano.} A volte nessun attributo dell'entità, da solo o in combinazione, è sufficiente a identificarla. Un numero di matricola può essere unico all'interno di un ateneo, ma non a livello nazionale: due studenti di università diverse possono avere lo stesso \textit{Number}. In questo caso serve un \textbf{identificatore esterno}.
+
+\medskip
+\noindent \textbf{Studente e Università.} Si consideri la relazione \textbf{Registration} tra \textit{Student} e \textit{University}, con cardinalità \textit{Student} $(1,1)$ e \textit{University} $(0,N)$. L'identificatore di \textit{Student} è formato da:
+\begin{itemize}
+    \item l'attributo \textit{Number} dello studente;
+    \item l'entità \textit{University}, raggiungibile tramite la relazione \textit{Registration}.
+\end{itemize}
+La coppia (\textit{Number}, \textit{University}) identifica lo studente, perché lo stesso numero può esistere in atenei diversi.
+
+\medskip
+\noindent \textbf{Perché Serve la Cardinalità $(1,1)$.} Un identificatore esterno è possibile solo attraverso una relazione in cui l'entità da identificare partecipa con cardinalità \textbf{$(1,1)$}. Nel caso di \textit{Student}:
+\begin{itemize}
+    \item ogni studente è registrato in \textbf{esattamente un'università}: la componente esterna è sempre definita e unica;
+    \item se uno studente potesse essere registrato in più università, la coppia (\textit{Number}, \textit{University}) non identificherebbe univocamente lo studente;
+    \item se potesse non essere registrato in nessuna università, l'identificatore non sarebbe definito per tutte le istanze.
+\end{itemize}
+Anche l'entità esterna deve avere un proprio identificatore: \textit{University} è identificata, ad esempio, da \textit{Name}.
+
+\noindent \textbf{Riepilogo dei Casi Visti.} Gli esempi possono essere riassunti così:
+\begin{itemize}
+    \item \textit{Car}: identificatore \textbf{interno}, formato da \textit{Plate}; funziona perché la targa è unica.
+    \item \textit{Person}: identificatore \textbf{interno}, formato da \textit{Name}, \textit{Surname} e \textit{Birth Date}; funziona se il dominio garantisce l'unicità della terna.
+    \item \textit{Student}: identificatore \textbf{esterno}, formato da \textit{Number} e \textit{University}; funziona perché il numero è unico solo all'interno dell'ateneo.
+\end{itemize}
+
+\subsubsection{Osservazioni e Regole Pratiche}
+
+\noindent \textbf{Almeno un Identificatore.} Ogni entità deve avere \textbf{almeno un identificatore}, ma può averne più di uno. Se esistono più identificatori, tutti sono validi dal punto di vista concettuale; la scelta di quello ``principale'' dipende dalla stabilità, dalla semplicità e dalle convenzioni del dominio. Un identificatore basato su un codice stabile è preferibile a uno basato su dati che possono cambiare, come un indirizzo o un numero di telefono.
+
+\medskip
+\noindent \textbf{Le Relazioni Non Hanno Identificatori.} Nel modello E-R adottato, gli identificatori appartengono alle \textbf{entità}, non alle relazioni. Il motivo è duplice:
+\begin{itemize}
+    \item un'istanza di relazione è già identificata dalla tupla delle istanze di entità che vi partecipano;
+    \item è preferibile associare gli attributi alle entità, non alle relazioni: se una relazione ha bisogno di un'identità propria o di attributi importanti, il modo corretto è \textbf{promuoverla a entità}, come visto nella Sezione 8.3.5.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Unicità di Dominio, Non di Convenienza.} Un identificatore deve essere unico per \textbf{tutte le possibili istanze}, non solo per i dati attualmente presenti. Se oggi non ci sono due persone con lo stesso nome e cognome, non possiamo concludere che nome e cognome siano un identificatore: domani potrebbe arrivare un omonimo. L'unicità deve essere garantita da una \textbf{regola del dominio} o da un codice progettato apposta, non da un'osservazione statistica sui dati correnti.
+
+\begin{cbox}{Quattro Errori da Evitare}
+\noindent Prima di chiudere il modello concettuale, vale la pena controllare i punti più delicati:
+\begin{enumerate}
+    \item \textbf{Istanza di relazione duplicata}: se serve ripetere la stessa coppia, probabilmente la relazione va promossa a entità.
+    \item \textbf{Cardinalità nella direzione sbagliata}: rileggere sempre la coppia rispetto all'entità a cui è scritta accanto.
+    \item \textbf{Attributo sul costrutto sbagliato}: un attributo che dipende dalla coppia di entità appartiene alla relazione, non a una delle due entità.
+    \item \textbf{Identificatore non unico}: verificare che l'unicità sia garantita dal dominio, non solo dai dati attuali.
+\end{enumerate}
+\end{cbox}
+
+\subsection{Un Esempio Completo}
+
+\noindent \textbf{Dallo Schema di Base a un Caso Realistico.} Le slide propongono un ultimo schema E-R che combina tutti i costrutti visti: entità, relazioni, attributi, cardinalità e identificatori. Il dominio è quello di un'azienda con \textbf{impiegati}, \textbf{dipartimenti}, \textbf{progetti} e \textbf{uffici}. Lo schema non va memorizzato: serve a mostrare come i concetti interagiscono e come una piccola modifica possa cambiarne il significato.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\scriptsize,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.4cm, minimum height=0.85cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=2, minimum width=2.6cm, minimum height=1.05cm, align=center, fill=cyan!18},
+    att/.style={draw=blue!60!black, circle, minimum size=0.24cm, fill=cyan!10, inner sep=0pt},
+    key/.style={draw=blue!60!black, circle, minimum size=0.24cm, fill=blue!60!black, inner sep=0pt},
+    comp/.style={draw=blue!60!black, ellipse, minimum width=2.2cm, minimum height=0.8cm, align=center, fill=cyan!10}
+]
+    \node[ent] (emp) at (0,4.6) {\textbf{Employee}};
+    \node[ent] (dept) at (10.2,4.6) {\textbf{Dept.}};
+    \node[rel] (mgmt) at (5.1,7.1) {\textbf{Management}};
+    \node[rel] (aff) at (5.1,4.1) {\textbf{Affiliation}};
+    \node[rel] (att) at (0,1.9) {\textbf{Attendance}};
+    \node[ent] (proj) at (0,-0.8) {\textbf{Project}};
+    \node[rel] (comp) at (10.2,1.9) {\textbf{Composition}};
+    \node[ent] (off) at (10.2,-0.8) {\textbf{Office}};
+
+    \draw[thick] (emp.north) -- (0,5.9) -| (mgmt.west);
+    \draw[thick] (dept.north) -- (10.2,5.9) -| (mgmt.east);
+    \draw[thick] (emp.east) -- (aff.west);
+    \draw[thick] (dept.west) -- (aff.east);
+    \draw[thick] (emp.south) -- (att.north);
+    \draw[thick] (att.south) -- (proj.north);
+    \draw[thick] (dept.south) -- (comp.north);
+    \draw[thick] (comp.south) -- (off.north);
+
+    \node[above] at (2.0,5.95) {$(0,1)$};
+    \node[above] at (8.2,5.95) {$(0,1)$};
+    \node[above] at (2.6,4.35) {$(1,1)$};
+    \node[above] at (7.6,4.35) {$(0,N)$};
+    \node[right] at (0.4,3.5) {$(0,N)$};
+    \node[right] at (0.4,0.7) {$(1,N)$};
+    \node[left] at (9.8,3.0) {$(1,1)$};
+    \node[left] at (9.8,0.7) {$(1,N)$};
+
+    \node[att] (surn) at (-1.6,5.5) {};
+    \node[above] at (surn) {Surname};
+    \node[above] at (-0.9,5.15) {$(0,1)$};
+    \draw (emp.north west) -- (surn);
+
+    \node[key] (code) at (-1.4,3.9) {};
+    \node[left] at (code) {\textbf{Code}};
+    \draw (emp.south west) -- (code);
+
+    \node[att] (phone) at (11.8,5.5) {};
+    \node[right] at (phone) {Phone};
+    \node[above] at (11.1,5.2) {$(1,N)$};
+    \draw (dept.north east) -- (phone);
+
+    \node[key] (dname) at (11.8,4.4) {};
+    \node[right] at (dname) {\textbf{Name}};
+    \draw (dept.east) -- (dname);
+
+    \node[att] (budget) at (-1.4,-0.2) {};
+    \node[left] at (budget) {Budget};
+    \draw (proj.west) -- (budget);
+
+    \node[key] (pname) at (1.4,-1.4) {};
+    \node[right] at (pname) {\textbf{Name}};
+    \draw (proj.east) -- (pname);
+
+    \node[key] (city) at (11.8,-0.5) {};
+    \node[right] at (city) {\textbf{City}};
+    \draw (off.east) -- (city);
+
+    \node[comp] (addr) at (10.2,-2.5) {\textbf{Address}};
+    \draw (off.south) -- (addr.north);
+    \node[att] (road) at (8.0,-3.2) {};
+    \node[left] at (road) {Road};
+    \draw (addr.west) -- (road);
+    \node[att] (zip) at (12.4,-3.2) {};
+    \node[right] at (zip) {ZIP};
+    \draw (addr.east) -- (zip);
+
+    \node[att] (date) at (5.1,2.8) {};
+    \node[right] at (date) {Date};
+    \node[right] at (5.45,3.05) {$(0,1)$};
+    \draw (aff.south) -- (date);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small Schema completo del dominio aziendale: le entità sono collegate da quattro relazioni, gli attributi chiave sono cerchi pieni, gli attributi opzionali o multivalore riportano la cardinalità, \textit{Address} è un attributo composto.}
+
+\medskip
+\noindent \textbf{Lettura delle Relazioni.} Le cardinalità si leggono sempre rispetto all'entità a cui sono scritte accanto:
+\begin{itemize}
+    \item \textbf{Management}: \textit{Employee} $(0,1)$ e \textit{Dept.} $(0,1)$. Un impiegato può dirigere al massimo un dipartimento; un dipartimento può avere al massimo un direttore. Entrambe le partecipazioni sono opzionali.
+    \item \textbf{Affiliation}: \textit{Employee} $(1,1)$ e \textit{Dept.} $(0,N)$. Ogni impiegato è affiliato a esattamente un dipartimento; un dipartimento può avere zero o più impiegati. L'attributo \textit{Date} $(0,1)$ è la data di affiliazione, opzionale.
+    \item \textbf{Attendance}: \textit{Employee} $(0,N)$ e \textit{Project} $(1,N)$. Un impiegato può partecipare a più progetti, ma anche a nessuno; ogni progetto ha almeno un impiegato.
+    \item \textbf{Composition}: \textit{Dept.} $(1,1)$ e \textit{Office} $(1,N)$. Ogni dipartimento ha esattamente un ufficio; un ufficio può ospitare più dipartimenti.
+\end{itemize}
+
+\medskip
+\noindent \textbf{Lettura degli Attributi.} \textit{Surname} è opzionale, \textit{Phone} è multivalore, \textit{Code} identifica \textit{Employee}, \textit{Name} identifica \textit{Project}, \textit{City} identifica \textit{Office}. Per \textit{Dept.}, \textit{Name} partecipa all'identificatore, ma nella variante A l'identificatore completo è esterno e comprende anche \textit{Office}. \textit{Address} è un attributo composto di \textit{Road} e \textit{ZIP}: non è un'entità, perché non ha un'identità autonoma. Il diagramma mostra anche che un attributo può appartenere a una relazione: \textit{Date} descrive l'affiliazione, non l'impiegato né il dipartimento presi separatamente.
+
+\begin{cbox}{Leggere uno Schema Complesso}
+\noindent Davanti a uno schema grande conviene procedere per passi:
+\begin{enumerate}
+    \item elencare le entità e, per ciascuna, gli attributi e l'identificatore;
+    \item elencare le relazioni con le entità che collegano;
+    \item leggere ogni cardinalità come una frase in italiano;
+    \item controllare che gli attributi di relazione dipendano davvero dalla coppia di entità;
+    \item verificare che ogni entità abbia almeno un identificatore.
+\end{enumerate}
+Solo alla fine si guarda il disegno nel suo insieme: così un errore locale non passa inosservato.
+\end{cbox}
+
+\subsubsection{Cardinalità e Identificatori Cambiano Insieme}
+
+\noindent \textbf{Una Modifica Piccola, un Effetto Grande.} Le slide mettono in guardia: \textit{``piccoli cambiamenti nelle cardinalità e negli identificatori possono alterare l'intero significato del diagramma''}. Il punto non è il disegno in sé, ma il fatto che cardinalità e identificatori sono due facce dello stesso vincolo. Se cambia quante volte un'entità partecipa a una relazione, può cambiare anche quali attributi sono sufficienti a identificarla.
+
+\medskip
+\noindent \textbf{Due Varianti di \textit{Composition}.} Si considerino due versioni dello schema, diverse solo per la cardinalità di \textit{Composition}:
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{2.6cm}L{4.0cm}L{5.2cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Variante} & \textbf{Cardinalità} & \textbf{Conseguenza} & \textbf{Identificatori} \\
+    \midrule
+    A & \textit{Dept.} $(1,1)$, \textit{Office} $(1,N)$ & Ogni dipartimento ha esattamente un ufficio; un ufficio può ospitare più dipartimenti. & \textit{Office} = \textit{City}; \textit{Dept.} = \textit{Name} + \textit{Office} (esterno). Due dipartimenti possono avere lo stesso nome solo in città diverse. \\
+    \addlinespace
+    B & \textit{Dept.} $(1,N)$, \textit{Office} $(1,1)$ & Ogni ufficio appartiene a un solo dipartimento; un dipartimento può avere più uffici. & \textit{Dept.} = \textit{Name}; \textit{Office} = \textit{City} + \textit{Dept.} (esterno). Nella stessa città possono convivere più dipartimenti con nomi diversi. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Perché Cambia l'Identificatore.} Nella variante A l'ufficio è identificato dalla città, perché ogni dipartimento ha un solo ufficio e quindi la città dell'ufficio contribuisce a distinguere il dipartimento. Nella variante B è l'ufficio a dipendere dal dipartimento: la città da sola non basta più, perché più uffici possono trovarsi nella stessa città, e serve il nome del dipartimento. L'identificatore esterno non è un'aggiunta arbitraria: è la conseguenza della cardinalità $(1,1)$.
+
+\begin{cbox}{Controllare Sempre Due Cose}
+\noindent Prima di dichiarare concluso uno schema, verificare insieme:
+\begin{itemize}
+    \item \textbf{la cardinalità}: quante volte una singola istanza può partecipare alla relazione;
+    \item \textbf{l'identificatore}: quali attributi, eventualmente con entità esterne, distinguono ogni istanza.
+\end{itemize}
+Se si cambia una cardinalità $(1,1)$ in $(0,N)$ o viceversa, chiedersi subito se l'identificatore esterno che si stava usando è ancora valido. Molti schemi sbagliati nascono proprio da una cardinalità corretta in sé, ma incompatibile con l'identificatore scelto.
+\end{cbox}
+
+\subsection{Generalizzazione}
+
+\subsubsection{Definizione e Rappresentazione}
+
+\noindent \textbf{Che Cos'è la Generalizzazione.} La \textbf{generalizzazione} mette in relazione una o più entità $E_1, \dots, E_n$ con un'altra entità $E$ che le rappresenta come \textbf{casi specifici}. In simboli:
+\[
+E_1, \dots, E_n \;\longrightarrow\; E
+\]
+$E$ è la \textbf{generalizzazione} di $E_1, \dots, E_n$; le entità $E_1, \dots, E_n$ sono le \textbf{specializzazioni} di $E$. In italiano si dice anche che $E$ è il \textbf{padre} e le $E_i$ sono i \textbf{figli}. La relazione si legge ``\textit{è un}'' (\textit{is-a}): un impiegato è una persona, un manager è un impiegato.
+
+\medskip
+\noindent \textbf{Rappresentazione Grafica.} La generalizzazione si disegna con una linea che parte dai figli e arriva al padre, terminando con una \textbf{freccia vuota} (un triangolo aperto) rivolta verso il padre.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.6cm, minimum height=0.9cm, align=center, fill=cyan!12}
+]
+    \node[ent] (emp) at (0,3.0) {\textbf{Employee}};
+    \node[ent] (clerk) at (-4.0,0.4) {\textbf{Clerk}};
+    \node[ent] (officer) at (0,0.4) {\textbf{Officer}};
+    \node[ent] (manager) at (4.0,0.4) {\textbf{Manager}};
+
+    \draw (clerk.north) -- (-4.0,1.7) -- (0,1.7);
+    \draw (officer.north) -- (0,1.7);
+    \draw (manager.north) -- (4.0,1.7) -- (0,1.7);
+    \draw[-{Triangle[open]}] (0,1.7) -- (emp.south);
+\end{tikzpicture}
+\end{center}
+
+\noindent {\small La freccia vuota parte dai figli e punta al padre: \textit{Clerk}, \textit{Officer} e \textit{Manager} sono specializzazioni di \textit{Employee}.}
+
+\medskip
+\noindent \textbf{Proprietà della Generalizzazione.} Se $E$ è generalizzazione di $E_1, \dots, E_n$:
+\begin{itemize}
+    \item ogni proprietà definita su $E$ è significativa anche per $E_1, \dots, E_n$;
+    \item ogni occorrenza di $E_1, \dots, E_n$ è anche un'occorrenza di $E$.
+\end{itemize}
+La seconda proprietà è il cuore del meccanismo: un \textit{Manager} è un \textit{Employee}, quindi tutto ciò che vale per un impiegato vale anche per un manager. Non si tratta di una semplice somiglianza, ma di una \textbf{relazione di sottoinsieme} tra le popolazioni delle entità.
+
+\medskip
+\noindent \textbf{Ereditarietà.} Tutte le proprietà del padre (attributi, relazioni e altre generalizzazioni) sono \textbf{ereditate} dai figli e \textbf{non vengono rappresentate di nuovo} nel diagramma. Se \textit{People} ha gli attributi \textit{Tax code}, \textit{Name} e \textit{Age} e partecipa alla relazione \textit{Birth} con \textit{City}, allora anche \textit{Employee} e \textit{Student} hanno quegli attributi e quella relazione, senza che sia necessario ridisegnarli.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.8cm, minimum height=0.9cm, align=center, fill=cyan!12},
+    rel/.style={draw=blue!60!black, diamond, aspect=1.8, minimum width=2.8cm, minimum height=1.0cm, align=center, fill=cyan!18},
+    att/.style={draw=blue!60!black, circle, minimum size=0.28cm, fill=cyan!10, inner sep=0pt},
+    key/.style={draw=blue!60!black, circle, minimum size=0.28cm, fill=blue!60!black, inner sep=0pt}
+]
+    \node[ent] (people) at (0,3.2) {\textbf{People}};
+    \node[ent] (employee) at (-2.8,0.3) {\textbf{Employee}};
+    \node[ent] (student) at (2.8,0.3) {\textbf{Student}};
+    \node[rel] (birth) at (0,5.8) {\textbf{Birth}};
+    \node[ent] (city) at (0,8.2) {\textbf{City}};
+
+    \draw[thick] (people.north) -- (birth.south);
+    \draw[thick] (birth.north) -- (city.south);
+    \node[right] at (0.35,4.7) {$(1,1)$};
+    \node[right] at (0.35,6.7) {$(0,N)$};
+
+    \draw (employee.north) -- (-2.8,1.7) -- (0,1.7);
+    \draw (student.north) -- (2.8,1.7) -- (0,1.7);
+    \draw[-{Triangle[open]}] (0,1.7) -- (people.south);
+
+    \node[key] (tax) at (-2.9,4.3) {};
+    \node[left] at (tax) {\textbf{Tax code}};
+    \draw (people.west) -- (tax);
+
+    \node[att] (name) at (2.3,4.2) {};
+    \node[right] at (name) {Name};
+    \draw (people.east) -- (name);
+
+    \node[att] (age) at (2.5,2.6) {};
+    \node[right] at (age) {Age};
+    \draw (people.south east) -- (age);
+
+    \node[att] (income) at (-4.9,1.1) {};
+    \node[left] at (income) {Income};
+    \draw (employee.west) -- (income);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small \textit{Employee} e \textit{Student} ereditano \textit{Tax code}, \textit{Name}, \textit{Age} e la relazione \textit{Birth}; \textit{Employee} aggiunge solo il proprio attributo \textit{Income}.}
+
+\begin{cbox}{Generalizzazione non è una Relazione Qualsiasi}
+\noindent Una generalizzazione non si usa per collegare due entità che hanno semplicemente qualcosa in comune. Deve valere la frase ``\textit{un $E_i$ è un $E$}'': un manager \textbf{è un} impiegato, un impiegato \textbf{è una} persona. Se la frase non suona corretta, probabilmente serve una relazione, non una generalizzazione. Inoltre le proprietà comuni vanno messe nel padre, mentre nei figli restano solo quelle specifiche: duplicare gli stessi attributi in tutti i figli annulla il vantaggio della generalizzazione.
+\end{cbox}
+
+\subsubsection{Tipi di Generalizzazione}
+
+\noindent \textbf{Totale o Parziale.} Una generalizzazione è \textbf{totale} se ogni occorrenza del padre è occorrenza di almeno uno dei figli; è \textbf{parziale} se esistono occorrenze del padre che non appartengono a nessun figlio.
+
+\medskip
+\noindent \textbf{Disgiunta o Sovrapposta.} Una generalizzazione è \textbf{disgiunta} se ogni occorrenza del padre è occorrenza di \textbf{al più uno} dei figli; è \textbf{sovrapposta} (\textit{overlapping}) se può appartenere a più figli contemporaneamente.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{3.4cm}L{6.8cm}L{5.6cm}@{}}
+    \toprule
+    \textbf{Tipo} & \textbf{Significato} & \textbf{Esempio} \\
+    \midrule
+    Totale e disgiunta & Ogni occorrenza del padre è esattamente una delle figlie. & \textit{Person} $\to$ \textit{Male}, \textit{Female}. \\
+    \addlinespace
+    Totale e sovrapposta & Ogni occorrenza del padre è almeno una figlia, ma può appartenere a più figlie. & Una persona può essere contemporaneamente \textit{Musicista} e \textit{Scrittore}. \\
+    \addlinespace
+    Parziale e disgiunta & Alcune occorrenze del padre non sono in nessuna figlia; al più una figlia per occorrenza. & \textit{Vertebrates} $\to$ \textit{Mammals}, \textit{Reptiles}. \\
+    \addlinespace
+    Parziale e sovrapposta & Alcune occorrenze restano fuori e altre appartengono a più figlie. & \textit{Person} $\to$ \textit{Student}, \textit{Employee}, se uno studente-lavoratore può essere entrambi. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Cosa Consideriamo nel Corso.} Senza perdita di generalità, il corso considera solo generalizzazioni \textbf{disgiunte} e distingue tra \textbf{totali} e \textbf{parziali}. Le generalizzazioni sovrapposte sono possibili, ma richiedono strumenti espressivi ulteriori e vengono lasciate fuori dal nucleo del modello.
+
+\medskip
+\noindent \textbf{Due Esempi delle Slide.} \textit{Vertebrates} $\to$ \textit{Mammals}, \textit{Reptiles} è \textbf{disgiunta e parziale}: un vertebrato non può essere contemporaneamente mammifero e rettile, ma non tutti i vertebrati sono mammiferi o rettili (esistono pesci e uccelli). \textit{Person} $\to$ \textit{Male}, \textit{Female} è \textbf{disgiunta e totale}: ogni persona è esattamente una delle due, e nessuna è entrambe.
+
+\subsubsection{Generalizzazioni a Più Livelli e Casi Particolari}
+
+\noindent \textbf{Gerarchie a Più Livelli.} Una generalizzazione può avere come figlio un'entità che è a sua volta padre di un'altra generalizzazione. Si ottengono \textbf{gerarchie} su più livelli: \textit{People} $\to$ \textit{Employee} $\to$ \textit{Manager}, \textit{Clerk}. Le proprietà si ereditano lungo tutta la catena: un \textit{Manager} riceve gli attributi di \textit{Employee} e, attraverso di esso, quelli di \textit{People}.
+
+\medskip
+\noindent \textbf{Generalizzazioni allo Stesso Livello.} Un'entità può comparire in \textbf{più gerarchie}, sia come padre sia come figlio. Per esempio \textit{People} può essere padre di \textit{Man}/\textit{Woman} e, separatamente, di \textit{Employee}/\textit{Student}. Sono due generalizzazioni diverse, con vincoli diversi: la prima può essere totale e disgiunta, la seconda parziale e disgiunta.
+
+\medskip
+\noindent \textbf{Il Caso del Sottoinsieme.} Una generalizzazione con \textbf{un solo figlio} si chiama \textbf{sottoinsieme} (\textit{subset}). Serve a modellare una parte delle occorrenze del padre che possiede proprietà aggiuntive. Per esempio \textit{SwArchitect} $\to$ \textit{InCharge}: non tutti gli architetti software sono responsabili di un progetto, ma quelli che lo sono hanno un ruolo e forse un attributo in più.
+
+\medskip
+\noindent \textbf{Configurazioni che Non Hanno Senso.} Non ogni gerarchia è lecita. Una generalizzazione senza figli, un ciclo di generalizzazioni o un figlio che non condivide il significato del padre producono schemi privi di interpretazione. Anche la scelta tra totale e parziale va giustificata dal dominio, non decisa a posteriori per far ``quadrare'' i dati.
+
+\medskip
+\noindent \textbf{Padre Senza Identificatore.} In alcune varianti del modello, il padre di una generalizzazione può non avere un identificatore proprio, purché l'identità sia definita nei figli e la generalizzazione sia \textbf{totale}: ogni occorrenza del padre è coperta da almeno un figlio, e quindi può essere identificata tramite l'identificatore del figlio. Se la generalizzazione è parziale, invece, le occorrenze del padre non coperte da alcun figlio resterebbero senza identificatore: per questo la condizione di totalità è essenziale.
+
+\subsubsection{Esercizio: Persone, Impiegati e Studenti}
+
+\noindent \textbf{Testo.} Le persone hanno \textit{Tax Code}, \textit{Surname} e \textit{Age}; per ogni uomo si vuole sapere se ha svolto il servizio militare; gli impiegati hanno un \textit{Income} e possono essere \textit{Manager}, \textit{Clerk} oppure \textit{SwArchitect} (alcuni dei quali sono responsabili di un progetto); gli studenti (che non possono essere impiegati) hanno un numero di matricola; alcune persone non sono né impiegati né studenti, e non servono ulteriori dettagli.
+
+\medskip
+\noindent \textbf{Analisi.} Il testo contiene due generalizzazioni diverse dal padre \textit{People}:
+\begin{itemize}
+    \item \textit{People} $\to$ \textit{Man}, \textit{Woman}: \textbf{totale e disgiunta}, perché ogni persona è esattamente un uomo o una donna; \textit{Military} è un attributo del solo \textit{Man}.
+    \item \textit{People} $\to$ \textit{Employee}, \textit{Student}: \textbf{parziale e disgiunta}, perché alcuni non sono né impiegati né studenti e uno studente non può essere un impiegato.
+\end{itemize}
+\textit{Employee} è a sua volta padre di \textit{Manager}, \textit{Clerk} e \textit{SwArchitect}; \textit{SwArchitect} è padre di \textit{InCharge}, un sottoinsieme degli architetti responsabili di un progetto.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\scriptsize,
+    ent/.style={draw=blue!60!black, rectangle, minimum width=2.2cm, minimum height=0.8cm, align=center, fill=cyan!12},
+    att/.style={draw=blue!60!black, circle, minimum size=0.22cm, fill=cyan!10, inner sep=0pt},
+    key/.style={draw=blue!60!black, circle, minimum size=0.22cm, fill=blue!60!black, inner sep=0pt}
+]
+    \node[ent] (people) at (4.2,7.2) {\textbf{People}};
+    \node[ent] (man) at (-1.4,4.9) {\textbf{Man}};
+    \node[ent] (woman) at (1.2,4.9) {\textbf{Woman}};
+    \node[ent] (employee) at (4.6,4.9) {\textbf{Employee}};
+    \node[ent] (student) at (8.2,4.9) {\textbf{Student}};
+    \node[ent] (swarch) at (2.0,2.0) {\textbf{SwArchitect}};
+    \node[ent] (manager) at (4.6,2.0) {\textbf{Manager}};
+    \node[ent] (clerk) at (7.2,2.0) {\textbf{Clerk}};
+    \node[ent] (incharge) at (2.0,0.0) {\textbf{InCharge}};
+
+    % Generalizzazione People -> Man/Woman/Employee/Student
+    \draw (man.north) -- (-1.4,5.8);
+    \draw (woman.north) -- (1.2,5.8);
+    \draw (employee.north) -- (4.6,5.8);
+    \draw (student.north) -- (8.2,5.8);
+    \draw (-1.4,5.8) -- (8.2,5.8);
+    \draw[-{Triangle[open]}] (4.2,5.8) -- (people.south);
+
+    % Generalizzazione Employee -> SwArchitect/Manager/Clerk
+    \draw (swarch.north) -- (2.0,3.3);
+    \draw (manager.north) -- (4.6,3.3);
+    \draw (clerk.north) -- (7.2,3.3);
+    \draw (2.0,3.3) -- (7.2,3.3);
+    \draw[-{Triangle[open]}] (4.6,3.3) -- (employee.south);
+
+    % Sottoinsieme SwArchitect -> InCharge
+    \draw[-{Triangle[open]}] (incharge.north) -- (swarch.south);
+
+    \node[key] (tax) at (2.0,7.9) {};
+    \node[left] at (tax) {\textbf{Tax Code}};
+    \draw (people.north west) -- (tax);
+
+    \node[att] (surname) at (2.4,6.5) {};
+    \node[left] at (surname) {Surname};
+    \draw (people.south west) -- (surname);
+
+    \node[att] (age) at (6.5,7.9) {};
+    \node[right] at (age) {Age};
+    \draw (people.north east) -- (age);
+
+    \node[att] (mil) at (-1.4,3.5) {};
+    \node[left] at (mil) {Military};
+    \draw (man.south) -- (mil);
+
+    \node[att] (income) at (3.0,4.0) {};
+    \node[left] at (income) {Income};
+    \draw (employee.west) -- (income);
+
+    \node[att] (matr) at (9.5,4.0) {};
+    \node[right] at (matr) {Matr.};
+    \draw (student.east) -- (matr);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small Schema concettuale dell'esercizio: due generalizzazioni da \textit{People}, una gerarchia di specializzazioni di \textit{Employee} e un sottoinsieme \textit{InCharge}.}
+
+\begin{cbox}{Leggere le Due Generalizzazioni}
+\noindent \textit{People} compare come padre due volte, ma le due generalizzazioni non vanno fuse:
+\begin{itemize}
+    \item \textit{Man}/\textit{Woman} riguarda il sesso e copre \textbf{tutte} le persone (totale);
+    \item \textit{Employee}/\textit{Student} riguarda il ruolo e \textbf{non} copre tutte le persone (parziale).
+\end{itemize}
+Unire le due gerarchie in un unico gruppo di figli produrrebbe uno schema ambiguo, in cui non è chiaro quali combinazioni di sesso e ruolo siano ammesse. La generalizzazione è uno strumento espressivo, ma ogni gerarchia deve avere un criterio di classificazione chiaro e univoco.
+\end{cbox}
+
+\subsection{Documentare il Modello Concettuale}
+
+\noindent \textbf{Il Diagramma non Basta.} Uno schema E-R è una rappresentazione sintetica: molti dettagli non stanno nel disegno e rischiano di andare perduti. Per questo la progettazione concettuale si accompagna a una \textbf{documentazione}, che comprende almeno tre parti:
+\begin{itemize}
+    \item un \textbf{dizionario dei dati} per le entità;
+    \item un \textbf{dizionario dei dati} per le relazioni;
+    \item l'elenco dei \textbf{vincoli non esprimibili} con i costrutti del modello.
+\end{itemize}
+La documentazione non è un allegato burocratico: è ciò che permette a un altro progettista, o a chi implementerà il database, di capire \textit{perché} lo schema è fatto in quel modo.
+
+\subsubsection{Dizionario dei Dati: Entità}
+
+\noindent \textbf{Cosa Contiene.} Per ogni entità il dizionario riporta una descrizione in linguaggio naturale, gli attributi e l'identificatore. La descrizione chiarisce il significato del nome, che da solo può essere ambiguo: \textit{Office} può indicare una sede fisica, un incarico o un ufficio pubblico.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{2.6cm}L{4.6cm}L{4.4cm}L{3.0cm}@{}}
+    \toprule
+    \textbf{Entità} & \textbf{Descrizione} & \textbf{Attributi} & \textbf{Identificatore} \\
+    \midrule
+    \textit{Employee} & Impiegato di un dipartimento. & Code, Name, Surname & Code \\
+    \addlinespace
+    \textit{Project} & Progetto di un dipartimento. & Name, Budget & Name \\
+    \addlinespace
+    \textit{Department} & Struttura di un dipartimento. & Name, Phone & Name, Office \\
+    \addlinespace
+    \textit{Office} & Sede fisica di un dipartimento. & City, Address & City \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent {\small Il dizionario riprende lo schema completo della Sezione~8.7: \textit{Department} ha un identificatore esterno che comprende \textit{Office}.}
+
+\subsubsection{Dizionario dei Dati: Relazioni}
+
+\noindent \textbf{Cosa Contiene.} Per ogni relazione il dizionario riporta la descrizione, le entità che vi partecipano e gli eventuali attributi propri.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{3.0cm}L{5.0cm}L{4.0cm}L{2.8cm}@{}}
+    \toprule
+    \textbf{Relazione} & \textbf{Descrizione} & \textbf{Componenti} & \textbf{Attributo} \\
+    \midrule
+    \textit{Management} & Direzione di un dipartimento. & Employee, Dept. & --- \\
+    \addlinespace
+    \textit{Affiliation} & Affiliazione a un dipartimento. & Employee, Dept. & Date \\
+    \addlinespace
+    \textit{Attendance} & Partecipazione a un progetto. & Employee, Project & --- \\
+    \addlinespace
+    \textit{Composition} & Composizione dei dipartimenti. & Dept., Office & --- \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent {\small Il trattino indica che la relazione non ha attributi propri. Se ne avesse, andrebbero elencati qui e non nel dizionario delle entità.}
+
+\subsubsection{Vincoli Non Esprimibili}
+
+\noindent \textbf{Che Cosa Sono.} Alcune regole del dominio non possono essere rappresentate con entità, relazioni, attributi, cardinalità e identificatori. Non perché il modello sia sbagliato, ma perché richiedono confronti tra valori, condizioni temporali o aggregazioni che il modello concettuale non cattura. Le slide ne elencano quattro esempi:
+\begin{enumerate}
+    \item il direttore di un dipartimento deve appartenere a quel dipartimento;
+    \item un impiegato non può avere un reddito superiore a quello del direttore del dipartimento a cui è affiliato;
+    \item un dipartimento situato a Roma deve essere diretto da un impiegato con almeno dieci anni di servizio;
+    \item un impiegato non affiliato a nessun dipartimento non può partecipare ad alcun progetto.
+\end{enumerate}
+
+\medskip
+\noindent \textbf{Perché Non Sono Esprimibili.} Il primo vincolo collega la relazione \textit{Management} a quella di \textit{Affiliation}: richiede che il direttore sia anche affiliato allo stesso dipartimento, ma questa uguaglianza tra due relazioni non ha una notazione E-R standard. Il secondo confronta due valori numerici (\textit{Income} dell'impiegato e del direttore) e dipende da una relazione che attraversa più entità. Il terzo aggiunge una condizione temporale (``almeno dieci anni di servizio'') e una condizione sul valore di \textit{City}. Il quarto è una regola di implicazione negativa: se non c'è affiliazione, allora non devono esistere partecipazioni.
+
+\begin{cbox}{Dove Finiscono Questi Vincoli}
+\noindent I vincoli non esprimibili vanno documentati in linguaggio naturale, in modo preciso e verificabile, e poi implementati nel livello opportuno:
+\begin{itemize}
+    \item con \textbf{vincoli dichiarativi} del DBMS, quando il sistema li supporta (CHECK, ASSERTION, trigger);
+    \item con \textbf{trigger} o procedure memorizzate, quando servono controlli su più tabelle;
+    \item con \textbf{logica applicativa}, quando la regola dipende da informazioni esterne o da un flusso di lavoro.
+\end{itemize}
+Un vincolo non documentato è un vincolo che verrà dimenticato. Il modello concettuale descrive la struttura; la documentazione descrive le regole che la struttura non riesce a esprimere.
+\end{cbox}
+
+\subsection{Il Modello Concettuale in UML2}
+
+\noindent \textbf{UML2 al Posto dell'E-R.} UML2 (\textit{Unified Modeling Language}, versione 2) può essere usato anche per la modellazione dei dati. In UML2 si usano i \textbf{diagrammi delle classi}: la notazione grafica cambia, ma l'approccio di progettazione resta lo stesso. Entità, relazioni, attributi, cardinalità e generalizzazioni hanno un corrispondente UML2, e lo schema concettuale può essere espresso in entrambi i linguaggi.
+
+\subsubsection{Classi e Associazioni}
+
+\noindent \textbf{Classi.} Un'entità diventa una \textbf{classe}, rappresentata da un rettangolo con il nome nella parte alta e gli attributi sotto. Le operazioni, previste da UML2, non interessano la modellazione dei dati e vengono omesse.
+
+\medskip
+\noindent \textbf{Associazioni.} Una relazione diventa un'\textbf{associazione}, cioè una linea che collega due classi, con un nome e le \textbf{molteplicità} agli estremi. Due associazioni diverse tra le stesse classi si rappresentano con due linee distinte, eventualmente con nomi diversi.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\small,
+    class/.style={draw=blue!60!black, rectangle, align=left, fill=cyan!10, inner sep=4pt, minimum width=2.8cm, minimum height=1.2cm}
+]
+    \node[class] (student) at (0,3.2) {\textbf{Student}\\[1pt] \scriptsize Number\\[-1pt] \scriptsize Registr. Year};
+    \node[class] (course) at (8.4,3.2) {\textbf{Course}\\[1pt] \scriptsize Name\\[-1pt] \scriptsize Course Year};
+    \draw[thick] (student.east) -- node[above] {\textbf{Exam}} (course.west);
+
+    \node[class] (employee) at (0,-0.4) {\textbf{Employee}\\[1pt] \scriptsize Surname\\[-1pt] \scriptsize Age};
+    \node[class] (city) at (8.4,-0.4) {\textbf{City}\\[1pt] \scriptsize Name\\[-1pt] \scriptsize \# Inhabitants};
+    \draw[thick] (employee.east) -- node[above] {\textbf{Residence}} (city.west);
+    \draw[thick] (employee.north east) to[bend left=18] node[above] {\textbf{Work Office}} (city.north west);
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small Classi e associazioni: \textit{Student}--\textit{Exam}--\textit{Course}; \textit{Employee} e \textit{City} sono collegate da due associazioni distinte, \textit{Residence} e \textit{Work Office}.}
+
+\subsubsection{Classi di Associazione e Associazioni $n$-arie}
+
+\noindent \textbf{Classe di Associazione.} Quando un'associazione possiede attributi propri, UML2 permette di rappresentarla con una \textbf{classe di associazione}: una classe collegata all'associazione da una linea tratteggiata. L'esempio classico è \textit{Exam} tra \textit{Student} e \textit{Course}, con gli attributi \textit{Date} e \textit{Degree}. \textit{Exam} non è una classe indipendente: esiste solo in relazione a una coppia studente-corso.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    class/.style={draw=blue!60!black, rectangle, align=left, fill=cyan!10, inner sep=4pt, minimum width=2.8cm, minimum height=1.2cm}
+]
+    \node[class] (student) at (0,3.6) {\textbf{Student}\\[1pt] \scriptsize Number\\[-1pt] \scriptsize Registr. Year};
+    \node[class] (course) at (8.4,3.6) {\textbf{Course}\\[1pt] \scriptsize Name\\[-1pt] \scriptsize Course Year};
+    \draw[thick] (student.east) -- (course.west);
+
+    \node[class] (exam) at (4.2,1.2) {\textbf{Exam}\\[1pt] \scriptsize Date\\[-1pt] \scriptsize Degree};
+    \draw[dashed, thick] (4.2,3.6) -- (exam.north);
+\end{tikzpicture}
+\end{center}
+
+\noindent {\small \textit{Exam} è una classe di associazione: la linea tratteggiata la collega all'associazione tra \textit{Student} e \textit{Course}.}
+
+\medskip
+\noindent \textbf{Associazioni $n$-arie.} Un'associazione ternaria si rappresenta con un rombo collegato alle classi partecipanti, eventualmente con una classe di associazione per gli attributi. Nell'esempio delle slide, \textit{Supplier}, \textit{Dept.} e \textit{Product} sono collegati da \textit{Provision}, e la classe di associazione \textit{Provision} porta l'attributo \textit{Quantity}.
+
+\medskip
+\noindent \textbf{Reificazione.} Le associazioni $n$-arie non sono molto comuni e in UML2 possono essere \textbf{reificate}: l'associazione diventa una classe vera e propria, collegata alle classi originali da associazioni binarie. \textit{Provision} diventa così una classe con \textit{Quantity}, collegata a \textit{Supplier}, \textit{Dept.} e \textit{Product}. È lo stesso movimento concettuale della promozione di una relazione a entità visto nella Sezione~8.3.5, espresso con la notazione UML.
+
+\subsubsection{Aggregazione, Composizione e Molteplicità}
+
+\noindent \textbf{Aggregazione e Composizione.} UML2 distingue due forme di relazione ``parte-tutto'':
+\begin{itemize}
+    \item l'\textbf{aggregazione} (rombo vuoto) indica che la parte può esistere indipendentemente dal tutto: un \textit{Technician} appartiene a un \textit{Team}, ma può essere rappresentato anche senza il team;
+    \item la \textbf{composizione} (rombo pieno) indica che la parte non può esistere indipendentemente dal tutto: un'\textit{Agency} appartiene a una \textit{Firm} e non ha senso senza di essa.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    class/.style={draw=blue!60!black, rectangle, align=center, fill=cyan!10, inner sep=4pt, minimum width=2.6cm, minimum height=0.8cm}
+]
+    \node[class] (team) at (0,2.2) {\textbf{Team}};
+    \node[class] (tech) at (0,0.4) {\textbf{Technician}};
+    \draw[thick] (team.south) -- (tech.north);
+    \node[diamond, draw=blue!60!black, fill=white, minimum size=0.32cm, inner sep=0pt] at (0,1.85) {};
+
+    \node[class] (firm) at (6.2,2.2) {\textbf{Firm}};
+    \node[class] (agency) at (6.2,0.4) {\textbf{Agency}};
+    \draw[thick] (firm.south) -- (agency.north);
+    \node[diamond, draw=blue!60!black, fill=blue!60!black, minimum size=0.32cm, inner sep=0pt] at (6.2,1.85) {};
+\end{tikzpicture}
+\end{center}
+
+\noindent {\small A sinistra l'aggregazione (rombo vuoto): il tecnico può esistere senza il team. A destra la composizione (rombo pieno): l'agenzia non esiste senza la firma.}
+
+\medskip
+\noindent \textbf{Le Molteplicità.} In UML2 la cardinalità si scrive come \textbf{molteplicità} accanto agli estremi dell'associazione. Le forme più comuni sono:
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{2.4cm}L{6.4cm}L{6.6cm}@{}}
+    \toprule
+    \textbf{Molteplicità} & \textbf{Significato} & \textbf{Equivalente E-R} \\
+    \midrule
+    \texttt{1} & Esattamente un'istanza. & $(1,1)$ \\
+    \addlinespace
+    \texttt{0..1} & Zero oppure un'istanza. & $(0,1)$ \\
+    \addlinespace
+    \texttt{*} & Zero o più istanze. & $(0,N)$ \\
+    \addlinespace
+    \texttt{1..*} & Una o più istanze. & $(1,N)$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{La Molteplicità è dal Lato Opposto}
+\noindent In E-R la cardinalità è scritta accanto all'entità che vincola: \textit{Person} $(0,1)$--\textit{Residence}--\textit{City} $(0,N)$ significa ``una persona risiede in una città, una città ha molte persone''. In UML2 la molteplicità scritta vicino a un estremo indica \textbf{quante istanze di quell'estremo} sono associate a un'istanza dell'altro estremo. Per questo, nello schema \textit{Person} \texttt{*}--\textit{Residence}--\textit{City} (senza molteplicità), il \texttt{*} vicino a \textit{Person} dice che una città ha molti residenti, mentre l'assenza di molteplicità vicino a \textit{City} vale \texttt{1..1} e dice che una persona risiede in una sola città. Chi passa da E-R a UML2 deve invertire mentalmente il verso della lettura.
+\end{cbox}
+
+\medskip
+\noindent \textbf{Esempi.} \textit{Order} \texttt{1}--\textit{Sell}--\textit{Bill} \texttt{0..1}: un ordine ha zero o una fattura, una fattura ha esattamente un ordine. \textit{Tourist} \texttt{*}--\textit{Reservation}--\textit{Hotel} \texttt{1..*}: un turista prenota uno o più hotel, un hotel è prenotato da zero o più turisti. \textit{Person} \texttt{*}--\textit{Residence}--\textit{City}: una persona risiede in una sola città, una città ha zero o più residenti.
+
+\subsubsection{Identificatori e Generalizzazione}
+
+\noindent \textbf{Identificatori.} In UML2 un attributo identificatore si contrassegna con \texttt{\{id\}}. Per esempio \textit{Car} ha \textit{Plate} \texttt{\{id\}}, \textit{Model} e \textit{Color}; \textit{Person} ha \textit{Tax Code} \texttt{\{id\}}, \textit{Surname} \texttt{\{id\}}, \textit{Name} \texttt{\{id\}} e \textit{Address}. Il significato è lo stesso dell'identificatore E-R: l'attributo distingue univocamente le istanze della classe.
+
+\medskip
+\noindent \textbf{Identificatore Esterno.} Lo stereotipo \texttt{<{}<Identifying>{}>} rappresenta un identificatore esterno. Nell'esempio \textit{Student}--\textit{University}, l'associazione \textit{Registration} porta quello stereotipo: il numero dello studente, insieme all'università, identifica lo studente. Lo stereotipo dice che l'associazione non è un semplice collegamento, ma partecipa all'identità della classe.
+
+\medskip
+\noindent \textbf{Generalizzazione.} In UML2 la generalizzazione usa una freccia con triangolo vuoto rivolta al padre. I vincoli si scrivono tra parentesi graffe vicino alla freccia: \texttt{\{total, disjoint\}}, \texttt{\{partial, disjoint\}}, \texttt{\{total, overlapping\}} e così via. Per esempio \textit{Professional} $\to$ \textit{Lawyer}, \textit{Engineer}, \textit{Ph.D.} è \texttt{\{partial, disjoint\}}: non tutti i professionisti sono avvocati, ingegneri o dottorandi, e nessuno può essere due di questi contemporaneamente.
+
+\begin{center}
+\begin{tikzpicture}[
+    font=\small,
+    class/.style={draw=blue!60!black, rectangle, align=center, fill=cyan!10, inner sep=4pt, minimum width=2.6cm, minimum height=0.8cm}
+]
+    \node[class] (prof) at (0,3.4) {\textbf{Professional}\\[1pt] \scriptsize VAT \{id\}, Address};
+    \node[class] (lawyer) at (-4.2,0.6) {\textbf{Lawyer}};
+    \node[class] (engineer) at (0,0.6) {\textbf{Engineer}};
+    \node[class] (phd) at (4.2,0.6) {\textbf{Ph.D.}\\[1pt] \scriptsize Field};
+
+    \draw (lawyer.north) -- (-4.2,2.0) -- (0,2.0);
+    \draw (engineer.north) -- (0,2.0);
+    \draw (phd.north) -- (4.2,2.0) -- (0,2.0);
+    \draw[-{Triangle[open]}] (0,2.0) -- (prof.south);
+    \node at (2.1,1.5) {\texttt{\{partial, disjoint\}}};
+\end{tikzpicture}
+\end{center}
+
+\noindent {\small Generalizzazione UML2 con il vincolo \texttt{\{partial, disjoint\}} scritto accanto alla freccia.}
+
+\subsubsection{Schema Completo e Confronto con l'E-R}
+
+\noindent \textbf{Un Esempio UML2.} Lo schema completo delle slide può essere espresso con classi, associazioni, classi di associazione e composizione. La figura seguente ne riporta una versione semplificata, con le stesse entità dell'esempio E-R della Sezione~8.7.
+
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[
+    font=\scriptsize,
+    class/.style={draw=blue!60!black, rectangle, align=left, fill=cyan!10, inner sep=4pt, minimum width=2.8cm, minimum height=1.5cm}
+]
+    \node[class] (emp) at (0,5.2) {\textbf{Employee}\\[1pt] Code \{id\}\\[-1pt] Surname\\[-1pt] Income\\[-1pt] Age};
+    \node[class] (dept) at (9.2,5.2) {\textbf{Dept.}\\[1pt] Name \{id\}\\[-1pt] Phone};
+    \node[class] (proj) at (0,0.4) {\textbf{Project}\\[1pt] Name \{id\}\\[-1pt] Budget\\[-1pt] Delivery Date};
+    \node[class] (off) at (9.2,0.4) {\textbf{Office}\\[1pt] City \{id\}\\[-1pt] Address};
+
+    \draw[thick] (emp.east) -- node[above] {\textbf{Affiliation}} (dept.west);
+    \node[right] at (1.1,5.55) {\texttt{*}};
+    \node[left] at (8.0,5.55) {\texttt{1}};
+
+    \node[class] (aff) at (4.6,3.0) {\textbf{Affiliation}\\[1pt] Affil. Date};
+    \draw[dashed, thick] (4.6,5.2) -- (aff.north);
+
+    \draw[thick] (emp.south) -- node[right] {\textbf{Attendance}} (proj.north);
+    \node[right] at (0.25,4.2) {\texttt{1..*}};
+    \node[right] at (0.25,1.2) {\texttt{*}};
+
+    \node[class] (att) at (-3.0,2.8) {\textbf{Attendance}\\[1pt] Start Date};
+    \draw[dashed, thick] (0,3.0) -- (att.east);
+
+    \draw[thick] (dept.south) -- node[right, align=left] {\textbf{Composition}\\[1pt] \texttt{<{}<Identifying>{}>}} (off.north);
+    \node[left] at (8.9,4.2) {\texttt{1..*}};
+    \node[left] at (8.9,1.2) {\texttt{1}};
+    \fill (9.2,2.1) -- (9.04,1.9) -- (9.2,1.7) -- (9.36,1.9) -- cycle;
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\noindent {\small Versione UML2 semplificata dello schema aziendale: \textit{Affiliation} e \textit{Attendance} sono classi di associazione; \textit{Composition} è una composizione con stereotipo \texttt{<{}<Identifying>{}>}. Rispetto alla slide~98 manca l'associazione \textit{Management}, omessa per non affollare il disegno; come nello schema E-R, l'identificatore di \textit{Dept.} comprende anche \textit{Office}, e il \texttt{\{id\}} su \textit{Name} segnala l'attributo che partecipa all'identificazione.}
+
+\medskip
+\noindent \textbf{Corrispondenza tra i Due Linguaggi.} La tabella riassume le corrispondenze principali.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{6.2cm}L{9.0cm}@{}}
+    \toprule
+    \textbf{Concetto E-R} & \textbf{Notazione UML2} \\
+    \midrule
+    Entità & Classe \\
+    \addlinespace
+    Relazione binaria & Associazione \\
+    \addlinespace
+    Attributo & Attributo della classe \\
+    \addlinespace
+    Attributo di relazione & Classe di associazione \\
+    \addlinespace
+    Identificatore interno & Attributo con \texttt{\{id\}} \\
+    \addlinespace
+    Identificatore esterno & Associazione con \texttt{<{}<Identifying>{}>} \\
+    \addlinespace
+    Cardinalità & Molteplicità all'estremo opposto \\
+    \addlinespace
+    Generalizzazione & Freccia con triangolo vuoto verso il padre \\
+    \addlinespace
+    Relazione $n$-aria & Associazione $n$-aria oppure reificazione in classe \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{UML2 non è un Modello Relazionale}
+\noindent Un diagramma delle classi UML2 è ancora un modello \textbf{concettuale}: descrive le classi del dominio e i loro collegamenti, non le tabelle del database. Il fatto che UML2 preveda operazioni, visibilità e altri dettagli software non autorizza a confonderlo con lo schema logico. La traduzione in tabelle, chiavi esterne e vincoli resta un passo successivo e va fatta con le regole della progettazione logica. UML2 è un linguaggio di notazione; la qualità del modello dipende dalle scelte di chi lo costruisce, non dal simbolo usato.
+\end{cbox}
+
+\subsection{Sintesi}
+
+\noindent \textbf{La Mappa dei Concetti di Base.} La tabella seguente riassume i concetti introdotti nella prima parte della sezione e li collega a un esempio concreto.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{5.5cm}L{6.4cm}L{3.9cm}@{}}
+    \toprule
+    \textbf{Concetto} & \textbf{Idea Chiave} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Progettazione concettuale} & Descrive \textit{che cosa} rappresentare, prima di scegliere il DBMS. & Analisi dei requisiti di un ateneo. \\
+    \addlinespace
+    \textbf{Modello concettuale} & Rappresentazione della realtà indipendente dall'implementazione. & Modello Entità-Relazione. \\
+    \addlinespace
+    \textbf{Schema} & Struttura dei dati, invariante nel tempo. & ``Esiste l'entità \textit{Employee}''. \\
+    \addlinespace
+    \textbf{Istanza} & Valori concreti in un certo momento. & ``Mario Rossi è un impiegato''. \\
+    \addlinespace
+    \textbf{Entità} & Classe di oggetti con proprietà comuni ed esistenza autonoma. & \textit{Employee}, \textit{City}. \\
+    \addlinespace
+    \textbf{Relazione} & Associazione tra due o più entità. & \textit{Exam} tra \textit{Student} e \textit{Course}. \\
+    \addlinespace
+    \textbf{Istanza di relazione} & Coppia o tupla di istanze di entità, senza duplicati. & $(S_1, C_1)$. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{La Mappa dei Costrutti Avanzati.} La seconda tabella raccoglie i costrutti introdotti nelle Sezioni~8.4--8.6.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{4.2cm}L{6.4cm}L{5.2cm}@{}}
+    \toprule
+    \textbf{Concetto} & \textbf{Idea Chiave} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Attributo} & Proprietà di un'entità o di una relazione, con valori in un dominio. & \textit{Exam(Date, Degree)}. \\
+    \addlinespace
+    \textbf{Attributo composto} & Raggruppamento di attributi affini. & \textit{Address(Road, Number, ZIP)}. \\
+    \addlinespace
+    \textbf{Cardinalità} & Coppia $(min,max)$ di partecipazione per ogni entità. & \textit{Employee} $(1,5)$ in \textit{Assignment}. \\
+    \addlinespace
+    \textbf{Relazione uno-a-molti} & Un lato ha massimo 1, l'altro massimo $N$. & \textit{Cinema} $(1,1)$--\textit{Place}--\textit{City} $(0,N)$. \\
+    \addlinespace
+    \textbf{Relazione molti-a-molti} & Entrambi i lati hanno massimo $N$. & \textit{Student} $(0,N)$--\textit{Exam}--\textit{Course} $(0,N)$. \\
+    \addlinespace
+    \textbf{Relazione ricorsiva} & La stessa entità partecipa più volte, con ruoli. & \textit{President}--\textit{Succession}--\textit{President}. \\
+    \addlinespace
+    \textbf{Relazione $n$-aria} & Associazione tra tre o più entità. & \textit{Provision(Provider, Supply, Dept.)}. \\
+    \addlinespace
+    \textbf{Identificatore interno} & Attributi dell'entità che la identificano. & \textit{Car(Plate)}. \\
+    \addlinespace
+    \textbf{Identificatore esterno} & Attributi più entità esterna via relazione $(1,1)$. & \textit{Student(Number, University)}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\clearpage
+\noindent \textbf{La Mappa di Generalizzazione, Documentazione e UML2.} La terza tabella completa il quadro con i costrutti delle Sezioni~8.8--8.10.
+
+\begin{center}
+\small
+\begin{tabular}{@{}L{4.2cm}L{6.4cm}L{5.2cm}@{}}
+    \toprule
+    \textbf{Concetto} & \textbf{Idea Chiave} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Generalizzazione} & Legame ``è un'' tra un padre e le sue specializzazioni; le proprietà del padre sono ereditate. & \textit{People} $\to$ \textit{Employee}, \textit{Student}. \\
+    \addlinespace
+    \textbf{Generalizzazione totale} & Ogni occorrenza del padre appartiene ad almeno un figlio. & \textit{Person} $\to$ \textit{Male}, \textit{Female}. \\
+    \addlinespace
+    \textbf{Generalizzazione parziale} & Esistono occorrenze del padre che non appartengono ad alcun figlio. & \textit{Vertebrates} $\to$ \textit{Mammals}, \textit{Reptiles}. \\
+    \addlinespace
+    \textbf{Dizionario dei dati} & Documentazione di entità, relazioni, attributi e identificatori. & Tabelle di \textit{Employee}, \textit{Dept.}, \textit{Project}, \textit{Office}. \\
+    \addlinespace
+    \textbf{Vincoli non esprimibili} & Regole del dominio che il modello E-R non riesce a rappresentare. & ``Un impiegato non può guadagnare più del suo direttore''. \\
+    \addlinespace
+    \textbf{UML2} & Notazione alternativa per lo stesso modello concettuale, basata su classi e associazioni. & \textit{Student}--\textit{Exam}--\textit{Course}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent \textbf{Il Ponte tra Requisiti e Tabelle.} La modellazione concettuale è il passaggio che manca tra le parole del committente e le tabelle del database. Senza di essa, la progettazione logica diventa un insieme di scelte arbitrarie: nomi di colonne decisi al momento, chiavi esterne aggiunte a posteriori, relazioni scoperte solo quando il sistema è già in produzione. Con un modello concettuale, invece, ogni tabella ha una ragione precisa e ogni collegamento corrisponde a un fatto del dominio.
+
+\medskip
+\noindent \textbf{Cosa Resta da Completare.} Con entità, relazioni, attributi, cardinalità, identificatori e generalizzazione il quadro dei costrutti del modello concettuale è completo. La sezione ha inoltre mostrato come \textbf{documentare} lo schema con il dizionario dei dati e l'elenco dei vincoli non esprimibili, e come esprimere lo stesso modello in \textbf{UML2}. Il passo successivo non è un altro costruttore concettuale, ma la \textbf{progettazione logica}: tradurre lo schema in uno \textbf{schema relazionale}, scegliere le chiavi, gestire relazioni e generalizzazioni e verificare la qualità dello schema con la normalizzazione.
 
 \end{document}
