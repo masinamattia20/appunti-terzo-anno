@@ -3448,6 +3448,7 @@ Definisce un oggetto che incapsula e controlla il modo in cui un insieme di ogge
 % -----------------------------------------------------------------------------
 % ESERCIZI PROPOSTI E SISTEMI OPERATIVI
 % -----------------------------------------------------------------------------
+
 \section{UML: esercitazioni}\label{sec:uml-esercitazioni}
 
 \subsection{La Notazione delle Classi (Class Icon)}
@@ -8176,6 +8177,536 @@ Anche l'impatto dell'IA va misurato con un piano GQM, non con impressioni. Un es
 \end{cbox}
 
 \noindent La qualità non è un costo aggiuntivo da sostenere a fine progetto, ma una proprietà da progettare lungo tutto il ciclo di vita: nei requisiti (idoneità funzionale e metriche), nell'architettura (modularità e testabilità), nel codice (leggibilità e assenza di duplicazione), nei test (copertura significativa) e nell'esercizio (monitoraggio dei guasti). Le tecniche e le metriche presentate in questa sezione sono gli strumenti con cui tale proprietà viene resa osservabile e governabile.
+
+
+% =============================================================================
+% SEZIONE: LE FORME DEI REQUISITI
+% =============================================================================
+
+\newpage
+
+\section{Le forme dei requisiti}\label{sec:forme-requisiti}
+
+\noindent I requisiti sono il ponte tra il bisogno di un committente e il codice che lo realizza. La sezione precedente ha mostrato come la qualità vada prima \textbf{definita} e poi \textbf{misurata}; questa sezione si occupa di \textbf{come scrivere i requisiti}, cioè della \textit{forma} con cui un bisogno viene reso comunicabile, verificabile e, nell'era degli LLM, interpretabile da un agente automatico. La tesi di fondo è che non esista una forma migliore in assoluto: la forma giusta dipende dal \textbf{lettore} a cui il requisito è destinato. Un contratto, un colloquio con il cliente, un test automatico e un modello linguistico leggono lo stesso bisogno in modi diversi e richiedono livelli di struttura diversi.
+
+\subsection{Che cosa sono i requisiti}
+
+\paragraph{Definizioni.}
+La parola ``requisito'' ha almeno due accezioni che conviene tenere distinte. Nel linguaggio comune è \textit{ciascuna delle qualità necessarie e richieste per uno scopo determinato} (``ha tutti i requisiti per diventare un bravo informatico''): un insieme di proprietà che rendono qualcosa adatto a un fine. In ingegneria del software prevale invece la definizione dello \textbf{IEEE Std 610.12-1990}, che distingue due oggetti:
+
+\begin{itemize}
+    \item il \textbf{bisogno}: una condizione o capacità necessaria a un \textit{utente} per risolvere un problema o raggiungere un obiettivo;
+    \item l'\textbf{impegno}: una condizione o capacità che un \textit{sistema} deve possedere per soddisfare un contratto, uno standard o una specifica.
+\end{itemize}
+
+\noindent La distinzione non è nominalistica: il bisogno appartiene al mondo di chi usa il software, l'impegno a quello di chi lo costruisce. Un requisito ben scritto tiene insieme i due piani e rende esplicito il passaggio dall'uno all'altro.
+
+\paragraph{La ``legge'' di Humphrey.}
+I requisiti di un nuovo prodotto software, recita la formulazione di Watts Humphrey, \textit{non saranno chiari finché gli utenti non inizieranno a usarlo}. È la versione software del principio \textbf{IKIWISI} (``I'll know it when I see it''): lo riconoscerò quando lo vedrò. A monte c'è un'osservazione ancora più radicale: \textit{un problema non è ben compreso finché non si sviluppa una soluzione}. La conseguenza metodologica è che sviluppare software è anche un processo di apprendimento: i requisiti non si scoprono una volta per tutte in una fase iniziale, ma \textbf{emergono per iterazioni}, con prototipi e rilasci frequenti. Questo spiega perché le forme leggere e modificabili (user story, scenari, prototipi) convivano con le forme pesanti e contrattuali (documenti SRS) invece di sostituirle.
+
+\paragraph{Tre tipi di requisiti.}
+Ogni requisito appartiene a una delle tre famiglie seguenti. L'esempio, tratto da una biglietteria ferroviaria, rende immediata la differenza.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.6cm}p{5.0cm}p{7.6cm}}
+    \toprule
+    \textbf{Tipo} & \textbf{Che cosa definisce} & \textbf{Esempio} \\
+    \midrule
+    \textbf{Funzionale} & Cosa deve fare il sistema. & ``Il sistema permette di comprare un biglietto''. \\
+    \addlinespace
+    \textbf{Di qualità} & Quanto bene lo fa, in modo misurabile. & ``L'acquisto richiede non più di un minuto''. \\
+    \addlinespace
+    \textbf{Vincolo} & Un limite su come o dove si realizza. & ``L'acquisto avviene su smartphone Android''. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent I requisiti funzionali senza requisiti di qualità producono sistemi che ``funzionano'' ma sono inutilizzabili, lenti o fragili; i requisiti di qualità senza funzionalità producono specifiche eleganti e vuote. I vincoli, infine, non sono scelte di progetto mascherate: sono limiti imposti dall'esterno (norme, piattaforme esistenti, contratti) e vanno sempre motivati.
+
+\paragraph{Requisiti di qualità misurabili.}
+La norma \textbf{ISO/IEC 25010:2023}, già introdotta nella Sezione~\ref{sec:qualita-software}, funziona qui come \textit{checklist} per l'analisi: per ogni caratteristica rilevante per il prodotto ci deve essere almeno un requisito esplicito. Il punto operativo è che un requisito di qualità è tale solo se è \textbf{misurabile}: metrica, soglia e condizioni di misura. La tabella mostra la trasformazione su un caso di biblioteca.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{4.6cm}p{7.6cm}}
+    \toprule
+    \textbf{Caratteristica} & \textbf{Requisito vago} & \textbf{Requisito misurabile} \\
+    \midrule
+    \textbf{Efficienza prestazionale} & ``La ricerca deve essere veloce'' & Con 100.000 volumi e 200 utenti contemporanei, il 95\% delle ricerche risponde in meno di 1 s. \\
+    \addlinespace
+    \textbf{Capacità di interazione} & ``L'app deve essere facile'' & Un nuovo iscritto completa il primo prestito senza aiuto in meno di 3 minuti (test con 10 utenti: almeno 9 ci riescono). \\
+    \addlinespace
+    \textbf{Affidabilità} & ``Il sistema deve funzionare sempre'' & Disponibilità $\geq 99{,}5\%$ nell'orario di apertura, misurata su base mensile. \\
+    \addlinespace
+    \textbf{Security} & ``I dati devono essere protetti'' & Le operazioni del bibliotecario richiedono autenticazione a due fattori; ogni accesso ai dati personali è registrato. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{cbox}{La formula del requisito verificabile}
+\centering
+\textbf{metrica} + \textbf{soglia} + \textbf{condizioni di misura} = requisito verificabile
+\end{cbox}
+
+\noindent Senza uno di questi tre elementi il requisito resta un auspicio: non è collaudabile e, proprio per questo, non è nemmeno negoziabile in modo serio.
+
+\paragraph{I livelli dei requisiti.}
+I requisiti si distribuiscono su tre livelli, ciascuno con i propri documenti e il proprio pubblico. I requisiti \textbf{trasversali} (qualità, interfacce esterne, vincoli) attraversano tutti e tre i livelli.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{5.2cm}p{8.0cm}}
+    \toprule
+    \textbf{Livello} & \textbf{Domanda e documenti} & \textbf{Esempio: biglietteria} \\
+    \midrule
+    \textbf{Business} & Perché serve il prodotto? Visione. & Ridurre le code in biglietteria: entro un anno almeno metà dei biglietti venduti online. \\
+    \addlinespace
+    \textbf{Utente} & Chi lo userà e cosa ci farà? Casi d'uso, user story. & Come viaggiatore voglio comprare un biglietto Bologna--Milano dal telefono. \\
+    \addlinespace
+    \textbf{Software} & Cosa dovrà fare il sistema? Specifica (SRS), criteri di accettazione. & Per ogni acquisto confermato, il sistema emette un biglietto con tratta, data, passeggero e codice univoco. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Un errore frequente è scrivere requisiti di livello software quando il committente sta ancora parlando di obiettivi di business, o viceversa: il documento diventa o troppo astratto per essere collaudato, o troppo dettagliato per essere discusso.
+
+\paragraph{Cosa, non come.}
+La distinzione più importante della sezione è quella tra \textbf{requisito} (lo scopo) e \textbf{scelta di progetto} (la soluzione). Confonderli significa vincolare l'implementazione senza motivo e rendere il requisito inutilmente fragile.
+
+\begin{center}
+\small
+\begin{tabular}{p{7.4cm}p{7.4cm}}
+    \toprule
+    \textbf{Requisito (scopo)} & \textbf{Scelta di progetto (soluzione)} \\
+    \midrule
+    L'iscritto prenota un volume già in prestito & Una tabella \texttt{Prenotazioni} con chiave ISBN \\
+    \addlinespace
+    L'iscritto viene avvisato quando il volume rientra & Notifiche push tramite Firebase \\
+    \addlinespace
+    Il bibliotecario vede i prestiti scaduti & Una vista SQL aggiornata ogni notte \\
+    \addlinespace
+    La ricerca risponde in meno di 1 secondo & Un indice full-text Elasticsearch \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Una scelta tecnica entra nei requisiti solo come \textbf{vincolo motivato}: dal cliente, da norme, da sistemi esistenti. ``Usiamo PostgreSQL'' non è un requisito; ``il sistema deve integrarsi con il database Oracle già in uso'' è un vincolo, e come tale va scritto e giustificato.
+
+\subsection{Le forme classiche}
+
+\paragraph{Un desiderio, tre forme.}
+Lo stesso bisogno può essere espresso in forme molto diverse. Paolo deve arrivare puntuale a un appuntamento e ha bisogno di un taxi in via Zamboni 33. Ecco tre modi di scriverlo:
+
+\begin{itemize}
+    \item \textbf{requisito funzionale} (R-12): ``Il sistema permetterà di prenotare un taxi e di ottenere una stima del tempo di attesa'';
+    \item \textbf{scenario}: ``Fragola 33 arriverà tra 3 minuti'';
+    \item \textbf{user story}: ``Come Paolo voglio chiamare un taxi dall'app e sapere quando arriverà, per capire se sarò puntuale all'appuntamento''.
+\end{itemize}
+
+\noindent Sono tre descrizioni dello stesso desiderio, ma non sono intercambiabili: la prima è contrattuale, la seconda racconta un'esecuzione concreta, la terza mette al centro il valore per una persona.
+
+\paragraph{Lettori diversi, forme diverse.}
+La scelta della forma dipende da chi deve leggere il requisito e da cosa deve farne.
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{5.6cm}p{5.4cm}}
+    \toprule
+    \textbf{Lettore} & \textbf{Forme tipiche} & \textbf{Scopo} \\
+    \midrule
+    Cliente e utenti & User story, job story, personae & Condividere bisogno e valore. \\
+    \addlinespace
+    Chi progetta l'interazione & Casi d'uso, scenari, storyboard & Descrivere flussi ed eccezioni. \\
+    \addlinespace
+    Contratto e certificazione & Documento SRS, frasi ``il sistema deve\ldots'' & Fissare impegni tracciabili. \\
+    \addlinespace
+    Sviluppatori e tester & Criteri di accettazione, Gherkin, modelli & Rendere il comportamento verificabile. \\
+    \addlinespace
+    LLM che genera codice & Specifiche strutturate: EARS, Gherkin, modelli di dominio & Ridurre le interpretazioni arbitrarie. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Il caso di studio: la biblioteca.}
+Useremo un unico caso di studio per confrontare le forme. Una biblioteca gestisce i prestiti di 100.000 volumi a 5.000 iscritti. I volumi sono catalogati con metadati bibliografici (autore, titolo, editore, anno\ldots) e identificati da ISBN e numero di copia. Ci sono due tipi di utente: il \textbf{bibliotecario} può aggiornare la base di dati, l'\textbf{iscritto} può solo consultare i dati dei libri. A tutti è fornita un'interfaccia web, utilizzabile anche da casa. Un iscritto chiede il prestito di uno o più volumi; la biblioteca invia la lista dei volumi disponibili. Gli iscritti sono identificati da un codice numerico e da cognome, nome e data di nascita. L'applicazione deve consentire l'inserimento delle nuove acquisizioni, l'iscrizione di nuovi utenti, la registrazione dei prestiti, il rientro del libro e la consultazione per metadati.
+
+\noindent Il testo è realistico e, proprio per questo, istruttivo: sembra completo ma non lo è. Restano aperte almeno quattro domande: \textit{quanti prestiti e per quanto tempo? ci sono prenotazioni e ritardi? chi approva un prestito? quali requisiti di qualità?} Un testo ambiguo produce tre letture diverse: ciò che voleva il cliente, ciò che ha capito chi lo ha letto e ciò che ha inventato un LLM ``creativo''. Le domande che emergono sono sempre le stesse: si può prenotare un volume già in prestito? come si gestiscono i ritardi? quali dati personali si conservano (GDPR)? quanto deve essere veloce la ricerca?
+
+\paragraph{La forma funzionale: frasi numerate.}
+La prima formalizzazione è un elenco numerato di frasi, una per requisito. È la forma più diffusa nei documenti contrattuali perché è facile da tracciare.
+
+\begin{center}
+\small
+\begin{tabular}{p{0.9cm}p{9.6cm}p{4.7cm}}
+    \toprule
+    \textbf{ID} & \textbf{Requisito} & \textbf{Note del revisore} \\
+    \midrule
+    R1 & Il sistema gestirà due tipi di utenti: bibliotecario e iscritto & \\
+    R2 & Il sistema permetterà all'iscritto di ottenere un libro in prestito & Perché? Per quanto tempo? Quanti volumi? \\
+    R3 & Il sistema permetterà all'iscritto di restituire un libro & \\
+    R4 & Il sistema permetterà al bibliotecario di inserire un nuovo libro nel catalogo & \\
+    R5 & Il sistema permetterà al bibliotecario di dismettere un libro & \\
+    R6 & Il sistema permetterà al bibliotecario di iscrivere un nuovo utente & \\
+    R7 & Il sistema permetterà al bibliotecario di sollecitare una restituzione & Quando si sollecita? Con quale mezzo? \\
+    R8 & Il sistema permetterà al bibliotecario di elaborare statistiche sui prestiti & Quali statistiche, per chi? \\
+    \midrule
+    Tutti & Nessun criterio di accettazione & Come li collaudo? \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Due osservazioni. La prima è che R5, R7 e R8 \textbf{non sono nel testo del cliente}: sono emersi dal colloquio e vanno confermati, non dati per acquisiti. La seconda è che nessun requisito ha un criterio di accettazione: la forma funzionale dice \textit{cosa} serve, non \textit{quando} è soddisfatto. È il limite che spinge verso le forme successive.
+
+\paragraph{Casi d'uso e scenari.}
+I casi d'uso raggruppano i requisiti per attore e per obiettivo. Nel caso della biblioteca, l'iscritto può cercare un volume, chiedere un prestito, prenotare un volume e restituirlo; il bibliotecario può catalogare un volume, iscrivere un utente, sollecitare una restituzione ed elaborare statistiche. Il diagramma UML dei casi d'uso non aggiunge informazione rispetto all'elenco, ma rende immediatamente visibili i confini del sistema e gli attori.
+
+\noindent Lo \textbf{scenario} scende al livello del singolo flusso e descrive una ``conversazione'' tra attore e sistema. Per il prestito di un volume:
+
+\begin{center}
+\small
+\begin{tabular}{p{1.2cm}p{5.2cm}p{8.8cm}}
+    \toprule
+    \textbf{Passo} & \textbf{Attore} & \textbf{Azione} \\
+    \midrule
+    1 & Iscritto & Accede con le credenziali. \\
+    2 & Iscritto & Cerca per autore, titolo o ISBN. \\
+    3 & Sistema & Mostra i risultati. \\
+    4 & Sistema & Verifica una copia disponibile. \\
+    5 & Iscritto & Conferma la richiesta. \\
+    6 & Sistema & Registra il prestito e la scadenza. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Precondizione: l'iscritto ha un account attivo. Regole concordate con il cliente: al massimo 5 prestiti attivi, durata 30 giorni. Eccezioni: \textbf{4a} nessuna copia disponibile $\rightarrow$ il sistema propone la prenotazione; \textbf{5a} limite di 5 prestiti raggiunto $\rightarrow$ la richiesta è rifiutata. Proprio l'esplicitazione delle eccezioni è il valore aggiunto dello scenario rispetto all'elenco funzionale.
+
+\paragraph{Confronto tra le forme.}
+Nessuna forma è completa da sola: ciascuna eccelle su un asse e fallisce su un altro.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{4.4cm}p{3.6cm}p{4.0cm}}
+    \toprule
+    \textbf{Forma} & \textbf{Punti di forza} & \textbf{Limiti} & \textbf{Quando usarla} \\
+    \midrule
+    Documento SRS & Completo, contrattuale, tracciabile & Costoso da mantenere; può invecchiare in fretta & Appalti, sistemi critici \\
+    \addlinespace
+    Casi d'uso e scenari & Flussi ed eccezioni espliciti & Verbosi; poco centrati sul valore & Interazioni complesse \\
+    \addlinespace
+    User story & Valore e utente al centro; leggere & Ambigue senza conversazione & Backlog agile \\
+    \addlinespace
+    Prototipi e mockup & Mostrano invece di descrivere & Non dicono regole e dati & Interfacce, validazione precoce \\
+    \addlinespace
+    Gherkin / EARS & Strutturati, verificabili, testabili & Richiedono disciplina; non eliminano ogni ambiguità & Criteri di accettazione, input per l'IA \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La scelta ragionevole non è ``quale forma'', ma \textbf{quali forme combinare}: un requisito funzionale per il contratto, uno scenario per il flusso complesso, una user story per il backlog e criteri di accettazione per il collaudo.
+
+\subsection{User story}
+
+\paragraph{Dalla visione alle storie.}
+Una user story è un promemoria di una conversazione, non una specifica completa. Il suo ruolo è scomporre una \textbf{visione} in elementi abbastanza piccoli da essere realizzati in uno Sprint. La gerarchia tipica è: visione $\rightarrow$ epiche \(\rightarrow\) storie. Per l'app della biblioteca, la visione si articola in epiche come \textit{Prestiti}, \textit{Catalogo} e \textit{Iscritti}; l'epica \textit{Prestiti} si scompone in storie quali ``chiedere un prestito'', ``rinnovare un prestito'', ``prenotare un volume'', ``promemoria di scadenza''. La regola pratica è che un'\textbf{epica è troppo grande per uno Sprint}, una \textbf{user story è realizzabile in uno Sprint}.
+
+\paragraph{Due modelli di frase.}
+Esistono due schemi ricorrenti, con intenti leggermente diversi:
+
+\begin{center}
+\small
+\begin{tabular}{p{7.4cm}p{7.4cm}}
+    \toprule
+    \textbf{Connextra: centrata sul ruolo} & \textbf{Job story: centrata sulla situazione} \\
+    \midrule
+    Come \textit{<ruolo>} voglio \textit{<funzione>} per \textit{<beneficio>} & Quando \textit{<situazione>} voglio poter \textit{<azione>} così da \textit{<risultato>} \\
+    \addlinespace
+    ``Come iscritto voglio prenotare un volume in prestito per averlo appena rientra'' & ``Quando ho bisogno di un libro già in prestito, voglio poterlo prenotare, così da averlo appena rientra'' \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La forma Connextra risponde a \textit{chi} e \textit{perché}; la job story sposta l'accento sul \textit{contesto d'uso} e funziona meglio quando il ruolo è poco informativo o quando lo stesso utente si comporta diversamente in situazioni diverse.
+
+\paragraph{Le personae.}
+Le storie non si inventano: si ricavano da \textbf{personae}, cioè ritratti fittizi ma fondati su interviste e dati reali. Giulia, 21 anni, studentessa pendolare da Imola, usa solo lo smartphone, viene in biblioteca due volte a settimana e trova spesso i testi d'esame tutti in prestito. Il suo obiettivo è avere i libri per l'esame nei giorni in cui è a Bologna, senza viaggi a vuoto. Da questa scheda nasce una storia naturale: ``Come Giulia voglio prenotare un testo in prestito ed essere avvisata quando rientra, per venire a Bologna solo se posso ritirarlo''. Il percorso è sempre lo stesso: \textit{interviste e dati} $\rightarrow$ \textit{schemi ricorrenti} $\rightarrow$ \textit{persona} $\rightarrow$ \textit{user story}. La persona non è decorazione: è il filtro che impedisce di scrivere storie generiche tipo ``l'utente vuole un'app veloce''.
+
+\paragraph{Le 3C: Card, Conversation, Confirmation.}
+Una user story è fatta di tre parti, e la parte scritta è la meno importante.
+
+\begin{itemize}
+    \item \textbf{Card} (il fronte): ``Come iscritto voglio chiedere il prestito di un volume per studiarlo a casa''. È solo il titolo della conversazione.
+    \item \textbf{Conversation} (il dialogo): quante copie al massimo? per quanto tempo? e se il volume non c'è? Le risposte --- ``cinque, per 30 giorni''; ``si prenota'' --- sono parte del requisito.
+    \item \textbf{Confirmation} (il retro): i criteri che rendono la storia accettabile. Prestito registrato con scadenza a 30 giorni; con 5 prestiti attivi la richiesta è rifiutata; se il volume è assente, si propone la prenotazione.
+\end{itemize}
+
+\noindent Una user story da sola è solo la Card: senza Conversation e Confirmation è incompleta, sia per un collega sia per un LLM.
+
+\paragraph{Dai criteri di accettazione ai test: Gherkin.}
+I criteri di accettazione si possono scrivere in \textbf{Gherkin}, una sintassi leggibile dal cliente e direttamente collegabile ai test. Lo scenario del limite di prestiti diventa un file \texttt{.feature}:
+
+\begin{lstlisting}
+Scenario: limite di prestiti raggiunto
+  Given un iscritto con 5 prestiti attivi
+  When chiede il prestito di un altro volume
+  Then la richiesta viene rifiutata
+  And vede il messaggio "Limite di 5 prestiti raggiunto"
+\end{lstlisting}
+
+\noindent Ogni passo corrisponde a una \textit{step definition}, cioè a codice eseguibile. Lo schema, in Python con \texttt{pytest-bdd}, è il seguente:
+
+\begin{lstlisting}
+@given("un iscritto con 5 prestiti attivi", target_fixture="iscritto")
+def iscritto(): return Iscritto(prestiti=5)
+
+@when("chiede il prestito di un altro volume", target_fixture="esito")
+def richiesta(iscritto): return presta(iscritto)
+
+@then("la richiesta viene rifiutata")
+def rifiutata(esito): assert not esito.ok
+\end{lstlisting}
+
+\noindent Il vantaggio è duplice: lo scenario resta comprensibile agli stakeholder e diventa, senza riscritture, un test eseguibile. È il punto in cui requisiti e verifica si toccano.
+
+\paragraph{INVEST: una storia sotto esame.}
+Una buona storia rispetta sei criteri, riassunti dall'acronimo \textbf{INVEST}. Il confronto tra una storia debole e una migliorata mostra come si applica.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{6.2cm}p{6.6cm}}
+    \toprule
+    \textbf{Criterio} & \textbf{Storia debole} & \textbf{Storia migliorata} \\
+    \midrule
+    \textbf{I}ndipendente & $\times$ tocca tutto il sistema & ? dipende da prestito e prenotazione \\
+    \addlinespace
+    \textbf{N}egoziabile & \checkmark\ ma solo perché è vaga & \checkmark\ i dettagli si discutono \\
+    \addlinespace
+    \textbf{V}alore & $\times$ non dice per chi né perché & \checkmark\ l'iscritto evita una visita in biblioteca \\
+    \addlinespace
+    \textbf{E}stimabile & $\times$ ``efficiente'' non si stima & ? perimetro chiaro; stimano gli sviluppatori \\
+    \addlinespace
+    \textbf{S}piccola & $\times$ troppo ampia: va scomposta & ? forse sta in uno Sprint: lo valuta il team \\
+    \addlinespace
+    \textbf{T}estabile & $\times$ nessun criterio di accettazione & \checkmark\ criterio: rinnovo rifiutato se prenotato \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Storia debole: ``Il sistema gestisce i prestiti in modo efficiente''. Storia migliorata: ``Come iscritto voglio rinnovare online un prestito non prenotato da altri, per tenere il libro altri 30 giorni''. Il simbolo ``?'' è importante quanto ``\checkmark'' e ``$\times$'': INVEST non è una checklist automatica, ma uno strumento di discussione con il team.
+
+\paragraph{Essence: l'Alpha Requirements.}
+Nel kernel di \textbf{Essence} i requisiti sono un \textit{Alpha}, cioè un elemento essenziale che progredisce attraverso stati osservabili. L'Alpha \textbf{Requirements} attraversa sei stati:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{11.6cm}}
+    \toprule
+    \textbf{Stato} & \textbf{Significato} \\
+    \midrule
+    \textbf{Conceived} (Concepito) & C'è un bisogno condiviso di un nuovo sistema. \\
+    \addlinespace
+    \textbf{Bounded} (Delimitato) & Scopo e confini sono chiari. \\
+    \addlinespace
+    \textbf{Coherent} (Coerente) & I requisiti sono consistenti e i conflitti sono stati risolti. \\
+    \addlinespace
+    \textbf{Acceptable} (Accettabile) & I requisiti sono accettati dagli stakeholder. \\
+    \addlinespace
+    \textbf{Addressed} (Affrontato) & Sono realizzati quanto basta per ottenere un sistema utile. \\
+    \addlinespace
+    \textbf{Fulfilled} (Soddisfatto) & Sono pienamente realizzati e verificati. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent L'Alpha appartiene all'area \textit{Solution} e descrive la \textbf{maturità dell'insieme dei requisiti}, non la quantità di storie scritte: si avanza quando la checklist del nuovo stato è soddisfatta, non quando si aggiunge una card al backlog. I primi quattro stati riguardano la comprensione e l'accordo; gli ultimi due la realizzazione e il soddisfacimento del bisogno.
+
+\subsection{Requisiti nell'era degli LLM}
+
+\paragraph{Un nuovo lettore: l'LLM letterale.}
+Con gli agenti di programmazione cambia il pubblico dei requisiti. Come osserva il blog di GitHub nel settembre 2025, gli agenti vanno trattati come \textit{programmatori in coppia molto letterali}, e si passa da ``il codice è la fonte di verità'' a ``\textbf{l'intento è la fonte di verità}''. Un modello linguistico non colma le ambiguità con l'esperienza del dominio: le riempie con lo stereotipo più probabile. Si distinguono così tre livelli di input:
+
+\begin{itemize}
+    \item \textbf{vibe coding}: ``fai un'app per la biblioteca'' --- nessun vincolo, massima libertà interpretativa;
+    \item \textbf{prompt con user story}: chi, cosa e perché, ma nessun criterio di accettazione;
+    \item \textbf{spec-driven}: storie + criteri verificabili + modello + vincoli.
+\end{itemize}
+
+\paragraph{Spec-driven development.}
+Le metodologie emergenti del 2025 organizzano il lavoro in quattro fasi: \textbf{Specify} (cosa e perché: percorsi utente, criteri di successo), \textbf{Plan} (come: architettura, tecnologie, vincoli), \textbf{Tasks} (compiti piccoli e verificabili) e \textbf{Implement} (l'agente realizza, l'umano revisiona).
+
+\begin{center}
+\small
+\begin{tabular}{p{2.2cm}p{6.4cm}p{6.6cm}}
+    \toprule
+    \textbf{Fase} & \textbf{Contenuto} & \textbf{Esempio di artefatto} \\
+    \midrule
+    Specify & Cosa e perché; criteri di successo & \texttt{requirements.md}: user story e criteri in EARS \\
+    Plan & Architettura, tecnologie, vincoli & \texttt{design.md}: architettura e diagrammi di sequenza \\
+    Tasks & Compiti piccoli e verificabili & \texttt{tasks.md}: piano di implementazione \\
+    Implement & Realizzazione e revisione umana & Codice e test generati, poi rivisti \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Due esempi concreti: \textbf{GitHub Spec Kit} (open source, 2025) e \textbf{Kiro} (AWS, 2025), che per ogni funzione mantiene tre file di specifica in una cartella come \texttt{.kiro/specs/prestito/} (\texttt{requirements.md}, \texttt{design.md}, \texttt{tasks.md}).
+
+\paragraph{EARS: linguaggio naturale con una sintassi.}
+\textbf{EARS} (\textit{Easy Approach to Requirements Syntax}, Mavin et al., IEEE RE 2009) aggiunge alla frase naturale un piccolo insieme di schemi. La rigidità è voluta: riduce lo spazio di interpretazione.
+
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{5.4cm}p{7.4cm}}
+    \toprule
+    \textbf{Schema} & \textbf{Forma} & \textbf{Esempio: biblioteca} \\
+    \midrule
+    \textbf{Ubiquo} & Il \textit{<sistema>} deve \textit{<risposta>} & Il sistema deve identificare ogni copia con ISBN e numero di copia. \\
+    \addlinespace
+    \textbf{Evento} & Quando \textit{<evento>}, il \textit{<sistema>} deve\ldots & Quando un volume rientra, il sistema deve avvisare il primo iscritto in prenotazione. \\
+    \addlinespace
+    \textbf{Stato} & Mentre \textit{<stato>}, il \textit{<sistema>} deve\ldots & Mentre un iscritto ha un prestito scaduto, il sistema deve impedirgli nuovi prestiti. \\
+    \addlinespace
+    \textbf{Indesiderato} & Se \textit{<condizione>}, allora il \textit{<sistema>} deve\ldots & Se un iscritto con 5 prestiti attivi chiede un altro prestito, allora il sistema deve rifiutarlo. \\
+    \addlinespace
+    \textbf{Opzione} & Dove \textit{<funzione presente>}, il \textit{<sistema>} deve\ldots & Dove è attivo il prestito digitale, il sistema deve fornire il link all'e-book. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Che cosa dicono gli studi.}
+L'efficacia delle forme è ormai misurabile. I risultati disponibili vanno letti con cautela, perché spesso la valutazione è affidata a un LLM giudice, ma la direzione è coerente.
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{6.0cm}p{5.0cm}}
+    \toprule
+    \textbf{Studio} & \textbf{Oggetto} & \textbf{Risultato} \\
+    \midrule
+    Rathnayake, Shahin, Abaei (2026) & Scenari BDD generati da 5 LLM, valutati da un LLM giudice & Rispetto all'input migliore, la sola descrizione perde dal 2,4\% al 6,0\%; la sola user story dal 19\% al 28\%. \\
+    \addlinespace
+    Feng et al., FSE 2026 & Generazione di codice a livello di repository con specifiche strutturate & Gherkin, modelli di dominio e firme migliorano il codice generato rispetto al solo testo. \\
+    \addlinespace
+    Krishna et al., IEEE RE 2024 & SRS generati da LLM vs ingegnere junior & Qualità paragonabile ma più generica; GPT-4 è utile per trovare e correggere requisiti difettosi. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il dato più interessante è il primo: una descrizione dettagliata resta vicina all'input combinato, mentre la \textbf{sola user story} crolla. La storia da sola, cioè, è un buon punto di partenza ma un cattivo input per un agente.
+
+\paragraph{Impilare le forme.}
+La conclusione operativa è che le forme non si escludono: si \textbf{impilano}. La user story è il vertice della pila, non la pila intera.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{6.2cm}p{5.4cm}}
+    \toprule
+    \textbf{Strato} & \textbf{Forma} & \textbf{Che cosa aggiunge} \\
+    \midrule
+    Scopo & User story o job story & Chi, cosa, perché; riduce le interpretazioni sul valore. \\
+    \addlinespace
+    Comportamento & Criteri di accettazione in Gherkin o EARS & Comportamento verificabile. \\
+    \addlinespace
+    Struttura & Modello di dominio, firme, API, dati & Riduce le API inventate. \\
+    \addlinespace
+    Qualità e vincoli & Requisiti misurabili (ISO/IEC 25010), piattaforme, leggi & Rende esplicito l'implicito. \\
+    \addlinespace
+    Esempi & Casi concreti, contro-esempi, dati di prova & Ancora il significato. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Un esempio di specifica pronta per un agente mostra tutti gli strati insieme:
+
+\begin{lstlisting}
+## Storia
+Come iscritto voglio un volume in prestito per studiare a casa
+
+## Criteri (EARS)
+Quando l'iscritto conferma e una copia risulta disponibile, il
+sistema deve registrare il prestito con scadenza a 30 giorni.
+Se l'iscritto ha 5 prestiti attivi, allora il sistema deve
+rifiutare la richiesta.
+
+## Modello di dominio
+Iscritto(id, nome) . Copia(isbn, n, disponibile)
+Prestito(iscritto, copia, inizio, scadenza)
+
+## Requisiti non funzionali
+Ricerca: 95% < 1 s con 100.000 volumi e 200 utenti
+Dati personali (GDPR): quali e per quanto? -> chiedere al PO
+
+## Istruzioni
+Prima del codice, elenca i dubbi e le domande per il PO.
+Non aggiungere funzioni non richieste.
+\end{lstlisting}
+
+\noindent Ogni blocco ha una funzione precisa: la storia dà lo scopo, i criteri il comportamento, il modello la struttura, i requisiti non funzionali qualità e vincoli, le istruzioni il perimetro d'azione dell'agente. Le istruzioni finali sono parte del requisito: ``elenca prima le ambiguità'' e ``non aggiungere funzioni non richieste'' riducono due comportamenti tipici e indesiderati dei modelli.
+
+\paragraph{L'LLM come assistente dell'analista.}
+Usato bene, un LLM è un buon \textit{revisore} di requisiti; usato male, è un generatore di requisiti plausibili e mai richiesti.
+
+\begin{center}
+\small
+\begin{tabular}{p{7.6cm}p{7.6cm}}
+    \toprule
+    \textbf{Usi efficaci} & \textbf{Rischi} \\
+    \midrule
+    Trasformare note e interviste in bozze di storie & Requisiti plausibili ma mai richiesti (allucinazioni) \\
+    \addlinespace
+    Segnalare ambiguità e domande per il cliente & Dati riservati del cliente inviati a servizi pubblici \\
+    \addlinespace
+    Proporre casi limite e scenari d'errore in Gherkin & Storie lunghe e generiche, poco negoziabili \\
+    \addlinespace
+    Riscrivere frasi vaghe in EARS e in forma misurabile & Fiducia eccessiva: ``sembra completo'' \\
+    \addlinespace
+    Controllare le storie con i criteri INVEST & Perdita del dialogo con gli utenti reali \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Un prompt ragionevole esplicita i vincoli e chiede prima le domande, poi le storie:
+
+\begin{lstlisting}
+Ecco la descrizione informale di un sistema: [testo].
+Elenca prima i punti ambigui. Poi genera 5 user story
+Come/voglio/per con criteri Given/When/Then.
+Non inventare requisiti.
+\end{lstlisting}
+
+\noindent La regola resta quella di sempre: l'LLM può fare domande, ma le risposte spettano agli stakeholder. La verifica e la validazione dei requisiti non sono delegabili.
+
+\subsection{Sintesi}
+
+\begin{cbox}{Tre idee da portare a casa}
+\begin{enumerate}
+    \item \textbf{I requisiti emergono.} Si capiscono costruendo: forme leggere, raffinate iterazione dopo iterazione. La ``legge'' di Humphrey e IKIWISI spiegano perché un documento iniziale non basta.
+    \item \textbf{La qualità si misura.} Metrica, soglia, condizioni di misura; ISO/IEC 25010 come checklist per non dimenticare una caratteristica.
+    \item \textbf{Con gli LLM le forme si impilano.} Storia + criteri verificabili + modello + vincoli + esempi riducono le ambiguità; verifica e validazione restano necessarie.
+\end{enumerate}
+\end{cbox}
+
+\noindent Il filo che lega la sezione è lo stesso della precedente: un requisito è utile solo se è \textbf{comprensibile dal suo lettore} e \textbf{verificabile}. Cambiano il lettore e il momento --- cliente, progettista, tester, agente automatico --- e cambia di conseguenza la forma; non cambia il criterio di qualità: dire \textit{cosa} serve, \textit{quanto bene} e \textit{come si può dimostrare} che è stato fatto.
+
+\paragraph{Domande di autovalutazione ed esercizio.}
+\begin{enumerate}
+    \item Che cosa afferma la ``legge'' di Humphrey e quali conseguenze ha sul processo?
+    \item Funzionale, di qualità, vincolo: definisci e fornisci un esempio per ciascuno.
+    \item Quali sono le nove caratteristiche di ISO/IEC 25010:2023?
+    \item Rendi misurabile il requisito ``l'app deve essere facile da usare''.
+    \item Connextra e job story: quali differenze e quando preferire l'una o l'altra?
+    \item Quali sono gli stati dell'Alpha Requirements di Essence?
+    \item Quale forma di requisito daresti a un agente IA, e perché?
+\end{enumerate}
+
+\noindent \textbf{Esercizio per casa.} (1) Scegliere un'epica del proprio progetto e scomporla in 3 user story INVEST. (2) Per ogni storia scrivere 2 criteri in Gherkin o EARS e un requisito di qualità misurabile. (3) Dare il tutto a un LLM: quali ambiguità segnala? Quali requisiti inventa? Il confronto tra le domande del modello e quelle del committente è il modo più diretto per capire se la specifica è davvero completa.
+
+\paragraph{Riferimenti essenziali.}
+\begin{itemize}
+    \item M. Cohn, \textit{User Stories Applied}, Addison-Wesley, 2004; R. Jeffries, ``Essential XP: Card, Conversation, Confirmation'', 2001; B. Wake, ``INVEST in Good Stories, and SMART Tasks'', 2003.
+    \item ISO/IEC 25010:2023, \textit{SQuaRE -- Product quality model}; A. Mavin et al., ``Easy Approach to Requirements Syntax (EARS)'', IEEE RE 2009.
+    \item OMG, \textit{Essence v1.2}, 2018; I. Jacobson et al., \textit{The Essence of Software Engineering}, CACM, 2013.
+    \item GitHub, \textit{Spec-driven development with AI (Spec Kit)}, 2025; Kiro, \textit{Specs: concepts}, 2025.
+    \item A. Rathnayake, M. Shahin, G. Abaei, \textit{Behaviour Driven Development Scenario Generation with LLMs}, arXiv:2603.04729 (2026); S. Feng et al., \textit{LLM-Assisted Repository-Level Generation with Structured Spec-Driven Engineering}, FSE 2026, arXiv:2605.02455; M. Krishna et al., \textit{Using LLMs in Software Requirements Specifications}, IEEE RE 2024, arXiv:2404.17842.
+\end{itemize}
 
 \newpage
 
