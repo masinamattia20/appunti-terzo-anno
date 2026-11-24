@@ -8711,30 +8711,305 @@ Non inventare requisiti.
 \newpage
 
 % =============================================================================
-% SEZIONE: JAVA STRATEGY PATTERN (PARTE 1: SCOPING, NESTED, INNER & LOCAL)
+% SEZIONE: JAVA STRATEGY PATTERN
 % =============================================================================
 
 \section{Java Strategy Pattern}
 
-\subsection{Motivazioni e Fondamenti: Polimorfismo e Scoping}
+\noindent L'implementazione del pattern \textbf{Strategy} in Java rappresenta uno dei punti di contatto più profondi tra i principi architetturali dell'ingegneria del software e i meccanismi concreti forniti dal linguaggio. Da un lato c'è un'esigenza di progetto: rendere un algoritmo intercambiabile senza riscrivere il codice che lo utilizza. Dall'altro c'è una scelta di linguaggio: Java non dispone di puntatori a funzione e affida il comportamento agli \textbf{oggetti}, alla \textbf{sovrascrittura dei metodi} e al \textbf{late binding}.
 
-\noindent L'implementazione del pattern \textbf{Strategy} in Java rappresenta uno dei punti di contatto più profondi tra i principi architetturali dell'ingegneria del software e i meccanismi concreti forniti dal linguaggio.
-A differenza di linguaggi procedurali o ibridi come il C e il C++ (in cui la selezione dinamica del comportamento è tradizionalmente affidata a \textbf{puntatori a funzione} o template a tempo di compilazione), Java adotta un modello puramente orientato agli oggetti:
+A differenza di linguaggi procedurali o ibridi come il C e il C++ (in cui la selezione dinamica del comportamento è tradizionalmente affidata a \textbf{puntatori a funzione}, a \textit{functor}, a template risolti a tempo di compilazione oppure a metodi \texttt{virtual}), Java adotta un modello puramente orientato agli oggetti:
 \begin{itemize}
-    \item Il comportamento non viaggia isolato come indirizzo di memoria, ma viene incapsulato all'interno di \textbf{oggetti polimorfi};
-    \item Il meccanismo abilitante risiede nella combinazione di \textbf{overriding} dei metodi e \textbf{late binding} (risoluzione dinamica delle chiamate a runtime);
-    \item L'obiettivo ingegneristico consiste nel padroneggiare \textit{come} e \textit{perché} determinate scelte architetturali vengono adottate per disaccoppiare la logica computazionale, evitando soluzioni grezze (\textit{hacking}).
+    \item il comportamento non viaggia isolato come indirizzo di memoria, ma viene incapsulato all'interno di \textbf{oggetti polimorfi};
+    \item il meccanismo abilitante risiede nella combinazione di \textbf{overriding} dei metodi e \textbf{late binding} (risoluzione dinamica delle chiamate a runtime);
+    \item l'obiettivo ingegneristico consiste nel padroneggiare \textit{come} e \textit{perché} determinate scelte architetturali vengono adottate per disaccoppiare la logica computazionale, evitando soluzioni grezze (\textit{hacking}).
 \end{itemize}
 
-\paragraph{Recap dei Pattern Visti Finora.}
+\begin{cbox}{Mappa della Sezione}
+La sezione è organizzata in cinque blocchi logici, pensati per essere studiati nell'ordine:
+\begin{enumerate}
+    \item \textbf{Il pattern e il suo vocabolario}: che cos'è lo Strategy, quali ruoli coinvolge e quali concetti di Java (binding, dispatch, overriding) sono necessari per capirlo.
+    \item \textbf{Dalle chiusure alle classi annidate}: le radici storiche dell'idea di ``passare comportamento'' e il confronto tra C++, Smalltalk e Java.
+    \item \textbf{La tassonomia delle classi annidate}: static nested, inner, local e anonymous, con regole di accesso, ciclo di vita e cattura delle variabili.
+    \item \textbf{Le interfacce}: il contratto che rende possibile il polimorfismo, i metodi default e la risoluzione dei conflitti.
+    \item \textbf{Il caso studio e l'evoluzione}: il listener Swing in tre versioni (outer, inner, anonymous) e il passaggio alle lambda.
+\end{enumerate}
+\end{cbox}
+
+\subsection{Il Problema: Algoritmi Intercambiabili}
+
+\noindent In un sistema reale capita spesso che \textbf{la stessa operazione} possa essere svolta in modi diversi: ordinare secondo criteri differenti, comprimere con algoritmi differenti, calcolare un prezzo con politiche differenti, validare un input con regole differenti. Il client non vuole conoscere i dettagli di ciascun algoritmo: vuole \textit{usare} un algoritmo scelto al momento opportuno.
+
+La soluzione ingenua consiste nel racchiudere tutte le varianti in una catena di \texttt{if}/\texttt{else} o in uno \texttt{switch}:
+
+\begin{lstlisting}[language=Java]
+byte[] save(byte[] data, String format) {
+    if (format.equals("zip")) {
+        // algoritmo ZIP
+    } else if (format.equals("gzip")) {
+        // algoritmo GZIP
+    } else {
+        throw new IllegalArgumentException("Formato sconosciuto: " + format);
+    }
+    return data;
+}
+\end{lstlisting}
+
+\noindent Questa versione funziona, ma presenta tre difetti strutturali:
+\begin{itemize}
+    \item \textbf{Violazione dell'Open/Closed Principle}: per aggiungere un formato bisogna modificare e ricompilare la classe che contiene il metodo, anche se il resto del sistema non cambia;
+    \item \textbf{Conoscenza eccessiva}: il contesto conosce tutte le varianti e i loro dettagli, quindi è difficile da testare e da riutilizzare;
+    \item \textbf{Complessità crescente}: ogni nuova variante aggiunge un ramo, e la logica di selezione si mescola alla logica dell'algoritmo.
+\end{itemize}
+
+\noindent Il pattern \textbf{Strategy} rovescia questa impostazione: definisce una \textbf{famiglia di algoritmi}, incapsula ciascuno in una classe separata che implementa un'interfaccia comune e rende gli algoritmi \textbf{intercambiabili} rispetto al client. Il contesto non decide \textit{quale} algoritmo usare: riceve un oggetto che sa eseguire l'operazione e gli delega il compito.
+
+\paragraph{I ruoli del pattern.}
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{5.0cm}p{5.8cm}}
+    \toprule
+    \textbf{Ruolo} & \textbf{Responsabilità} & \textbf{Nel codice Java} \\
+    \midrule
+    \textbf{Strategy} & Dichiara il contratto comune a tutte le varianti & Interfaccia (o classe astratta) con il metodo \texttt{execute} \\
+    \addlinespace
+    \textbf{ConcreteStrategy} & Implementa una specifica variante dell'algoritmo & Classe che \texttt{implements} l'interfaccia \\
+    \addlinespace
+    \textbf{Context} & Mantiene un riferimento alla strategia e le delega il lavoro & Classe con un campo di tipo \texttt{Strategy} \\
+    \addlinespace
+    \textbf{Client} & Sceglie e inietta la strategia concreta & Codice che crea l'oggetto e lo passa al contesto \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Dal punto di vista dei principi di progettazione, lo Strategy è un esempio di:
+\begin{itemize}
+    \item \textbf{programmazione verso un'interfaccia} e non verso un'implementazione: il contesto dipende solo dal contratto;
+    \item \textbf{composizione invece di ereditarietà}: il comportamento variabile è un oggetto delegato, non una sottoclasse del contesto;
+    \item \textbf{Dependency Inversion}: il contesto dipende da un'astrazione, non da classi concrete.
+\end{itemize}
+
+\paragraph{Il costo del pattern.}
+Lo Strategy non è gratuito: introduce un tipo in più per ogni variante, un livello di indirezione nella chiamata e, senza lambda, richiede classi dedicate anche per algoritmi brevissimi. Per questo va usato quando la variabilità è \textbf{reale e destinata a crescere}; se l'algoritmo è unico e stabile, l'astrazione aggiuntiva è rumore.
+
+\subsection{Vocabolario Tecnico: Binding, Dispatch e Overriding}
+
+\noindent Per capire \textit{perché} lo Strategy funziona in Java bisogna padroneggiare un vocabolario che spesso viene dato per scontato. I concetti seguenti ricorrono continuamente nel resto della sezione e nelle domande di teoria.
+
+\paragraph{Tipo statico e tipo dinamico.}
+In Java ogni espressione ha un \textbf{tipo statico} (o dichiarato), noto al compilatore, e ogni oggetto ha un \textbf{tipo dinamico} (o effettivo), cioè la classe con cui è stato creato con \texttt{new}:
+\begin{lstlisting}[language=Java]
+Strategy s = new ZipStrategy();   // tipo statico: Strategy
+                                  // tipo dinamico: ZipStrategy
+s.execute();                      // quale execute() viene eseguito?
+\end{lstlisting}
+Il compilatore verifica solo che \texttt{Strategy} dichiari \texttt{execute()}; non sa e non vuole sapere quale implementazione verrà eseguita. La decisione viene presa a runtime in base al tipo dinamico dell'oggetto riferito da \texttt{s}.
+
+\paragraph{Upcast e downcast.}
+L'assegnazione di un oggetto di una sottoclasse a una variabile di tipo superclasse (o interfaccia) è un \textbf{upcast} ed è implicita, perché ogni \texttt{ZipStrategy} \textit{è una} \texttt{Strategy}. L'operazione inversa, il \textbf{downcast}, richiede un cast esplicito e un controllo a runtime:
+\begin{lstlisting}[language=Java]
+Strategy s = new ZipStrategy();
+ZipStrategy z = (ZipStrategy) s;   // downcast: lecito, il tipo dinamico e corretto
+
+Strategy t = new GzipStrategy();
+// ZipStrategy w = (ZipStrategy) t; // ClassCastException a runtime
+if (t instanceof ZipStrategy z2) {  // pattern matching (Java 16+)
+    z2.execute();
+}
+\end{lstlisting}
+Il downcast è un'operazione da usare con cautela: se il codice client ha bisogno di fare cast per usare la strategia, spesso l'astrazione non è stata progettata bene.
+
+\begin{cbox}{Early Binding e Late Binding}
+Il \textbf{binding} è l'associazione tra un uso (un nome, una chiamata, un riferimento) e l'entità a cui quel nome corrisponde. In Java si distinguono due momenti:
+\begin{itemize}
+    \item \textbf{Early binding (binding statico)}: l'associazione è risolta dal compilatore in base ai \textbf{tipi statici}. Riguarda l'overloading, i metodi \texttt{static}, i metodi \texttt{private}, i metodi \texttt{final}, i costruttori, l'accesso ai campi e la chiamata \texttt{super.metodo()}.
+    \item \textbf{Late binding (binding dinamico)}: l'associazione è rinviata al runtime e dipende dal \textbf{tipo dinamico del ricevitore}. Riguarda l'overriding dei metodi d'istanza, compresi i metodi dichiarati nelle interfacce.
+\end{itemize}
+\medskip
+\noindent Il late binding è il meccanismo che rende possibile il \textbf{polimorfismo di sottotipo}: il codice client compila contro l'interfaccia e ignora completamente l'implementazione concreta. Senza late binding, la scelta della strategia dovrebbe essere codificata con \texttt{if}/\texttt{switch} nel contesto.
+\end{cbox}
+
+\paragraph{Perché in Java i metodi sono ``virtuali'' per default.}
+In C++ un metodo è polimorfico solo se dichiarato \texttt{virtual}; in Java avviene il contrario: \textbf{tutti i metodi d'istanza non privati, non statici e non finali sono virtuali}, cioè partecipano al late binding. Le eccezioni sono volute:
+\begin{itemize}
+    \item \texttt{private}: il metodo non è ereditato, quindi non può essere sovrascritto; la chiamata è risolta staticamente;
+    \item \texttt{static}: appartiene alla classe, non all'oggetto; viene \textit{nascosto} (hiding), non sovrascritto, e la scelta dipende dal tipo statico;
+    \item \texttt{final}: il metodo non può essere sovrascritto, quindi il compilatore può risolverlo staticamente e il JIT può fare inlining;
+    \item costruttori: non sono ereditati e non partecipano al polimorfismo.
+\end{itemize}
+
+\begin{cbox}{Come Funziona il Dispatch a Runtime}
+Quando il compilatore incontra una chiamata a un metodo d'istanza, non inserisce l'indirizzo del codice da eseguire: emette un'istruzione bytecode (\texttt{invokevirtual} o \texttt{invokeinterface}) con un riferimento simbolico al metodo. A runtime la JVM:
+\begin{enumerate}
+    \item individua la classe effettiva dell'oggetto ricevitore;
+    \item cerca nella \textbf{tabella dei metodi} (vtable/itable) della classe la voce corrispondente alla firma del metodo;
+    \item invoca l'implementazione registrata in quella voce.
+\end{enumerate}
+Ogni classe ha la propria tabella; l'overriding \textit{sostituisce} la voce ereditata con quella della sottoclasse. Il \textit{call site} resta lo stesso, ma il contenuto della voce cambia da oggetto a oggetto. È questa indirezione che permette a \texttt{strategy.execute()} di eseguire codice diverso senza che il contesto lo sappia.
+\medskip
+\noindent Le principali istruzioni di invocazione della JVM sono:
+\begin{itemize}
+    \item \texttt{invokestatic}: metodi statici, binding statico;
+    \item \texttt{invokespecial}: costruttori, metodi privati e \texttt{super.metodo()}, binding statico;
+    \item \texttt{invokevirtual}: metodi d'istanza di classi, binding dinamico (salvo metodi \texttt{final}, che il JIT può devirtualizzare);
+    \item \texttt{invokeinterface}: metodi d'interfaccia, binding dinamico tramite itable;
+    \item \texttt{invokedynamic}: lambda e method reference, con un \textit{call site} risolto dinamicamente.
+\end{itemize}
+\end{cbox}
+
+\begin{cbox}{Campi e Metodi Non Si Comportano allo Stesso Modo}
+Un punto spesso sottovalutato: in Java \textbf{i campi non sono polimorfici}. L'accesso a un campo è risolto in base al tipo statico, mentre l'invocazione di un metodo è risolta in base al tipo dinamico.
+\begin{lstlisting}[language=Java]
+class A {
+    int x = 1;
+    int getX() { return x; }
+}
+class B extends A {
+    int x = 2;                 // nasconde il campo x di A, non lo sovrascrive
+    int getX() { return x; }   // sovrascrive il metodo
+}
+
+A a = new B();
+System.out.println(a.x);      // 1  (campo: tipo statico A)
+System.out.println(a.getX()); // 2  (metodo: tipo dinamico B)
+\end{lstlisting}
+Il campo \texttt{x} di \texttt{B} non sostituisce quello di \texttt{A}: esiste in una porzione diversa dell'oggetto. Per questo, quando si progetta una strategia, lo stato va esposto tramite metodi (o incapsulato), non tramite campi pubblici.
+\end{cbox}
+
+\paragraph{Overloading e overriding: due concetti diversi.}
+Entrambi riguardano metodi con lo stesso nome, ma operano su piani differenti:
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{5.2cm}p{5.6cm}}
+    \toprule
+    \textbf{Aspetto} & \textbf{Overloading} & \textbf{Overriding} \\
+    \midrule
+    Firma & Stesso nome, parametri diversi & Stessa firma (nome e parametri) \\
+    \addlinespace
+    Binding & Statico (compile-time) & Dinamico (runtime) \\
+    \addlinespace
+    Ereditarietà & Non richiede una gerarchia & Richiede una sottoclasse o un'implementazione \\
+    \addlinespace
+    Tipo di ritorno & Può essere qualsiasi & Deve essere uguale o covariante \\
+    \addlinespace
+    Visibilità & Indipendente & Non può essere ridotta \\
+    \addlinespace
+    Eccezioni & Indipendenti & Non può allargare le eccezioni checked \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent L'overloading è una comodità sintattica: il compilatore sceglie il metodo in base ai tipi statici degli argomenti. L'overriding è il fondamento del polimorfismo: la JVM sceglie il metodo in base al tipo dinamico del ricevitore. L'annotazione \texttt{@Override} non è obbligatoria per il funzionamento, ma è una \textbf{verifica per il compilatore}: se la firma non corrisponde esattamente a quella di un metodo ereditato, la compilazione fallisce invece di creare silenziosamente un nuovo metodo.
+
+\paragraph{Il ritorno covariante.}
+Una sottoclasse può restringere il tipo di ritorno di un metodo sovrascritto, a condizione che il nuovo tipo sia un sottotipo di quello dichiarato nella superclasse. È il \textbf{ritorno covariante}: migliora l'usabilità senza rompere il contratto, perché il client che si aspetta il tipo base continua a funzionare.
+\begin{lstlisting}[language=Java]
+class Animal {
+    Animal copy() { return new Animal(); }
+}
+class Dog extends Animal {
+    @Override
+    Dog copy() { return new Dog(); }   // Dog e un sottotipo di Animal
+}
+\end{lstlisting}
+
+\subsection{Il Pattern Strategy in Java: Implementazione Minimale}
+
+\noindent Prima di addentrarci nei meccanismi di scoping, conviene vedere il pattern nella sua forma più semplice. L'esempio seguente implementa una famiglia di strategie di compressione; il contesto \texttt{Archiver} non conosce nessuna classe concreta.
+
+\begin{lstlisting}[language=Java]
+// 1. Strategy: il contratto comune
+interface CompressionStrategy {
+    byte[] compress(byte[] data);
+}
+
+// 2. ConcreteStrategy: una variante dell'algoritmo
+class ZipStrategy implements CompressionStrategy {
+    public byte[] compress(byte[] data) {
+        // implementazione ZIP (omessa)
+        return data;
+    }
+}
+
+class GzipStrategy implements CompressionStrategy {
+    public byte[] compress(byte[] data) {
+        // implementazione GZIP (omessa)
+        return data;
+    }
+}
+
+// 3. Context: possiede una strategia e le delega il lavoro
+class Archiver {
+    private CompressionStrategy strategy;   // dipende solo dall'astrazione
+
+    Archiver(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    void setStrategy(CompressionStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    byte[] save(byte[] data) {
+        return strategy.compress(data);     // late binding
+    }
+}
+
+// 4. Client: sceglie la strategia concreta
+class Main {
+    public static void main(String[] args) {
+        byte[] payload = {1, 2, 3};
+
+        Archiver archiver = new Archiver(new ZipStrategy());
+        archiver.save(payload);                 // esegue ZipStrategy
+
+        archiver.setStrategy(new GzipStrategy());
+        archiver.save(payload);                 // esegue GzipStrategy
+    }
+}
+\end{lstlisting}
+
+\noindent Le osservazioni chiave sono tre:
+\begin{itemize}
+    \item \texttt{Archiver} contiene una sola chiamata, \texttt{strategy.compress(data)}, e nessun \texttt{if}. Aggiungere una nuova strategia non richiede di modificarlo: il codice è \textbf{aperto all'estensione e chiuso alla modifica}.
+    \item La scelta della strategia è \textbf{iniettata dall'esterno} (tramite costruttore o setter). Questo rende il contesto configurabile e sostituibile, anche a runtime.
+    \item Il tipo statico di \texttt{strategy} è \texttt{CompressionStrategy}; il tipo dinamico cambia con l'oggetto iniettato. La stessa riga di codice esegue implementazioni diverse grazie al late binding.
+\end{itemize}
+
+\paragraph{Testabilità.}
+Poiché il contesto dipende solo dall'interfaccia, nei test si può iniettare una strategia finta che registra la chiamata o restituisce un valore controllato, senza avviare l'algoritmo reale. È uno dei vantaggi pratici più importanti del pattern.
+
+\paragraph{Esempi nel JDK.}
+Il pattern Strategy è ovunque nella libreria standard:
+\begin{itemize}
+    \item \texttt{java.util.Comparator}: l'algoritmo di confronto viene passato a \texttt{Collections.sort} o \texttt{List.sort};
+    \item \texttt{java.util.concurrent.RejectedExecution\allowbreak Handler}: la politica di rifiuto di un task in un \texttt{ThreadPool\allowbreak Executor};
+    \item \texttt{javax.swing.LayoutManager}: la politica di disposizione dei componenti in un contenitore;
+    \item \texttt{java.nio.file.FileVisitor}: la strategia di visita di un albero di file (declinata come Visitor, ma con la stessa idea di comportamento parametrizzato).
+\end{itemize}
+
+\paragraph{Strategy, Template Method e State: non confonderli.}
+\begin{cbox}{Tre Pattern Vicini ma Distinti}
+\begin{itemize}
+    \item \textbf{Strategy}: la variante è scelta dall'esterno e \textbf{delegata} a un oggetto; il contesto non sa nulla delle implementazioni. La composizione sostituisce l'ereditarietà.
+    \item \textbf{Template Method}: la struttura dell'algoritmo è fissata in un metodo della superclasse, che chiama \textit{hook} astratti implementati dalle sottoclassi. La variazione avviene per \textbf{ereditarietà} e il controllo resta nella superclasse (``Hollywood Principle'': non chiamateci, vi chiamiamo noi).
+    \item \textbf{State}: il contesto delega a un oggetto che rappresenta uno \textbf{stato}, ma le transizioni tra stati sono spesso decise dagli stati stessi e il comportamento cambia al cambiare dello stato interno. Lo Strategy, invece, cambia algoritmo su richiesta del client e non implica una macchina a stati.
+\end{itemize}
+\end{cbox}
+
+\subsection{Recap dei Pattern e Radici Storiche}
+
+\paragraph{Recap dei pattern visti finora.}
 \begin{itemize}
     \item \textbf{Singleton}: vincola l'unicità dell'istanza di una classe;
     \item \textbf{Visitor}: applica una funzione a tutti gli elementi di una struttura (ad esempio la funzione \texttt{map});
     \item \textbf{Strategy}: polimorfismo via \textit{overriding}.
 \end{itemize}
 
-\paragraph{Il Riferimento Concettuale: Le Chiusure Lessicali di Smalltalk.}
-Le radici concettuali del passaggio di comportamenti affondano nel linguaggio \textbf{Smalltalk}, dove blocchi di codice autonomi (\textit{blocks}) agiscono come oggetti di prima classe dotati di chiusura lessicale (\textit{lexical scoping}):
+\noindent Il filo conduttore è sempre lo stesso: separare \textit{che cosa} il sistema deve fare da \textit{come} lo fa, in modo che la parte variabile possa essere sostituita senza toccare la parte stabile.
+
+\paragraph{Il riferimento concettuale: le chiusure lessicali di Smalltalk.}
+Le radici concettuali del passaggio di comportamenti affondano nel linguaggio \textbf{Smalltalk}, dove blocchi di codice autonomi (\textit{blocks}) agiscono come oggetti di prima classe dotati di \textbf{chiusura lessicale} (\textit{lexical scoping}):
 \begin{lstlisting}
 testScope
     | t |
@@ -8746,15 +9021,17 @@ testBlock: aBlock
     t := nil.
     aBlock value
 \end{lstlisting}
-\noindent All'esecuzione, la chiamata a \texttt{testScope} stampa \textbf{42} (e non \texttt{nil}). Il blocco \texttt{[ ... ]} cattura stabilmente la variabile \texttt{t} del contesto in cui è stato \textbf{definito}, rimanendo del tutto immune alla ridefinizione locale presente in \texttt{testBlock:}.
-Questo modello di incapsulamento ed isolamento di esecuzione costituisce l'obiettivo ideale a cui mira la gestione dinamica delle strategie.
+\noindent All'esecuzione, la chiamata a \texttt{testScope} stampa \textbf{42} (e non \texttt{nil}). Il blocco \texttt{[ ... ]} cattura stabilmente la variabile \texttt{t} del contesto in cui è stato \textbf{definito}, rimanendo del tutto immune alla ridefinizione locale presente in \texttt{testBlock:}. In altre parole, il blocco porta con sé l'ambiente in cui è nato, non l'ambiente in cui viene eseguito: è questo il significato di \textit{chiusura lessicale}.
 
-\noindent In Smalltalk il \textbf{chunk} (blocco) permette quindi di usare il corpo di una funzione come parametro da passare. Un'idea analoga, in forma molto più limitata, esiste già in C: l'espressione \texttt{a = b = c = d = 50} viene valutata da destra verso sinistra, perché l'assegnazione è essa stessa un'espressione che restituisce un valore (prima \texttt{d = 50}, poi \texttt{c = (d = 50)}, e così via).
-In Java e in C++ lo stesso obiettivo si raggiunge con le classi annidate; in C++ però l'annidamento ha rilevanza solo per la \textbf{visibilità}, mentre in Java si distinguono i tre tipi di classe descritti di seguito (nested, inner, local).
+\noindent Questo modello di incapsulamento e isolamento di esecuzione costituisce l'obiettivo ideale a cui mira la gestione dinamica delle strategie: un comportamento dovrebbe poter essere passato come un valore, conservando il contesto di cui ha bisogno.
+
+\noindent In Smalltalk il \textbf{chunk} (blocco) permette quindi di usare il corpo di una funzione come parametro da passare. Un'idea analoga, in forma molto più limitata, esiste già in C: l'espressione \texttt{a = b = c = d = 50} viene valutata da destra verso sinistra, perché l'assegnazione è essa stessa un'espressione che restituisce un valore (prima \texttt{d = 50}, poi \texttt{c = (d = 50)}, e così via). Non è una chiusura, ma dimostra che in C un'espressione può produrre un valore utilizzabile altrove: è il mattone su cui si costruiscono i puntatori a funzione.
+
+\noindent In Java e in C++ lo stesso obiettivo si raggiunge con le \textbf{classi annidate}; in C++ però l'annidamento ha rilevanza solo per la \textbf{visibilità}, mentre in Java si distinguono i tre tipi di classe descritti di seguito (nested, inner, local), a cui si aggiunge la variante anonima.
 
 \subsection{Classi in Ambiti Annidati (Inner Scopes)}
 
-\paragraph{Differenza Concettuale tra C++ e Java.}
+\paragraph{Differenza concettuale tra C++ e Java.}
 Sia Java che C++ consentono di dichiarare la definizione di una classe all'interno di un'altra classe:
 \begin{itemize}
     \item \textbf{In C++}: l'annidamento ha una rilevanza legata primariamente alla \textbf{visibilità} e al \textbf{namespacing}. Una classe annidata è concettualmente un'entità indipendente inserita nello scope di nomi della classe contenitrice; non possiede alcun legame implicito con le istanze di quest'ultima.
@@ -8765,6 +9042,8 @@ Sia Java che C++ consentono di dichiarare la definizione di una classe all'inter
         \item \textbf{Local Classes}: classi dichiarate localmente all'interno di un blocco di codice (es. all'interno di un metodo).
     \end{enumerate}
 \end{itemize}
+
+\noindent La differenza non è solo sintattica: in Java un'inner class è un oggetto \textbf{composto} con l'istanza esterna, e il compilatore genera automaticamente un campo nascosto che la collega all'outer. In C++ la classe annidata è solo un nome più lungo, e se vuole accedere a un'istanza esterna deve riceverla esplicitamente (come parametro o puntatore).
 
 \begin{cbox}{Tassonomia delle Classi in Ambiti Interni in Java}
 \begin{itemize}
@@ -8792,9 +9071,11 @@ Sia Java che C++ consentono di dichiarare la definizione di una classe all'inter
 \end{tabular}
 \end{center}
 
+\noindent \textbf{Nota sulle versioni recenti.} La regola ``niente membri statici nelle inner class'', storicamente vera e ancora quella insegnata come modello concettuale, è stata allentata da Java 16 (JEP 395): oggi anche le inner class possono dichiarare membri statici. Restano invece validi i principi strutturali: un'inner class non statica continua ad avere bisogno di un'istanza esterna per essere istanziata, e il suo ciclo di vita resta legato a quello dell'oggetto contenitore.
+
 \subsection{Classi Statiche Annidate (Static Nested Classes)}
 
-\paragraph{Definizione e Regole di Visibilità.}
+\paragraph{Definizione e regole di visibilità.}
 Una \textbf{static nested class} consente di nascondere l'esistenza di un tipo rispetto al mondo esterno e di raggruppare logicamente classi correlate all'interno del medesimo modulo.
 \begin{itemize}
     \item Il nome della classe annidata è locale allo scope della classe contenitrice (es. \texttt{Outer.Nested});
@@ -8802,10 +9083,12 @@ Una \textbf{static nested class} consente di nascondere l'esistenza di un tipo r
     \item \textbf{Non ha accesso diretto} ai campi o metodi di istanza dell'outer class, poiché non possiede alcun riferimento implicito a un oggetto contenitore.
 \end{itemize}
 
-\paragraph{Nota Storica.}
+\noindent \textbf{Precisazione importante.} ``Non ha accesso diretto'' non significa che non possa accedervi affatto: se riceve un riferimento a un'istanza dell'outer, può leggere e modificare anche i suoi membri privati, perché la classe annidata fa parte dello stesso corpo di classe e gode dell'accesso privilegiato tra membri dello stesso tipo (nestmates). Ciò che manca è il collegamento \textbf{implicito}: la classe statica non ``sa'' quale oggetto esterno usare finché non glielo si passa.
+
+\paragraph{Nota storica.}
 Le classi annidate statiche sono funzionalmente simili ai \texttt{package}/\texttt{namespace}: furono introdotte perché il C++ era molto in voga ma all'epoca non esistevano ancora i namespace. Servono solo per \textbf{visibilità} (possono essere nascoste all'esterno della classe) e accedono unicamente alle variabili statiche della classe contenitrice.
 
-\paragraph{Confronto di Sintassi: Java vs C++.}
+\paragraph{Confronto di sintassi: Java vs C++.}
 Il frammento seguente evidenzia la differenza tra classi interne e classi statiche annidate in Java:
 \begin{lstlisting}[language=Java]
 public class X {
@@ -8848,11 +9131,13 @@ public:
 };
 \end{lstlisting}
 
-\paragraph{Pattern Applicativi delle Static Nested Classes.}
+\noindent In entrambi i casi la classe annidata statica è un tipo autonomo: si istanzia con \texttt{new X.Nested()} (Java) o \texttt{X::Nested n;} (C++), senza bisogno di un oggetto \texttt{X}. Il file bytecode generato da Java segue la convenzione \texttt{X\$Nested.class}.
+
+\paragraph{Pattern applicativi delle static nested classes.}
 L'impiego delle classi statiche annidate risponde a tre esigenze primarie di ingegnerizzazione:
 
 \begin{enumerate}
-    \item \textbf{Namespacing e Classi Helper}: raggruppare funzioni di utilità correlate sotto un unico namespace logico evitando l'inquinamento del package globale.
+    \item \textbf{Namespacing e classi helper}: raggruppare funzioni di utilità correlate sotto un unico namespace logico evitando l'inquinamento del package globale.
 \begin{lstlisting}[language=Java]
 class Strings {
     static class Joiner {
@@ -8892,7 +9177,9 @@ class HttpRequest {
 // Utilizzo: new HttpRequest.Builder().url("https://ex").timeout(1000).build();
 \end{lstlisting}
 
-    \item \textbf{Private Type Hiding (Incapsulamento Rigoroso)}: celare strutture dati e tipi ausiliari all'esterno del componente client.
+\noindent Il Builder è una classe statica annidata perché non ha bisogno dell'istanza di \texttt{HttpRequest} per funzionare: al contrario, serve a \textit{crearla}. Se fosse un'inner class, non si potrebbe istanziare senza un \texttt{HttpRequest} già esistente, il che sarebbe paradossale.
+
+    \item \textbf{Private type hiding (incapsulamento rigoroso)}: celare strutture dati e tipi ausiliari all'esterno del componente client.
 \begin{lstlisting}[language=Java]
 class Cache {
     private static class Entry {
@@ -8914,9 +9201,11 @@ class Cache {
 \end{lstlisting}
 \end{enumerate}
 
+\noindent In tutti e tre i casi la parola chiave \texttt{static} non significa ``classe composta solo di membri statici'': significa che la classe annidata \textbf{non richiede un'istanza dell'outer}. La classe statica può avere campi e metodi d'istanza propri, e può essere istanziata quante volte si vuole.
+
 \subsection{Classi Interne (Inner Classes)}
 
-\paragraph{Legame con l'Istanza Esterna.}
+\paragraph{Legame con l'istanza esterna.}
 Una classe interna (\textbf{Member Inner Class}) non è decorata con \texttt{static} ed è strettamente associata all'oggetto contenitore:
 \begin{itemize}
     \item Ogni istanza della classe interna possiede un \textbf{riferimento implicito} all'istanza della classe esterna che l'ha generata;
@@ -8932,19 +9221,27 @@ Una classe interna (\textbf{Member Inner Class}) non è decorata con \texttt{sta
     \end{center}
 \end{itemize}
 
-\paragraph{Vincoli Strutturali.}
+\paragraph{Che cosa genera il compilatore.}
+Il legame con l'esterno non è magia: il compilatore aggiunge alla classe interna un campo sintetico (tipicamente chiamato \texttt{this\$0}) che memorizza il riferimento all'oggetto outer. Il costruttore della inner class riceve quindi un parametro aggiuntivo, l'istanza esterna, e la usa per inizializzare quel campo. Per questo:
+\begin{itemize}
+    \item non esiste un costruttore ``vuoto'' della inner class che non richieda un outer;
+    \item l'oggetto interno tiene \textbf{vivo} l'oggetto esterno finché è raggiungibile: è una fonte classica di \textit{memory leak} quando un listener o un task viene registrato su una struttura di lunga vita e mantiene un riferimento all'intera finestra o al servizio che lo ha creato;
+    \item la sintassi \texttt{outer.new Inner()} è l'unico modo per esprimere esplicitamente quale outer usare quando il contesto non è ambiguo.
+\end{itemize}
+
+\paragraph{Vincoli strutturali.}
 \begin{itemize}
     \item Una inner class \textbf{non può dichiarare membri statici} (metodi, campi o blocchi statici), ad eccezione di costanti a tempo di compilazione (\texttt{static final});
     \item Non può avere lo stesso identificatore della classe che la racchiude;
     \item La sua esistenza riflette una stretta cooperazione in memoria tra l'oggetto racchiuso e quello contenitore.
 \end{itemize}
 
-\paragraph{Perché Non Possono Avere Membri Statici.}
-Una inner class esiste solo in presenza di un oggetto della classe contenitrice. La differenza con il C emerge dal modello di caricamento: in C il file eseguibile (\texttt{.out}) carica tutto all'avvio (in modo semplificato), mentre in Java ogni classe è compilata in un \textbf{ClassFile} e i suoi membri statici vengono inizializzati quando la \textbf{classe viene caricata}. Un membro statico di una inner class dovrebbe invece esistere prima di qualunque istanza dell'outer, e per questo non è ammesso. Le inner class possono essere \textbf{anonime} e \textbf{locali}.
+\paragraph{Perché non possono avere membri statici.}
+Una inner class esiste solo in presenza di un oggetto della classe contenitrice. La differenza con il C emerge dal modello di caricamento: in C il file eseguibile (\texttt{.out}) carica tutto all'avvio (in modo semplificato), mentre in Java ogni classe è compilata in un \textbf{ClassFile} e i suoi membri statici vengono inizializzati quando la \textbf{classe viene caricata}. Un membro statico di una inner class dovrebbe invece esistere prima di qualunque istanza dell'outer, e per questo non è ammesso: sarebbe un membro di classe di un tipo che, per costruzione, non è pensato per esistere indipendentemente da un oggetto esterno. Le costanti \texttt{static final} sfuggono al divieto perché sono \textbf{costanti di compilazione}: il loro valore viene incorporato nel bytecode e non richiede l'inizializzazione della classe interna. Le inner class possono essere \textbf{anonime} e \textbf{locali}.
 
-\paragraph{Pattern Applicativi delle Inner Classes.}
+\paragraph{Pattern applicativi delle inner classes.}
 \begin{enumerate}
-    \item \textbf{Accesso Condiviso allo Stato dell'Outer Instance}:
+    \item \textbf{Accesso condiviso allo stato dell'outer instance}:
 \begin{lstlisting}[language=Java]
 class Counter {
     private int value = 0;
@@ -8961,7 +9258,7 @@ class Counter {
 }
 \end{lstlisting}
 
-    \item \textbf{Implementazione di Iteratori Personalizzati}: l'iteratore necessita di navigare le collezioni interne della classe preservando l'information hiding verso l'esterno.
+    \item \textbf{Implementazione di iteratori personalizzati}: l'iteratore necessita di navigare le collezioni interne della classe preservando l'information hiding verso l'esterno.
 \begin{lstlisting}[language=Java]
 class IntRange implements Iterable<Integer> {
     private final int start, end;
@@ -8979,8 +9276,9 @@ class IntRange implements Iterable<Integer> {
     public java.util.Iterator<Integer> iterator() { return new It(); }
 }
 \end{lstlisting}
+\noindent L'iteratore è una inner class perché deve leggere \texttt{start} ed \texttt{end} dell'istanza di \texttt{IntRange} a cui appartiene: è un oggetto \textit{di servizio} che vive dentro la collezione e ne conosce lo stato senza esporlo.
 
-    \item \textbf{Event Handler e GUI Listener}: gestione di reazioni grafiche che necessitano di aggiornare direttamente lo stato del pannello contenitore.
+    \item \textbf{Event handler e GUI listener}: gestione di reazioni grafiche che necessitano di aggiornare direttamente lo stato del pannello contenitore.
 \begin{lstlisting}[language=Java]
 class ClickCounter {
     private int clicks = 0;
@@ -9001,9 +9299,11 @@ class ClickCounter {
 \end{lstlisting}
 \end{enumerate}
 
+\noindent Il vantaggio comune è l'accesso privilegiato allo stato dell'outer senza getter e senza rendere pubblici i dettagli. Il costo comune è il legame forte tra i due oggetti, che va gestito con consapevolezza nei sistemi di lunga durata.
+
 \subsection{Classi Locali (Local Classes)}
 
-\paragraph{Incapsulamento a Livello di Blocco.}
+\paragraph{Incapsulamento a livello di blocco.}
 Una \textbf{classe locale} è una particolare variante di inner class dichiarata direttamente all'interno di un blocco di codice eseguibile: tipicamente nel corpo di un metodo, di un costruttore o persino all'interno di un costrutto decisionale o iterativo (\texttt{if}, \texttt{for}, \texttt{while}).
 \begin{itemize}
     \item \textbf{Scope circoscritto}: la classe è visibile e utilizzabile \textbf{soltanto all'interno del blocco} in cui è dichiarata;
@@ -9011,10 +9311,10 @@ Una \textbf{classe locale} è una particolare variante di inner class dichiarata
     \item \textbf{Incapsulamento funzionale}: consente di realizzare strutture dati o algoritmi helper temporanei senza renderli visibili al resto della classe o del package.
 \end{itemize}
 
-\paragraph{Funzioni dentro Funzioni.}
+\paragraph{Funzioni dentro funzioni.}
 Una classe dentro una funzione è lecita; una \textit{funzione} dentro una funzione è possibile ma complessa. In C++ si ottiene solo con un trucco, tramite un'estensione dell'ultima versione di GCC. Una classe locale non può essere \texttt{static}: non avrebbe un'istanza dell'outer da cui allocare memoria.
 
-\paragraph{Regole Sintattiche e Compilazione.}
+\paragraph{Regole sintattiche e compilazione.}
 \begin{itemize}
     \item Non possono essere marcate con modificatori di accesso (\texttt{public}, \texttt{protected}, \texttt{private});
     \item Non possono essere dichiarate \texttt{static};
@@ -9025,14 +9325,16 @@ Una classe dentro una funzione è lecita; una \textit{funzione} dentro una funzi
     \end{center}
 \end{itemize}
 
-\paragraph{Regola di Accesso: Membri Outer e Variabili Locali.}
+\noindent Il numero progressivo distingue le diverse classi locali e anonime dello stesso file: \texttt{Outer\$1...}, \texttt{Outer\$2...} e così via. Il nome è un dettaglio del compilatore e non deve essere usato nel codice sorgente.
+
+\paragraph{Regola di accesso: membri outer e variabili locali.}
 \begin{itemize}
     \item Una classe locale ha pieno accesso a tutti i membri della classe che la racchiude (inclusi campi privati);
     \item Se la classe locale è dichiarata all'interno di un metodo \textbf{non-statico}, ha a disposizione il riferimento \texttt{Outer.this}; se dichiarata in un metodo \textbf{statico}, può accedere solo ai membri statici della classe outer;
     \item Può accedere ai parametri formali e alle variabili locali del metodo contenitore \textbf{unicamente se sono \texttt{final} o \textit{effectively final}} (ovvero valorizzate una sola volta e mai riassegnate successivamente).
 \end{itemize}
 
-\paragraph{Esempio di Utilizzo: Validatore Ad-Hoc.}
+\paragraph{Esempio di utilizzo: validatore ad-hoc.}
 \begin{lstlisting}[language=Java]
 class UserService {
     boolean isUsernameOk(String u) {
@@ -9052,10 +9354,11 @@ class UserService {
     }
 }
 \end{lstlisting}
+\noindent La classe non esiste per il resto del programma: non inquina il namespace del package, non può essere riusata per errore altrove e il suo nome è significativo solo nel contesto del metodo. È l'equivalente Java di una funzione helper locale.
 
 \subsection{Contesti Statici e Non-Statici nelle Classi Annidate}
 
-\paragraph{Panoramica e Tassonomia delle Inner Class.}
+\paragraph{Panoramica e tassonomia delle inner class.}
 Le classi interne (non-statiche) sono dichiarate senza la parola chiave \texttt{static} e risultano intrinsecamente vincolate a un'istanza della classe che le racchiude. La gerarchia include tre varianti:
 \begin{itemize}
     \item \textbf{Member Inner Classes}: dichiarate a livello di corpo di classe, esattamente come un campo o un metodo d'istanza.
@@ -9063,11 +9366,11 @@ Le classi interne (non-statiche) sono dichiarate senza la parola chiave \texttt{
     \item \textbf{Anonymous Classes}: classi locali prive di identificatore, definite e istanziate istantaneamente all'interno di una singola espressione per compiti usa-e-getta.
 \end{itemize}
 
-\paragraph{Esecuzione in Contesto Statico vs Non-Statico.}
+\paragraph{Esecuzione in contesto statico vs non-statico.}
 L'accesso ai membri della classe contenitrice dipende strettamente dal contesto in cui la classe interna viene dichiarata ed eseguita:
 \begin{itemize}
-    \item \textbf{Contesto Non-Statico (metodi d'istanza, costruttori, inizializzatori)}: il codice viene eseguito con un riferimento \texttt{this} associato all'istanza dell'outer class. La classe interna dispone automaticamente di \texttt{Outer.this} e può accedere a tutti i membri d'istanza (campi e metodi, anche privati) della classe esterna.
-    \item \textbf{Contesto Statico (metodi statici, inizializzatori statici)}: non esiste alcuna istanza outer associata. Di conseguenza, le classi locali o anonime dichiarate in un contesto statico non possono accedere ai membri d'istanza di \texttt{Outer}, ma unicamente ai suoi membri statici.
+    \item \textbf{Contesto non-statico} (metodi d'istanza, costruttori, inizializzatori): il codice viene eseguito con un riferimento \texttt{this} associato all'istanza dell'outer class. La classe interna dispone automaticamente di \texttt{Outer.this} e può accedere a tutti i membri d'istanza (campi e metodi, anche privati) della classe esterna.
+    \item \textbf{Contesto statico} (metodi statici, inizializzatori statici): non esiste alcuna istanza outer associata. Di conseguenza, le classi locali o anonime dichiarate in un contesto statico non possono accedere ai membri d'istanza di \texttt{Outer}, ma unicamente ai suoi membri statici.
 \end{itemize}
 
 \begin{lstlisting}[language=Java]
@@ -9093,9 +9396,11 @@ class Outer {
 }
 \end{lstlisting}
 
+\noindent La regola è una conseguenza diretta del modello di memoria: un metodo statico non ha un \texttt{this} e quindi non può fornire alla classe locale il riferimento implicito all'oggetto esterno. Se serve accedere a un'istanza, la si passa esplicitamente come parametro.
+
 \subsection{Cattura delle Variabili Locali: Final ed Effectively Final}
 
-\paragraph{Il Principio di Cattura.}
+\paragraph{Il principio di cattura.}
 Le classi locali e anonime possono utilizzare le variabili locali e i parametri definiti nel metodo circostante, ma a una condizione tassativa: tali variabili devono essere dichiarate \textbf{\texttt{final}} oppure essere \textbf{\textit{effectively final}}. Una variabile è \textit{effectively final} se, pur priva del modificatore esplicito \texttt{final}, riceve un valore una sola volta e non viene mai più riassegnata nel corso della sua esistenza.
 
 \begin{cbox}{Perché le Variabili Catturate Devono Essere (Effectively) Final?}
@@ -9106,6 +9411,8 @@ La motivazione risiede nel divario tra il ciclo di vita dello \textbf{stack} e d
     \item Per consentire all'oggetto di continuare ad accedere a tali valori, il compilatore crea una \textbf{copia sintetica} di ciascuna variabile catturata all'interno dei campi generati della classe interna.
     \item Se la variabile locale potesse essere riassegnata dopo la creazione dell'istanza, la copia interna e la variabile originale divergerebbero, distruggendo la consistenza dei dati. Il vincolo di finalità garantisce che il valore copiato sia immutabile e sempre coerente.
 \end{itemize}
+\medskip
+\noindent \textbf{Precisazione sul significato di ``cattura''.} Java cattura il \textbf{valore} della variabile, non la variabile stessa: per un primitivo viene copiato il numero; per un riferimento a un oggetto viene copiato il riferimento, quindi l'oggetto resta condiviso e il suo contenuto può essere mutato. È per questo che il ``trucco dell'array'' funziona: il riferimento all'array è immutabile, ma gli elementi sono mutabili.
 \end{cbox}
 
 \begin{lstlisting}[language=Java]
@@ -9127,11 +9434,11 @@ void fail() {
 }
 \end{lstlisting}
 
-\paragraph{Strategie di Risoluzione del Vincolo (Fix Pattern).}
-Nel codice concorrente o asincrono capita di dover modificare lo stato o aggiornare contatori prima dell'invio di un task a un esecutore. Esistono due soluzioni ingegneristiche per superare il blocco del compilatore:
+\paragraph{Strategie di risoluzione del vincolo (fix pattern).}
+Nel codice concorrente o asincrono capita di dover modificare lo stato o aggiornare contatori prima dell'invio di un task a un esecutore. Esistono due soluzioni ingegneristiche classiche per superare il blocco del compilatore, a cui se ne aggiunge una terza più moderna:
 
 \begin{enumerate}
-    \item \textbf{Snapshotting del Valore (Fix A)}: si assegna il valore corrente a una variabile locale esplicitamente marcata \texttt{final} prima della cattura. La variabile originale può continuare a mutare senza alterare lo snapshot catturato dal task.
+    \item \textbf{Snapshotting del valore (Fix A)}: si assegna il valore corrente a una variabile locale esplicitamente marcata \texttt{final} prima della cattura. La variabile originale può continuare a mutare senza alterare lo snapshot catturato dal task.
 \begin{lstlisting}[language=Java]
 Future<?> scheduleJob() {
     int tries = 0;
@@ -9145,7 +9452,7 @@ Future<?> scheduleJob() {
 }
 \end{lstlisting}
 
-    \item \textbf{Boxing dello Stato Mutabile (Fix B)}: si incapsula il dato all'interno di un contenitore reference immutabile, ad esempio un array a elemento singolo (\texttt{final int[] box = \{0\};}) o un wrapper. Il riferimento all'array rimane rigorosamente \texttt{final} (soddisfacendo il compilatore), mentre il suo contenuto interno (\texttt{box[0]}) può essere modificato liberamente sia dentro che fuori la classe locale.
+    \item \textbf{Boxing dello stato mutabile (Fix B)}: si incapsula il dato all'interno di un contenitore reference immutabile, ad esempio un array a elemento singolo (\texttt{final int[] box = \{0\};}) o un wrapper. Il riferimento all'array rimane rigorosamente \texttt{final} (soddisfacendo il compilatore), mentre il suo contenuto interno (\texttt{box[0]}) può essere modificato liberamente sia dentro che fuori la classe locale.
 \begin{lstlisting}[language=Java]
 Future<?> scheduleJob() {
     final int[] box = { 0 }; // Reference immutabile a contenuto mutabile
@@ -9157,18 +9464,33 @@ Future<?> scheduleJob() {
     return pool.submit(new Job());
 }
 \end{lstlisting}
+
+    \item \textbf{Contenitore atomico (Fix C, idiomatico moderno)}: si usa \texttt{AtomicInteger}, un contatore atomico e thread-safe che incapsula un valore mutabile dietro un riferimento immutabile.
+\begin{lstlisting}[language=Java]
+Future<?> scheduleJob() {
+    final AtomicInteger tries = new AtomicInteger(0);
+
+    class Job implements Runnable {
+        public void run() { System.out.println(tries.get()); }
+    }
+    tries.incrementAndGet();
+    return pool.submit(new Job());
+}
+\end{lstlisting}
 \end{enumerate}
+
+\noindent I tre fix hanno lo stesso scopo (aggirare il vincolo senza rompere la coerenza), ma comunicano intenzioni diverse: lo snapshot è la scelta giusta quando il task deve vedere un valore \textit{congelato}; l'array è un espediente legacy; \texttt{AtomicInteger} è la scelta leggibile quando serve una vera variabile condivisa e mutabile.
 
 \subsection{Pattern ed Esempi Applicativi di Classi Locali}
 
 \noindent Le classi locali trovano impiego pratico in tre scenari principali:
 \begin{itemize}
-    \item \textbf{Validatori e Helper Monouso}: incapsulano logiche di controllo interne a un metodo senza esporre classi accessorie all'esterno.
-    \item \textbf{Algoritmi di Calcolo Parametrici}: classi matematiche temporanee che leggono parametri del metodo \textit{effectively final} senza richiedere campi d'istanza dedicati.
-    \item \textbf{Strategy Pattern Locale}: scelta runtime dell'algoritmo direttamente nello scope del metodo chiamante.
+    \item \textbf{Validatori e helper monouso}: incapsulano logiche di controllo interne a un metodo senza esporre classi accessorie all'esterno.
+    \item \textbf{Algoritmi di calcolo parametrici}: classi matematiche temporanee che leggono parametri del metodo \textit{effectively final} senza richiedere campi d'istanza dedicati.
+    \item \textbf{Strategy pattern locale}: scelta runtime dell'algoritmo direttamente nello scope del metodo chiamante.
 \end{itemize}
 
-\paragraph{Esempio: Strategy Pattern Diretto all'Interno di un Metodo.}
+\paragraph{Esempio: Strategy pattern diretto all'interno di un metodo.}
 Il seguente frammento dimostra come realizzare una variante compatta del pattern Strategy senza creare gerarchie pubbliche separate. Le classi concrete che implementano gli algoritmi di ordinamento (\texttt{Asc} e \texttt{Desc}) sono definite all'interno del metodo \texttt{sort} e selezionate dinamicamente:
 \begin{lstlisting}[language=Java]
 class Sorter {
@@ -9194,6 +9516,8 @@ class Sorter {
 }
 \end{lstlisting}
 
+\noindent In questa versione manca un'interfaccia comune: le due classi hanno lo stesso metodo \texttt{apply} ma non condividono un contratto formale, quindi la selezione è ancora affidata a un \texttt{if}. È una forma \textit{embrionale} di Strategy, utile per capire il meccanismo, ma non ancora il pattern completo. La versione pienamente conforme richiederebbe un'interfaccia \texttt{SortStrategy} e due implementazioni, con il contesto che delega a un riferimento di quel tipo.
+
 \subsection{Significato di \texttt{static} e \texttt{final}}
 
 \noindent Data la dichiarazione \texttt{HttpRequestBuilder a = new HttpRequestBuilder()}, a lezione è stata commentata una tabella sul significato dei modificatori:
@@ -9204,7 +9528,7 @@ class Sorter {
     \toprule
     \textbf{Modificatore} & \textbf{Su} & \textbf{Significato} \\
     \midrule
-    \texttt{final} & Variabile & Costante: il compilatore non deve allocare spazio in memoria per essa. Protegge da modifiche future accidentali di un valore che deve restare costante. \\
+    \texttt{final} & Variabile & Valore non riassegnabile dopo l'inizializzazione. Protegge da modifiche future accidentali di un valore che deve restare costante; se è una costante di compilazione, il valore può essere incorporato nel bytecode e non richiedere storage nel codice client. \\
     \addlinespace
     \texttt{static} & Variabile & Condivisa da tutte le istanze: è membro della classe, non del singolo oggetto. \\
     \addlinespace
@@ -9217,23 +9541,32 @@ class Sorter {
 
 \noindent \textbf{Costruttore omesso}: se non viene dichiarato, Java fornisce il costruttore di default (che invoca quello del padre).
 
-\paragraph{Confronto con il C.} In C \texttt{static} ha due significati: su una \textbf{variabile globale} la rende visibile solo nel file; su una \textbf{variabile locale} a una funzione la rende comune a tutte le chiamate (persiste tra una chiamata e l'altra). Con \texttt{extern int x;} si \textit{dichiara} ma non si \textit{definisce} la variabile (non viene allocato spazio).
+\paragraph{Altri significati di \texttt{final}.}
+Il modificatore \texttt{final} non riguarda solo le variabili:
+\begin{itemize}
+    \item su un \textbf{metodo}: impedisce l'overriding nelle sottoclassi; il metodo può ancora essere chiamato, ma la sua implementazione è fissata;
+    \item su una \textbf{classe}: impedisce l'ereditarietà (es. \texttt{String}, \texttt{Integer});
+    \item su un \textbf{parametro}: impedisce la riassegnazione del parametro nel corpo del metodo (utile per chiarezza, non per il chiamante).
+\end{itemize}
+
+\paragraph{Confronto con il C.}
+In C \texttt{static} ha due significati: su una \textbf{variabile globale} la rende visibile solo nel file; su una \textbf{variabile locale} a una funzione la rende comune a tutte le chiamate (persiste tra una chiamata e l'altra). Con \texttt{extern int x;} si \textit{dichiara} ma non si \textit{definisce} la variabile (non viene allocato spazio). In Java \texttt{static} ha un solo significato principale: il membro appartiene alla classe, non all'istanza. La parola chiave è quindi \textit{overloadata} tra i due linguaggi e va interpretata nel contesto.
 
 \paragraph{\texttt{final} vs \texttt{static final}.}
-Domanda posta a lezione dal docente. \texttt{final} da solo indica un campo non riassegnabile ma \textbf{per istanza} (può essere inizializzato nel costruttore e ogni oggetto ne ha una copia); \texttt{static final} indica una costante \textbf{di classe}, unica e condivisa, valorizzata una sola volta al caricamento della classe.
+Domanda posta a lezione dal docente. \texttt{final} da solo indica un campo non riassegnabile ma \textbf{per istanza} (può essere inizializzato nel costruttore e ogni oggetto ne ha una copia); \texttt{static final} indica una costante \textbf{di classe}, unica e condivisa, valorizzata una sola volta al caricamento della classe. Un campo \texttt{static final} che non sia una costante di compilazione viene inizializzato in un blocco statico o al momento del caricamento; una costante di compilazione (\texttt{static final int K = 4;}) viene invece incorporata nei client.
 
 \subsection{Errori Comuni e Correzioni: Guida Pratica}
 
-\noindent L'analisi dei tipici errori di compilazione legati allo scoping e all'istanziazione delle classi annidate permette di fissare le regole cardinali del modello Java:
+\noindent L'analisi dei tipici errori di compilazione legati allo scoping e all'istanziazione delle classi annidate permette di fissare le regole cardinali del modello Java. Per ciascun caso si riportano l'errore, la correzione e il risultato atteso.
 
-\paragraph{1. Static Nested Class e Membri Non-Statici.}
+\paragraph{1. Static nested class e membri non-statici.}
 \begin{itemize}
     \item \textbf{Errore comune}: tentare di accedere direttamente a campi d'istanza della classe contenitrice dall'interno di una classe statica annidata (\texttt{return secret + common;}). Poiché la classe è \texttt{static}, non dispone di alcun puntatore \texttt{this} verso l'esterno.
     \item \textbf{Correzione}: passare esplicitamente l'oggetto esterno come parametro al metodo della classe annidata (\texttt{int f(ENested outer) \{ return outer.secret + common; \}}).
     \item \textbf{Risultato}: se \texttt{secret = 7} e \texttt{common = 3}, l'invocazione di \texttt{t.f(outer)} produce \texttt{10}, mentre la chiamata statica \texttt{Tool.g()} restituisce \texttt{6}.
 \end{itemize}
 
-\paragraph{2. Member Inner Class: Istanziazione e Membri Statici.}
+\paragraph{2. Member inner class: istanziazione e membri statici.}
 \begin{itemize}
     \item \textbf{Errore comune}: dichiarare variabili statiche non costanti dentro una inner class (\texttt{static int k = 4;}) oppure tentare di istanziare la classe da un metodo statico con un generico \texttt{new In()}.
     \item \textbf{Correzione}:
@@ -9244,7 +9577,7 @@ Domanda posta a lezione dal docente. \texttt{final} da solo indica un campo non 
     \item \textbf{Risultato}: con \texttt{v = 1} e costante \texttt{K = 4}, \texttt{in.h()} calcola \texttt{1 + 4 = 5}.
 \end{itemize}
 
-\paragraph{3. Local Class: Campi Statici e Rottura dell'Effective Finality.}
+\paragraph{3. Local class: campi statici e rottura dell'effective finality.}
 \begin{itemize}
     \item \textbf{Errore comune}: dichiarare costanti prive del modificatore \texttt{final} all'interno del metodo (\texttt{static int FACTOR = 10;}) e riassegnare variabili locali utilizzate dalla classe locale (\texttt{base = base + n;}).
     \item \textbf{Correzione}:
@@ -9255,19 +9588,37 @@ Domanda posta a lezione dal docente. \texttt{final} da solo indica un campo non 
     \item \textbf{Risultato}: invocando \texttt{work(5)} con \texttt{label = "X"}, si ottiene \texttt{base = 7}; il calcolo \texttt{apply(3)} produce $3 \times 7 = 21$, generando l'output formattato \texttt{X:21:10}.
 \end{itemize}
 
+\begin{cbox}{Regola Generale dietro gli Errori}
+Gli errori precedenti sono tre facce dello stesso principio: \textbf{una classe annidata non statica è un oggetto composto, e la sua esistenza dipende da un'istanza esterna}. Di conseguenza:
+\begin{itemize}
+    \item se la classe è \texttt{static}, non ha un outer implicito e deve riceverlo esplicitamente;
+    \item se la classe è inner, non può avere membri statici indipendenti dall'istanza (salvo costanti di compilazione);
+    \item se la classe è locale, il compilatore deve poter \textbf{congelare} il valore delle variabili catturate, altrimenti la copia interna divergerebbe dall'originale.
+\end{itemize}
+\end{cbox}
+
 \subsection{Interfacce: Definizione, Costanti ed Ereditarietà}
 
-\paragraph{Natura di un'Interfaccia in Java.}
+\paragraph{Natura di un'interfaccia in Java.}
 Un'interfaccia introduce un nuovo \textbf{tipo di riferimento} (\textit{reference type}) il cui scopo primario è definire un contratto formale di comportamento per classi altrimenti del tutto eterogenee e non correlate.
 \begin{itemize}
     \item \textbf{Assenza di stato d'istanza}: un'interfaccia non può dichiarare variabili di istanza né memorizzare alcuno stato mutabile;
     \item \textbf{Non istanziabilità}: non può essere istanziata direttamente tramite l'operatore \texttt{new}, ma può essere unicamente implementata da classi o estesa da altre interfacce;
-    \item \textbf{Membri ammessi}: a partire dalle specifiche moderne di Java, un'interfaccia può contenere esclusivamente costanti, firme di metodi astratti, metodi \texttt{default}, metodi \texttt{static} e tipi annidati (\textit{nested types});
+    \item \textbf{Membri ammessi}: a partire dalle specifiche moderne di Java, un'interfaccia può contenere esclusivamente costanti, firme di metodi astratti, metodi \texttt{default}, metodi \texttt{static}, tipi annidati (\textit{nested types}) e, da Java 9, metodi \texttt{private} con corpo usati come helper interni;
     \item \textbf{Disaccoppiamento}: elimina la necessità per classi correlate sul piano comportamentale di condividere una comune superclasse astratta nell'albero gerarchico, evitando di forzare metodi specifici all'interno della classe radice \texttt{Object}.
 \end{itemize}
 
-\paragraph{Dichiarazione, Costanti ed Ereditarietà Multipla.}
-La sintassi di un'interfaccia supporta sia l'ereditarietà singola che l'\textbf{ereditarietà multipla} tramite la clausola \texttt{extends}: poiché le interfacce non contengono dati d'istanza, l'ereditarietà multipla non incorre nelle problematiche e ambiguità tipiche del C++ (come la duplicazione dei campi nel problema del diamante).
+\noindent Un'interfaccia \textbf{non è un oggetto}: è un tipo. Una variabile di tipo interfaccia può riferire un'istanza di qualsiasi classe che la implementa, esattamente come una variabile di tipo superclasse può riferire una sottoclasse. Questa è la base del polimorfismo per interfaccia:
+\begin{lstlisting}[language=Java]
+Bicycle b = new BianchiBicycle();   // upcast implicito
+b.speedUp(10);                      // late binding: esegue BianchiBicycle.speedUp
+\end{lstlisting}
+
+\paragraph{Realizzazione vs generalizzazione.}
+Nel modello UML la relazione tra una classe e un'interfaccia si chiama \textbf{realizzazione} (\textit{realization}) ed è rappresentata da una linea tratteggiata con triangolo vuoto; la relazione tra una classe e la sua superclasse è una \textbf{generalizzazione} (linea continua con triangolo vuoto). La distinzione non è solo grafica: la realizzazione promette un \textit{comportamento}, la generalizzazione eredita anche \textit{stato} e implementazione.
+
+\paragraph{Dichiarazione, costanti ed ereditarietà multipla.}
+La sintassi di un'interfaccia supporta sia l'ereditarietà singola che l'\textbf{ereditarietà multipla} tramite la clausola \texttt{extends}: poiché le interfacce non contengono dati d'istanza, l'ereditarietà multipla non incorre nelle problematiche e ambiguità tipiche del C++ (come la duplicazione dei campi nel problema del diamante). Una classe, invece, può \texttt{extends} una sola classe ma \texttt{implements} più interfacce: è il modello ``single inheritance of state, multiple inheritance of type''.
 
 \begin{lstlisting}[language=Java]
 // Esempio base: contratto comportamentale
@@ -9294,7 +9645,9 @@ public interface GroupedInterface extends Interface1, Interface2, Interface3 {
     \item \textbf{Metodi impliciti}: tutte le firme prive di corpo, così come i metodi \texttt{default} e \texttt{static}, possiedono automaticamente visibilità \texttt{public}.
 \end{itemize}
 
-\paragraph{Implementazione Concreta.}
+\noindent \textbf{Perché le costanti sono static final.} Un'interfaccia non ha istanze, quindi un campo non potrebbe appartenere a un oggetto: può solo appartenere al tipo. Renderlo \texttt{final} evita che lo stato condiviso del contratto venga modificato dalle implementazioni, che sarebbe una forma di stato globale nascosto.
+
+\paragraph{Implementazione concreta.}
 Quando una classe concreta implementa un'interfaccia, il compilatore impone che tutti i metodi astratti dichiarati siano provvisti di un'implementazione esplicita; l'assenza anche di una sola definizione comporta il fallimento della compilazione:
 \begin{lstlisting}[language=Java]
 class BianchiBicycle implements Bicycle {
@@ -9311,23 +9664,29 @@ class BianchiBicycle implements Bicycle {
 }
 \end{lstlisting}
 
+\noindent \textbf{Perché i metodi devono essere \texttt{public}.} L'implementazione non può ridurre la visibilità del contratto: se l'interfaccia dichiara un metodo pubblico, la classe che lo implementa deve esporlo pubblicamente. In caso contrario il codice client che usa il tipo interfaccia non potrebbe invocarlo.
+
 \subsection{Metodi nelle Interfacce e Risoluzione dei Conflitti}
 
-\paragraph{Metodi Default e Metodi Statici.}
+\paragraph{Metodi default e metodi statici.}
 Con l'introduzione di Java 8, le interfacce hanno acquisito la capacità di dichiarare metodi dotati di corpo:
 \begin{itemize}
-    \item \textbf{Metodi Statici (\texttt{static})}: definiscono comportamenti generali o funzioni helper collegate al tipo. Non consentono l'accesso a dati d'istanza e non partecipano al meccanismo di polimorfismo/overriding (vengono invocati unicamente tramite il nome dell'interfaccia, es. \texttt{InterfaceName.method()}).
-    \item \textbf{Metodi Default (\texttt{default})}: forniscono un'implementazione standard del metodo che viene ereditata dalle classi implementatrici. Possono essere ridefiniti liberamente (\textit{overridden}) dalle classi derivate.
+    \item \textbf{Metodi statici (\texttt{static})}: definiscono comportamenti generali o funzioni helper collegate al tipo. Non consentono l'accesso a dati d'istanza e non partecipano al meccanismo di polimorfismo/overriding (vengono invocati unicamente tramite il nome dell'interfaccia, es. \texttt{InterfaceName.method()}).
+    \item \textbf{Metodi default (\texttt{default})}: forniscono un'implementazione standard del metodo che viene ereditata dalle classi implementatrici. Possono essere ridefiniti liberamente (\textit{overridden}) dalle classi derivate.
 \end{itemize}
 
-\paragraph{Le Due Regole Fondamentali di Risoluzione dei Conflitti.}
+\noindent La differenza è concettuale: un metodo \texttt{static} appartiene all'interfaccia e non viene ereditato come comportamento polimorfico; un metodo \texttt{default} entra a far parte del contratto e può essere sovrascritto, quindi partecipa al late binding come qualsiasi metodo d'istanza.
+
+\paragraph{Le due regole fondamentali di risoluzione dei conflitti.}
 Quando una classe implementa molteplici interfacce o estende una superclasse ereditando definizioni concorrenti per un metodo con la medesima firma, il compilatore Java adotta due principi gerarchici deterministici per risolvere le ambiguità:
 \begin{enumerate}
-    \item \textbf{I metodi d'istanza di classe vincono sui metodi default delle interfacce} (\textit{"Classes beat interfaces"}).
-    \item \textbf{I metodi già sovrascritti da altri candidati nella gerarchia vengono ignorati} (\textit{"More specific interfaces beat general ones"}).
+    \item \textbf{I metodi d'istanza di classe vincono sui metodi default delle interfacce} (\textit{``Classes beat interfaces''}).
+    \item \textbf{I metodi già sovrascritti da altri candidati nella gerarchia vengono ignorati} (\textit{``More specific interfaces beat general ones''}).
 \end{enumerate}
 
-\paragraph{Regola 1: Metodi d'Istanza di Classe vs Metodi Default.}
+\noindent La prima regola garantisce la retrocompatibilità: se una classe aveva già un metodo con quella firma, l'aggiunta di un metodo \texttt{default} a un'interfaccia non deve cambiare il comportamento della classe. La seconda regola risolve il ``diamante'' delle interfacce senza bisogno dell'ereditarietà virtuale del C++: l'interfaccia più specifica, che ha già ridefinito il metodo, prevale su quella più generale.
+
+\paragraph{Regola 1: metodi d'istanza di classe vs metodi default.}
 Se una superclasse concreta fornisce un metodo d'istanza e un'interfaccia fornisce un metodo \texttt{default} avente identica firma, l'implementazione della classe genitore ha sempre la precedenza:
 
 \begin{lstlisting}[language=Java]
@@ -9351,7 +9710,9 @@ public class Pegasus extends Horse implements Flyer, Mythical {
 }
 \end{lstlisting}
 
-\paragraph{Regola 2: Metodi Default Ereditati e Gerarchie Concorrenti.}
+\noindent Anche se \texttt{Pegasus} implementa due interfacce con metodi \texttt{default}, il metodo ereditato da \texttt{Horse} è concreto e più ``vicino'' nella gerarchia di classe: vince lui. Il compilatore non segnala ambiguità perché la regola è deterministica.
+
+\paragraph{Regola 2: metodi default ereditati e gerarchie concorrenti.}
 Quando una classe implementa due interfacce che condividono un antenato comune, l'interfaccia che ha già effettuato l'override del metodo nasconde l'implementazione dell'interfaccia più generica:
 
 \begin{lstlisting}[language=Java]
@@ -9374,8 +9735,8 @@ public class Dragon implements EggLayer, FireBreather {
 \end{lstlisting}
 \noindent Poiché \texttt{EggLayer} specializza \texttt{Animal} ridefinendo \texttt{identifyMyself()}, la sua versione è considerata più specifica rispetto a quella ereditata per via transitiva da \texttt{FireBreather}.
 
-\paragraph{Conflitti Indipendenti e Disambiguazione Esplicita con \texttt{super}.}
-Se due interfacce indipendenti forniscono implementazioni \texttt{default} per lo stesso metodo, oppure se un metodo \texttt{default} entra in conflitto con un metodo astratto privo di corpo, il compilatore genera un \textbf{errore di compilazione}. In questo scenario, la classe implementatrice è obbligata a effettuare l'override esplicito del metodo.
+\paragraph{Conflitti indipendenti e disambiguazione esplicita con \texttt{super}.}
+Se due interfacce indipendenti forniscono implementazioni \texttt{default} per lo stesso metodo, oppure se le firme entrano in conflitto per tipi di ritorno incompatibili, il compilatore genera un \textbf{errore di compilazione}. In questo scenario, la classe implementatrice è obbligata a effettuare l'override esplicito del metodo. Un caso analogo si presenta quando un metodo \texttt{default} e un metodo astratto privo di corpo rendono ambiguo quale implementazione debba prevalere: la classe deve comunque fornire una definizione esplicita.
 
 \noindent All'interno dell'override, è possibile richiamare una o entrambe le implementazioni di default facendo ricorso alla parola chiave \texttt{super} preceduta dal nome dell'interfaccia di riferimento:
 \begin{center}
@@ -9407,7 +9768,9 @@ public class FlyingCar implements OperateCar, FlyCar {
 }
 \end{lstlisting}
 
-\paragraph{Metodi d'Istanza di Superclasse che Soddisfano Metodi Astratti.}
+\noindent La sintassi \texttt{Interfaccia.super.metodo()} è l'unico modo per scegliere esplicitamente una delle due implementazioni: \texttt{super.metodo()} da solo sarebbe ambiguo, perché la classe ha due supertipi con lo stesso metodo. È l'analogo Java della disambiguazione tra basi virtuali in C++, ma senza la complessità della gestione dello stato.
+
+\paragraph{Metodi d'istanza di superclasse che soddisfano metodi astratti.}
 Un metodo d'istanza ereditato da una superclasse ordinaria può soddisfare direttamente la dichiarazione di un metodo astratto presente in un'interfaccia implementata, senza richiedere la riscrittura del codice nella classe figlia:
 
 \begin{lstlisting}[language=Java]
@@ -9426,9 +9789,9 @@ public class Mustang extends Horse implements Mammal {
     }
 }
 \end{lstlisting}
-\noindent La classe \texttt{Mustang} eredita \texttt{identifyMyself()} da \texttt{Horse}, soddisfacendo automaticamente il contratto imposto dall'interfaccia \texttt{Mammal}.
+\noindent La classe \texttt{Mustang} eredita \texttt{identifyMyself()} da \texttt{Horse}, soddisfacendo automaticamente il contratto imposto dall'interfaccia \texttt{Mammal}. Il compilatore verifica che esista un'implementazione compatibile, non che sia stata scritta nella classe più derivata.
 
-\paragraph{Quadro Sinottico sull'Overriding dei Metodi.}
+\paragraph{Quadro sinottico sull'overriding dei metodi.}
 Il comportamento delle interazioni tra metodi statici e d'istanza tra superclassi e sottoclassi è formalizzato dalla seguente matrice:
 
 \begin{center}
@@ -9444,9 +9807,11 @@ Il comportamento delle interazioni tra metodi statici e d'istanza tra superclass
 \end{tabular}
 \end{center}
 
+\noindent La matrice riassume due divieti e due comportamenti leciti: non si può ``sovrascrivere'' un metodo statico con uno d'istanza né viceversa; due metodi statici con la stessa firma si \textit{nascondono} (la scelta dipende dal tipo statico), mentre due metodi d'istanza si \textit{sovrascrivono} (la scelta dipende dal tipo dinamico).
+
 \subsection{Evoluzione delle Interfacce e Retrocompatibilità}
 
-\paragraph{La Motivazione Architetturale: Interface Evolution.}
+\paragraph{La motivazione architetturale: interface evolution.}
 Prima dell'introduzione dei metodi \texttt{default}, l'evoluzione delle API pubbliche presentava una criticità strutturale: \textbf{aggiungere un nuovo metodo astratto a un'interfaccia già distribuita rompeva istantaneamente tutto il codice client preesistente}, poiché ogni classe concreta era forzata a implementarlo per poter compilare.
 
 \begin{cbox}{Il Problema dell'Evoluzione delle API (Esempio Oracle)}
@@ -9468,7 +9833,7 @@ public interface DoIt {
 \end{lstlisting}
 \end{cbox}
 
-\noindent Con i metodi \textbf{\texttt{default}}, l'interfaccia può espandere il proprio perimetro funzionale garantendo la piena retrocompatibilità (\textit{backward compatibility}): le classi storiche continuano a compilare ereditando l'implementazione predefinita, mentre le nuove classi possono ridefinirla secolarmente.
+\noindent Con i metodi \textbf{\texttt{default}}, l'interfaccia può espandere il proprio perimetro funzionale garantendo la piena retrocompatibilità (\textit{backward compatibility}): le classi storiche continuano a compilare ereditando l'implementazione predefinita, mentre le nuove classi possono ridefinirla selettivamente.
 
 \begin{lstlisting}[language=Java]
 public interface DoIt {
@@ -9483,28 +9848,44 @@ public interface DoIt {
 }
 \end{lstlisting}
 
+\noindent È un esempio di come il linguaggio supporti l'\textbf{evoluzione binaria e sorgente} delle API: il contratto cresce senza obbligare tutti gli implementatori a riscrivere il codice. Il prezzo è che il comportamento predefinito deve essere sensato per tutti i client esistenti, altrimenti si introducono bug silenziosi.
+
 \subsection{Classi Anonime (Anonymous Classes)}
 
-\paragraph{Definizione e Caratteristiche Fondamentali.}
+\paragraph{Definizione e caratteristiche fondamentali.}
 Una \textbf{classe anonima} (\textit{anonymous class}) è una classe locale priva di identificatore (senza nome), che viene \textbf{dichiarata e istanziata simultaneamente} all'interno di una singola espressione.
 \begin{itemize}
     \item \textbf{Scopo primario}: consente di rendere il codice più compatto e leggibile quando una determinata implementazione serve \textbf{una sola volta} (\textit{one-off / disposable use});
     \item \textbf{Dichiarazione in-line}: la definizione della classe è incorporata direttamente nell'espressione in cui l'oggetto viene creato e passato come parametro;
-    \item \textbf{Eredità e Contratti}: una classe anonima non può estendere esplicitamente una classe e contemporaneamente implementare un'interfaccia; deve estendere esattamente una classe preesistente oppure implementare una specifica interfaccia;
-    \item \textbf{Regole di Scoping}: condivide le medesime regole di visibilità delle classi locali (accesso ai membri d'istanza della classe contenitrice in contesti non-statici, cattura delle sole variabili locali \texttt{final} o \textit{effectively final}).
+    \item \textbf{Eredità e contratti}: una classe anonima non può estendere esplicitamente una classe e contemporaneamente implementare un'interfaccia; deve estendere esattamente una classe preesistente oppure implementare una specifica interfaccia;
+    \item \textbf{Regole di scoping}: condivide le medesime regole di visibilità delle classi locali (accesso ai membri d'istanza della classe contenitrice in contesti non-statici, cattura delle sole variabili locali \texttt{final} o \textit{effectively final}).
 \end{itemize}
+
+\paragraph{Sintassi e vincoli.}
+La forma generale è \texttt{new SuperTipo(argomenti) \{ ... \}}, dove \texttt{SuperTipo} può essere una classe concreta, una classe astratta o un'interfaccia. Nel corpo si implementano i metodi astratti e si possono aggiungere campi e metodi propri, ma:
+\begin{itemize}
+    \item la classe anonima \textbf{non può essere astratta}: deve implementare tutti i metodi astratti del supertipo;
+    \item \textbf{non può dichiarare costruttori}, perché non ha un nome; al loro posto si può usare un \textbf{blocco di inizializzazione dell'istanza} (\texttt{\{ ... \}});
+    \item \textbf{non può essere \texttt{static}} e non può dichiarare membri statici, salvo costanti di compilazione (con la già citata eccezione delle versioni recenti di Java);
+    \item il suo tipo non ha nome, quindi non si può dichiarare una variabile di quel tipo: si usa il supertipo o l'interfaccia;
+    \item il compilatore genera un file \texttt{Outer\$1.class}, \texttt{Outer\$2.class}, ecc.
+\end{itemize}
+
+\noindent \textbf{Il \texttt{this} della classe anonima.} All'interno del corpo, \texttt{this} si riferisce all'istanza anonima, non all'oggetto esterno. Per accedere all'istanza esterna si usa \texttt{Outer.this}, esattamente come nelle inner class. Questa distinzione diventa cruciale quando si confrontano classi anonime e lambda, perché la lambda \textbf{non} introduce un nuovo \texttt{this}.
 
 \subsection{Gestione degli Eventi e Listener in Java GUI}
 
-\paragraph{Architettura a Eventi nelle Interfacce Grafiche (Swing/AWT).}
+\paragraph{Architettura a eventi nelle interfacce grafiche (Swing/AWT).}
 Nelle interfacce grafiche orientate agli oggetti, il flusso di controllo è guidato dagli eventi (\textit{Event-Driven}). I componenti grafici interagiscono secondo il pattern architetturale basato su:
 \begin{itemize}
-    \item \textbf{Sorgenti di Evento (\textit{Event Sources})}: componenti UI (come \texttt{JButton}, \texttt{JTextField}, \texttt{JCheckBox}) in grado di rilevare interazioni fisiche dell'utente (click del mouse, digitazione di testo, ridimensionamento);
-    \item \textbf{Ascoltatori di Evento (\textit{Event Listeners})}: oggetti preposti a intercettare tali notifiche e a eseguire la corrispondente logica di reazione;
+    \item \textbf{Sorgenti di evento (\textit{Event Sources})}: componenti UI (come \texttt{JButton}, \texttt{JTextField}, \texttt{JCheckBox}) in grado di rilevare interazioni fisiche dell'utente (click del mouse, digitazione di testo, ridimensionamento);
+    \item \textbf{Ascoltatori di evento (\textit{Event Listeners})}: oggetti preposti a intercettare tali notifiche e a eseguire la corrispondente logica di reazione;
     \item \textbf{Disaccoppiamento $N:1$}: più sorgenti grafiche possono condividere il medesimo listener qualora debbano compiere azioni simili, così come un singolo componente può notificare una moltitudine di listener indipendenti.
 \end{itemize}
 
-\paragraph{L'Interfaccia \texttt{ActionListener}.}
+\noindent Il listener è un caso concreto di Strategy: la sorgente non conosce la logica di reazione, ma solo il contratto \texttt{ActionListener}. Cambiando listener si cambia comportamento senza modificare il pulsante.
+
+\paragraph{L'interfaccia \texttt{ActionListener}.}
 Nel caso specifico della pressione di un pulsante (\texttt{JButton}), il contratto standard della libreria Java è rappresentato dall'interfaccia \texttt{ActionListener}:
 \begin{lstlisting}[language=Java]
 public interface ActionListener extends EventListener {
@@ -9512,9 +9893,11 @@ public interface ActionListener extends EventListener {
 }
 \end{lstlisting}
 \begin{itemize}
-    \item L'interfaccia definisce un unico metodo astratto: \texttt{actionPerformed(ActionEvent e)};
-    \item L'oggetto \texttt{ActionEvent} contiene i metadati associati all'accadimento: ad esempio, il metodo \texttt{e.getActionCommand()} restituisce la stringa di comando o l'etichetta testuale associata al pulsante premuto.
+    \item L'interfaccia definisce un unico metodo astratto, \texttt{actionPerformed}, che riceve un \texttt{ActionEvent}; è quindi una \textbf{functional interface} e può essere implementata anche con una lambda;
+    \item L'oggetto \texttt{ActionEvent} contiene i metadati associati all'accadimento. Ad esempio, \texttt{e.getActionCommand()} restituisce la stringa di comando o l'etichetta del pulsante premuto.
 \end{itemize}
+
+\noindent \textbf{Nota sul thread.} In Swing le callback dei listener vengono eseguite sull'\textit{Event Dispatch Thread} (EDT). Un'operazione lunga dentro \texttt{actionPerformed} blocca l'intera interfaccia: le attività pesanti vanno spostate su un worker (es. \texttt{SwingWorker}) e il risultato riportato sull'EDT.
 
 \subsection{Caso Studio SimpleCalc: I Tre Approcci a Confronto}
 
@@ -9532,7 +9915,7 @@ public interface ActionListener extends EventListener {
     \item Implementazione tramite \textbf{classe anonima} (\textit{anonymous inner class}).
 \end{enumerate}
 
-\paragraph{Approccio 1: Implementazione nella Classe Contenitrice.}
+\paragraph{Approccio 1: implementazione nella classe contenitrice.}
 Quando una molteplicità di componenti grafici compie esattamente la medesima azione di base, la soluzione più lineare consiste nel far implementare \texttt{ActionListener} direttamente alla classe contenitrice principale (\texttt{SimpleCalc}).
 
 \noindent È il caso dei tasti numerici da \texttt{1} a \texttt{9}: alla pressione di uno qualsiasi di essi, il numero corrispondente deve essere semplicemente visualizzato nel \texttt{JTextField}.
@@ -9576,7 +9959,7 @@ public class SimpleCalc implements ActionListener {
     \item \textbf{Limite}: scala male se i pulsanti devono compiere compiti eterogenei, costringendo a lunghe catene di \texttt{if-else} per distinguere la sorgente dell'evento.
 \end{itemize}
 
-\paragraph{Approccio 2: Implementazione con Member Inner Class.}
+\paragraph{Approccio 2: implementazione con member inner class.}
 Quando i componenti svolgono operazioni logiche affini che condividono una struttura comune ma differiscono per parametri interni, l'uso di una \textbf{member inner class} rappresenta la scelta architetturale più coesa.
 
 \noindent I pulsanti di addizione (\texttt{+}) e sottrazione (\texttt{-}) memorizzano il primo operando e impostano il codice dell'operazione. La classe interna \texttt{OperatorAction} incapsula il discriminante numerico (\texttt{operator}), avendo al contempo accesso diretto ai campi privati dell'outer class (\texttt{currentCalc} e \texttt{calcOperation}):
@@ -9621,7 +10004,9 @@ public class SimpleCalc {
     \item \textbf{Legame d'istanza}: ogni istanza di \texttt{OperatorAction} è legata all'oggetto \texttt{SimpleCalc} chiamante e ne muta direttamente lo stato interno.
 \end{itemize}
 
-\paragraph{Approccio 3: Implementazione con Classe Anonima.}
+\noindent Questo è il punto in cui la inner class batte la classe esterna: due listener dello stesso tipo condividono il codice ma hanno \textbf{stato proprio} (\texttt{operator} diverso) e insieme accedono allo stato comune dell'outer. Una classe top-level avrebbe richiesto di passare esplicitamente il riferimento a \texttt{SimpleCalc}; una classe anonima avrebbe duplicato il codice per ogni pulsante.
+
+\paragraph{Approccio 3: implementazione con classe anonima.}
 Spesso un determinato pulsante ha un comportamento del tutto unico ed esclusivo nell'intero sistema. Creare una classe dedicata (anche interna) per un'operazione invocata in un solo punto causerebbe una \textbf{proliferazione ingiustificata di classi nominali}, appesantendo la leggibilità del progetto.
 
 \noindent Il pulsante di uguaglianza (\texttt{=}) deve prelevare il secondo operando, valutare \texttt{calcOperation}, calcolare il risultato finale e aggiornare il testo a video. Costituisce il candidato naturale per una \textbf{classe anonima}:
@@ -9656,33 +10041,226 @@ Dal punto di vista della sintassi, il programmatore percepisce la classe anonima
     \item Il compilatore sintetizza a tempo di compilazione una vera e propria classe anonima (denominata internamente \texttt{SimpleCalc\$1.class}) che implementa l'interfaccia \texttt{ActionListener};
     \item A runtime viene istanziato un oggetto concreto di tale classe anonima e il suo riferimento d'oggetto viene passato come parametro formale polimorfico.
 \end{itemize}
+\medskip
+\noindent In altre parole, la sintassi nasconde un oggetto: il ``codice passato'' è in realtà un'\textbf{istanza} che implementa un contratto. È esattamente il pattern Strategy nella sua forma più compatta.
 \end{cbox}
 
 \subsection{Sintesi Architetturale: Dalle Classi Anonime alle Lambda}
 
-\paragraph{La Convergenza verso lo Strategy Pattern.}
+\paragraph{La convergenza verso il pattern Strategy.}
 L'evoluzione delle tecniche di scoping in Java analizzate nel modulo illustra come il linguaggio abbia progressivamente affinato il supporto al pattern Strategy:
 \begin{itemize}
     \item \textbf{C++ / C}: uso di puntatori a funzione o template (scelte rapide, ma prive di incapsulamento integrato o vincolate a tempo di compilazione);
     \item \textbf{Smalltalk}: chiusure lessicali pure (\textit{blocks}) capaci di catturare l'ambiente circostante in modo del tutto trasparente;
-    \item \textbf{Java Standard (Pre-Java 8)}: incapsulamento rigoroso tramite classi annidate, locali e anonime. La strategia algoritmica viene trattata come un \textbf{oggetto polimorfo} che implementa un'interfaccia contrattuale;
-    \item \textbf{Java Moderno (Java 8+)}: introduzione delle \textbf{espressioni Lambda} e dei riferimenti a metodo (\textit{Method References}), che offrono lo "zucchero sintattico" ideale per sintetizzare interfacce a singolo metodo astratto (\textit{Functional Interfaces} o SAM -- \textit{Single Abstract Method}), colmando definitivamente il divario espressivo con i blocchi Smalltalk pur conservando la sicurezza del sistema di tipi orientato agli oggetti.
+    \item \textbf{Java standard (pre-Java 8)}: incapsulamento rigoroso tramite classi annidate, locali e anonime. La strategia algoritmica viene trattata come un \textbf{oggetto polimorfo} che implementa un'interfaccia contrattuale;
+    \item \textbf{Java moderno (Java 8+)}: introduzione delle \textbf{espressioni lambda} e dei riferimenti a metodo (\textit{method references}), che offrono lo ``zucchero sintattico'' ideale per sintetizzare interfacce a singolo metodo astratto (\textit{functional interfaces} o SAM -- \textit{Single Abstract Method}), colmando definitivamente il divario espressivo con i blocchi Smalltalk pur conservando la sicurezza del sistema di tipi orientato agli oggetti.
 \end{itemize}
 
+\paragraph{Che cos'è una functional interface.}
+Una \textbf{functional interface} è un'interfaccia con \textbf{esattamente un metodo astratto} (SAM). Può avere anche metodi \texttt{default}, metodi \texttt{static} e i metodi pubblici di \texttt{Object} (che non contano come astratti). L'annotazione \texttt{@FunctionalInterface} è facoltativa, ma fa verificare al compilatore che il vincolo sia rispettato.
+\begin{lstlisting}[language=Java]
+@FunctionalInterface
+interface Comparator2<T> {
+    int compare(T a, T b);          // unico metodo astratto
+    default Comparator2<T> reversed() {
+        return (a, b) -> compare(b, a);
+    }
+}
+\end{lstlisting}
+
+\paragraph{Lambda: sintassi e target type.}
+Una lambda è un'espressione che rappresenta un'implementazione di una functional interface. Non ha un tipo proprio: il suo tipo è il \textbf{target type}, cioè l'interfaccia richiesta dal contesto.
+\begin{lstlisting}[language=Java]
+// Forma completa
+Comparator<String> c1 = (String a, String b) -> { return a.compareTo(b); };
+
+// Forma compatta: tipi inferiti e return implicito
+Comparator<String> c2 = (a, b) -> a.compareTo(b);
+
+// Un solo parametro: parentesi facoltative
+java.util.function.Function<String, Integer> len = s -> s.length();
+
+// Nessun parametro: parentesi obbligatorie
+Runnable r = () -> System.out.println("run");
+
+// Method reference: equivalente a una lambda che chiama un metodo esistente
+java.util.function.Function<String, Integer> len2 = String::length;
+java.util.function.Supplier<ArrayList<String>> factory = ArrayList::new;
+\end{lstlisting}
+
+\noindent Le principali forme di method reference sono:
+\begin{itemize}
+    \item \texttt{Oggetto::metodoIstanza};
+    \item \texttt{Classe::metodoStatico};
+    \item \texttt{Classe::metodoIstanza} (con il ricevitore come primo argomento);
+    \item \texttt{Classe::new} (costruttore).
+\end{itemize}
+
+\paragraph{Lambda vs classe anonima.}
+Le due soluzioni sono spesso intercambiabili, ma non sono la stessa cosa:
 \begin{center}
 \small
-\begin{tabular}{p{3.2cm}p{3.4cm}p{4.2cm}p{3.4cm}}
+\begin{tabular}{p{3.4cm}p{5.2cm}p{5.4cm}}
     \toprule
-    \textbf{Strategia di Scoping} & \textbf{Visibilità del Tipo} & \textbf{Accoppiamento con l'Outer Class} & \textbf{Caso d'Uso Ottimale} \\
+    \textbf{Aspetto} & \textbf{Classe anonima} & \textbf{Lambda} \\
     \midrule
-    \textbf{Outer as Listener} & Pubblica / Package & Totale (è la classe stessa a rispondere) & Molteplici componenti con comportamento identico (es. tastierino 1--9). \\
+    Tipo richiesto & Qualsiasi classe o interfaccia & Solo functional interface \\
     \addlinespace
-    \textbf{Member Inner Class} & Privata / Limitata & Accede a campi d'istanza dell'outer via \texttt{Outer.this} & Operazioni correlate parametrizzate (es. operatori aritemetici \texttt{+} e \texttt{-}). \\
+    \texttt{this} & L'istanza anonima & L'istanza che racchiude la lambda \\
     \addlinespace
-    \textbf{Anonymous Class} & Locale all'espressione & Accede al contesto outer e a variabili (effectively) final & Comportamenti univoci e monouso (\textit{one-off}), come il tasto \texttt{=}. \\
+    Ombreggiatura & Può dichiarare variabili con nomi già usati & Non può ombreggiare variabili locali \\
+    \addlinespace
+    Implementazione & Classe generata (\texttt{Outer\$1.class}) & \texttt{invokedynamic} + \texttt{LambdaMetafactory} \\
+    \addlinespace
+    Stato & Può avere campi propri & Non può avere campi propri \\
     \bottomrule
 \end{tabular}
 \end{center}
+
+\noindent La differenza sul \texttt{this} è particolarmente importante:
+\begin{lstlisting}[language=Java]
+class Widget {
+    String name = "widget";
+
+    void withAnonymous() {
+        Runnable r = new Runnable() {
+            public void run() {
+                // this.name non compila: this e l'istanza anonima
+                System.out.println(Widget.this.name); // OK
+            }
+        };
+    }
+
+    void withLambda() {
+        Runnable r = () -> {
+            System.out.println(this.name); // this e il Widget
+        };
+    }
+}
+\end{lstlisting}
+
+\noindent In una classe anonima il \texttt{this} è l'oggetto anonimo, quindi per raggiungere l'esterno serve \texttt{Widget.this}; in una lambda il \texttt{this} è quello del metodo che la contiene, perché la lambda \textbf{non crea un nuovo scope per \texttt{this}}. Questo è uno dei motivi per cui le lambda sono più leggere e più vicine alle chiusure di Smalltalk.
+
+\paragraph{Perché le lambda non sono puntatori a funzione.}
+Una lambda Java è comunque un oggetto (o un'istanza sintetica) che implementa una functional interface; il compilatore e la JVM possono ottimizzarla, ma il modello mentale resta quello del contratto. Non è possibile assegnare una lambda a una variabile di tipo ``funzione'' generica: serve sempre un target type. Questa scelta mantiene il sistema di tipi nominale e permette di usare le lambda ovunque sia richiesta l'interfaccia, comprese le API preesistenti.
+
+\paragraph{Confronto sinottico delle strategie di scoping.}
+\begin{center}
+\small
+\begin{tabular}{p{3.3cm}p{3.3cm}p{4.6cm}p{4.2cm}}
+    \toprule
+    \textbf{Strategia} & \textbf{Visibilità} & \textbf{Accoppiamento} & \textbf{Caso d'Uso} \\
+    \midrule
+    \textbf{Outer as Listener} & Pubblica / Package & Totale (è la classe stessa a rispondere) & Molteplici componenti con comportamento identico (es. tastierino 1--9). \\
+    \addlinespace
+    \textbf{Member Inner Class} & Privata / Limitata & Accede a campi d'istanza dell'outer via \texttt{Outer.this} & Operazioni correlate parametrizzate (es. operatori aritmetici \texttt{+} e \texttt{-}). \\
+    \addlinespace
+    \textbf{Anonymous Class} & Locale all'espressione & Accede al contesto outer e a variabili (effectively) final & Comportamenti univoci e monouso (\textit{one-off}), come il tasto \texttt{=}. \\
+    \addlinespace
+    \textbf{Lambda} & Locale all'espressione & Accede al contesto outer; \texttt{this} è l'outer & Strategie brevi e senza stato proprio, es. \texttt{Comparator}. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Confronto Sinottico C++ / Java per il Pattern Strategy}
+
+\noindent Poiché il pattern Strategy è il terreno in cui le differenze tra i due linguaggi emergono con più evidenza, conviene fissarle in una tabella e in un esempio speculare.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{5.6cm}p{5.8cm}}
+    \toprule
+    \textbf{Aspetto} & \textbf{C++} & \textbf{Java} \\
+    \midrule
+    Meccanismo di dispatch & \texttt{virtual} + vtable (solo per i metodi dichiarati virtuali) & \texttt{invokevirtual}/\allowbreak\texttt{invokeinterface}; metodi d'istanza virtuali per default \\
+    \addlinespace
+    Legame con l'oggetto & Puntatore o riferimento; possibile \textit{slicing} & Riferimento gestito dal GC; nessuno slicing \\
+    \addlinespace
+    Passaggio del comportamento & Puntatore a funzione, \texttt{std::function}, functor, oggetto polimorfo & Oggetto che implementa un'interfaccia; lambda su functional interface \\
+    \addlinespace
+    Ereditarietà multipla & Ammessa tra classi (con diamond e \texttt{virtual}) & Solo tra interfacce; una sola superclasse \\
+    \addlinespace
+    Gestione della memoria & Manuale, RAII, smart pointer & Garbage collector \\
+    \addlinespace
+    Polimorfismo generico & Template (compile-time, monomorfizzazione) & Generici con type erasure (compile-time, un solo bytecode) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C++]
+#include <functional>
+
+// 1. Strategy: contratto astratto con distruttore virtuale
+struct CompressionStrategy {
+    virtual ~CompressionStrategy() = default;
+    virtual void compress(const std::vector<char>& data) const = 0;
+};
+
+// 2. ConcreteStrategy
+struct ZipStrategy : CompressionStrategy {
+    void compress(const std::vector<char>& data) const override {
+        // implementazione ZIP
+    }
+};
+
+// 3. Context: possiede un riferimento alla strategia
+class Archiver {
+    const CompressionStrategy* strategy;   // riferimento non posseduto
+public:
+    explicit Archiver(const CompressionStrategy* s) : strategy(s) {}
+    void setStrategy(const CompressionStrategy* s) { strategy = s; }
+    void save(const std::vector<char>& data) const {
+        strategy->compress(data);          // late binding tramite vtable
+    }
+};
+
+// 4. Variante moderna: std::function accetta lambda e functor
+class LambdaArchiver {
+    std::function<void(const std::vector<char>&)> strategy;
+public:
+    explicit LambdaArchiver(std::function<void(const std::vector<char>&)> s)
+        : strategy(std::move(s)) {}
+    void save(const std::vector<char>& data) const { strategy(data); }
+};
+\end{lstlisting}
+
+\noindent La forma più elementare di ``strategia'' in C++ è il \textbf{puntatore a funzione}: il valore del puntatore può essere scelto a runtime, ma la funzione non porta con sé stato e non partecipa a una gerarchia di tipi. È il motivo per cui il pattern Strategy in C++ usa spesso una classe astratta (o \texttt{std::function}) quando la strategia deve avere parametri propri.
+\begin{lstlisting}[language=C++]
+using BinOp = int (*)(int, int);   // tipo funzione: due int -> int
+
+int add(int a, int b) { return a + b; }
+int sub(int a, int b) { return a - b; }
+
+BinOp op = add;                    // scelta a runtime
+int r1 = op(2, 3);                 // chiamata indiretta: 5
+op = sub;
+int r2 = op(2, 3);                 // -1
+\end{lstlisting}
+
+\noindent Rispetto a una gerarchia di strategie, il puntatore a funzione è più leggero ma non può incapsulare configurazione (ad esempio un comparatore con una soglia) né offrire più operazioni collegate. \texttt{std::function} colma in parte questo divario, accettando lambda e functor; una classe astratta con metodi \texttt{virtual} resta la soluzione più vicina all'interfaccia Java.
+
+\noindent Le differenze concettuali da ricordare sono quattro:
+\begin{enumerate}
+    \item \textbf{Il polimorfismo in C++ è opt-in}: senza \texttt{virtual} la chiamata è risolta staticamente; in Java è opt-out, perché il comportamento dinamico è la regola e \texttt{final}/\texttt{private}/\texttt{static} sono le eccezioni.
+    \item \textbf{In C++ il contesto deve gestire il ciclo di vita} della strategia (chi la possiede? chi la distrugge?). In Java il garbage collector elimina il problema, ma non il rischio di mantenere vivo un oggetto più a lungo del necessario.
+    \item \textbf{In C++ lo slicing è un pericolo reale}: assegnare un oggetto derivato a una variabile di tipo base per valore taglia la parte derivata e perde il tipo dinamico. In Java gli oggetti si manipolano tramite riferimenti (il riferimento viene passato per valore), quindi il tipo dinamico non si perde.
+    \item \textbf{La ``funzione'' non è un tipo di prima classe in Java}: una lambda ha senso solo in presenza di una functional interface. In C++ \texttt{std::function} è un contenitore generico di callable e i template possono specializzare il codice a tempo di compilazione.
+\end{enumerate}
+
+\subsection{Riepilogo dei Concetti Chiave}
+
+\noindent Per fissare il quadro, ecco i punti che attraversano tutta la sezione:
+\begin{itemize}
+    \item \textbf{Strategy} significa \textbf{delegare} un algoritmo a un oggetto intercambiabile, non confinare la scelta in una catena di \texttt{if}. Il contesto dipende dall'astrazione, il client decide l'implementazione.
+    \item \textbf{Late binding} è la risoluzione della chiamata a runtime in base al tipo dinamico del ricevitore; è ciò che rende possibile il polimorfismo. \textbf{Early binding} è la risoluzione statica tipica di overloading, metodi statici, privati, final e costruttori.
+    \item In Java i metodi d'istanza sono \textbf{virtuali per default}; l'overriding sostituisce la voce nella tabella dei metodi, mentre i campi e i metodi statici vengono \textbf{nascosti} e risolti in base al tipo statico.
+    \item Le classi annidate si distinguono per il \textbf{legame con l'istanza esterna}: static nested (nessun legame), inner (legame implicito, campo sintetico \texttt{this\$0}), local (legame con il blocco), anonymous (legame con l'espressione).
+    \item Le classi locali e anonime catturano \textbf{il valore} delle variabili locali, che devono essere \texttt{final} o \textit{effectively final}; il vincolo nasce dalla differenza tra stack e heap e dalla copia sintetica dei campi.
+    \item Un'\textbf{interfaccia} è un contratto e un tipo, non un oggetto. Non ha stato d'istanza, può ereditare da più interfacce e può fornire metodi \texttt{default} per evolvere senza rompere i client.
+    \item I conflitti tra metodi \texttt{default} si risolvono con regole deterministiche (``classes beat interfaces'', ``more specific wins'') e, se necessario, con \texttt{Interfaccia.super.metodo()}.
+    \item Le \textbf{classi anonime} sono classi locali senza nome, utili per implementazioni monouso; le \textbf{lambda} sono la loro evoluzione sintattica per le functional interface, ma non creano un nuovo \texttt{this} e non possono avere stato proprio.
+    \item Il confronto con C++ ruota attorno a tre assi: \textbf{virtual esplicito vs implicito}, \textbf{gestione manuale vs GC}, \textbf{template vs generici}; il pattern Strategy è identico concettualmente, diverso nei meccanismi.
+\end{itemize}
 
 \newpage
 
@@ -9698,7 +10276,9 @@ L'evoluzione delle tecniche di scoping in Java analizzate nel modulo illustra co
 \end{itemize}
 \end{cbox}
 
-\subsection{Lo Zen di Python}
+\subsection{Fondamenti del Linguaggio}
+
+\subsubsection{Lo Zen di Python}
 
 \noindent Lo \textbf{Zen of Python} di Tim Peters sintetizza la filosofia del linguaggio e, indirettamente, i criteri di qualità del codice che l'ingegneria del software persegue: leggibilità, esplicitazione e rifiuto dell'ambiguità.
 
@@ -9726,11 +10306,11 @@ L'evoluzione delle tecniche di scoping in Java analizzate nel modulo illustra co
 \end{itemize}
 \end{cbox}
 
-\subsection{I Quattro Paradigmi di Python}
+\subsubsection{I Quattro Paradigmi di Python}
 
 \noindent Python viene esplorato nei suoi \textbf{quattro paradigmi} -- scripting, imperativo, funzionale e orientato agli oggetti -- ciclando sulla sintassi e sulla semantica del linguaggio per ottenere una visione complessiva e rivedere i principi fondamentali dell'ingegneria del software.
 
-\subsection{Scripting: REPL, Indentazione e Tipizzazione Dinamica}
+\subsubsection{Scripting: REPL, Indentazione e Tipizzazione Dinamica}
 
 \noindent La prospettiva di scripting espone alle \textbf{strutture di controllo fondamentali} del linguaggio: variabili, \texttt{if}, blocchi tramite indentazione, \texttt{while}, \texttt{for}, collezioni e iterazioni. L'interprete interattivo (REPL) consente di sperimentare immediatamente ogni costrutto.
 
@@ -9764,7 +10344,7 @@ y = 1 + "a string"
 # TypeError: unsupported operand type(s) for +: 'int' and 'str'
 \end{lstlisting}
 
-\subsection{Operatori Matematici e Tipi Numerici}
+\subsubsection{Operatori Matematici e Tipi Numerici}
 
 \noindent La matematica segue in larga parte le convenzioni usuali, con alcune specificità rilevanti per l'ingegneria del software.
 
@@ -9793,7 +10373,7 @@ y = 1 + "a string"
 \end{tabular}
 \end{center}
 
-\subsection{Stringhe: Sintassi, Indicizzazione e Slicing}
+\subsubsection{Stringhe: Sintassi, Indicizzazione e Slicing}
 
 \noindent Le stringhe sono \textbf{immutabili} e supportano virgolette singole, doppie o triple (per testi su più righe), sequenze di escape in stile C, concatenazione tramite \texttt{+} e ripetizione tramite \texttt{*}.
 
@@ -9835,7 +10415,7 @@ w = 'T' + e[1:]
 len(w)      # 20
 \end{lstlisting}
 
-\subsection{Interpolazione di Stringhe}
+\subsubsection{Interpolazione di Stringhe}
 
 \noindent L'\textbf{interpolazione} è il processo di inserimento di variabili o espressioni all'interno di una stringa tramite segnaposto; è utile per messaggi, report e log. Python offre tre meccanismi principali, storicamente sovrapposti.
 
@@ -9901,7 +10481,9 @@ print(f"{'Centered string':=^30}")            # ======Centered string======
 
 \noindent \textbf{Linea guida}: preferire le f-strings nel codice moderno; usare \texttt{.format()} solo per compatibilità con Python $\le$ 3.6; evitare l'operatore \texttt{\%} nel nuovo codice.
 
-\subsection{Collezioni: le Quattro Strutture Fondamentali}
+\subsection{Collezioni e Strutture di Controllo}
+
+\subsubsection{Collezioni: le Quattro Strutture Fondamentali}
 
 \noindent Python non ha array nel senso dei linguaggi C-like. Offre quattro tipi di collezione di base, in parte con sintassi simile a quella delle stringhe.
 
@@ -9922,7 +10504,7 @@ print(f"{'Centered string':=^30}")            # ======Centered string======
 \end{tabular}
 \end{center}
 
-\subsubsection{Liste}
+\paragraph{Liste}
 
 \noindent Le liste sono \textbf{collezioni ordinate e mutabili} di elementi, indicizzabili e affettabili con la stessa sintassi delle stringhe.
 
@@ -10021,7 +10603,7 @@ del aList[1]      # rimuove per indice
 aList.clear()     # svuota la lista
 \end{lstlisting}
 
-\subsubsection{Tuple}
+\paragraph{Tuple}
 
 \noindent Le \textbf{tuple} sono collezioni \textbf{ordinate e immutabili} di elementi, con sintassi simile a quella degli array. Possono contenere valori eterogenei e oggetti mutabili annidati.
 
@@ -10087,7 +10669,7 @@ aList             # [1, 2, 5]
 aConvertedTuple   # (1, 2, 3)
 \end{lstlisting}
 
-\subsubsection{Insiemi (Sets)}
+\paragraph{Insiemi (Sets)}
 
 \noindent Gli \textbf{insiemi} sono collezioni \textbf{non ordinate e senza duplicati}, i cui elementi devono essere \textbf{immutabili} (hashable). L'ordine di stampa non è significativo.
 
@@ -10136,7 +10718,7 @@ a.add(d)
 # TypeError: unhashable type: 'set'
 \end{lstlisting}
 
-\subsubsection{Dizionari}
+\paragraph{Dizionari}
 
 \noindent I \textbf{dizionari} sono collezioni \textbf{ordinate} di coppie \texttt{chiave:valore}, indicizzate tramite chiave; ogni chiave può comparire una sola volta.
 
@@ -10162,7 +10744,7 @@ del aDictionary["age"]
 aDictionary                # {'breed': 'Dog', 'name': 'Deimon'}
 \end{lstlisting}
 
-\subsection{La Funzione \texttt{range}}
+\subsubsection{La Funzione \texttt{range}}
 
 \noindent \texttt{range} genera una sequenza di numeri per l'iterazione. Restituisce un oggetto \texttt{range} (non una lista), convertibile con \texttt{list()} quando serve visualizzarlo. Gli argomenti devono essere interi.
 
@@ -10177,9 +10759,9 @@ range(4.3)
 # TypeError: 'float' object cannot be interpreted as an integer
 \end{lstlisting}
 
-\subsection{Strutture di Controllo}
+\subsubsection{Strutture di Controllo}
 
-\subsubsection{Selezione e Iterazione}
+\paragraph{Selezione e Iterazione}
 
 \noindent L'istruzione \texttt{if} si basa interamente sull'indentazione e supporta la catena \texttt{elif}/\texttt{else}. L'esempio risolve un'equazione di secondo grado distinguendo discriminante positivo, nullo e negativo.
 
@@ -10210,7 +10792,7 @@ else:
     print("the result is ", factorial)   # the result is 120
 \end{lstlisting}
 
-\subsubsection{\texttt{break}, \texttt{continue} e \texttt{pass}}
+\paragraph{\texttt{break}, \texttt{continue} e \texttt{pass}}
 
 \noindent Python offre tre costrutti per gestire il flusso nei cicli. A differenza di \texttt{break} e \texttt{continue}, \texttt{pass} \textbf{non interrompe nulla}: è un'istruzione nulla che serve solo dove la sintassi richiede un blocco.
 
@@ -10270,7 +10852,7 @@ else:
 
 \noindent L'output evidenzia la differenza: con \texttt{break} il ciclo si ferma a 5; con \texttt{continue} salta solo la stampa dell'iterazione 5; con \texttt{pass} la stampa ``pass: I should not get here!'' viene eseguita, perché \texttt{pass} non altera il flusso.
 
-\subsubsection{Iteratori, Iterabili e Ciclo \texttt{for}}
+\paragraph{Iteratori, Iterabili e Ciclo \texttt{for}}
 
 \noindent Un \textbf{iteratore} è un oggetto che supporta l'iterazione su una collezione: restituisce gli elementi uno alla volta, aggiorna il proprio stato e solleva \texttt{StopIteration} quando non ci sono più elementi. Questa è una tipica situazione in cui le superclassi risultano utili, e mostra la commistione tra scripting e orientamento agli oggetti.
 
@@ -10340,9 +10922,11 @@ print("The other arguments are ", arguments)
 
 \noindent Esecuzione: \texttt{python3 commandLine.py -o xxx -h help -n a b c}. Nel formato di \texttt{getopt}, \texttt{n} è un'opzione senza valore, mentre \texttt{h:} e \texttt{o:} richiedono un argomento. L'output separa le opzioni riconosciute dagli argomenti posizionali residui (\texttt{['a', 'b', 'c']}).
 
-\subsection{Python come Linguaggio Imperativo}
+\subsection{Funzioni, Moduli e Programmazione Funzionale}
 
-\subsubsection{Funzioni}
+\subsubsection{Python come Linguaggio Imperativo}
+
+\paragraph{Funzioni}
 
 \noindent Le funzioni Python hanno parametri con \textbf{valori di default} e possono restituire più valori tramite una tupla. I parametri sono passati per valore, ma i valori possono essere riferimenti a oggetti mutabili, come in Java.
 
@@ -10400,11 +10984,310 @@ if __name__ == "__main__":
     main()
 \end{lstlisting}
 
-\subsection{Approfondimenti sulle Funzioni}
+\subsubsection{Le Lambda: Java, Python e C++}
+
+\noindent Una \textbf{lambda} è una piccola funzione \textbf{senza nome}, scritta nel punto in cui serve, che si può passare ad altro codice come se fosse un dato. Lo scopo è uno solo: \textbf{passare un comportamento come parametro} (es.\ ``ordina con questo criterio'').
+
+\noindent La parola è la stessa nei tre linguaggi, ma ``che cos'è'' una lambda cambia:
+
+\begin{center}
+\small
+\begin{tabular}{p{2.2cm}p{5.6cm}p{6.0cm}}
+    \toprule
+    \textbf{Linguaggio} & \textbf{Che cos'è una lambda} & \textbf{Come si chiama} \\
+    \midrule
+    Java & Un \textbf{oggetto} che implementa un'interfaccia & \texttt{f.add(2, 3)} (serve il nome del metodo) \\
+    \addlinespace
+    Python & Una \textbf{funzione}, uguale a quelle di \texttt{def} & \texttt{f(2, 3)} \\
+    \addlinespace
+    C++ & Un \textbf{oggetto} con \texttt{operator()} (una \textit{closure}) & \texttt{f(2, 3)} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent L'esempio che useremo ovunque: un \texttt{Adder} che somma due interi. Due versioni: la somma normale e la somma ``su un orologio a 12 ore'' (\texttt{(a + b) \% 12}).
+
+%--------------------------------------------------------------------
+\paragraph{Java: la lambda è un oggetto}
+
+\noindent \textbf{Functional interface}: un'interfaccia con \textbf{un solo metodo astratto} (SAM, \textit{Single Abstract Method}). Niente di nuovo nel linguaggio: \texttt{Runnable}, \texttt{Comparator} e \texttt{Callable} lo erano già. \texttt{@FunctionalInterface} è solo un controllo del compilatore; i metodi \texttt{default} e \texttt{static} non contano.
+
+\begin{lstlisting}[language=Java]
+interface Adder { int add(int a, int b); }   // un solo metodo astratto
+\end{lstlisting}
+
+\noindent In Java non esistono ``funzioni sciolte'': ogni comportamento è il metodo di un oggetto. Per questo, per passare una somma a un metodo, serve un oggetto \texttt{Adder}. Lo si può costruire in tre modi, dal più lungo al più corto:
+
+\begin{lstlisting}[language=Java]
+// 1. classe nominata (Java 1.0)
+class IntAdder implements Adder {
+    public int add(int a, int b) { return a + b; }
+}
+Adder named = new IntAdder();
+
+// 2. classe anonima (Java 1.1): niente nome, ma restano metodo e firma
+Adder anon = new Adder() {
+    public int add(int a, int b) { return a + b; }
+};
+
+// 3. lambda (Java 8): resta solo il corpo
+Adder plus = (a, b) -> a + b;
+Adder mod12 = (a, b) -> (a + b) % 12;
+
+plus.add(2, 3);    // 5   sempre .add, mai plus(2, 3)
+mod12.add(9, 5);   // 2
+\end{lstlisting}
+
+\noindent Le tre forme producono lo \textbf{stesso tipo di oggetto}: una lambda è \textbf{zucchero sintattico} (scorciatoia di scrittura). Chi riceve l'\texttt{Adder} non sa quale delle tre ha usato chi l'ha creato: è il normale polimorfismo, cioè il pattern \textbf{Strategy}.
+
+\begin{lstlisting}[language=Java]
+static int sumAll(List<Integer> xs, Adder adder) {
+    int acc = 0;
+    for (int x : xs) acc = adder.add(acc, x);   // quale add? lo decide l'oggetto
+    return acc;
+}
+sumAll(List.of(9, 5, 4), plus);    // 18
+sumAll(List.of(9, 5, 4), mod12);   // 6
+\end{lstlisting}
+
+\noindent \textbf{Target type}: la lambda non ha un tipo suo; prende quello che il contesto richiede (qui \texttt{Adder}). Dall'unico metodo astratto di \texttt{Adder} il compilatore ricava da solo \textbf{i tipi dei parametri}, \textbf{il tipo di ritorno} e \textbf{il nome del metodo}. Senza un target type non si può costruire nulla:
+
+\begin{lstlisting}[language=Java]
+var p = (int a, int b) -> a + b;   // errore: lambda needs an explicit target-type
+Object o = x -> x + 1;             // errore: Object non e' una functional interface
+\end{lstlisting}
+
+\noindent Per le interfacce più comuni non serve scriverle: \texttt{java.util.function} ne offre di pronte (\texttt{Function<T,R>} con \texttt{apply}, \texttt{Predicate}, \texttt{Supplier}, \dots). Il \textit{method reference} \texttt{Integer::sum} è una lambda ancora più corta, quando il corpo si limita a chiamare un metodo esistente.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{3.6cm}p{3.8cm}p{3.8cm}}
+    \toprule
+    & \textbf{Classe nominata} & \textbf{Classe anonima} & \textbf{Lambda} \\
+    \midrule
+    Che cosa scrivo & classe + metodo + corpo & metodo + corpo & solo il corpo \\
+    \addlinespace
+    Classe generata da & \texttt{javac} & \texttt{javac} (\texttt{Outer\$1}) & la JVM, a runtime \\
+    \addlinespace
+    \texttt{this} dentro & l'oggetto & l'oggetto anonimo & l'oggetto \textbf{che contiene} la lambda \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Variabili esterne (Java).} Una lambda può usare le variabili locali del metodo che la contiene, ma solo se sono \textbf{\textit{effectively final}}: mai riassegnate dopo l'inizializzazione (cioè potrebbero portare la parola \texttt{final}).
+
+\begin{lstlisting}[language=Java]
+int k = 10;
+Adder plusK = (a, b) -> a + b + k;    // ok: legge k
+k = 11;                               // errore: k non e' piu' effectively final
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Perché}: la locale vive sullo stack e sparisce quando il metodo termina, ma la lambda può girare dopo. Java allora \textbf{copia il valore} dentro la lambda; se la copia potesse cambiare, divergerebbe dall'originale. Quindi: vietato modificare.
+    \item I \textbf{campi} non hanno questo limite: vivono sullo heap e la lambda cattura \texttt{this}, quindi li legge e scrive liberamente.
+\end{itemize}
+
+%--------------------------------------------------------------------
+\paragraph{Python: la lambda è una funzione}
+
+\noindent In Python le funzioni sono già valori: non servono interfacce né target type. \texttt{lambda} è solo un modo breve di scriverne una, con un limite: il corpo è \textbf{una sola espressione} (per il resto, \texttt{def}).
+
+\begin{lstlisting}[language=Python]
+plus = lambda a, b: a + b
+type(plus)                         # <class 'function'>, come con def
+plus(2, 3)                         # 5   chiamata diretta
+
+def sum_all(xs, adder):            # nessuna interfaccia
+    acc = 0
+    for x in xs: acc = adder(acc, x)
+    return acc
+sum_all([9, 5, 4], plus)                          # 18
+sum_all([9, 5, 4], lambda a, b: (a + b) % 12)     # 6
+\end{lstlisting}
+
+\noindent \textbf{Variabili esterne (Python).} La lambda cattura \textbf{la variabile}, non una copia del valore: non c'è nessuna regola ``effectively final''. Se la variabile cambia, la lambda vede il valore nuovo; per \emph{scriverla} da una funzione interna serve \texttt{nonlocal}. Funzione + variabili catturate = \textbf{closure}.
+
+\begin{lstlisting}[language=Python]
+k = 10
+plus_k = lambda a, b: a + b + k
+plus_k(1, 2)                       # 13
+k = 11; plus_k(1, 2)               # 14: la modifica si vede
+
+def make():
+    n = 0
+    def inc():
+        nonlocal n; n += 1; return n
+    return inc
+i = make(); i(), i()               # (1, 2)
+\end{lstlisting}
+
+%--------------------------------------------------------------------
+\paragraph{C++: la lambda è una closure}
+
+\noindent Il C++ ha un'idea simile a Java (un oggetto), ma con la sintassi di chiamata di Python: l'oggetto ha un metodo speciale \texttt{operator()}, quindi si chiama \texttt{f(2, 3)}. Una classe così si chiama \textbf{functor}; una lambda è un functor che \textbf{scrive il compilatore} al posto nostro, a tempo di compilazione.
+
+\begin{lstlisting}[language=C++]
+auto twice = [](int x) { return 2 * x; };
+twice(5);                                          // 10
+std::sort(v.begin(), v.end(), [](int a, int b) { return a > b; });
+\end{lstlisting}
+
+\begin{itemize}
+    \item \texttt{[]}: la \textbf{capture list}, le variabili esterne che il corpo può usare (nulla è catturato da solo);
+    \item \texttt{(int x)}: i parametri, come in una funzione;
+    \item \texttt{\{ \dots \}}: il corpo; il tipo di ritorno è dedotto (oppure \texttt{-> tipo});
+    \item \texttt{auto}: serve perché il tipo della lambda è unico e \textbf{non ha nome}.
+\end{itemize}
+
+\noindent Per passare una lambda a una funzione basta un \textbf{template}: nessuna interfaccia, e il compilatore genera una versione della funzione per ogni tipo di lambda (chiamata diretta, nessun costo).
+
+\begin{lstlisting}[language=C++]
+template <typename F>
+int sumAll(const std::vector<int>& xs, F adder) {
+    int acc = 0;
+    for (int x : xs) acc = adder(acc, x);
+    return acc;
+}
+\end{lstlisting}
+
+\noindent \textbf{Le catture: per valore o per riferimento.} Il C++ non ha garbage collector, quindi \textbf{sceglie il programmatore}, variabile per variabile:
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{11.4cm}}
+    \toprule
+    \textbf{Cattura} & \textbf{Significato} \\
+    \midrule
+    \texttt{[]} & Nulla: solo i parametri. \\
+    \addlinespace
+    \texttt{[k]} & \texttt{k} \textbf{per valore}: copia fatta alla creazione della lambda. \\
+    \addlinespace
+    \texttt{[\&n]} & \texttt{n} \textbf{per riferimento}: la variabile stessa. \\
+    \addlinespace
+    \texttt{[=]} / \texttt{[\&]} & Tutte le variabili usate nel corpo, per valore / per riferimento. \\
+    \addlinespace
+    \texttt{[this]} & L'oggetto corrente (\texttt{[*this]}, C++17, lo copia). \\
+    \addlinespace
+    \texttt{[a = 10]} & Nuova variabile inizializzata qui (\textit{init-capture}, C++14). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C++]
+int k = 10;
+auto byVal = [k](int a)  { return a + k; };
+auto byRef = [&k](int a) { return a + k; };
+k = 11;
+byVal(1);                          // 11: la copia vale ancora 10
+byRef(1);                          // 12: vede la modifica
+
+int c = 0;
+auto cnt = [c]() mutable { return ++c; };   // 1 2 ..., la c esterna resta 0
+auto cnt2 = [&c]() { return ++c; };         // modifica la c esterna
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Per valore} = come Java: ogni variabile catturata diventa un \textbf{campo} della closure. Il call operator è \texttt{const}, quindi la copia è di sola lettura, a meno di \texttt{mutable}: allora cambia la copia, mai l'originale.
+    \item \textbf{Per riferimento} = come Python (e \texttt{nonlocal}): la lambda vede e modifica la variabile vera.
+    \item \texttt{[a = 10]} crea un campo \textbf{una volta sola}, alla costruzione, e il suo valore resta tra le chiamate (con \texttt{mutable}); una variabile \texttt{int a = 10;} nel corpo invece riparte da 10 a ogni chiamata. Si può inizializzare con un'espressione, anche \texttt{std::move}.
+\end{itemize}
+
+\begin{cbox}{Attenzione: il Riferimento Dangling}
+\noindent Un riferimento a una variabile locale non può sopravvivere alla funzione. Se la lambda esce dallo scope con una cattura per riferimento, la chiamata è \textbf{undefined behaviour} (comportamento non definito: il programma può fare qualunque cosa):
+\begin{lstlisting}[language=C++]
+std::function<int(int)> make() {
+    int local = 10;
+    return [&local](int a) { return a + local; };   // local sparisce qui
+}
+make()(1);                                          // UB
+\end{lstlisting}
+\begin{itemize}
+    \item \textbf{per valore} se la lambda può sopravvivere (restituita, memorizzata, passata a un thread);
+    \item \textbf{per riferimento} solo se è usata subito (es.\ argomento di \texttt{std::sort}).
+\end{itemize}
+\end{cbox}
+
+\noindent \texttt{std::function<int(int,int)>} è un tipo unico che può contenere qualunque callable con quella firma (\textit{type erasure}). È la cosa più vicina alla functional interface di Java, ma è una classe di libreria e \textbf{costa} (chiamata indiretta, possibile allocazione sull'heap); con un template non si paga nulla.
+
+%--------------------------------------------------------------------
+\paragraph{La Trappola del Ciclo}
+
+\noindent Creare lambda dentro un ciclo mostra bene la differenza tra copia e variabile condivisa.
+
+\begin{lstlisting}[language=C++]
+for (int i = 0; i < 3; ++i) fs.push_back([i]()  { return i * 10; });  // 0 10 20
+int j = 0;
+for (; j < 3; ++j)          gs.push_back([&j]() { return j * 10; });  // 30 30 30
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+fs = [lambda: i * 10 for i in range(3)]         # 20 20 20: i e' condivisa
+fs = [lambda i=i: i * 10 for i in range(3)]     # 0 10 20: default = copia adesso
+\end{lstlisting}
+
+\begin{lstlisting}[language=Java]
+for (int i = 0; i < 3; i++) fs.add(() -> i * 10);   // errore: i non e' effectively final
+for (int i = 0; i < 3; i++) { int j = i; fs.add(() -> j * 10); }   // 0 10 20
+\end{lstlisting}
+
+\noindent Regola: \textbf{copia} = ogni lambda ha il suo valore (\texttt{[i]}, \texttt{i=i}, \texttt{int j = i}); \textbf{variabile condivisa} = tutte vedono il valore finale (\texttt{[\&j]}, Python senza default). Java impedisce l'errore, Python lo permette, C++ lo compila senza avvisi.
+
+%--------------------------------------------------------------------
+\paragraph{Sotto il Cofano: javap e dis}
+
+\noindent Per vedere che cosa produce il compilatore si \textbf{disassembla} il codice (le istruzioni della macchina virtuale, in forma leggibile): \texttt{javap -c -p Lam.class} per Java, \texttt{dis.dis(...)} per Python.
+
+\begin{itemize}
+    \item \textbf{Java}: \texttt{javac} mette il corpo in un metodo privato \texttt{lambda\$main\$0} ed emette \texttt{invokedynamic}; a runtime la JVM (\texttt{LambdaMetafactory}) \textbf{genera una classe} che implementa \texttt{Adder} e ne crea un'istanza (\texttt{Lam\$\$Lambda/0x...}). Una variabile catturata diventa un parametro in più del metodo.
+    \item \textbf{Python}: \texttt{LOAD\_CONST} (il corpo compilato) + \texttt{MAKE\_FUNCTION}. Una \texttt{def} compila alle stesse due istruzioni: nessuna classe.
+    \item \textbf{C++}: una struct con un campo per cattura e \texttt{operator()}, generata a compile-time. \texttt{sizeof} = somma dei campi (nessuna cattura = 1 byte).
+\end{itemize}
+
+\noindent In tutti e tre i casi la funzione diventa una struttura con \textbf{il codice + le sole variabili catturate} (\textit{closure conversion}); mai l'intero record di attivazione della funzione contenitrice.
+
+%--------------------------------------------------------------------
+\paragraph{Confronto Finale}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{3.9cm}p{3.9cm}p{3.4cm}}
+    \toprule
+    \textbf{Aspetto} & \textbf{Java} & \textbf{Python} & \textbf{C++} \\
+    \midrule
+    Che cos'è & Oggetto di una functional interface & Oggetto \texttt{function} & Closure (oggetto con \texttt{operator()}) \\
+    \addlinespace
+    Tipo & Il target type & Sempre \texttt{function} & Unico, senza nome (\texttt{auto}) \\
+    \addlinespace
+    Chiamata & \texttt{f.add(2, 3)} & \texttt{f(2, 3)} & \texttt{f(2, 3)} \\
+    \addlinespace
+    Chi crea la classe & JVM, a runtime & Nessuna classe & Compilatore \\
+    \addlinespace
+    Variabili catturate & Copia di locali \textit{effectively final} & La variabile stessa (\textit{cell}) & Copia o riferimento, a scelta \\
+    \addlinespace
+    Modificarle & No (i campi sì) & Sì, con \texttt{nonlocal} & Riferimento: sì; copia: con \texttt{mutable} \\
+    \addlinespace
+    Rischio & Nessuno (GC) & Valore dipende da \emph{quando} si chiama & Dangling reference \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Java ha aggiunto le lambda a un modello fatto solo di classi e interfacce; Python aveva già le funzioni come valori; il C++ lascia scegliere al programmatore e non paga nulla a runtime.
+
+\begin{cbox}{Domande Frequenti sulle Lambda}
+\begin{itemize}
+    \item \textbf{Perché Java richiede un'interfaccia?} Perché non esistono funzioni sciolte: ogni comportamento è un metodo di un oggetto. La lambda è una scorciatoia per creare quell'oggetto.
+    \item \textbf{Perché un solo metodo astratto?} Altrimenti il compilatore non saprebbe a quale metodo associare il corpo.
+    \item \textbf{Perché in Java posso modificare un campo ma non una locale?} Il campo vive sullo heap ed è raggiunto tramite \texttt{this}; la locale viene copiata nella lambda, e una copia modificabile divergerebbe dall'originale.
+    \item \textbf{Una lambda Python è sempre una closure?} No, solo se cattura variabili esterne: \texttt{lambda x: x + 1} no, \texttt{lambda x: x + n} dentro \texttt{make\_adder} sì.
+    \item \textbf{\texttt{lambda} o \texttt{def}?} \texttt{lambda} per espressioni brevi e monouso (argomento di \texttt{map}, \texttt{filter}, \texttt{sorted}); \texttt{def} se servono un nome, più istruzioni o un traceback leggibile (una lambda ha nome \texttt{<lambda>}).
+\end{itemize}
+\end{cbox}
+
+\subsubsection{Approfondimenti sulle Funzioni}
 
 \noindent Le funzioni viste finora sono solo il livello superficiale: Python consente di \textbf{annidare} le funzioni, applica regole di visibilità dei nomi ben precise (\textbf{LEGB}) e tratta i parametri di default come oggetti \textbf{valutati una sola volta}. Sono tre meccanismi che spiegano gran parte dei comportamenti ``sorprendenti'' del linguaggio e che torneranno utili per comprendere decoratori e chiusure.
 
-\subsubsection{Funzioni Annidate e Closure}
+\paragraph{Funzioni Annidate e Closure}
 
 \noindent Una funzione può essere definita \textbf{dentro} un'altra funzione, come in Pascal. La funzione interna vede i nomi della funzione esterna: è il principio alla base delle \textbf{closure}, cioè funzioni che catturano il contesto in cui sono state create, e quindi dei decoratori.
 
@@ -10424,7 +11307,7 @@ if __name__ == "__main__":
 
 \noindent \texttt{inner} non riceve \texttt{y} come parametro: lo risolve nello scope \textbf{enclosing} della funzione \texttt{outer}. Questo permette di specializzare una funzione senza duplicarne il codice, ma introduce una dipendenza implicita dal contesto di creazione che va documentata.
 
-\subsubsection{Regole di Scope: LEGB, \texttt{global} e \texttt{nonlocal}}
+\paragraph{Regole di Scope: LEGB, \texttt{global} e \texttt{nonlocal}}
 
 \noindent Python risolve i nomi seguendo l'ordine \textbf{LEGB}, dal contesto più interno a quello più esterno:
 
@@ -10512,7 +11395,7 @@ def testScope():
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Parametri di Default come Variabili Statiche}
+\paragraph{Parametri di Default come Variabili Statiche}
 
 \noindent I valori di default sono valutati \textbf{una sola volta}, quando l'istruzione \texttt{def} viene eseguita, e non a ogni chiamata: si comportano quindi come variabili \texttt{static} locali del C. Con oggetti immutabili non si nota; con oggetti mutabili lo stato persiste tra le chiamate.
 
@@ -10569,11 +11452,11 @@ Before the third call to f x is:  [4]
 \end{itemize}
 \end{cbox}
 
-\subsection{Moduli, Namespace e Package}
+\subsubsection{Moduli, Namespace e Package}
 
 \noindent Python organizza il codice ``alla C'': ogni file è un \textbf{modulo} e ogni directory con un file \texttt{\_\_init\_\_.py} è un \textbf{package}. La comprensione di questa struttura è essenziale per progettare l'architettura di un'applicazione e per evitare dipendenze circolari.
 
-\subsubsection{Moduli e \texttt{\_\_name\_\_}}
+\paragraph{Moduli e \texttt{\_\_name\_\_}}
 
 \noindent Un modulo è un file \texttt{.py}; il suo nome è il nome del file senza estensione ed è memorizzato nella variabile \texttt{\_\_name\_\_}. Se il file è invocato direttamente da riga di comando, \texttt{\_\_name\_\_} vale \texttt{"\_\_main\_\_"}; se è importato, contiene il nome del modulo. Un modulo è a sua volta un \textbf{oggetto} Python.
 
@@ -10607,11 +11490,11 @@ pippo()
 
 \noindent \texttt{from amodule import *} importa tutti i nomi pubblici, cioè quelli che non iniziano con un underscore (salvo diversa dichiarazione di \texttt{\_\_all\_\_}); è sconsigliato perché rende ambiguo il namespace e nasconde le dipendenze.
 
-\subsubsection{Namespace}
+\paragraph{Namespace}
 
 \noindent Un \textbf{namespace} è l'insieme dei nomi associati a oggetti visibili in un certo momento e in un certo punto del programma. Il namespace corrente si ispeziona con \texttt{dir()}, mentre \texttt{dir(amodule)} mostra il namespace di uno specifico modulo. È lo stesso meccanismo che, a runtime, permette di scoprire attributi e metodi di qualsiasi oggetto.
 
-\subsubsection{Package}
+\paragraph{Package}
 
 \noindent Un \textbf{package} è una collezione di moduli. Dal punto di vista del file system è una directory presente in \texttt{sys.path} e contenente un file \texttt{\_\_init\_\_.py}; dal punto di vista interno è un oggetto modulo. Un \textbf{subpackage} è una directory di un package con il proprio \texttt{\_\_init\_\_.py}, e il punto separa package, subpackage e moduli.
 
@@ -10639,7 +11522,7 @@ from ..sub import deep         # percorso relativo esplicito
 
 \noindent \textbf{Nota}: da Python 3.3 esistono i \emph{namespace package}, che non richiedono \texttt{\_\_init\_\_.py}; nei progetti tradizionali il file resta comunque la convenzione più diffusa e la sola supportata dalle versioni precedenti.
 
-\subsubsection{Ricerca e Forme dell'\texttt{import}}
+\paragraph{Ricerca e Forme dell'\texttt{import}}
 
 {\sloppy
 \noindent Quando si esegue \texttt{import A}, il runtime cerca nell'ordine un file \texttt{A.py} (modulo) oppure una directory \texttt{A} con \texttt{\_\_init\_\_.py} (package) all'interno delle directory elencate in \texttt{sys.path}; la variabile d'ambiente \texttt{PYTHONPATH} contribuisce a definirla. Se il risultato è un modulo, i nomi al suo interno diventano visibili; se è un package, diventano visibili i nomi e viene eseguito \texttt{\_\_init\_\_.py}.\par}
@@ -10665,11 +11548,46 @@ from ..sub import deep         # percorso relativo esplicito
 
 \noindent Dopo l'import di \texttt{X}, la struttura del nome dipende dal tipo di entità: se \texttt{X} è un modulo o un package si usa \texttt{X.entity}; se è una variabile si usa \texttt{X} così com'è; se è una funzione si invoca \texttt{X()}. Le funzioni, in Python, sono oggetti esattamente come i moduli.
 
-\subsection{Python come Linguaggio Funzionale}
+\paragraph{Eseguire un Modulo con \texttt{-m}}
+
+{\sloppy
+\noindent L'interprete può essere istruito in tre modi: eseguire un \textbf{file} (\texttt{python dog.py}), una \textbf{stringa} (\texttt{python -c "print(1+1)"}) oppure un \textbf{modulo} (\texttt{python -m zoo.dog}). La terza forma è quella che rispetta la struttura dei package e che va preferita quando il codice usa import relativi.\par}
+
+\noindent Con \texttt{python -m zoo.dog} il comportamento è il seguente:
+\begin{enumerate}
+    \item la directory corrente viene messa in testa a \texttt{sys.path};
+    \item il modulo viene cercato con il normale meccanismo di import (file, package o modulo della libreria standard);
+    \item il modulo viene eseguito con \texttt{\_\_name\_\_} uguale a \texttt{"\_\_main\_\_"}.
+\end{enumerate}
+
+\noindent La differenza rispetto all'esecuzione diretta del file è tutta in \texttt{sys.path[0]}. Con \texttt{python zoo/dog.py} la prima directory cercata è quella del file, cioè l'interno del package: \texttt{import animal} funziona, ma \texttt{import zoo.animal} fallisce. Con \texttt{python -m zoo.dog} la prima directory è la current directory, quindi il package è visto dall'esterno e gli import assoluti funzionano come nel resto del progetto. Inoltre un file eseguito direttamente non fa parte di alcun package, quindi gli import relativi (\texttt{from . import animal}) non hanno significato e falliscono.
+
+\begin{lstlisting}[numbers=none]
+zoo/
+|-- __init__.py          # print("loading package zoo")
+|-- __main__.py          # eseguito da python -m zoo
+|-- dog.py
+`-- animal.py
+\end{lstlisting}
+
+\noindent Un package può essere eseguito con \texttt{python -m zoo}: in quel caso viene prima eseguito \texttt{\_\_init\_\_.py}, poi il modulo speciale \texttt{\_\_main\_\_.py} contenuto nel package. Molti moduli della libreria standard sono pensati per essere invocati con \texttt{-m}: \texttt{venv}, \texttt{pip}, \texttt{http.server}, \texttt{json.tool}.
+
+\noindent Il caso più frequente è \texttt{python -m pip} invece di \texttt{pip}. Il comando \texttt{pip} è l'eseguibile che si trova per primo nel \texttt{PATH}: con più interpreti installati può appartenere a un Python diverso da quello corrente, e il pacchetto finisce dove l'import successivo non lo trova. \texttt{python -m pip} usa il modulo \texttt{pip} di \emph{quell}'interprete, quindi installa esattamente dove il codice girerà.
+
+\begin{cbox}{File, Modulo o Stringa?}
+\begin{itemize}
+    \item \textbf{File}: adatto a script autonomi e senza import relativi; \texttt{sys.path[0]} è la directory del file.
+    \item \textbf{Modulo (\texttt{-m})}: adatto a codice organizzato in package; \texttt{sys.path[0]} è la current directory e gli import relativi funzionano.
+    \item \textbf{Stringa (\texttt{-c})}: adatta a prove rapide da terminale, non a codice di progetto.
+    \item Per installare dipendenze usare \texttt{python -m pip}, non \texttt{pip}: lega l'installazione all'interprete corretto.
+\end{itemize}
+\end{cbox}
+
+\subsubsection{Python come Linguaggio Funzionale}
 
 \noindent Le espressioni \texttt{lambda} sono già state introdotte. Il paradigma funzionale emerge però soprattutto da tre proprietà: le funzioni sono \textbf{oggetti di prima classe}, esistono funzioni di ordine superiore pronte all'uso (\texttt{map}, \texttt{filter}, \texttt{reduce}) e il linguaggio offre una forma di \textbf{valutazione lazy} tramite i generatori. A queste si aggiunge una sorta di \textbf{trasparenza referenziale}, garantita dagli oggetti immutabili e dal fatto che le variabili globali non sono modificabili all'interno di uno scope locale senza un'esplicita dichiarazione \texttt{global}.
 
-\subsubsection{Il Problema del Sovraccarico delle Funzioni}
+\paragraph{Il Problema del Sovraccarico delle Funzioni}
 
 \noindent Python \textbf{non} supporta il sovraccarico di funzioni come Java o C++: se una funzione viene definita più volte, sopravvive solo l'ultima definizione. Non esiste quindi una risoluzione per numero o tipo di parametri.
 
@@ -10717,7 +11635,7 @@ f(3)
 # TypeError: f() missing 1 required positional argument: 'b'
 \end{lstlisting}
 
-\subsubsection{Funzioni come Oggetti di Prima Classe}
+\paragraph{Funzioni come Oggetti di Prima Classe}
 
 \noindent In Python le funzioni sono \textbf{first-class citizens}: possono essere assegnate a variabili, passate come argomenti, restituite da altre funzioni e memorizzate in strutture dati.
 
@@ -10739,7 +11657,7 @@ type(x)               # <class 'function'>
 
 \noindent È questa proprietà a rendere possibili higher-order functions, callback, decoratori e dispatch dinamico.
 
-\subsubsection{\texttt{map}, \texttt{filter} e \texttt{reduce}}
+\paragraph{\texttt{map}, \texttt{filter} e \texttt{reduce}}
 
 \noindent Le tre funzioni di ordine superiore classiche realizzano il pattern \textbf{map-reduce}, diffuso nell'elaborazione di grandi moli di dati. Tutte accettano una funzione come parametro.
 
@@ -10817,7 +11735,7 @@ reduce(lambda x, y: x + y,
 
 \noindent La funzione di riduzione deve avere due parametri, di cui il secondo dello stesso tipo degli elementi dell'iterabile; il risultato intermedio deve essere compatibile con il primo parametro. \texttt{reduce} può essere calcolato in tempo logaritmico con abbastanza processori, sfruttando la associatività dell'operazione.
 
-\subsubsection{Valutazione Lazy e Generatori}
+\paragraph{Valutazione Lazy e Generatori}
 
 \noindent Python valuta \textbf{eagerly} i parametri passati alle funzioni, ma offre una forma di valutazione \textbf{lazy} tramite oggetti che producono gli elementi uno alla volta, su richiesta. Un iteratore è già un esempio di questo comportamento: consuma la sequenza e non torna indietro.
 
@@ -10859,7 +11777,7 @@ t            # (2, 3, 4, 5, 6, 7, 8, 9)
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Comprehension}
+\paragraph{Comprehension}
 
 \noindent La \textbf{list comprehension} è il modo più espressivo e compatto per generare liste; si basa sugli iteratori e sostituisce molti cicli con accumulatore esplicito.
 
@@ -10903,11 +11821,13 @@ t            # (2, 3, 4, 5, 6, 7, 8, 9)
 \end{itemize}
 \end{cbox}
 
-\subsection{Python come Linguaggio Orientato agli Oggetti}
+\subsection{Programmazione Orientata agli Oggetti}
+
+\subsubsection{Python come Linguaggio Orientato agli Oggetti}
 
 \noindent Python è un linguaggio orientato agli oggetti ``fino a un certo punto'': non impone l'incapsulamento, non richiede dichiarazioni di tipo e lascia molta libertà al programmatore. Le classi si definiscono con \texttt{class} e l'indentazione usuale; il riferimento all'oggetto stesso è \texttt{self}, primo parametro esplicito dei metodi di istanza e omesso nella chiamata.
 
-\subsubsection{Classi, \texttt{self} e \texttt{\_\_init\_\_}}
+\paragraph{Classi, \texttt{self} e \texttt{\_\_init\_\_}}
 
 \noindent L'inizializzatore è \texttt{\_\_init\_\_}: una sorta di costruttore che inizializza l'oggetto già allocato. Le variabili di istanza sono normalmente definite al suo interno.
 
@@ -10926,7 +11846,7 @@ if __name__ == "__main__":
 
 \noindent \texttt{self} non è una parola chiave, ma una convenzione fortissima: il primo parametro di un metodo di istanza è il riferimento all'oggetto e viene passato automaticamente. In Python non esistono campi dichiarati: un attributo esiste dal momento in cui viene assegnato, di solito nel costruttore.
 
-\subsubsection{Variabili di Classe, \texttt{@classmethod} e \texttt{@staticmethod}}
+\paragraph{Variabili di Classe, \texttt{@classmethod} e \texttt{@staticmethod}}
 
 \noindent Le \textbf{variabili di classe} sono definite nel corpo della classe e condivise da tutte le istanze. I \textbf{metodi di classe} ricevono la classe come primo parametro, convenzionalmente \texttt{cls}, e si dichiarano con \texttt{@classmethod}: sono utili per contatori, configurazioni e costruttori alternativi.
 
@@ -10977,7 +11897,7 @@ Animal.increment(2)     # 3
 \end{tabular}
 \end{center}
 
-\subsubsection{Incapsulamento e Name Mangling}
+\paragraph{Incapsulamento e Name Mangling}
 
 \noindent Python non ha modificatori di accesso: usa \textbf{convenzioni}. Un nome con un underscore iniziale (\texttt{\_protected}) è considerato protetto, uno con due underscore (\texttt{\_\_private}) privato. Il doppio underscore attiva il \textbf{name mangling}: il nome viene riscritto dal compilatore come \texttt{\_ClassName\_\_nome}, quindi resta raggiungibile solo conoscendo la classe.
 
@@ -11031,7 +11951,7 @@ if __name__ == "__main__":
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Ereditarietà e \texttt{super()}}
+\paragraph{Ereditarietà e \texttt{super()}}
 
 \noindent Python supporta ereditarietà \textbf{singola e multipla}. Ogni classe senza superclasse deriva implicitamente da \texttt{object}, che è a sua volta un'istanza di \texttt{type}. La classe derivata si dichiara indicando la base tra parentesi e può ridefinire i metodi.
 
@@ -11046,7 +11966,7 @@ class Dog(Animal):
 
 \noindent \texttt{super()} restituisce un oggetto che delega alla classe successiva nella \textbf{MRO} (Method Resolution Order), l'ordine in cui Python cerca i metodi nelle gerarchie multiple. Usare \texttt{super()} è preferibile a chiamare esplicitamente \texttt{Animal.\_\_init\_\_}, perché rende la classe componibile in gerarchie multiple e cooperativa.
 
-\subsubsection{Il Ruolo di \texttt{\_\_init\_\_} nella Gerarchia}
+\paragraph{Il Ruolo di \texttt{\_\_init\_\_} nella Gerarchia}
 
 \noindent \texttt{\_\_init\_\_} è un \textbf{inizializzatore}, non un costruttore nel senso del C++: l'allocazione avviene in \texttt{\_\_new\_\_}, mentre \texttt{\_\_init\_\_} inizializza i dati. Di conseguenza, la creazione di un oggetto derivato \textbf{non attiva automaticamente} l'inizializzatore della superclasse: se serve, va chiamato esplicitamente.
 
@@ -11093,9 +12013,9 @@ Creating an animal
 \end{itemize}
 \end{cbox}
 
-\subsection{Overloading degli Operatori e Magic Methods}
+\subsubsection{Overloading degli Operatori e Magic Methods}
 
-\subsubsection{Metodi Speciali per gli Operatori}
+\paragraph{Metodi Speciali per gli Operatori}
 
 \noindent Un caso particolare di metodi è quello che supporta l'\textbf{overloading degli operatori}: esiste una corrispondenza precisa tra operatori e nomi di funzioni speciali, chiamate \textbf{metodi magici} o \emph{double underscore methods}. Ridefinendole, un oggetto acquisisce la semantica dell'operatore.
 
@@ -11208,7 +12128,7 @@ if __name__ == "__main__":
 
 \noindent \textbf{Nota}: le slide riportano i nomi in maiuscolo (\texttt{\_\_LT\_\_}, \texttt{\_\_ADD\_\_}) e per la divisione aumentata \texttt{\_\_IDIV\_\_}; i nomi corretti sono invece \textbf{tutti minuscoli} e, in Python 3, \texttt{\_\_itruediv\_\_}. Un nome sbagliato non produce errori: semplicemente non viene mai invocato. Esistono anche i metodi per gli operatori unari, come \texttt{\_\_neg\_\_}, \texttt{\_\_pos\_\_}, \texttt{\_\_abs\_\_} e \texttt{\_\_invert\_\_}.
 
-\subsubsection{Altri Metodi Speciali}
+\paragraph{Altri Metodi Speciali}
 
 \noindent Oltre agli operatori, Python usa metodi speciali per integrare un oggetto con i costrutti del linguaggio, imitando la struttura del C++. I più rilevanti sono elencati nella tabella.
 
@@ -11287,11 +12207,13 @@ print(b)          # Box([1, 20, 3])
 \clearpage
 \normalsize
 
-\subsection{Il Modello a Oggetti di Python}
+\subsection{Modello a Oggetti e Metaclassi}
+
+\subsubsection{Il Modello a Oggetti di Python}
 
 \noindent Le sottosezioni precedenti hanno mostrato come si definisce una classe, come si usa \texttt{self} e come funziona l'ereditarietà. Qui l'analisi scende di un livello: che cosa significa, in Python, che \emph{tutto} è un oggetto; quale relazione lega \texttt{type} e \texttt{object}; come avviene materialmente la creazione di un'istanza; e come si possono fabbricare tipi nuovi a runtime.
 
-\subsubsection{Identità, Stato, Tipo e Basi}
+\paragraph{Identità, Stato, Tipo e Basi}
 
 \noindent Un oggetto Python è caratterizzato da quattro elementi: un'\textbf{identità}, stabile per tutta la vita dell'oggetto e ottenibile con \texttt{id()}; uno \textbf{stato}, determinato dai valori dei suoi attributi; un \textbf{tipo}, che definisce il comportamento disponibile; e una o più \textbf{basi}, cioè le classi da cui il tipo deriva. La tabella riassume dove si osserva ciascun elemento.
 
@@ -11350,7 +12272,7 @@ print(b)          # Box([1, 20, 3])
 \end{itemize}
 \end{cbox}
 
-\subsubsection{La Dualità tra \texttt{type} e \texttt{object}}
+\paragraph{La Dualità tra \texttt{type} e \texttt{object}}
 
 \noindent Per orientarsi nella gerarchia servono due attributi speciali: \texttt{\_\_class\_\_}, che risponde alla domanda ``di che tipo è questo oggetto?'', e \texttt{\_\_base\_\_}, che risponde alla domanda ``da quale classe deriva questo tipo?''. Il primo è disponibile su ogni oggetto; il secondo solo sugli oggetti che sono classi.
 
@@ -11433,7 +12355,7 @@ print(b)          # Box([1, 20, 3])
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Il Processo di Creazione}
+\paragraph{Il Processo di Creazione}
 
 \noindent La creazione di un'istanza non è una singola operazione. L'espressione \texttt{Dog()} invoca il metodo \texttt{\_\_call\_\_} del tipo di \texttt{Dog}, cioè della sua metaclasse; quel metodo a sua volta chiama \texttt{\_\_new\_\_} per allocare l'oggetto e \texttt{\_\_init\_\_} per inizializzarne i dati. La tabella riassume i tre ruoli.
 
@@ -11487,7 +12409,7 @@ class type:
 
 \noindent Il ramo ``no'' è quello che evita l'inizializzazione quando \texttt{\_\_new\_\_} restituisce un oggetto non compatibile con \texttt{cls}. Nel caso normale il flusso è lineare; nei Singleton, nei pool di oggetti e nelle factory che riusano istanze, il ramo diventa la regola.
 
-\subsubsection{Creazione Dinamica di Tipi}
+\paragraph{Creazione Dinamica di Tipi}
 
 \noindent Un tipo può essere creato senza usare l'istruzione \texttt{class}, invocando \texttt{type} con tre argomenti: il nome, la tupla delle basi e un dizionario che diventa il namespace della classe. È esattamente ciò che fa l'interprete quando esegue una normale definizione di classe.
 
@@ -11557,7 +12479,7 @@ x = t("Garfield2, the revenge")
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Singleton tramite \texttt{\_\_new\_\_}}
+\paragraph{Singleton tramite \texttt{\_\_new\_\_}}
 
 \noindent Il pattern Singleton è già stato introdotto nella parte sui design pattern: garantire che una classe abbia una sola istanza e fornire un punto di accesso globale. In Python una delle implementazioni più dirette sfrutta \texttt{\_\_new\_\_}, perché è il punto in cui l'oggetto viene allocato.
 
@@ -11644,7 +12566,7 @@ True
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Rappresentazione e Ciclo di Vita di un Oggetto}
+\paragraph{Rappresentazione e Ciclo di Vita di un Oggetto}
 
 \noindent Per capire che cosa contiene davvero un oggetto, la funzione \texttt{dir()} restituisce l'elenco completo dei nomi accessibili: metodi speciali ereditati da \texttt{object}, attributi di classe, attributi di istanza e metodi applicativi. Le slides 118--119 lo mostrano su \texttt{animal} e \texttt{dog}; l'elenco è lungo, quindi se ne riporta un estratto significativo.
 
@@ -11715,7 +12637,7 @@ True
 \end{itemize}
 \end{cbox}
 
-\subsection{Metaclassi}
+\subsubsection{Metaclassi}
 
 \noindent Una \textbf{metaclasse} è una classe le cui istanze sono ancora classi. Poiché in Python anche le classi sono oggetti, ogni classe ha un tipo, e quel tipo è una metaclasse. Per la maggior parte delle classi la metaclasse è \texttt{type}; quando serve controllare la nascita o il comportamento di una classe nel suo complesso, si definisce una metaclasse dedicata.
 
@@ -11736,7 +12658,7 @@ True
 
 \noindent Quando si scrive \texttt{animal = Animal()}, l'oggetto \texttt{Animal} crea un'istanza della classe \texttt{Animal} e la restituisce: è l'applicazione di \texttt{\_\_call\_\_} descritta nella sottosezione precedente. La domanda delle metaclassi è che cosa succede se si vuole che una classe produca non solo istanze, ma altre classi, o che controlli il modo in cui le proprie istanze vengono create.
 
-\subsubsection{Classi che Creano Classi}
+\paragraph{Classi che Creano Classi}
 
 \noindent Il primo passo è definire una sottoclasse di \texttt{type}. \texttt{AnimalType} è a sua volta una classe, quindi è un'istanza di \texttt{type}; ma è anche una metaclasse, perché le sue istanze saranno classi.
 
@@ -11759,7 +12681,7 @@ class Animal(metaclass=AnimalType):
 
 \noindent \texttt{AnimalType} è una classe ordinaria, istanza di \texttt{type}; \texttt{Animal} è un'istanza di \texttt{AnimalType}. La relazione di ereditarietà non cambia: \texttt{Animal} deriva da \texttt{object}, non da \texttt{AnimalType}. La metaclasse è il \emph{tipo della classe}, non la sua superclasse.
 
-\subsubsection{Il Protocollo delle Metaclassi}
+\paragraph{Il Protocollo delle Metaclassi}
 
 \noindent Una metaclasse può intervenire in quattro punti del ciclo di vita di una classe. I nomi e le firme sono importanti perché l'interprete li invoca secondo un ordine fisso.
 
@@ -11838,7 +12760,7 @@ __init__ of Animal
 \end{tabular}
 \end{center}
 
-\subsubsection{Il Ciclo di Vita di una Classe}
+\paragraph{Il Ciclo di Vita di una Classe}
 
 \noindent La creazione di una classe segue un protocollo più articolato di quello di un'istanza, perché prima che la classe esista bisogna costruire il suo namespace. Le fasi sono cinque e coinvolgono la metaclasse in momenti distinti.
 
@@ -11888,7 +12810,7 @@ __init__ of Animal
 \end{tabular}
 \end{center}
 
-\subsubsection{Singleton con Metaclasse}
+\paragraph{Singleton con Metaclasse}
 
 \noindent Se la metaclasse controlla \texttt{\_\_call\_\_}, può decidere di restituire sempre la stessa istanza senza che la classe debba ridefinire \texttt{\_\_new\_\_}. Le slides 148--149 costruiscono il Singleton con questa idea, anche se poi duplicano la logica in \texttt{Animal.\_\_new\_\_}.
 
@@ -11983,7 +12905,7 @@ True
 
 \noindent Il comportamento è voluto, ma va documentato: un chiamante potrebbe aspettarsi che \texttt{Animal()} reinizializzi l'oggetto, come accade nel Singleton classico. La metaclasse cambia il contratto di chiamata, non solo l'allocazione.\par}
 
-\subsubsection{Singleton Generalizzato}
+\paragraph{Singleton Generalizzato}
 
 \noindent La generalizzazione consiste nel definire una metaclasse \texttt{Singleton} che tiene un dizionario di istanze, una per ciascuna classe che la usa. In questo modo qualunque classe può diventare Singleton senza riscrivere \texttt{\_\_new\_\_} o \texttt{\_\_init\_\_}.
 
@@ -12042,11 +12964,13 @@ class DatabaseSingleton(Database, metaclass=Singleton):
 \end{itemize}
 \end{cbox}
 
-\subsection{Type Hints e Verifica Statica}
+\subsection{Tipi e Riflessione}
+
+\subsubsection{Type Hints e Verifica Statica}
 
 \noindent Python è un linguaggio a \textbf{tipizzazione dinamica}: variabili, parametri e valori di ritorno possono contenere qualunque tipo, e il tipo di un valore può cambiare a runtime. Questo rende il codice flessibile e conciso, ma sposta molti errori dal momento della scrittura a quello dell'esecuzione. I \textbf{type hints} aggiungono annotazioni opzionali di tipo che consentono di analizzare il programma prima di eseguirlo, senza rinunciare alla dinamicità del linguaggio.
 
-\subsubsection{Annotazioni di Tipo}
+\paragraph{Annotazioni di Tipo}
 
 \noindent La funzione seguente non dichiara alcun tipo: il parametro \texttt{name} può essere qualsiasi cosa e il valore di ritorno è semplicemente ciò che produce l'f-string.
 
@@ -12108,7 +13032,7 @@ app.py:2: error: Incompatible types in assignment
 Found 1 error in 1 file (checked 1 source file)
 \end{lstlisting}
 
-\subsubsection{Anatomia di un'Annotazione}
+\paragraph{Anatomia di un'Annotazione}
 
 \noindent Le annotazioni possono comparire in tre posizioni, ciascuna con una forma precisa. La tabella le riassume; la stessa sintassi vale per i tipi built-in e per quelli definiti dall'utente.
 
@@ -12140,7 +13064,7 @@ result: str = repeat("ab", 3)
 
 \noindent L'annotazione di una variabile locale è spesso superflua, perché il tipo si deduce dal valore assegnato; diventa utile quando il valore iniziale è un segnaposto o quando il tipo atteso non è evidente. Le annotazioni dei parametri e dei valori di ritorno, invece, sono la parte più preziosa del contratto di una funzione.
 
-\subsubsection{Unioni, Alias e Collezioni}
+\paragraph{Unioni, Alias e Collezioni}
 
 \noindent Un valore può appartenere a più tipi. Per esprimerlo si usa \texttt{Union}, oppure la sintassi con la barra verticale introdotta in Python 3.10. Le due forme sono equivalenti.
 
@@ -12219,7 +13143,7 @@ def log(message: str) -> None:
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Il Flusso di Lavoro con mypy}
+\paragraph{Il Flusso di Lavoro con mypy}
 
 \noindent Il type checker non sostituisce l'esecuzione: si inserisce tra la scrittura del codice e il collaudo, come un controllo statico aggiuntivo. La figura riassume il ciclo.
 
@@ -12277,7 +13201,7 @@ def log(message: str) -> None:
 
 \noindent Un errore di tipo scoperto da \texttt{mypy} è un errore evitato; un errore logico che rispetta i tipi resta possibile. Per questo la tipizzazione statica si affianca ai test, non li sostituisce.
 
-\subsection{Riflessione e Introspezione}
+\subsubsection{Riflessione e Introspezione}
 
 \noindent L'\textbf{introspezione} è la capacità di scoprire informazioni su un oggetto a runtime: che tipo ha, quali attributi possiede, se è chiamabile. La \textbf{riflessione} estende l'introspezione permettendo di modificare l'oggetto, aggiungere attributi o metodi, o creare classi dinamicamente. Sono due livelli dello stesso meccanismo: il primo osserva, il secondo interviene.
 
@@ -12294,7 +13218,7 @@ def log(message: str) -> None:
 \end{tabular}
 \end{center}
 
-\subsubsection{Introspezione di Base}
+\paragraph{Introspezione di Base}
 
 \noindent L'informazione più elementare è il tipo. \texttt{type()} restituisce un oggetto di tipo \texttt{type} che descrive la classe dell'argomento; \texttt{isinstance()} verifica l'appartenenza a una classe e tiene conto dell'ereditarietà.
 
@@ -12356,7 +13280,7 @@ if isinstance(obj, A):
 
 \noindent \texttt{vars()} è più mirato: restituisce solo il dizionario degli attributi di istanza, senza i metodi ereditati. Su un oggetto senza attributi propri il dizionario è vuoto; su una classe contiene il namespace della classe.
 
-\subsubsection{Modifica Dinamica e Classi a Runtime}
+\paragraph{Modifica Dinamica e Classi a Runtime}
 
 \noindent La riflessione permette di aggiungere attributi a una classe o a un'istanza dopo la loro definizione. Nell'esempio delle slides 166 la classe \texttt{A} nasce vuota, riceve un attributo di classe \texttt{x}, e l'istanza riceve un attributo \texttt{y}.
 
@@ -12411,7 +13335,7 @@ a = A()
 a.x           # 1
 \end{lstlisting}
 
-\subsubsection{Una Traccia di Riflessione}
+\paragraph{Una Traccia di Riflessione}
 
 \noindent Per vedere che cosa cambia davvero la riflessione, conviene seguire passo per passo l'esempio di \texttt{setattr}. La tabella distingue lo stato della classe da quello dell'istanza: sono due namespace diversi, e confonderli è l'errore più comune.
 
@@ -12461,7 +13385,9 @@ a.x           # 1
 \end{itemize}
 \end{cbox}
 
-\subsection{Argomenti a Lunghezza Variabile}
+\subsection{Decoratori, Proprietà e Dataclass}
+
+\subsubsection{Argomenti a Lunghezza Variabile}
 
 \noindent \textbf{Nota sull'ordine}: le slides collocano questo argomento dopo i decoratori (194--203). Qui viene anticipato perché i decoratori delle slides 170--193 non sono comprensibili senza \texttt{*args} e \texttt{**kwargs}: il wrapper di un decoratore deve poter accettare una firma che non conosce. L'ordine espositivo è quindi invertito rispetto alla numerazione delle slides, non rispetto alla dipendenza concettuale.
 
@@ -12480,7 +13406,7 @@ a.x           # 1
 \end{tabular}
 \end{center}
 
-\subsubsection{\texttt{*args} e \texttt{**kwargs}}
+\paragraph{\texttt{*args} e \texttt{**kwargs}}
 
 \noindent Con \texttt{*args} la funzione può essere chiamata con un numero arbitrario di argomenti posizionali. Dentro il corpo, \texttt{args} è una tupla: è iterabile, indicizzabile e può essere passata a sua volta a un'altra funzione.
 
@@ -12533,7 +13459,7 @@ kwargs = {'x': 10, 'y': 20}
 
 \noindent Questo schema compare spesso negli strumenti di debug e nei wrapper: la funzione originale viene chiamata con \texttt{func(*args, **kwargs)}, che ``spacchetta'' le due strutture e riproduce esattamente la chiamata ricevuta. La sintassi di spacchettamento è il duale della raccolta: \texttt{*} espande una sequenza in argomenti posizionali, \texttt{**} espande una mappa in argomenti nominali.
 
-\subsubsection{Ripartizione degli Argomenti}
+\paragraph{Ripartizione degli Argomenti}
 
 \noindent La ripartizione non è ambigua: Python assegna prima i parametri posizionali nell'ordine di dichiarazione, poi raccoglie l'eccedenza in \texttt{args}, quindi abbina i parametri per nome e infine raccoglie l'eccedenza in \texttt{kwargs}. La tabella applica la regola alla chiamata dell'esempio.
 
@@ -12579,7 +13505,7 @@ kwargs = {'x': 10, 'y': 20}
 
 \noindent Due errori sono frequenti. Il primo è assegnare lo stesso parametro due volte, per esempio \texttt{f(1, a=2)}: Python non sa quale valore privilegiare e solleva \texttt{TypeError}. Il secondo è mettere un argomento posizionale dopo uno per nome, come in \texttt{f(a=1, 2)}: la sintassi non lo consente e l'errore si manifesta già nel parsing della chiamata.
 
-\subsubsection{Wrapper Generici e Trasparenza}
+\paragraph{Wrapper Generici e Trasparenza}
 
 \noindent Il caso d'uso più importante è il decoratore. Un decoratore riceve una funzione di cui non conosce la firma e restituisce un wrapper che deve poter accettare qualunque combinazione di argomenti. Senza \texttt{*args} e \texttt{**kwargs} il wrapper funzionerebbe solo per una firma specifica.
 
@@ -12636,7 +13562,7 @@ def timing(func):
 \end{itemize}
 \end{cbox}
 
-\subsection{Decoratori}
+\subsubsection{Decoratori}
 
 \noindent Un \textbf{decoratore} è una funzione di ordine superiore che modifica dinamicamente il comportamento di una funzione o di una classe avvolgendola in un altro oggetto chiamabile. Il decoratore non sostituisce il codice originale: lo riceve come argomento, costruisce un wrapper che aggiunge comportamento prima o dopo, e restituisce il wrapper al posto dell'originale. Gli usi più comuni sono logging, autenticazione, memorizzazione dei risultati e misurazione delle prestazioni.
 
@@ -12689,7 +13615,7 @@ func = decorator(func)
 \end{tabular}
 \end{center}
 
-\subsubsection{Anatomia di un Decoratore}
+\paragraph{Anatomia di un Decoratore}
 
 \noindent Un decoratore agisce in due momenti distinti, che conviene tenere separati: la \textbf{definizione} della funzione e la sua \textbf{chiamata}. Al momento della definizione il decoratore viene applicato una sola volta; a ogni chiamata viene eseguito il wrapper. La tabella segue l'esempio iniziale.
 
@@ -12716,7 +13642,7 @@ func = decorator(func)
 
 \noindent Poiché l'applicazione avviene alla definizione, un decoratore viene eseguito anche se la funzione non viene mai chiamata. Questa proprietà è utile per registrare handler e route, ma è anche una fonte di effetti collaterali all'importazione: un decoratore che apre file o effettua chiamate di rete rende il modulo lento e difficile da testare.
 
-\subsubsection{Decoratori di Funzione e di Metodo}
+\paragraph{Decoratori di Funzione e di Metodo}
 
 \noindent Un decoratore di funzione non ha bisogno di conoscere i parametri della funzione decorata se il wrapper accetta \texttt{*args} e \texttt{**kwargs}. Nel caso di un metodo di istanza, il wrapper deve dichiarare esplicitamente \texttt{self} come primo parametro, perché la funzione decorata è un metodo e riceve l'istanza.
 
@@ -12747,7 +13673,7 @@ After method execution
 
 \noindent Se il wrapper non dichiarasse \texttt{self}, la chiamata \texttt{obj.say\_hello()} passerebbe l'istanza come primo argomento posizionale e la funzione originale non la riceverebbe. È lo stesso motivo per cui un metodo ordinario richiede \texttt{self}: la regola non cambia quando il metodo è avvolto da un decoratore.
 
-\subsubsection{Decoratori di Classe}
+\paragraph{Decoratori di Classe}
 
 \noindent Un decoratore di classe riceve la classe, la modifica e la restituisce. Può aggiungere attributi, sostituire metodi o registrare la classe in un catalogo. L'esempio delle slides aggiunge un attributo che contiene il nome della classe.
 
@@ -12769,7 +13695,7 @@ Person
 
 \noindent Il decoratore di classe è spesso un'alternativa più semplice alla metaclasse: opera su una singola classe, non su tutte le classi che usano un certo tipo, ed è più facile da leggere e da comporre. La differenza è analoga a quella tra un intervento puntuale e una regola globale.
 
-\subsubsection{I Decoratori Built-in e il Protocollo dei Descriptor}
+\paragraph{I Decoratori Built-in e il Protocollo dei Descriptor}
 
 \noindent Python offre alcuni decoratori built-in che coprono esigenze ricorrenti. \texttt{@staticmethod} dichiara un metodo che non dipende né dall'istanza né dalla classe; \texttt{@classmethod} dichiara un metodo che riceve la classe come primo argomento. L'uso è già stato illustrato nella sottosezione \emph{Variabili di Classe, \texttt{@classmethod} e \texttt{@staticmethod}}; qui interessa il meccanismo con cui sono implementati.
 
@@ -12895,7 +13821,7 @@ class MyClass:
 
 \noindent La differenza tra data e non-data descriptor spiega il comportamento: una proprietà non può essere sovrascritta assegnando un attributo con lo stesso nome sull'istanza, perché il data descriptor ha la precedenza; un metodo, invece, può essere sostituito da un attributo di istanza, perché è un non-data descriptor.
 
-\subsubsection{Concatenamento di Decoratori}
+\paragraph{Concatenamento di Decoratori}
 
 \noindent Più decoratori possono essere applicati alla stessa funzione. L'ordine di scrittura non è quello di applicazione: Python applica prima il decoratore più vicino alla funzione, poi sale verso l'alto. L'esempio delle slides lo dimostra con due decoratori, uno che raddoppia e uno che eleva al quadrato.
 
@@ -12960,7 +13886,7 @@ print(num2())       # 200
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Classi Astratte e \texttt{ABC}}
+\paragraph{Classi Astratte e \texttt{ABC}}
 
 \noindent Le \textbf{classi base astratte} definiscono un'interfaccia comune per le sottoclassi e impongono l'implementazione dei metodi obbligatori. In Python si costruiscono con il modulo \texttt{abc}: una classe che eredita da \texttt{ABC} può marcare i propri metodi con \texttt{@abstractmethod}.
 
@@ -13061,7 +13987,7 @@ class MyABC(metaclass=ABCMeta):
 
 \noindent \textbf{Nota}: le slides usano indifferentemente \texttt{Animal} e \texttt{Dog} in esempi diversi, a volte con \texttt{sound()} e a volte con \texttt{make\_sound()}. Sono frammenti autonomi, non un'unica gerarchia: il nome del metodo astratto deve coincidere con quello ridefinito nella sottoclasse, altrimenti la classe resta astratta.
 
-\subsubsection{Decoratori, Metadati e Test}
+\paragraph{Decoratori, Metadati e Test}
 
 \noindent Un wrapper è una funzione nuova: eredita il comportamento della funzione originale solo perché la chiama, non la sua identità. Il logger delle slides usa \texttt{func.\_\_name\_\_} proprio per stampare il nome giusto, ma senza un'accortezza esplicita il nome del wrapper sarebbe \texttt{wrapper} in log, traceback e strumenti di documentazione.
 
@@ -13096,7 +14022,7 @@ class MyABC(metaclass=ABCMeta):
 \end{itemize}
 \end{cbox}
 
-\subsection{La Proprietà \texttt{@property}}
+\subsubsection{La Proprietà \texttt{@property}}
 
 \noindent \texttt{@property} è un decoratore built-in che trasforma un metodo in un \textbf{attributo gestito}: l'accesso continua a usare la notazione con il punto, ma dietro le quinte viene eseguito del codice. Permette di leggere, validare e calcolare valori senza cambiare l'interfaccia pubblica della classe. È l'alternativa Pythonica ai metodi getter e setter dei linguaggi che non hanno proprietà.
 
@@ -13134,7 +14060,7 @@ p.name          # esegue il getter, senza parentesi
 \end{tabular}
 \end{center}
 
-\subsubsection{Getter, Setter e Validazione}
+\paragraph{Getter, Setter e Validazione}
 
 \noindent Il setter è opzionale e si dichiara con \texttt{@nome.setter}. Il nome del metodo deve coincidere con quello della proprietà; il decoratore registra la funzione come scrittore del medesimo attributo.
 
@@ -13162,7 +14088,7 @@ s.age = 20          # passa dal setter
 s.age = -1          # ValueError: Age cannot be negative
 \end{lstlisting}
 
-\subsubsection{Accesso Diretto e Proprietà}
+\paragraph{Accesso Diretto e Proprietà}
 
 \noindent L'alternativa alla proprietà è l'accesso diretto all'attributo. È più semplice, ma non offre alcun punto in cui intervenire: il valore viene memorizzato così com'è, anche quando è palesemente invalido. La slide 183 lo mostra con un raggio negativo.
 
@@ -13249,7 +14175,7 @@ class Example:
 
 \noindent L'istruzione \texttt{del e.value} invoca il deleter; senza di esso la cancellazione sarebbe vietata. Il deleter è raro nel codice applicativo, ma utile nei wrapper di risorse e nelle cache.
 
-\subsubsection{Proprietà di Sola Lettura e Valori Calcolati}
+\paragraph{Proprietà di Sola Lettura e Valori Calcolati}
 
 \noindent Se si definisce solo il getter, la proprietà è \textbf{di sola lettura}. È il caso dell'area di un rettangolo: il valore dipende da larghezza e altezza e non ha senso memorizzarlo separatamente.
 
@@ -13366,7 +14292,7 @@ class Account:
 
 \noindent L'idea è separare la \textbf{dichiarazione dei dati} dal \textbf{comportamento}: la dataclass descrive quali campi compongono un valore, mentre i metodi specifici restano responsabilità del programmatore. È una forma di riduzione del boilerplate che ben si combina con i type hints, perché i campi sono annotati e gli strumenti possono controllarli. I dettagli operativi, le opzioni e i limiti delle dataclass appartengono a un approfondimento successivo; qui basta collocarle nel quadro: sono un modo dichiarativo per definire classi che, senza di esse, richiederebbero molto codice ripetitivo.
 
-\subsection{Riepilogo: Costrutti e Implicazioni}
+\subsubsection{Riepilogo: Costrutti e Implicazioni}
 
 \noindent I costrutti presentati in questa parte non sono tecniche isolate: sono modi diversi di intervenire sullo stesso modello a oggetti. La tabella li collega all'idea chiave e alla conseguenza pratica che ne deriva.
 
@@ -13405,7 +14331,7 @@ class Account:
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Linee Guida Pratiche}
+\paragraph{Linee Guida Pratiche}
 
 \noindent La scelta tra i costrutti segue criteri ricorrenti. La tabella propone una regola pratica per le situazioni più frequenti, indicando anche l'alternativa che spesso è preferibile.
 
@@ -13438,7 +14364,7 @@ class Account:
 
 \noindent Prima di intervenire con la riflessione o con una metaclasse, vale la pena porsi tre domande: il comportamento deve valere per una sola classe o per un'intera famiglia? deve essere visibile a chi legge il codice? il guadagno in flessibilità compensa la perdita di analisi statica? Se una risposta è incerta, l'alternativa esplicita è probabilmente la scelta migliore.
 
-\subsubsection{Errori nelle Slides e Correzioni}
+\paragraph{Errori nelle Slides e Correzioni}
 
 \noindent Nel corso dell'esposizione alcuni refusi e incongruenze delle slides sono stati corretti. La tabella li raccoglie per riferimento, così che chi studia possa confrontare il testo con il materiale originale.
 
@@ -13482,11 +14408,11 @@ class Account:
 \clearpage
 \normalsize
 
-\subsection{Dataclass: Campi, Valori di Default e Immutabilità}
+\subsubsection{Dataclass: Campi, Valori di Default e Immutabilità}
 
 \noindent La sottosezione intitolata \textit{Le Dataclass: un'Introduzione} ha presentato la dataclass come una classe di dati i cui metodi strutturali vengono generati dal decoratore. Qui il discorso riprende da quel punto e affronta gli aspetti operativi: come si dichiarano i campi, come si assegnano i valori di default, che cosa generano esattamente \texttt{@dataclass} e \texttt{@dataclass(frozen=True)}, e quali limiti restano. Non si torna quindi sulla definizione generale né sul confronto con una classe scritta a mano; quei concetti si considerano acquisiti.
 
-\subsubsection{Campi e Metodi Generati}
+\paragraph{Campi e Metodi Generati}
 
 \noindent Il decoratore \texttt{@dataclass} legge le annotazioni presenti nel corpo della classe e le interpreta come campi. Ogni nome annotato diventa un attributo dell'istanza, e l'ordine di dichiarazione determina l'ordine dei parametri del costruttore generato. Il caso minimo è un punto con due coordinate intere.
 
@@ -13572,7 +14498,99 @@ print(hash(FixedPoint(1)))  # intero, stabile nell'esecuzione
 
 \noindent L'output numerico di \texttt{hash} dipende dall'esecuzione e non va confrontato tra processi diversi; ciò che conta è che l'operazione sia consentita solo per il tipo immutabile. La distinzione non è una formalità: un oggetto mutabile usato come chiave potrebbe cambiare mentre si trova dentro una tabella hash, rendendo la ricerca impossibile.
 
-\subsubsection{Valori di Default e Ordine dei Campi}
+\paragraph{Attributi di Classe e di Istanza}
+
+\noindent Una domanda ricorrente riguarda che cosa succede a una riga come \texttt{x: int = 0} scritta nel corpo di una classe. In una classe normale quella riga crea un \textbf{attributo di classe}, condiviso da tutte le istanze; un \textbf{attributo di istanza} esiste solo dopo un'assegnazione a \texttt{self.<nome>} e vive nel dizionario dell'istanza. Con \texttt{@dataclass} le stesse due righe cambiano ruolo: il decoratore legge le annotazioni, le trasforma in \textbf{campi} e genera un \texttt{\_\_init\_\_} che assegna \texttt{self.x = x} e \texttt{self.y = y}. Entrambi diventano quindi attributi di istanza.
+
+\begin{lstlisting}[language=Python]
+class P:                 # classe normale
+    x: int = 0           # attributo di classe (con annotazione)
+    y: int = 0
+
+@dataclass
+class Point:             # dataclass
+    x: int
+    y: int = 0
+
+pt = Point(1)
+print(pt.__dict__)       # {'x': 1, 'y': 0}: entrambi nell'istanza
+\end{lstlisting}
+
+\noindent Che cosa resta nella classe? La risposta si ottiene con la riflessione. Se un campo non ha default, l'attributo di classe sparisce: \texttt{'x' in Point.\_\_dict\_\_} è \texttt{False}. Se un default c'è, il valore resta nella classe come default, ma l'attributo di istanza lo \textbf{nasconde}: l'istanza vede sempre la propria copia. La classe conserva inoltre la descrizione dei campi in \texttt{\_\_dataclass\_fields\_\_}.
+
+\begin{lstlisting}[language=Python]
+>>> 'x' in Point.__dict__          # nessun default: l'attributo di classe non c'e'
+False
+>>> Point.__dict__['y']            # il default resta nella classe
+0
+>>> list(Point.__dataclass_fields__)   # la descrizione dei campi
+['x', 'y']
+\end{lstlisting}
+
+\noindent La conversione è guidata dall'\textbf{annotazione}, non dall'assegnazione. Un nome annotato diventa un campo; un nome non annotato resta un normale attributo di classe. Per conservare a livello di classe un attributo annotato si usa \texttt{ClassVar}, che il decoratore ignora. I metodi non sono annotazioni e non vengono toccati: restano attributi di classe, come in qualsiasi classe. Il decoratore, semmai, \emph{aggiunge} metodi alla classe (\texttt{\_\_init\_\_}, \texttt{\_\_repr\_\_}, \texttt{\_\_eq\_\_}, \dots), che compaiono nel suo \texttt{\_\_dict\_\_}.
+
+\begin{lstlisting}[language=Python]
+from typing import ClassVar
+
+@dataclass
+class A:
+    x: int              # annotato -> campo -> attributo di istanza
+    z = 7               # non annotato -> resta attributo di classe
+
+@dataclass
+class B:
+    x: int
+    count: ClassVar[int] = 0   # condiviso, non e' un campo
+
+@dataclass
+class C:
+    x: int
+    def m(self): return self.x  # metodo: resta attributo di classe
+\end{lstlisting}
+
+\noindent La tabella riassume il destino di ciascuna forma nel corpo della classe.
+
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{4.4cm}p{5.0cm}}
+    \toprule
+    \textbf{Nel corpo della classe} & \textbf{Classe normale} & \textbf{Con \texttt{@dataclass}} \\
+    \midrule
+    \texttt{x: int} & Solo annotazione, nessun attributo & Campo, attributo di istanza \\
+    \addlinespace
+    \texttt{x: int = 0} & Attributo di classe & Campo, attributo di istanza (default nella classe) \\
+    \addlinespace
+    \texttt{z = 7} & Attributo di classe & Attributo di classe, invariato \\
+    \addlinespace
+    \texttt{c: ClassVar[int] = 0} & Attributo di classe & Attributo di classe, non campo \\
+    \addlinespace
+    \texttt{def m(self): ...} & Attributo di classe & Attributo di classe, invariato \\
+    \addlinespace
+    \texttt{\_\_init\_\_}, \texttt{\_\_repr\_\_}, \dots & Solo se scritti & Generati e aggiunti alla classe \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Da qui deriva anche il divieto dei default mutabili. Un default scritto nel corpo è un attributo di classe, quindi sarebbe condiviso da tutte le istanze; il decoratore lo rifiuta e chiede \texttt{field(default\_factory=...)}. La factory viene chiamata a ogni costruzione e crea un contenitore nuovo per ogni istanza.
+
+\begin{lstlisting}[language=Python]
+@dataclass
+class D:
+    items: list = []    # ValueError: mutable default ... use default_factory
+\end{lstlisting}
+
+\noindent Vale la pena sapere come è implementato il decoratore. In \texttt{Lib/dataclasses.py}, \texttt{dataclass} è un decoratore di classe con parametri opzionali; la funzione interna \texttt{\_process\_class} modifica la classe \textbf{in place} e restituisce lo stesso oggetto. Prima raccoglie i campi ereditati dalle basi dataclass percorrendo \texttt{\_\_mro\_\_}, poi genera i metodi e li attacca alla classe con \texttt{\_set\_new\_attribute}. Non viene creata una nuova classe: quella che si ottiene è la stessa che si è scritta, arricchita.
+
+\begin{cbox}{Attributo di Classe o di Istanza?}
+\begin{itemize}
+    \item Se il valore deve essere \textbf{condiviso} da tutte le istanze (contatori, costanti, configurazioni), dichiararlo come attributo di classe o come \texttt{ClassVar}.
+    \item Se il valore descrive \textbf{lo stato di una singola istanza}, annotarlo come campo della dataclass e lasciare che il costruttore generato lo copi in \texttt{self}.
+    \item Non fidarsi dei default mutabili: nella classe normale sarebbero condivisi, nella dataclass sono vietati. Usare \texttt{default\_factory} o inizializzare in \texttt{\_\_post\_init\_\_}.
+    \item Ricordare che \texttt{frozen=True} blocca la riassegnazione dei campi, non la mutazione degli oggetti contenuti.
+\end{itemize}
+\end{cbox}
+
+\paragraph{Valori di Default e Ordine dei Campi}
 
 \noindent I valori di default si assegnano direttamente nella dichiarazione del campo. Il vincolo è che i campi senza default precedano quelli con default: il costruttore generato deve poter distinguere gli argomenti obbligatori da quelli facoltativi, e Python non ammette un parametro obbligatorio dopo uno facoltativo.
 
@@ -13635,7 +14653,7 @@ class Rectangle:
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Immutabilità con \texttt{frozen=True}}
+\paragraph{Immutabilità con \texttt{frozen=True}}
 
 \noindent L'opzione \texttt{frozen=True} rende la dataclass immutabile: dopo la costruzione, l'assegnazione a un campo fallisce. È il comportamento utile per value object, costanti di configurazione e chiavi di dizionario, perché rende esplicito che il valore non deve cambiare durante la vita dell'oggetto.
 
@@ -13680,7 +14698,7 @@ print(t.tags)           # ['a', 'b']
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Dataclass e Validazione}
+\paragraph{Dataclass e Validazione}
 
 \noindent La dataclass è uno strumento strutturale: descrive quali campi compongono un valore e genera i metodi di inizializzazione, rappresentazione e confronto. Non valida i tipi a runtime e non impone invarianti. Se un campo deve essere una stringa non vuota, un numero positivo o una data futura, il controllo va aggiunto in \texttt{\_\_post\_\_init\_\_}, in una proprietà o in un metodo dedicato. Questa separazione è utile finché il tipo resta interno al programma e i dati sono già sotto controllo.
 
@@ -13694,11 +14712,13 @@ print(t.tags)           # ['a', 'b']
 \end{itemize}
 \end{cbox}
 
-\subsection{Generics e Tipi Parametrici}
+\subsection{Generics, Architettura e Validazione}
+
+\subsubsection{Generics e Tipi Parametrici}
 
 \noindent I type hints, introdotti in Python 3.5 e già presentati nella parte dedicata alla verifica statica, annotano il tipo di un valore ma non esprimono relazioni tra più valori. Una funzione che restituisce lo stesso tipo che riceve non può essere descritta con un tipo concreto senza perdere informazione: se si scrive \texttt{list[int]}, la funzione sembra valida solo per interi; se si scrive \texttt{Any}, il type checker non può più controllare nulla. I generics servono a colmare questo vuoto: introducono parametri di tipo che il verificatore istanzia in base all'uso.
 
-\subsubsection{TypeVar e Funzioni Generiche}
+\paragraph{TypeVar e Funzioni Generiche}
 
 \noindent Un \texttt{TypeVar} è una variabile di tipo. Il nome è una convenzione, spesso \texttt{T}, e la stringa passata al costruttore deve coincidere con il nome della variabile. La funzione seguente accetta una lista di qualsiasi tipo \texttt{T} e restituisce una lista dello stesso tipo; il type checker conserva la relazione tra ingresso e uscita.
 
@@ -13723,7 +14743,7 @@ print(reverse(fruits))   # ['cherry', 'banana', 'apple']
 
 \noindent Nelle versioni più recenti di Python si può usare la sintassi nativa \texttt{list[T]} al posto di \texttt{List[T]} importato da \texttt{typing}; le slides usano la seconda forma, che resta necessaria per compatibilità con versioni precedenti alla 3.9. La scelta tra le due non cambia la semantica del tipo, ma conviene essere coerenti all'interno dello stesso progetto.
 
-\subsubsection{Classi Generiche}
+\paragraph{Classi Generiche}
 
 \noindent Una classe generica dichiara uno o più parametri di tipo e li usa nei propri attributi e metodi. La classe \texttt{Box} incapsula un valore di tipo \texttt{T}: il tipo non è noto quando si scrive la classe, ma viene fissato quando si crea l'istanza o si annota la variabile.
 
@@ -13763,7 +14783,7 @@ class Pair(Generic[K, V]):
 
 \noindent Il parametro \texttt{K} non ha alcun rapporto con \texttt{V}: una \texttt{Pair[int, str]} è diversa da una \texttt{Pair[str, int]}. Il type checker conserva questa distinzione, mentre a runtime entrambe sono semplici istanze di \texttt{Pair}. Se il rapporto tra i due tipi fosse un vincolo, andrebbe espresso con una gerarchia o con un \texttt{bound}, non con la sola presenza di due parametri.
 
-\subsubsection{Vincoli e \texttt{bound}}
+\paragraph{Vincoli e \texttt{bound}}
 
 \noindent Un \texttt{TypeVar} può essere limitato in due modi. Il primo è l'elenco dei tipi ammessi: \texttt{TypeVar("T", int, float)} accetta solo interi o float. Il secondo è un limite superiore, espresso con \texttt{bound=...}: il tipo variabile accetta qualunque sottotipo del tipo indicato. I due meccanismi sembrano simili, ma hanno semantiche diverse.
 
@@ -13851,7 +14871,7 @@ print(animal_speak(Animal()))  # Some sound
 \end{itemize}
 \end{cbox}
 
-\subsection{Inversione del Controllo e Dependency Injection}
+\subsubsection{Inversione del Controllo e Dependency Injection}
 
 \noindent L'\textbf{Inversione del Controllo} (Inversion of Control, IoC) è un principio di progettazione: il controllo della creazione e della gestione degli oggetti viene delegato a un'entità esterna, invece di essere esercitato direttamente dalle classi che li usano. La \textbf{Dependency Injection} (DI) è una tecnica concreta per realizzare questo principio: le dipendenze di un oggetto vengono fornite dall'esterno, di solito attraverso il costruttore, invece di essere costruite al suo interno.
 
@@ -13859,7 +14879,7 @@ print(animal_speak(Animal()))  # Some sound
 
 \noindent Nei linguaggi staticamente tipizzati la DI passa spesso attraverso framework e contenitori relativamente complessi, perché il tipo di ogni dipendenza deve essere noto al compilatore o al runtime. In Python la natura dinamica rende l'iniezione manuale più semplice: si può passare un oggetto qualsiasi che rispetti il contratto atteso, senza dichiarare un'interfaccia formale. Questo non rende la DI inutile nelle applicazioni grandi: la struttura e la verifica dei contratti restano preziose, ma il costo di ingresso è più basso.
 
-\subsubsection{Principio, Accoppiamento e Coesione}
+\paragraph{Principio, Accoppiamento e Coesione}
 
 \noindent Due qualità misurano l'effetto della DI sul progetto. L'\textbf{accoppiamento} indica quanto un componente dipende dai dettagli di un altro; la \textbf{coesione} indica quanto un componente è concentrato su una sola responsabilità. Un sistema rigido ha spesso alto accoppiamento e bassa coesione: ogni modifica si propaga, e ogni classe finisce per occuparsi anche della costruzione dei propri collaboratori.
 
@@ -13887,7 +14907,7 @@ print(animal_speak(Animal()))  # Some sound
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Iniezione Manuale e Composition Root}
+\paragraph{Iniezione Manuale e Composition Root}
 
 \noindent Il confronto tra i due stili è immediato. Senza DI, la classe costruisce da sé il proprio collaboratore; con la DI, lo riceve già pronto. Il secondo caso è più flessibile, ma richiede che qualcuno costruisca l'oggetto e lo passi al momento giusto.
 
@@ -13936,7 +14956,7 @@ def build_service() -> Service:
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Un Contenitore Dichiarativo}
+\paragraph{Un Contenitore Dichiarativo}
 
 \noindent Un contenitore dichiarativo della libreria \texttt{dependency-injector} descrive il grafo degli oggetti in una classe \texttt{Container}. I provider indicano come ottenere un valore: \texttt{Configuration} legge la configurazione, \texttt{Singleton} restituisce sempre la stessa istanza, \texttt{Factory} ne crea una nuova a ogni richiesta. Il codice seguente riprende l'esempio delle slides con le importazioni esplicite, che nelle slides sono omesse.
 
@@ -14028,13 +15048,13 @@ with container.client.override(MockApiClient()):
 \end{itemize}
 \end{cbox}
 
-\subsection{Pydantic: Validazione e Modelli di Dati}
+\subsubsection{Pydantic: Validazione e Modelli di Dati}
 
 \noindent Pydantic è una libreria di validazione e gestione delle impostazioni che usa le annotazioni di tipo di Python. La sua funzione è aggiungere garanzie a runtime a un linguaggio dinamicamente tipizzato: un modello dichiara i campi e i loro tipi, e la libreria converte i dati in ingresso, verifica i vincoli e segnala gli errori in modo strutturato. È lo strumento tipico per i confini del programma, dove i dati arrivano da JSON, variabili d'ambiente, database o richieste HTTP e non hanno ancora una forma Python garantita.
 
 \noindent La versione 2 è quella corrente e ha cambiato diverse API rispetto alla versione 1. La differenza non è solo di dettaglio: cambiano i nomi dei metodi di serializzazione, i decoratori dei validatori, la posizione di \texttt{BaseSettings} e il modo di dichiarare la configurazione. In un documento didattico è quindi necessario distinguere le due sintassi, perché esempi mescolati producono codice che non funziona. Salvo diversa indicazione, gli esempi seguenti usano Pydantic 2; gli output sono stati verificati con la versione 2.14.3 e possono variare leggermente tra versioni. La versione 2 riscrive inoltre il nucleo della validazione in Rust, con un guadagno di prestazioni sensibile rispetto alla versione 1, e organizza le funzionalità opzionali come extra installabili separatamente.
 
-\subsubsection{Versione 1 e Versione 2}
+\paragraph{Versione 1 e Versione 2}
 
 \noindent La tabella raccoglie le differenze che più spesso generano errori quando si copia codice da fonti diverse. Non è un elenco esaustivo, ma copre le API usate nella parte restante.
 
@@ -14075,7 +15095,7 @@ pip install pydantic-settings
 
 \noindent Nota: nelle slides 234 si afferma che \texttt{Email} e \texttt{IPvAnyAddress} sarebbero entrambi extra opzionali. In Pydantic 2 \texttt{EmailStr} richiede il pacchetto \texttt{email-validator}, installato dall'extra \texttt{email}; \texttt{IPvAnyAddress} è invece disponibile nel pacchetto base e non richiede un extra dedicato. La distinzione conta quando si prepara un'immagine Docker minimale.
 
-\subsubsection{Un Modello con \texttt{BaseModel}}
+\paragraph{Un Modello con \texttt{BaseModel}}
 
 \noindent Un modello Pydantic è una classe che eredita da \texttt{BaseModel}. I campi annotati diventano attributi validati; un campo senza default è obbligatorio, uno con default è facoltativo. L'esempio seguente riprende il dipendente delle slides, con una correzione importante: l'UUID viene generato con \texttt{Field(default\_factory=uuid4)}, non assegnando \texttt{uuid4()} come default.
 
@@ -14146,7 +15166,7 @@ print(type(emp.date_of_birth))  # <class 'datetime.date'>
 
 \noindent Il modello non è un sostituto della logica di dominio. Valida forma e tipo dei dati, non le regole di business che dipendono da più campi o da stato esterno. Per quelle servono i validatori di modello o un livello applicativo separato. Tenere distinta la validazione strutturale dalla logica è importante per non trasformare il modello in una classe onnisciente.
 
-\subsubsection{Validazione, Errori e Dati Esterni}
+\paragraph{Validazione, Errori e Dati Esterni}
 
 \noindent Un input non valido produce una \texttt{ValidationError} che raccoglie tutti gli errori, non solo il primo. Ogni errore contiene la posizione del campo, un messaggio leggibile e un tipo macchina, e l'insieme può essere ispezionato dal programma per costruire una risposta strutturata.
 
@@ -14212,7 +15232,7 @@ emp2 = Employee.model_validate_json(raw)
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Serializzazione e Schema JSON}
+\paragraph{Serializzazione e Schema JSON}
 
 \noindent Un modello validato può essere convertito in dati semplici. \texttt{model\_dump} restituisce un dizionario Python, \texttt{model\_dump\_json} una stringa JSON. La conversione gestisce automaticamente tipi come UUID, date ed enum, che non sono direttamente serializzabili in JSON.
 
@@ -14245,7 +15265,7 @@ print(schema["required"])  # campi senza default
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Modelli Annidati}
+\paragraph{Modelli Annidati}
 
 \noindent Un modello può contenere un altro modello come tipo di un campo. In ingresso il campo annidato accetta sia un dizionario sia un'istanza già costruita; Pydantic valida ricorsivamente i dati e costruisce l'oggetto interno. L'esempio seguente usa un indirizzo dentro una persona.
 
@@ -14301,7 +15321,7 @@ print(list(schema["$defs"]))  # ['Address']
 \end{itemize}
 \end{cbox}
 
-\subsubsection{Campi, Alias e Metadati}
+\paragraph{Campi, Alias e Metadati}
 
 \noindent \texttt{Field} personalizza un campo: può generare un default, imporre un vincolo, nascondere il valore nella rappresentazione o associare un alias. L'esempio seguente riprende il modello delle slides con le stesse opzioni, ma con una formattazione compatibile con il limite di riga.
 
@@ -14377,7 +15397,7 @@ Employee.model_validate(bad_employee)
 
 \noindent \texttt{repr=False} non è una misura di sicurezza: nasconde il valore da \texttt{repr}, ma il campo resta in \texttt{model\_dump()}, nei log costruiti con il dizionario e nella serializzazione. Per escludere davvero un dato sensibile servono \texttt{exclude=True}, un modello di risposta separato o un tipo come \texttt{SecretStr}. La scelta dipende da dove il dato deve circolare.
 
-\subsubsection{Validatori di Campo e di Modello}
+\paragraph{Validatori di Campo e di Modello}
 
 \noindent I vincoli dichiarativi coprono i casi semplici; per le regole che richiedono logica si usano i validatori. Un validatore di campo riceve il valore già convertito e può accettarlo, trasformarlo o sollevare \texttt{ValueError}. L'esempio impone un'età minima calcolata dalla data di nascita.
 
@@ -14428,7 +15448,7 @@ class Employee(BaseModel):
 
 \noindent La differenza tra i due livelli è pratica. Un validatore di campo conosce un solo valore e non dovrebbe dipendere dagli altri campi; un validatore di modello vede l'oggetto completo e può applicare invarianti. Se una regola può essere espressa con un vincolo dichiarativo, conviene usarlo: è più leggibile, genera messaggi coerenti e viene applicato anche allo schema JSON. La logica imperativa va riservata ai casi che il vincolo non copre.
 
-\subsubsection{Validazione delle Chiamate}
+\paragraph{Validazione delle Chiamate}
 
 \noindent Pydantic può validare anche gli argomenti di una funzione, senza costruire un modello esplicito. Il decoratore \texttt{@validate\_call} applica le annotazioni ai parametri e solleva \texttt{ValidationError} se una chiamata non rispetta i vincoli.
 
@@ -14469,7 +15489,7 @@ print(message)
 
 \noindent La validazione delle chiamate è utile nelle API interne, nei comandi e nei punti di ingresso, dove una firma tipizzata non basta a garantire i valori. Non sostituisce i test: verifica i tipi e i vincoli dichiarati, non la logica. Una funzione può ricevere argomenti formalmente validi e produrre comunque un risultato sbagliato.
 
-\subsubsection{Impostazioni e Variabili d'Ambiente}
+\paragraph{Impostazioni e Variabili d'Ambiente}
 
 \noindent La configurazione di un'applicazione arriva spesso da variabili d'ambiente o da un file \texttt{.env}. \texttt{BaseSettings} estende \texttt{BaseModel} e legge i valori dall'ambiente, applicando gli stessi tipi e vincoli dei campi. In Pydantic 2 la classe si importa da \texttt{pydantic-settings}; in Pydantic 1 si trovava in \texttt{pydantic}.
 
@@ -14509,7 +15529,7 @@ class AppConfig(BaseSettings):
 \end{itemize}
 \end{cbox}
 
-\subsection{Chiusura: Dati, Tipi e Dipendenze}
+\subsubsection{Chiusura: Dati, Tipi e Dipendenze}
 
 \noindent I costrutti presentati in questa parte non sono alternative equivalenti: rispondono a domande diverse. La dataclass descrive un valore interno e genera i metodi strutturali; i generics esprimono relazioni tra tipi e rendono riutilizzabili algoritmi e contenitori; l'inversione del controllo sposta la costruzione delle dipendenze fuori dalle classi; Pydantic valida i dati al confine. Usarli insieme è naturale, purché ogni strumento resti nel proprio ruolo.
 
@@ -14543,4 +15563,3 @@ class AppConfig(BaseSettings):
 \end{cbox}
 
 \end{document}
-

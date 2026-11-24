@@ -2215,6 +2215,7 @@ public class StrategyDemo {
 \noindent Quando hai un insieme di oggetti che devono collaborare (come i componenti di un form) mettere riferimenti diretti componente-componente crea una rete fittissima di collegamenti incrociati. Il Mediator li sostituisce con una \textbf{stella} (tutti parlano con il Mediator).
 
 \newpage
+
 \section{Architettura Software}
 System Design risponde a ``come costruire il sistema?'' $\rightarrow$ divide et impera.\\
 Architectural Design = definizione dei sottosistemi. Livelli di astrazione dei sottosistemi:
@@ -2532,13 +2533,1875 @@ Application Architecture = struttura organizzativa interna del software. Due dim
 \end{itemize}
 
 \newpage
-\section{Java}
 
+\section{Java} Non dispone di puntatori a funzione e affida il comportamento agli \textbf{oggetti}, all'\textbf{overriding dei metodi} e al \textbf{late binding}.\\
+
+\noindent Capita spesso che la stessa operazione possa essere svolta in modi diversi. Una soluzione naive sarebbe una serie di \texttt{if then else} o \texttt{switch} ma presenta problemi di:
+\begin{itemize}
+    \item violazione dell'open/closed principle: per aggiungere un formato bisogna modificare la classe che contiene il metodo
+    \item conoscenza eccessiva
+    \item complessità crescente
+\end{itemize}
+
+\noindent La soluzione è lo \textbf{Strategy Pattern}: definisce una \textbf{famiglia di algoritmi}, incapsula ciascuno in una classe separata che implementa un'interfaccia comune e rende gli algoritmi \textbf{intercambiabili} rispetto al client.
+
+\paragraph{Vocabolario}
+\begin{itemize}
+    \item \textbf{static}:
+    \begin{enumerate}
+        \item Variabile: condivisa da tutte le istanze, membro della classe e non dell'oggetto
+        \item Metodo: non richiede l'istanza dell'oggetto
+        \item Solo per classi annidate, no riferimento ad outer
+    \end{enumerate}\footnote{In C la keyword static su una variabile globale significa che è visibile solo nel file corrente, su una variabile locale solo alla funzione}
+    \item \textbf{final}:
+    \begin{enumerate}
+        \item Variabile: non può più essere modificata
+        \item Metodo: impedisce overriding nelle sottoclassi
+        \item Classe: impedisce ereditarietà
+        \item Parametro: impedisce riassegnazione del parametro nel corpo del metodo
+    \end{enumerate}\footnote{final vs static final. Final da solo = campo non riassegnabile \textbf{per istanza}, static final indica una costante \textbf{di classe}}
+    \item \textbf{effectively final}: nonostante priva della keyword final, riceve un valore e non viene mai più riassegnata
+    \item \textbf{upcast}: assegnazione di un oggetto di una sottoclasse a una variabile di tipo superclasse
+    \item \textbf{downcast}: assegnazione di un oggetto di una superclasse a una variabile di tipo sottoclasse
+    \item \textbf{early binding} (binding statico): associazioni risolte dal compilatore in base ai tipi statici
+    \item \textbf{late binding} (binding dinamico): associazioni risolte a runtime e dipendenti dal tipo dinamico del ricevitore
+    \item \textbf{overloading}: stesso nome, parametri diversi. Il compilatore sceglie il metodo in base ai tipi statici degli argomenti
+    \item \textbf{overriding}: stesso nome e stessi parametri. La JVM sceglie il metodo in base al tipo dinamico del ricevitore (l'annotazione \texttt{@Override} non è obbligatoria ma serve come verifica per il compilatore)
+    \item \textbf{ritorno covariante}: una sottoclasse può restringere il tipo di ritorno di un metodo sovrascritto, a condizione che il nuovo tipo sia un sottotipo di quello dichiarato nella superclasse
+\end{itemize}
+
+\subsection{Classi annidate} In C++ hanno solo rilevanza a livello di visibilità e namespacing. Java distingue invece tre livelli.
+
+\paragraph{Static Nested Class} 
+\begin{itemize}
+    \item Dichiarate da \texttt{static}
+    \item Possono accedere solo ai membri statici
+    \item Nessuna dipendenza da istanza outer
+    \item Consente di nascondere l'esistenza di un tipo rispetto al mondo esterno
+    \item Utilizzo puramente di visibilità
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+public class X {
+    int a;
+    static int b;
+
+    private class Inner {
+        int y;
+        Inner() {
+            y = a + b; // OK, lecito poiche classe non-static
+        }
+    }
+
+    private static class Nested {
+        int x;
+        Nested() {
+            x = b;
+            x += a; // ERRORE
+        }
+    }
+}
+\end{lstlisting}
+
+\noindent Pattern applicativi:
+\begin{itemize}
+    \item Namespacing e classi helper:
+    \begin{lstlisting}[language=Java]
+class Strings {
+    static class Joiner {
+        ...
+    }
+    static class Trimmer {
+        ...
+    }
+}        
+    \end{lstlisting}
+    \item Builder pattern
+    \begin{lstlisting}[language=Java]
+class HttpRequest {
+    ...
+
+    static class Builder {
+        private String url;
+        private int timeoutMs = 3000;
+        Builder url(String u) { ... }
+        Builder timeout(int ms) { ... }
+        HttpRequest build() { ... }
+    }
+}
+    \end{lstlisting}
+    \item Private type hiding
+    \begin{lstlisting}[language=Java]
+class Cache {
+    private static class Entry {
+        final String key, value;
+        final long ts;
+        Entry(String s, String v) { ... }
+    }
+}
+    \end{lstlisting}
+\end{itemize}
+
+\paragraph{Inner Classes}
+\begin{itemize}
+    \item Dichiarate senza static
+    \item Dipendenza obbligatoria da istanza outer (\texttt{Outer.this}):
+\begin{lstlisting}[language=Java]
+Outer outer = new Outer();
+Outer.Inner inner = outer.new.Inner();
+\end{lstlisting}
+    \item Non sono ammessi membri statici, solamente costanti \texttt{static final}, poiché questo violerebbe la dipendenza per definizione dalla classe outer. In Java la classe è compilata in un ClassFile, un membro statico di una inner dovrebbe invece esistere prima di qualunque istanza dell'outer
+    \item Può accedere a tutti i campi e metodi della classe Outer, anche se private
+    \item Riferimento a classe outer tramite: \texttt{OuterClassName.this}
+\end{itemize}
+
+\noindent Pattern applicativi:
+\begin{itemize}
+    \item Accesso condiviso allo stato dell'outer istance:
+\begin{lstlisting}[language=Java]
+class Counter {
+    private int val = 0;
+
+    class Incr {
+        void inc() { val++; }
+        Counter outer() { return Counter.this; }
+    }
+
+    int next() {
+        new Incr().inc();
+        return val;
+    }
+}
+\end{lstlisting}
+
+    \item Implementazione di iteratori personalizzati:
+\begin{lstlisting}[language=Java]
+class IntRange implements Iterable < Integer > {
+    ...
+    class It implements java.util.Iterator<Integer> {
+        ...
+    }
+    public java.util.Iterator<Integer> iterator() { return new It();}
+}
+\end{lstlisting}
+
+    \item Event handler e GUI listener:
+\begin{lstlisting}[language=Java]
+class ClickCounter {
+    ...
+    class Handler implements java.awt.event.ActionListener {
+        ...
+    }
+    ...
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{Classi Local}
+\begin{itemize}
+    \item Inner classes definite all'interno di un corpo di un metodo/costruttore/blocco
+    \item Dipendenza da outer solo se in contesto non statico
+    \item Non possono essere dichiarate static o public/protected/private
+    \item Non ammette variabili statiche, ma solo static final come Inner Classes
+    \item Visibile e utilizzabile solamente all'interno del blocco nel quale è dichiarata
+    \item Può accedere a tutti i membri della classe outer
+    \item Può accedere ai parametri e alle variabili locali del metodo outer solo se sono final o effectively final
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+class UserService {
+    bool isUsernameOk(String u) {
+        class NonEmptyAlphaValidator {
+            ...
+        }
+        NonEmptyAlphaValidator v = new NonEmptyAlphaValidator();
+        return v.ok(u);
+    }
+}
+\end{lstlisting}
+
+\noindent Pattern Applicativi:
+\begin{itemize}
+    \item Validatori e helper monouso
+    \item Algoritmi di calcolo parametrici
+    \item Strategy Pattern Locale:
+\begin{lstlisting}[language=Java]
+class Sorter {
+    void sort(int[] a, boolean desc) {
+        class Desc {
+            ...
+        }
+        class Asc {
+            ...
+        }
+
+        if (desc) {
+            new Desc().apply(a);
+        } else {
+            new Asc().apply(a);
+        }
+    }
+}
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{Classi Anonime}
+\begin{itemize}
+    \item Dichiarate all'interno di un'espressione
+    \item Dipendenza dall'istanza outer solamente se in contesto non statico
+    \item Non ammette variabili statiche, ma solo static final come Inner Classes
+    \item Sono classi locali prive di identificatore
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+class Outer {
+    private int v = 10;
+    int f() {
+        class L {
+            int h() { return v; }
+        }
+        return new L().h(); // contesto non-statico
+    }
+
+    static int g() {
+        class L {
+            int h() { return v; } // ERRORE
+        }
+        ...
+    }
+}
+\end{lstlisting}
+
+\noindent \textit{Nota:} le variabili catturate (Java cattura il valore, non la variabile in sé) devono essere (effectively) final perché:
+\begin{itemize}
+    \item variabili locali sono nello stack
+    \item istanza di una classe locale/anonima nell'heap
+    \item il compilatore crea una copia sintetica di ogni variabile catturata
+    \item se la variabile locale potesse venire cambiata, la sua copia divergerebbe
+\end{itemize}
+Soluzioni:
+\begin{itemize}
+    \item Snapshot:
+\begin{lstlisting}[language=Java]
+int a = 0;
+final int snapshot = a;
+...
+\end{lstlisting}
+
+    \item Incapsulamento del dato dentro contenitore immutabile (array a singolo elemento o wrapper):
+\begin{lstlisting}[language=Java]
+final int[] box = { 0 };
+... // local class ...
+box[0]++; // lecito
+\end{lstlisting}
+
+    \item Contenitore atomico:
+\begin{lstlisting}[language=Java]
+final AtomicInt a = new AtomicInt(0);
+// local class ...
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Interfacce}
+Introduce un nuovo tipo di riferimento con scopo = fornire comportamento unico per classi:
+\begin{itemize}
+    \item Non può dichiarare variabili d'istanza
+    \item Non può essere istanziata tramite new
+    \item Può contenere solo costanti, metodi astratti, default, static, private e tipi annidati
+    \item Elimina la necessità per classi correlate di condividere una superclasse
+    \item Supporta ereditarietà singola e multipla:
+\begin{lstlisting}[language=Java]
+public interface GroupedInterface extends Interface1, Interface2
+\end{lstlisting}
+\end{itemize}
+
+\noindent\textbf{NON è un oggetto, è un tipo}. In UML la relazione classe-interface è detta \textbf{realizzazione}, distinta dalla relazione class-superclass (\textbf{generalizzazione}).\\
+
+\noindent Possono usare metodi dotati di corpo:
+\begin{itemize}
+    \item Metodi statici: definiscono comportamenti generali/funzioni helper
+    \item Metodi default: forniscono un'implementazione standard del metodo che viene ereditata
+\end{itemize}
+
+\noindent Regole:
+\begin{itemize}
+    \item Metodi d'istanza di classe vincono sui metodi default dell'interfaccia:
+\begin{lstlisting}[language=Java]
+public class Horse {
+    public String identify() { return "Horse"; }
+}
+public interface Flyer {
+    default public String identify() { return "Flyer"; }
+}
+public interface Mythical {
+    default public String identify() { return "Mythical"; }
+}
+public class Pegasus extends Horse implements Flyer, Mythical {
+    public static void main(String... args) {
+        Pegasus myApp = new Pegasus();
+        System.out.println(myApp.identify());
+            // Horse
+    }
+}
+\end{lstlisting}
+    \item Interfacce più specifiche vingono su interfacce più generali
+\begin{lstlisting}[language=Java]
+public interface Animal {
+    default public String identify() { return "Animal"; }
+}
+public interface EggLayer extends Animal {
+    default public String identify() { return "EggLayer"; }
+}
+public interface FireBreather extends Animal { ... }
+public class Dragon implements EggLayer, FireBreather {
+    public static void main (String... args) {
+        Dragon myApp = ...
+        System.out.println(myApp.identify());
+            // EggLayer
+    }
+}
+\end{lstlisting}
+\end{itemize}
+
+\noindent Se due interfacce forniscono interpretazioni default per lo stesso metodo il compilatore dà errore. La classe sarà obbligata a fare overriding:
+\begin{lstlisting}[language=Java]
+InterfaceName.super.methodName(parameters...);
+\end{lstlisting}
+
+\subsection{Sintassi}
+\paragraph{Functional Interface} Interfaccia con esattamente un metodo astratto (SAM). L'annotazione \texttt{@FunctionalInterface} è facoltativa:
+\begin{lstlisting}[language=Java]
+@FunctionalInterface
+interface Comparator2<T> {
+    int compare(T a, T b); // unico metodo astratto
+    default Comparator2<T> reversed() {
+        return (a,b) -> compare(b, a);
+    }
+}
+\end{lstlisting}
+
+\paragraph{Lambda} Espressione che rappresenta un'implementazione di una functional interface. Il suo tipo equivale al target type
+\begin{lstlisting}[language=Java]
+// Forma completa
+Comparator<String> c1 = (String a,String b) -> { return a.compareTo(b);};
+
+// Forma compatta: tipi inferiti e return implicito
+Comparator<String> c2 = (a, b) -> a.compareTo(b);
+
+// Un solo parametro: parentesi facoltative
+java.util.function.Function<String, Integer> len = s -> s.length();
+
+// Nessun parametro: parentesi obbligatorie
+Runnable r = () -> System.out.println("run");
+
+// Method reference: = a una lambda che chiama un metodo esistente
+java.util.function.Function<String, Integer> len2 = String::length;
+java.util.function.Supplier<ArrayList<String>> factory = ArrayList::new;
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{5.2cm}p{5.4cm}}
+    \toprule
+    \textbf{Aspetto} & \textbf{Classe anonima} & \textbf{Lambda} \\
+    \midrule
+    Tipo richiesto & Qualsiasi classe o interfaccia & Solo functional interface \\
+    \addlinespace
+    \texttt{this} & L'istanza anonima & L'istanza che racchiude la lambda \\
+    \addlinespace
+    Ombreggiatura & Può dichiarare variabili con nomi già usati & Non può ombreggiare variabili locali \\
+    \addlinespace
+    Implementazione & Classe generata (\texttt{Outer\$1.class}) & \texttt{invokedynamic} + \texttt{LambdaMetafactory} \\
+    \addlinespace
+    Stato & Può avere campi propri & Non può avere campi propri \\
+    \bottomrule
+\end{tabular}
+\end{center}
 
 \newpage
 \section{Python}
+Principi: multiparadigmatico, dynamic typing, garbage collection.
 
+\subsection{Python come linguaggio di Scripting (REPL)}
+\begin{itemize}
+    \item REPL = interprete interattivo da terminale
+    \item Indentation-based
+    \item Dyamic typing
+\end{itemize}
 
+\paragraph{Stringhe} Sono immutabili, supportano ','',''', + (concatenazione), * (ripetizione), escape sequences in stile C.\\
+
+\noindent L'indicizzazione parte da 0 e lo \texttt{slicing[start:end:step]} include l'inizio ma esclude la fine, consente anche passi negativi per invertire la stringa.\\
+
+\noindent L'interpolazione è il processo di inserimento di variabili all'interno di una stringa:
+\begin{itemize}
+    \item Operatore \%
+    \item \texttt{str.format()}: \texttt{print("Hi, {}".format(name))}
+    \item F-strings: \texttt{print(f"Hello, {name}")}
+\end{itemize}
+
+\paragraph{Liste} Collezioni ordinate e mutabili di elementi (sintassi = stringhe ma con modificabilità, puoi fare \texttt{listname.append(val)})
+
+\paragraph{copy e deepcopy} L'assegnazione tra liste copia il \textbf{riferimento allo stesso oggetto}. Il metodo \texttt{copy()} produce una copia superficiale, mentre la \texttt{copy.deepcopy()} duplica ricorsivamente anche gli oggetti annidati:
+\begin{lstlisting}[language=Python]
+import copy
+
+originale = [[1, 2], [3, 4]]
+
+assegnazione = originale          # Stesso riferimento
+superficiale = originale.copy()   # Stessi elementi interni
+profonda = copy.deepcopy(originale) # Copia completamente indipendente
+
+originale[0][0] = 99
+
+print(assegnazione)  # [[99, 2], [3, 4]] -> mod
+print(superficiale)  # [[99, 2], [3, 4]] -> mod (lista interna condivisa)
+print(profonda)      # [[1, 2], [3, 4]]  -> intatta
+\end{lstlisting}
+
+\paragraph{Tuple} Collezioni ordinate e immutabili di elementi (sintassi ~ ad array, \textbf{NO} \texttt{.append(val)}). In particolare, l'immutabilità impedisce di modificare ma non di creare una nuova tupla tramite concatenazione:
+\begin{lstlisting}[language=Python]
+myTuple = prevTuple + (3,)
+\end{lstlisting}
+
+\paragraph{Insiemi} Collezioni non ordinate, immutabili e senza duplicati. Operatori di unione (|) e di intersezione (\&). Elementi mutabili (come liste, dizionari, altri insiemi) non possono appartenere ad un insieme poiché non hashable.
+
+\paragraph{Dizionari} Collezioni ordinate di coppie chiave-valore (le chiavi sono uniche). Funzioni \texttt{popitem} e \texttt{update}.
+
+\paragraph{Funzione range} Genera una sequenza di numeri per l'iterazione, è convertibile a lista tramite \texttt{list(range(start, end, step))}
+
+\paragraph{break, continue e pass} Tre costrutti per gestire il flusso dei cicli:
+\begin{center}
+\small
+\begin{tabular}{p{2.2cm}p{8.4cm}p{2.8cm}}
+    \toprule
+    \textbf{Istruzione} & \textbf{Comportamento} & \textbf{Ramo \texttt{else}} \\
+    \midrule
+    \texttt{break} & Termina immediatamente il ciclo. & Non eseguito. \\
+    \addlinespace
+    \texttt{continue} & Salta il resto dell'iterazione corrente e passa alla successiva. & Eseguito se il ciclo termina normalmente. \\
+    \addlinespace
+    \texttt{pass} & Non fa nulla: l'esecuzione prosegue con l'istruzione successiva. & Eseguito se il ciclo termina normalmente. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Iteratori} Un iteratore è un oggetto che supporta l'iterazione su una collezione. Restituisce gli elementi uno alla volta, aggiorna il proprio stato e solleva \texttt{StopIteration} se non ci sono più elementi:
+\begin{lstlisting}[language=Python]
+string = "iter"
+stringIterator = iter(string)
+next(stringIterator) # 'i'
+next(stringIterator) # 't'
+stringIterator.__next__() # 'e'
+stringIterator.__next__() # 'r'
+# StopIteration
+\end{lstlisting}
+È la classe base di tutto ciò che è iterabile, espone il metodo \texttt{\_\_iter\_\_()} che ritorna un iteratore.
+
+\paragraph{Argomenti da CLI} Si usa \texttt{sys.argv}, \texttt{getopt} aiuta a interpretarli come opzioni e argomenti posizionali:
+\begin{lstlisting}[language=Python]
+import sys, getopt
+
+print("Argument line: ", sys.argv)
+print("Number of arguments: ", len(sys.argv))
+
+i = 0
+for arg in sys.argv:
+    print("argument ", i, " : ", arg)
+    i += 1
+
+options, arguments = getopt.getopt(sys.argv[1:], "nh:o:")
+for opt, val in options:
+    if opt == "-h": 
+        print("Help: ", val)
+    elif opt == "-o":
+        ...
+\end{lstlisting}
+
+\subsection{Python come linguaggio Imperativo}
+\paragraph{Funzioni} Hanno parametri con valori di default. I parametri vengono passati per valore. Le funzioni sono oggetti e possono quindi essere passate come parametri.\\
+
+\noindent Le espressioni \texttt{lambda} definiscono funzioni anonime:
+\begin{lstlisting}[language=Python]
+def main():
+    x = apply(lambda x: x+1, 3)
+    y = apply(lambda x: x**2, 4)
+    print(x,y) # 4 16
+\end{lstlisting}
+
+\noindent Ogni modulo ha una variabile interna \texttt{\_\_name\_\_} che vale \texttt{\_\_main\_\_} se il modulo è invocato da riga di comando, altrimenti ha il nome del modulo.
+
+\paragraph{Funzioni annidate e closure} Python consente di annidare funzioni e applica le regole LEGB, tratta inoltre i parametri di default come oggetti valutati una sola volta.:
+\begin{lstlisting}[language=Python]
+i = 1
+def f(a=[50]):
+    global i
+    print("Call", i, "At the beginning of f a is:", a)
+    a[0] += 1
+    print("At the end of f a is:", a)
+    i += 1
+
+def main():
+    x = [2]
+    print("Before first call x is:", x)
+    f(x)
+    print("After first call x is:", x)
+    f()
+    print("After the second call x is:", x)
+    f()
+    print("After the third call x is:", x)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\noindent La funzione interna vede i nomi della funzione esterna. È il principio delle closure, cioè funzioni che cattura il contesto in cui sono state create (e quindi dei decoratori).\\
+
+\noindent Risolve i nomi seguendo l'ordine LEGB:
+\begin{itemize}
+    \item Local: nomi definiti nella funzione corrente
+    \item Enclosing: nomi delle funzioni che la contengono
+    \item Global: nomi definiti a livello di modulo
+    \item Builtin: nomi predefiniti
+\end{itemize}
+Per scrivere in uno scope esterno servono le dichiarazioni esplicite:
+\begin{itemize}
+    \item \texttt{global}: collega un nome a livello di modulo
+    \item \texttt{nonlocal}: collega un nome alla funzione che contiene quella corrente
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+x = 1; y = 2; w = 3; z = 4;
+
+def testScope():
+    y = 20; w = 30; k = z
+    def testInnerScope():
+        w = 300
+        global x
+        nonlocal y
+        x = 100; y = 200; z = 400 # z qui e' una nuova locale
+        print("testInnerScope: ", x,y,w,z)
+
+    testInnerScope()
+    print("testScope: ", x,y,w,z)
+
+def main():
+    testScope()
+    print("main: ", x,y,w,z)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+\begin{lstlisting}
+testInnerScope: x = 100, y = 200, w = 300, z = 400
+testScope: x = 100, y = 200, w = 30, z = 4
+main: x = 100, y = 2, w = 3, z = 4
+\end{lstlisting}
+
+\paragraph{Moduli, Namespace e Package} Ogni file è un modulo e ogni directory con un file \texttt{\_\_init\_\_.py} è un package.\\
+
+\noindent Un modulo è un oggetto Python e il suo nome è il nome del file meno il suffisso \texttt{.py}.\\
+
+\noindent Un namespace è l'insieme dei nomi associati a oggetti visibili in un certo momento e in un certo punto del programma. Quello corrente viene ispezionato con \texttt{dir()} mentre \texttt{dir(yourModule)} mostra il namespace di un modulo specifico.\\
+
+\noindent Un package è una collezione di moduli. Dal punto di vista del file system è una directory presente in \texttt{sys.path} e contenente un file \texttt{\_\_init\_\_.py}, dal punto di vista interno è un oggetto modulo. Un subpackage è una directory di un package con il proprio file init.
+
+\paragraph{Le forme di import}
+\begin{center}
+\small
+\begin{tabular}{p{4.6cm}p{5.0cm}p{5.2cm}}
+    \toprule
+    \textbf{Forma} & \textbf{Effetto} & \textbf{Uso consigliato} \\
+    \midrule
+    \texttt{import A} & Rende visibile il nome \texttt{A}; si usa \texttt{A.entity}. & Moduli e package interi. \\
+    \addlinespace
+    \texttt{import A as B} & Come sopra, con alias \texttt{B}. & Nomi lunghi o conflitti. \\
+    \addlinespace
+    \texttt{from A import x} & Rende visibile solo \texttt{x}. & Import mirati e leggibili. \\
+    \addlinespace
+    \texttt{from A import x as y} & Import mirato con alias. & Evitare collisioni di nomi. \\
+    \addlinespace
+    \texttt{from A import *} & Importa tutti i nomi pubblici. & Da evitare nei moduli applicativi. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Eseguire un Modulo con \texttt{-m}}
+L'interprete Python può eseguire un \textbf{file} (\texttt{python dog.py}), una \textbf{stringa} (\texttt{python -c "..."}) o un \textbf{modulo} (\texttt{python -m zoo.dog}). Con \texttt{-m}:
+\begin{itemize}
+    \item \textbf{Meccanismo e \texttt{sys.path[0]}}: mette la directory corrente in testa a \texttt{sys.path}, cerca il modulo tramite import standard e lo esegue con \texttt{\_\_name\_\_ == "\_\_main\_\_"}. A differenza di \texttt{python zoo/dog.py} (dove \texttt{sys.path[0]} è la directory del file e il modulo è isolato dal package), \texttt{python -m zoo.dog} vede il package dall'esterno, permettendo sia import assoluti (\texttt{import zoo.animal}) sia relativi (\texttt{from . import animal}).
+    \item \textbf{Esecuzione di un package}: lanciando \texttt{python -m zoo}, viene eseguito prima \texttt{\_\_init\_\_.py} e poi il file speciale \texttt{\_\_main\_\_.py}.
+    \item \textbf{Utility standard e \texttt{pip}}: molti moduli di libreria si lanciano con \texttt{-m} (\texttt{venv}, \texttt{http.server}, \texttt{json.tool}). Preferire sempre \texttt{python -m pip} a \texttt{pip} per legare l'installazione all'interprete esatto in uso ed evitare conflitti nel \texttt{PATH}.
+\end{itemize}
+
+\begin{lstlisting}[numbers=none]
+zoo/
+|-- __init__.py          # eseguito per primo con python -m zoo
+|-- __main__.py          # entry point per python -m zoo
+|-- dog.py
+`-- animal.py
+\end{lstlisting}
+
+\newpage
+
+\subsection{Python come linguaggio Funzionale}
+Il paradigma funzionale emerge da tre proprietà:
+\begin{itemize}
+    \item \textbf{le funzioni sono oggetti di prima classe}
+    \item esistenza di \textbf{funzioni di ordine superiore} pronte all'uso (map, filter, reduce)
+    \item il linguaggio offre una forma di \textbf{valutazione lazy} tramite i generatori
+\end{itemize}
+
+\paragraph{Function Overloading} Python \textbf{non supporta function overloading}:
+\begin{lstlisting}[language=Python]
+def f(a):
+    return a
+f(3)                # 3
+
+def f(a,b):
+    return (a,b)
+f(3, 4)             # (3, 4)
+f(3)                # TypeError missing 1 parameter 'b'
+\end{lstlisting}
+Le alternative sono:
+\begin{itemize}
+    \item usare \textbf{classi e polimorfismo}
+    \item sfruttare i \textbf{parametri di default}
+    \item usare un default \textbf{None} come segnaposto
+    \item \textbf{decoratori}
+\end{itemize}
+La libreria \texttt{multipledispatch} permette di ottenere un vero e proprio dispatch sui tipi:
+\begin{lstlisting}[language=Python]
+from multipledispatch import dispatch
+
+@dispatch(int)
+def f(a):
+    return a
+@dispatch(int, int)
+def f(a, b):
+    return (a,b)
+
+f(3,4)                  # (3,4)
+f(3)                    # 3
+\end{lstlisting}
+
+\paragraph{Funzioni come oggetti di prima classe} Funzioni = \textbf{first-class citizens}. Possono essere assegnate a variabili, passate come argomenti, restituite da altre funzioni, memorizzate in strutture dati:
+\begin{lstlisting}[language=Python]
+def f(a):
+    return a + 1
+f(3)                    # 4
+x = f                   # assegnazione a variabile
+x(3)                    # 4
+
+l = [x, f, 88, "bye"]
+l[0]                    # <function f at 0x...>
+l[2]                    # 88
+
+type(x)                 # <class 'function'>
+\end{lstlisting}
+
+\paragraph{Funzioni di ordine superiore}
+\begin{itemize}
+    \item \texttt{map}: Applica una funzione ad ogni elemento di 1+ iterabili e restituisce un iteratore, non una lista:
+\begin{lstlisting}[language=Python]
+def apply(f, x):
+    return f(x)
+
+def inc(x):
+    return x + 1
+
+apply(inc, 3)               # 4
+x = map(inc, [1,2,3,4])
+x                           # <map object at 0x...>
+list(x)                     # [2,3,4,5]
+\end{lstlisting}
+La funzione map accetta anche più iterabili in parallelo, usando il polimorfismo dell'operatore +:
+\begin{lstlisting}[language=Python]
+def f(a, b, c):
+    return a + b + c
+f(1, 2, 3)                              # 6
+f("a", "b", "c")                        # 'abc'
+
+list(map(f, ["a", "b", "c", "d"],
+            ["e", "f", "g", "h"],       # ['aei', 'bfj', ...]
+            ["i", "j", "k", "l"]))
+\end{lstlisting}
+
+    \item \texttt{filter}: Seleziona gli elementi per cui il predicato ritorna True e restituisce un iteratore
+\begin{lstlisting}[language=Python]
+def f(a):
+    return a > 10
+f(3)                        # False
+f(11)                       # True
+
+filter(f, [8, 9, 10, 3, 
+        11, 2, 100, -11])   # <filter object at 0x...>
+
+list(filter(f, 
+        [8, 9, 10, 3, 11,   # [11, 100]
+        2, 100, -11]))
+
+list(filter(lambda x: x>10,
+    [8, 9, ...]))           # [11, 100]
+\end{lstlisting}
+
+    \item \texttt{reduce}: Piega un iterabile in un unico valore applicando ripetutamente una funzione a due argomenti (accumulatore, elemento della sequenza):
+\begin{lstlisting}[language=Python]
+from functools import reduce
+
+def f(a, b):
+    return a + b
+
+reduce(f, [1, 2, 3, 4, 5])          # 15
+reduce(lambda x, y: x + y,
+        [1, 2, 3, 4, 5])            # 15
+
+reduce(lambda x, y: x + y,
+    map(lambda x: x**2,
+    filter(lambda x: x % 2 != 0,
+        [1, 2, 3, 4, 5])))          # 35
+\end{lstlisting}
+\end{itemize}
+
+\paragraph{Valutazione Lazy e Generatori} Python valuta \textbf{eagerly} i parametri passati alle funzioni, ma offre una valutazione lazy tramite oggetti che producono elementi uno alla volta:
+\begin{lstlisting}[language=Python]
+l = [2, 4, 6, 8, 10, 12]
+y = iter(l)
+y                           # <list_iterator object at 0x...>
+next(y)                     # 2
+next(y)                     # 4
+tuple(y)                    # (6, 8, 10, 12)
+tuple(y)                    # ()
+\end{lstlisting}
+Una funzione contenente \texttt{yield} invece di \texttt{return} restituisce un generatore:
+\begin{lstlisting}[language=Python]
+def generateIntegers(N):
+    for i in range(N):
+        yield i
+
+x = generateIntegers(10)
+x                           # <generator object generateIntegers at 0x...>
+next(x)                     # 0
+next(x)                     # 1
+
+t = tuple(x)
+t                           # (2,3,4,5,6,7,8,9)
+tuple(x)                    # ()
+t                           # (2,3,4,5,6,7,8,9)
+\end{lstlisting}
+
+\paragraph{Comprehension}
+\begin{itemize}
+    \item \textbf{list comprehension}: modo più compatto di generare liste
+\begin{lstlisting}[language=Python]
+[x for x in range(10)]
+# [0,1,2,3,4,5,6,7,8,9]
+
+[x*x for x in filter(lambda l: l%2==0, range(5, 12))]
+# [36,64,100]
+
+[x*x for x in range (5,12) if x%2==0]
+# [36, 64, 100]
+
+[x*x if x%2==0 else -x*x for x in range(5, 12)]
+[-25, 36, -49, 64, -81, 100, -121]
+\end{lstlisting}
+
+    \item \textbf{set comprehension}
+\begin{lstlisting}[language=Python]
+{x**2 for x in range(-3, 3)}
+# {0, 1, 4, 9}
+\end{lstlisting}
+
+    \item \textbf{dictionary comprehension}
+\begin{lstlisting}[language=Python]
+{i: j[::-1] for (i,j) in zip(range(1,4), ["one", "two", "three"])}
+# {1: 'eno', 2: 'owt', 3: 'eerht'}
+\end{lstlisting}
+\texttt{zip} restituisce un iteratore di tuple e si arresta alla sequenza più corta.
+\end{itemize}
+
+\paragraph{Le lambda: Java vs Python} Lambda = piccola funzione \textbf{senza nome}, passata come valore per \textbf{passare un comportamento come parametro}. Stessa parola, tre significati:
+\begin{center}
+\small
+\begin{tabular}{p{1.8cm}p{5.6cm}p{5.6cm}}
+    \toprule
+    & \textbf{Che cos'è} & \textbf{Chiamata} \\
+    \midrule
+    Java & \textbf{Oggetto} che implementa una functional interface & \texttt{f.add(2,3)} \\
+    \addlinespace
+    Python & \textbf{Funzione}, uguale a quella di \texttt{def} & \texttt{f(2,3)} \\
+    \addlinespace
+    C++ & \textbf{Oggetto} con \texttt{operator()} (closure) & \texttt{f(2,3)} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Java}
+\begin{itemize}
+    \item \textbf{Functional interface}: interfaccia con \textbf{un solo metodo astratto} (SAM); \texttt{default} e \texttt{static} non contano; \texttt{@FunctionalInterface} è solo un check del compilatore
+    \item Java non ha funzioni sciolte: serve sempre un oggetto, chiamato col nome del metodo ($\rightarrow$ \texttt{a(2,3)} non compila)
+    \item Tre modi, stesso oggetto: classe nominata $\rightarrow$ classe anonima $\rightarrow$ lambda (zucchero sintattico: resta solo il corpo). Chi riceve l'oggetto non sa quale ha usato $\rightarrow$ Strategy
+    \item \textbf{Target type}: la lambda prende il tipo che il contesto richiede; da lì il compilatore ricava \textbf{tipi dei parametri, tipo di ritorno e nome del metodo}. Senza target (\texttt{var f = x -> x;}, \texttt{Object o = \dots}) errore
+    \item \texttt{java.util.function}: \texttt{Function}, \texttt{Predicate}, \texttt{Supplier}\dots; method reference \texttt{Integer::sum}
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+interface Adder { int add(int a, int b); }
+Adder plus  = (a, b) -> a + b;           // target type Adder
+Adder mod12 = (a, b) -> (a + b) % 12;    // somma "su orologio a 12 ore"
+plus.add(2, 3);                          // 5: sempre .add, mai plus(2,3)
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{3.6cm}p{3.8cm}p{3.8cm}}
+    \toprule
+    & \textbf{Classe nominata} & \textbf{Classe anonima} & \textbf{Lambda} \\
+    \midrule
+    Scrivo & classe + metodo + corpo & metodo + corpo & solo il corpo \\
+    \addlinespace
+    Classe generata da & \texttt{javac} & \texttt{javac} (\texttt{Outer\$1}) & JVM, a runtime \\
+    \addlinespace
+    \texttt{this} dentro & l'oggetto & l'oggetto anonimo & l'oggetto contenitore \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent \textbf{Variabili esterne (Java)}: locali catturate \textbf{per valore} (copia), solo \textit{effectively final}. Perché: la locale sparisce col metodo, la lambda può girare dopo; una copia modificabile divergerebbe. I \textbf{campi} sono liberi (heap, la lambda cattura \texttt{this}).
+\begin{lstlisting}[language=Java]
+int k = 10;
+Adder plusK = (a, b) -> a + b + k;   // ok
+k = 11;                              // ERRORE: k non e' effectively final
+\end{lstlisting}
+
+\paragraph{Python}
+\begin{itemize}
+    \item \texttt{lambda x: x + 1} = oggetto \texttt{function}, identico a \texttt{def}; nessuna interfaccia, nessun target type; corpo = \textbf{una sola espressione}
+    \item Cattura \textbf{la variabile} (cell), non una copia: nessuna regola effectively final; il valore dipende da \emph{quando} si chiama; per scriverla serve \texttt{nonlocal}
+\end{itemize}
+\begin{lstlisting}[language=Python]
+plus = lambda a, b: a + b
+plus(2, 3)                       # 5
+k = 10; plus_k = lambda a, b: a + b + k
+k = 11; plus_k(1, 2)             # 14: la modifica si vede
+
+def make():
+    n = 0
+    def inc():
+        nonlocal n; n += 1; return n
+    return inc
+\end{lstlisting}
+
+\subsection{Le lambda in C++}
+Lambda = \textbf{closure}: oggetto di una classe generata dal \textbf{compilatore} con \texttt{operator()} (functor); tutto a compile-time. \textbf{Closure} = funzione + variabili libere impacchettate. Cosa si impacchetta:
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{6.6cm}p{6.0cm}}
+    \toprule
+    & \textbf{Cosa impacchetta} & \textbf{Conseguenza} \\
+    \midrule
+    Java & Copia di ogni locale (effectively final) & Sicuro, sola lettura \\
+    \addlinespace
+    Python & La variabile stessa (cell) & Scrivibile, tenuta viva dal GC \\
+    \addlinespace
+    C++ & Copia o riferimento, per variabile & Pieno controllo; no GC $\rightarrow$ lifetime a carico nostro \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Sintassi}
+\begin{itemize}
+    \item \texttt{[capture](parametri) -> tipo \{ corpo \}}; \texttt{auto} perché il tipo non ha nome; \texttt{->tipo} opzionale; parametri \texttt{auto} = generica (C++14)
+    \item Passaggio a funzioni: \textbf{template} (\texttt{template<typename F>}), nessuna interfaccia, chiamata diretta
+\end{itemize}
+\begin{lstlisting}[language=C++]
+auto twice = [](int x) { return 2 * x; };      // twice(5) = 10
+std::sort(v.begin(), v.end(), [](int a, int b) { return a > b; });
+\end{lstlisting}
+
+\paragraph{Catture}
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{11.4cm}}
+    \toprule
+    \textbf{Cattura} & \textbf{Significato} \\
+    \midrule
+    \texttt{[]} & Nulla \\
+    \addlinespace
+    \texttt{[k]} / \texttt{[\&n]} & \texttt{k} per \textbf{valore} (copia alla creazione) / \texttt{n} per \textbf{riferimento} \\
+    \addlinespace
+    \texttt{[=]} / \texttt{[\&]} & Tutte le variabili usate, per valore / per riferimento \\
+    \addlinespace
+    \texttt{[this]} & Oggetto corrente (\texttt{[*this]}, C++17, lo copia) \\
+    \addlinespace
+    \texttt{[a = 10]} & Nuova variabile (init-capture, C++14) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+    \item \textbf{Valore}: ogni cattura = un campo della closure; come Java. \texttt{operator()} è \texttt{const} $\rightarrow$ copia di sola lettura, a meno di \texttt{mutable} (cambia la copia, mai l'originale)
+    \item \textbf{Riferimento}: come Python/\texttt{nonlocal}; vede e modifica la variabile vera
+    \item \texttt{[a = 10]}: campo creato \textbf{una volta}, persiste tra le chiamate; \texttt{int a = 10;} nel corpo riparte a ogni chiamata
+    \item \textbf{Dangling}: se la lambda esce dallo scope con \texttt{[\&]}, il riferimento punta a una locale morta $\rightarrow$ undefined behaviour. Valore se la lambda può sopravvivere; riferimento solo se usata subito
+\end{itemize}
+\begin{lstlisting}[language=C++]
+int k = 10;
+auto byVal = [k](int a)  { return a + k; };
+auto byRef = [&k](int a) { return a + k; };
+k = 11;  byVal(1);  byRef(1);          // 11  12
+int c = 0;
+auto cnt = [c]() mutable { return ++c; };   // 1 2, c esterna resta 0
+\end{lstlisting}
+
+\paragraph{Trappola del ciclo}
+\begin{itemize}
+    \item \textbf{C++}: \texttt{[i]} $\rightarrow$ 0 10 20 (copia); \texttt{[\&j]} $\rightarrow$ 30 30 30 (variabile condivisa)
+    \item \textbf{Python}: \texttt{lambda: i*10} $\rightarrow$ 20 20 20; fix \texttt{lambda i=i: i*10}
+    \item \textbf{Java}: errore effectively final; fix \texttt{int j = i;} nel ciclo
+\end{itemize}
+
+\paragraph{Sotto il cofano e confronto}
+\begin{itemize}
+    \item \textbf{Java} (\texttt{javap -c -p}): corpo in metodo privato \texttt{lambda\$main\$0} + \texttt{invokedynamic}; a runtime \texttt{LambdaMetafactory} genera la classe
+    \item \textbf{Python} (\texttt{dis.dis}): \texttt{LOAD\_CONST} + \texttt{MAKE\_FUNCTION}, come \texttt{def}; nessuna classe
+    \item \textbf{C++}: struct con un campo per cattura + \texttt{operator()}; \texttt{sizeof} = campi (nessuna cattura = 1)
+    \item \texttt{std::function}: tipo uniforme per qualunque callable (type erasure); classe di libreria, costa (indirezione, heap); il template è gratis
+    \item \textbf{Closure conversion}: in tutti e tre, codice + sole variabili catturate, \textbf{mai l'intero record di attivazione}
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{4.2cm}p{4.2cm}p{3.4cm}}
+    \toprule
+    & \textbf{Java} & \textbf{Python} & \textbf{C++} \\
+    \midrule
+    Classe generata da & JVM (runtime) & nessuna & compilatore \\
+    \addlinespace
+    Catture & copia, effectively final & la variabile (cell) & copia o riferimento \\
+    \addlinespace
+    Modificarle & no (campi sì) & sì, \texttt{nonlocal} & rif.: sì; copia: \texttt{mutable} \\
+    \addlinespace
+    Rischio & nessuno (GC) & dipende da \emph{quando} si chiama & dangling \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Python come linguaggio Object-Oriented}
+Caratteristiche delle classi:
+\begin{itemize}
+    \item \texttt{self}: riferimento all'oggetto stesso
+    \item \texttt{\_\_init\_\_}: inizializzatore dell'oggetto già allocato. Inizializza solamente i dati, l'allocazione viene fatta con \texttt{\_\_new\_\_}
+    \item \texttt{cls}: riferimento alla classe stessa
+    \item Le \textbf{variabili di classe} sono definite nel corpo della classe
+    \item I \textbf{metodi della classe} ricevono la classe come primo parametro (\texttt{cls}) e si dichiarano con \texttt{@classmethod}. I \textbf{metodi statici} non contengono riferimenti alla classe né all'istanza e sono dichiarati con \texttt{@staticmethod}\\
+    In sintesi:
+    \begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{4.2cm}p{6.0cm}}
+    \toprule
+    \textbf{Tipo di metodo} & \textbf{Primo parametro} & \textbf{Quando usarlo} \\
+    \midrule
+    Di istanza & \texttt{self} & Opera sullo stato dell'oggetto. \\
+    \addlinespace
+    \texttt{@classmethod} & \texttt{cls} & Opera sullo stato della classe o crea istanze alternative. \\
+    \addlinespace
+    \texttt{@staticmethod} & nessuno & Funzione di supporto senza stato, tenuta nella classe per organizzazione. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+class Animal:
+    numberOfAnimals = 0
+
+    def __init__(self):
+        Animal.numberOfAnimals += 1
+        self.name = ""
+    
+    def setName(self, name):
+        self.name = name
+    
+    @classmethod
+    def getNumberOfAnimals(cls):
+        return cls.numberOfAnimals
+
+    @staticmethod
+    def inc(i):
+        return i + 1
+
+if __name__ == "__main__":
+    animal = Animal()
+    animal.setName("pippo")
+    i = Animal.getNumberOfAnimals()
+\end{lstlisting}
+
+\paragraph{Incapsulamento e name mangling}
+\begin{itemize}
+    \item \texttt{\_protected} vuole un underscore iniziale
+    \item \texttt{\_\_private} vuole due underscore. Questo attiva il name mangling: il nome viene riscritto dal compilatore come \texttt{\_ClassName\_\_nome}. Utile come meccanismo di protezione accidentale, non per sicurezza.
+\end{itemize}
+
+\paragraph{Ereditarietà e super}
+\begin{itemize}
+    \item Ogni classe deriva da \texttt{object}, che a sua volta è un'istanza di \texttt{type}
+    \item \texttt{super()} restituisce un oggetto che delega alla classe successiva nell'ordine di risoluzione di Python (MRO)
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+classe Animal:
+    def _init__(self):
+        print("Animal")
+    
+class Pengiun(Animal):
+    def __init__(self):
+        print("Pengiun")
+
+class Parrot(Animal):
+    def __init__(self):
+        super().__init__()
+        print("Parrot")
+
+class Dove(Animal):
+    pass
+\end{lstlisting}
+\begin{lstlisting}
+a = Animal()        # "Animal"
+pe = Penguin()      # "Pengiun"
+pa = Parrot()       # "Animal" \\ "Parrot"
+d = Dove()          # "Animal"
+\end{lstlisting}
+
+\paragraph{Operator overloading} Possiamo ridefinire operatori secondo le varie tabelle:
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{3.0cm}p{5.6cm}}
+    \toprule
+    \textbf{Operatore} & \textbf{Espressione} & \textbf{Metodo} \\
+    \midrule
+    \texttt{+} & \texttt{A + B} & \texttt{\_\_add\_\_(self, other)} \\
+    \addlinespace
+    \texttt{-} & \texttt{A - B} & \texttt{\_\_sub\_\_(self, other)} \\
+    \addlinespace
+    \texttt{*} & \texttt{A * B} & \texttt{\_\_mul\_\_(self, other)} \\
+    \addlinespace
+    \texttt{/} & \texttt{A / B} & \texttt{\_\_truediv\_\_(self, other)} \\
+    \addlinespace
+    \texttt{//} & \texttt{A // B} & \texttt{\_\_floordiv\_\_(self, other)} \\
+    \addlinespace
+    \texttt{\%} & \texttt{A \% B} & \texttt{\_\_mod\_\_(self, other)} \\
+    \addlinespace
+    \texttt{**} & \texttt{A ** B} & \texttt{\_\_pow\_\_(self, other)} \\
+    \addlinespace
+    \texttt{>>} & \texttt{A >> B} & \texttt{\_\_rshift\_\_(self, other)} \\
+    \addlinespace
+    \texttt{<<} & \texttt{A << B} & \texttt{\_\_lshift\_\_(self, other)} \\
+    \addlinespace
+    \texttt{\&} & \texttt{A \& B} & \texttt{\_\_and\_\_(self, other)} \\
+    \addlinespace
+    \texttt{|} & \texttt{A | B} & \texttt{\_\_or\_\_(self, other)} \\
+    \addlinespace
+    \texttt{\^{}} & \texttt{A \^{} B} & \texttt{\_\_xor\_\_(self, other)} \\
+    \addlinespace
+    ... & ... & ... \\
+    \bottomrule
+\end{tabular}
+\end{center}
+facendo:
+\begin{lstlisting}
+class Animal:
+    def __init__(self, name):
+        self.name = name
+    def __add__(self, anotherAnimal):
+        return Animal(self.name + anotherAnimal.name)
+
+if __name__ == "__main__":
+    animal = Animal("Mistery")
+    anotherAnimal = Animal("BigMistery")
+    tirdAnimal = animal + anotherAnimal
+\end{lstlisting}
+
+\paragraph{Il modello a oggetti}
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{5.0cm}p{6.6cm}}
+    \toprule
+    \textbf{Elemento} & \textbf{Come si osserva} & \textbf{Significato} \\
+    \midrule
+    Identità & \texttt{id(obj)} & Riferimento univoco all'oggetto, stabile finché l'oggetto è vivo. \\
+    \addlinespace
+    Stato & attributi, \texttt{obj.\_\_dict\_\_} & Insieme dei valori associati all'oggetto. \\
+    \addlinespace
+    Tipo & \texttt{type(obj)} & Classe che definisce attributi e metodi disponibili. \\
+    \addlinespace
+    Basi & \texttt{obj.\_\_class\_\_.\_\_base\_\_} & Classe (o classi) da cui il tipo deriva. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Il tipo di valore viene interrogato con \texttt{type()} e il risultato è a sua volta un oggetto di tipo type:
+\begin{lstlisting}[language=Python]
+>>> type(3)
+    <class 'int'>
+
+>>> type(animal)
+    <class '__main__.Animal'>
+
+>>> type(dog)
+    <class '__main__.Dog'>
+
+>>> type(int)
+    <class 'type'>
+
+>>> type(Animal)
+    <class 'type'>
+    
+>>> type(object)
+    <class 'type'>
+
+>>> type(type)
+    <class 'type'>
+\end{lstlisting}
+Ogni valore, funzione, modulo e classe è un oggetto. Una classe è un oggetto il cui tipo è una \textbf{metaclasse}, un'\textbf{istanza} è un oggetto il cui tipo è una classe.\\
+
+\noindent Servono due attributi speciali:
+\begin{itemize}
+    \item \texttt{\_\_class\_\_}: risponde alla domanda ``di che tipo è questo oggetto?''
+    \item \texttt{\_\_base\_\_}: risponde alla domanda ``da quale classe deriva questo tipo?''
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+>>> animal.__class__
+    <class '__main__.Animal'>
+
+>>> type(animal.__class__)
+    <class 'type'>
+
+>>> animal.__class__.__base__
+    <class 'object'>
+
+>>> dog.__class__.__base__
+    <class '__main__.Animal'>
+
+>>> object.__class__
+    <class 'type'>
+
+>>> object.__class__.__base__
+    <class 'object'>
+
+>>> type.__class__
+    <class 'type'>
+
+>>> type.__class__.__base__
+    <class 'object'>
+\end{lstlisting}
+
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{3.0cm}p{3.6cm}p{3.4cm}}
+    \toprule
+    \textbf{Entità} & \texttt{\_\_name\_\_} & \texttt{\_\_class\_\_} & \texttt{\_\_base\_\_} \\
+    \midrule
+    \texttt{Animal} (classe) & \texttt{'Animal'} & \texttt{type} & \texttt{object} \\
+    \addlinespace
+    \texttt{animal} (istanza) & -- & \texttt{Animal} & -- \\
+    \addlinespace
+    \texttt{Dog} (classe) & \texttt{'Dog'} & \texttt{type} & \texttt{Animal} \\
+    \addlinespace
+    \texttt{dog} (istanza) & -- & \texttt{Dog} & -- \\
+    \addlinespace
+    \texttt{object} & \texttt{'object'} & \texttt{type} & \texttt{None} \\
+    \addlinespace
+    \texttt{type} & \texttt{'type'} & \texttt{type} & \texttt{object} \\
+    \addlinespace
+    \texttt{None} & -- & \texttt{NoneType} & -- \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Emerge quindi il quadro di una \textbf{Abstract Factory} implicita, riassumibile nei seguenti punti fondamentali:
+
+\begin{itemize}
+    \item Ogni entità deriva da \texttt{object};
+    \item Ogni oggetto possiede un proprio tipo;
+    \item Un tipo è, a sua volta, una sottoclasse derivata da \texttt{object};
+    \item L'attributo \texttt{\_\_base\_\_} identifica la classe base;
+    \item L'attributo \texttt{\_\_class\_\_} identifica il tipo dell'oggetto;
+    \item Una metaclasse è una classe le cui istanze sono a loro volta classi.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.1cm and 1.6cm]
+    \node[c2] (type) {\textbf{type}\nodepart{second}\scriptsize metaclasse};
+    \node[c2, below left=1.5cm and 1.8cm of type] (object) {\textbf{object}\nodepart{second}\scriptsize radice};
+    \node[c2, below=1.3cm of object] (animal) {\textbf{Animal}\nodepart{second}\scriptsize classe};
+    \node[c2, below left=1.1cm and 0.5cm of animal] (dog) {\textbf{Dog}\nodepart{second}\scriptsize classe};
+    \node[c2, right=1.5cm of dog] (instance) {\textbf{dog}\nodepart{second}\scriptsize istanza};
+
+    \draw[inh] (animal) -- (object);
+    \draw[inh] (dog) -- (animal);
+    \draw[dep] (instance) -- node[above, font=\scriptsize\sffamily]{istanza di} (dog);
+    \draw[dep] (animal.east) to[bend left=20]
+        node[right, font=\scriptsize\sffamily, pos=0.55]{istanza di} (type.south);
+    \draw[dep] (object.east) -- node[above, font=\scriptsize\sffamily]{istanza di} (type.west);
+    \draw[dep] (type.north east) to[out=40, in=-40, looseness=5]
+        node[right, font=\scriptsize\sffamily, align=left]{istanza\\di sé stessa} (type.south east);
+\end{tikzpicture}
+\end{center}
+
+\noindent Ricorda: freccia con triangolo vuoto = generalizzazione, freccia tratteggiata = dipendenza.
+
+\paragraph{Processo di creazione} L'espressione \texttt{Dog()} invoca il metodo \texttt{\_\_call\_\_} del tipo di Dog (cioè la sua metaclasse); quel metodo a sua volta chiama new e init rispettiva per l'allocazione dell'oggetto e l'inizializzazione dei dati.
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{5.2cm}p{6.2cm}}
+    \toprule
+    \textbf{Metodo} & \textbf{Ruolo} & \textbf{Chi lo invoca} \\
+    \midrule
+    \texttt{\_\_call\_\_} & Orchestra la creazione: chiama \texttt{\_\_new\_\_}, verifica il risultato e chiama \texttt{\_\_init\_\_}. & Il tipo dell'oggetto chiamato, cioè la metaclasse. \\
+    \addlinespace
+    \texttt{\_\_new\_\_} & Alloca l'oggetto; è un metodo statico e riceve la classe come primo argomento. & \texttt{\_\_call\_\_} della metaclasse. \\
+    \addlinespace
+    \texttt{\_\_init\_\_} & Inizializza un oggetto già allocato; non restituisce nulla. & \texttt{\_\_call\_\_}, se \texttt{\_\_new\_\_} ha restituito un'istanza della classe. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=Python]
+class type:
+    def __call__(cls, *args, **kw):
+        instance = cls.__new__(cls, *args, **kw)
+        # se new ritorna un oggetto di un'altra classe
+        # __init__ non viene invocato. E' il caso dei Singleton
+        # classici, in cui new restituisce sempre la stessa istanza
+        if isinstance(instance, cls):
+            instance.__init__(*args, **kw)
+        return instance
+\end{lstlisting}
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.0cm]
+    \node[ac] (call) {\texttt{Dog()}};
+    \node[ac, below=of call] (tcall) {\texttt{type.\_\_call\_\_}};
+    \node[ac, below=of tcall] (new) {\texttt{\_\_new\_\_}};
+    \node[dc, below=of new, aspect=2.4, minimum width=3.4cm,
+          font=\scriptsize\sffamily, align=center] (check) {istanza di \texttt{cls}?};
+    \node[ac, below=of check] (init) {\texttt{\_\_init\_\_}};
+    \node[ac, below=of init] (obj) {oggetto};
+
+    \draw[tr] (call) -- (tcall);
+    \draw[tr] (tcall) -- (new);
+    \draw[tr] (new) -- (check);
+    \draw[tr] (check) -- node[right, font=\tiny\sffamily]{sì} (init);
+    \draw[tr] (init) -- (obj);
+    \draw[tr, dashed] (check.east) -- ++(1.2,0) |- node[pos=0.25, right, font=\tiny\sffamily]{no} (obj.east);
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Creazione dinamica di tipi} Un tipo può essere creato senza l'istruzione \texttt{class} invocando \texttt{type} con tre argomenti: nome, tupla di base e dizionario che fa da namespace per la classe:
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{4.2cm}p{7.0cm}}
+    \toprule
+    \textbf{Argomento} & \textbf{Tipo atteso} & \textbf{Significato} \\
+    \midrule
+    \texttt{name} & \texttt{str} & Nome della classe, usato in \texttt{\_\_name\_\_} e nelle rappresentazioni. \\
+    \addlinespace
+    \texttt{bases} & \texttt{tuple} & Classi base; una tupla vuota equivale a derivare da \texttt{object}. \\
+    \addlinespace
+    \texttt{dict} & \texttt{dict} & Attributi e metodi della classe, come se fossero scritti nel corpo. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Creiamo per esempio una sottoclasse di \texttt{Animal}:
+\begin{lstlisting}[language=Python]
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+Cat = type("Cat", (Animal,), {"nickname": "Prr", "weight": 10})
+c = Cat("Garfield") ...
+\end{lstlisting}
+I tipi possono anche essere restituiti da funzioni:
+\begin{lstlisting}[language=Python]
+def generateCongruent(something):
+    return type(something)
+
+t = generateCongruent(c)
+x = t("Garfield2, the revenge")
+\end{lstlisting}
+
+\paragraph{Singleton tramite new} Implementazione tramite \texttt{\_\_new\_\_}:
+\begin{lstlisting}[language=Python]
+class Singleton:
+    singleObject = None
+    numberOfItems = 0
+
+    def __new__(cls):
+        if cls.singleObject is None:
+            cls.singleObject = super().__new__(cls)
+        return cls.singleObject
+
+    def __init__(self):
+        if Singleton.numberOfItems == 0:
+            Singleton.numerOfItems = 1
+            self.aValue = 1
+    
+    def increment(self):
+        self.aValue += 1
+\end{lstlisting}
+Abbiamo aggiunto un contatore per evitare che \texttt{type.\_\_call\_\_} chiami sempre \texttt{\_\_init\_\_} sull'istanza restituita da \texttt{\_\_new\_\_} anche quando quell'istanza esiste già.\\
+
+\noindent Difetti del singleton con new:
+\begin{itemize}
+    \item init invocata a ogni chiamata
+    \item contatore e istanza sono attributi di classe
+    \item l'uso di \texttt{Singleton.nome} rende la classe non ereditabile
+\end{itemize}
+
+\paragraph{Ciclo di vita di un oggetto} La funzione \texttt{dir()} ritorna l'elenco completo dei nomi accessibili:
+\begin{lstlisting}[language=Python]
+>>> dir(animal)
+    ['_Animal__private', '_Animal__privateChangeName', '_Animal_protected', '__class__', '__delattr__', '__dict__', '__dir__', ...]
+
+>>> dir(dog)
+    ['_Animal__private', '_Animal__privateChangeName', '__class__', '__delattr__', '__dict__', '__dir__', ..., 'numberOfAnimals', 'public']
+\end{lstlisting}
+I nomi con un underscore evidenziano l'incapsulamento, quelli con doppio underscore sono risultato del name mangling applicato a private.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{7.4cm}p{4.4cm}}
+    \toprule
+    \textbf{Categoria} & \textbf{Esempi} & \textbf{Origine} \\
+    \midrule
+    Metodi speciali & \texttt{\_\_class\_\_}, \texttt{\_\_dict\_\_}, \texttt{\_\_repr\_\_} & Classe \texttt{object} e tipo dell'oggetto. \\
+    \addlinespace
+    Attributi di istanza & \texttt{name}, \texttt{public} & Assegnati in \texttt{\_\_init\_\_} o successivamente. \\
+    \addlinespace
+    Attributi di classe & \texttt{numberOfAnimals} & Corpo della classe, condivisi da tutte le istanze. \\
+    \addlinespace
+    Nomi mangled & \texttt{\_Animal\_\_private} & Attributi con due underscore iniziali. \\
+    \addlinespace
+    Metodi applicativi & \texttt{identifyYourself}, \texttt{increment} & Definiti nella classe o ereditati. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Il ciclo di vita di un oggetto attraversa cinque fasi:
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{4.0cm}p{4.2cm}p{3.0cm}}
+    \toprule
+    \textbf{Fase} & \textbf{Metodo o evento} & \textbf{Effetto} & \textbf{Responsabile} \\
+    \midrule
+    Definizione della classe & \texttt{\_\_new\_\_}, \texttt{\_\_init\_\_} della metaclasse & Nasce l'oggetto classe. & Metaclasse. \\
+    \addlinespace
+    Chiamata \texttt{Cls(...)} & \texttt{\_\_call\_\_} della metaclasse & Si avvia la creazione dell'istanza. & Metaclasse. \\
+    \addlinespace
+    Allocazione & \texttt{\_\_new\_\_} della classe & Si crea l'oggetto vuoto. & Classe. \\
+    \addlinespace
+    Inizializzazione & \texttt{\_\_init\_\_} della classe & Si assegnano i dati iniziali. & Classe. \\
+    \addlinespace
+    Uso & accesso ad attributi e metodi & Si legge o si modifica lo stato. & Codice chiamante. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Come leggere un oggetto sconosciuto:
+\begin{itemize}
+    \item Partire da \texttt{type(obj)} (dice quale classe definisce il comportamento) e \texttt{isinstance(obj, C)} (dice se l'oggetto è compatibili con una gerarchia)
+    \item Elencare i nomi con \texttt{dir(obj)} (interfaccia complessiva) e restringere con \texttt{vars(obj)} (stato effettivo dell'istanza)
+    \item \texttt{hasattr(obj, "nome")} per verificare la presenza di un attributo
+    \item \texttt{callable(obj)} per controllare se è chiamabile
+\end{itemize}
+
+\subsection{Metaclassi}
+In Python anche le classi sono oggetti, quindi ognuna ha un proprio tipo. Una \textbf{metaclasse} è una classe le cui istanze sono a loro volta altre classi. Di default, la metaclasse di ogni classe ordinaria è \texttt{type}. Creare una metaclasse personalizzata (ereditando da \texttt{type}) serve quando si vuole controllare come una classe viene costruita o come crea le proprie istanze.
+
+\begin{lstlisting}[language=Python]
+class AnimalType(type):      # Definizione della metaclasse
+    pass
+
+class Animal(metaclass=AnimalType): # Animal e' costruita da AnimalType
+    pass
+
+print(type(AnimalType))      # <class 'type'>
+print(type(Animal))          # <class '__main__.AnimalType'>
+\end{lstlisting}
+
+\noindent \textbf{Importante}: la metaclasse è il \emph{tipo} della classe, non la sua superclasse (\texttt{Animal} continua ad ereditare da \texttt{object}).
+
+\paragraph{Il Ciclo di Vita e il Protocollo delle Metaclassi}
+Quando Python incontra l'istruzione \texttt{class Animal:}, non esegue una semplice dichiarazione, ma avvia un processo in 5 passaggi che coinvolge la metaclasse:
+\begin{enumerate}
+    \item \textbf{Risoluzione della metaclasse}: Python cerca \texttt{metaclass=...}; se manca, usa la metaclasse della prima superclasse, oppure \texttt{type}.
+    \item \texttt{\_\_prepare\_\_(mcs, name, bases, **kw)}: crea e restituisce il namespace (di solito un dizionario vuoto) in cui verrà eseguito il corpo della classe.
+    \item \textbf{Esecuzione del corpo}: valuta metodi e attributi, inserendoli nel namespace preparato.
+    \item \texttt{\_\_new\_\_(mcs, name, bases, namespace)}: crea e restituisce l'oggetto classe vero e proprio. Qui si possono modificare attributi o classi base prima che la classe esista.
+    \item \texttt{\_\_init\_\_(cls, name, bases, namespace)}: inizializza la classe appena creata (utile per validarla o registrarla in un catalogo).
+\end{enumerate}
+
+Quando invece si istanzia la classe chiamando \texttt{Animal()}, viene attivato \texttt{\_\_call\_\_(cls, *args, **kwargs)} della metaclasse, che a sua volta orchestra \texttt{Animal.\_\_new\_\_} e \texttt{Animal.\_\_init\_\_} (applicando il pattern \textbf{Template Method}).
+
+\begin{lstlisting}[language=Python]
+class AnimalType(type):
+    def __new__(mcs, name, bases, dct):
+        print("1. Creazione classe Animal")
+        return super().__new__(mcs, name, bases, dct)
+
+    def __init__(cls, name, bases, dct):
+        print("2. Inizializzazione classe Animal")
+        super().__init__(name, bases, dct)
+
+    def __call__(cls, *args, **kwargs):
+        print("3. Chiamata Animal() -> istanziazione")
+        return super().__call__(*args, **kwargs)
+
+class Animal(metaclass=AnimalType):
+    def __new__(cls, *args, **kwargs):
+        print("4. Allocazione istanza")
+        return super().__new__(cls)
+
+    def __init__(self, *args):
+        print("5. Inizializzazione istanza")
+
+# Output alla definizione della classe: 1 -> 2
+# Output eseguendo a = Animal(): 3 -> 4 -> 5
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Convenzione sui nomi}: si usa \texttt{mcs} come primo argomento quando si agisce sulla metaclasse (\texttt{\_\_prepare\_\_}, \texttt{\_\_new\_\_}), e \texttt{cls} quando si agisce sulla classe già creata (\texttt{\_\_init\_\_}, \texttt{\_\_call\_\_}).
+    \item \textbf{Quando usarle}: mentre l'\emph{ereditarietà} agisce su una gerarchia e i \emph{decoratori di classe} su una singola classe, la metaclasse agisce su un'intera famiglia di classi. È uno strumento potente ma invasivo (usato in framework, ORM, validazioni globali) e può causare conflitti se si ereditano basi con metaclassi diverse.
+\end{itemize}
+
+\paragraph{Singleton con Metaclasse}
+Nel Singleton classico basato solo su \texttt{\_\_new\_\_}, ogni chiamata ad \texttt{Animal()} riesegue comunque \texttt{\_\_init\_\_}. Ridefinendo invece \texttt{\_\_call\_\_} nella metaclasse, si intercetta la chiamata \emph{prima} di creare o inizializzare l'oggetto: dalla seconda chiamata in poi, \texttt{\_\_new\_\_} e \texttt{\_\_init\_\_} della classe non vengono più invocati.
+
+Per renderlo riutilizzabile su qualsiasi classe, si salva un dizionario \texttt{\_instances} nella metaclasse che associa ogni classe alla sua unica istanza:
+
+\begin{lstlisting}[language=Python]
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            # Crea e inizializza l'istanza solo la prima volta
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class Database:
+    def __init__(self, url):
+        self.url = url
+
+class DatabaseSingleton(Database, metaclass=Singleton):
+    pass
+
+db1 = DatabaseSingleton("https://server1")
+db2 = DatabaseSingleton("https://server2") # Ignorato: restituisce db1
+print(db1 is db2)  # True
+print(db2.url)     # "https://server1"
+\end{lstlisting}
+
+\subsection{Type Hints e Verifica Statica}
+
+Python è un linguaggio a \textbf{tipizzazione dinamica}: i tipi vengono risolti a runtime, garantendo flessibilità ma spostando molti errori al momento dell'esecuzione. I \textbf{type hints} introducono annotazioni opzionali di tipo per abilitare l'analisi statica e migliorare la leggibilità senza alterare il comportamento a runtime.
+
+\paragraph{Sintassi e Verifica Statica (\texttt{mypy})}
+Le annotazioni possono comparire in tre posizioni principali:
+\begin{itemize}
+\item \textbf{Parametri}: \texttt{nome: tipo} (es. \texttt{def repeat(text: str, times: int)}).
+\item \textbf{Valore di ritorno}: \texttt{-> tipo} (es. \texttt{-> str}, oppure \texttt{-> None} se la funzione non restituisce nulla).
+\item \textbf{Variabili}: \texttt{nome: tipo = valore} (spesso superflua se il tipo è deducibile dal valore assegnato, utile per segnaposto o riassegnazioni).
+\end{itemize}
+
+L'interprete Python \textbf{ignora} le annotazioni a runtime: passare un tipo errato non solleva errori durante l'esecuzione. Per rilevare incompatibilità prima del rilascio occorre un \textbf{controllore statico} esterno (come \texttt{mypy}), idealmente integrato nella pipeline di CI/CD.
+
+\begin{lstlisting}[language=Python]
+def say_hi(name: str) -> str:
+return f"Hi {name}"
+
+say_hi(123)  # Eseguito senza errori da Python, ma segnalato da mypy
+\end{lstlisting}
+
+\begin{lstlisting}[numbers=none]
+$ mypy app.py
+app.py:4: error: Argument 1 to "say_hi" has incompatible type "int"; expected "str"
+\end{lstlisting}
+
+\paragraph{Unioni, Alias e Collezioni}
+Per esprimere tipi alternativi si usa \texttt{Union[A, B]} o l'operatore \texttt{|} (da Python 3.10). È possibile assegnare un tipo composto a un nome per creare un \textbf{type alias}. Per le collezioni si annotano sia il contenitore sia il tipo degli elementi (usando i tipi built-in come \texttt{list[int]}, \texttt{dict[str, int]}, \texttt{set[str]}, oppure i vecchi alias del modulo \texttt{typing} come \texttt{List}, \texttt{Dict}, \texttt{Set}, \texttt{Tuple}, \texttt{Sequence}, \texttt{Mapping}).
+
+\begin{lstlisting}[language=Python]
+from typing import Sequence
+
+Number = int | float  # Type alias (Python 3.10+)
+
+def scale(values: Sequence[Number], factor: Number) -> list[Number]:
+return [v * factor for v in values]
+\end{lstlisting}
+
+\paragraph{Tipizzazione Graduale e Limiti}
+\begin{itemize}
+\item \textbf{Confini di sistema}: conviene annotare soprattutto le firme delle API pubbliche e le strutture dati condivise, evitando di appesantire ogni variabile locale.
+\item \textbf{Gradualità}: l'adozione può essere incrementale (usando \texttt{Any} dove l'analisi non è praticabile).
+\item \textbf{Complementarietà ai test}: il type checker verifica la compatibilità delle firme e delle assegnazioni, ma non garantisce la correttezza logica né controlla i valori concreti a runtime.
+\end{itemize}
+
+\subsection{Riflessione e Introspezione}
+
+L'\textbf{introspezione} è la capacità di ispezionare un oggetto a runtime (tipo, attributi, metodi); la \textbf{riflessione} estende questa capacità permettendo di modificare oggetti, alterare classi o crearne di nuove dinamicamente.
+
+\paragraph{Introspezione di Base}
+\begin{itemize}
+\item \texttt{type(obj)}: restituisce la classe esatta dell'oggetto.
+\item \texttt{isinstance(obj, C)}: verifica se \texttt{obj} è un'istanza di \texttt{C} o di una sua sottoclasse.
+\item \texttt{hasattr(obj, "attr")}: verifica l'esistenza di un attributo.
+\item \texttt{dir(obj)}: elenca tutti gli attributi e metodi (inclusi quelli ereditati).
+\item \texttt{vars(obj)}: restituisce il dizionario degli attributi propri dell'istanza (\texttt{\_\_dict\_\_}).
+\item \texttt{callable(obj)}: indica se l'oggetto può essere invocato come una funzione.
+\item \texttt{id(obj)}: restituisce l'identificativo univoco in memoria.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+class Base: pass
+class Sub(Base): pass
+
+obj = Sub()
+isinstance(obj, Base)  # True (considera l'ereditarieta')
+type(obj) is Base      # False (verifica il tipo esatto)
+\end{lstlisting}
+
+\paragraph{Modifica Dinamica e Creazione a Runtime}
+In Python classi e istanze sono namespace dinamici: è possibile aggiungere o sostituire attributi e metodi dopo la definizione tramite dot-notation o \texttt{setattr()}. Quando si assegna una funzione a una classe, Python la lega automaticamente come metodo alle istanze (passando \texttt{self}). È inoltre possibile creare intere classi a runtime con \texttt{type(name, bases, dict)} o persino sostituire il bytecode di una funzione tramite \texttt{\_\_code\_\_}.
+
+\begin{lstlisting}[language=Python]
+
+# Creazione dinamica di una classe e aggiunta di un metodo a runtime
+
+A = type("A", (), {"x": 1})
+
+def set_y(self, val):
+self.y = val
+
+setattr(A, "set_y", set_y)
+a = A()
+a.set_y(10)  # a.x == 1, a.y == 10
+\end{lstlisting}
+
+\paragraph{Linee Guida d'Uso}
+\begin{itemize}
+\item L'introspezione è sicura e utile per debugging e analisi; la riflessione rende il codice opaco agli strumenti statici e va riservata a infrastrutture generiche (serializzazione, plugin, dependency injection, mocking nei test).
+\item Evitare la modifica del bytecode (\texttt{\_\_code\_\_}) in produzione e non costruire mai nomi di attributi o classi da input esterni non fidati (rischio di sicurezza).
+\end{itemize}
+
+\subsection{Argomenti a Lunghezza Variabile}
+
+Python consente di definire funzioni che accettano un numero arbitrario di argomenti tramite due costrutti complementari:
+\begin{itemize}
+\item \texttt{*args}: raccoglie tutti gli argomenti posizionali in eccesso in una \texttt{tuple}.
+\item \texttt{kwargs}: raccoglie tutti gli argomenti nominali (keyword) in eccesso in un \texttt{dict}.
+\end{itemize}
+
+\paragraph{Ordine nella Firma e Spacchettamento}
+L'ordine dei parametri nella definizione di una funzione è vincolato: prima i parametri posizionali ordinari, poi \texttt{*args}, eventuali parametri keyword-only e infine \texttt{kwargs}. Gli operatori \texttt{*} e \texttt{} agiscono anche in senso inverso durante una chiamata, \textbf{spacchettando} rispettivamente una sequenza o un dizionario in singoli argomenti.
+
+\begin{lstlisting}[language=Python]
+def debug(a, b, *args, kwargs):
+print(f"a={a}, b={b}, args={args}, kwargs={kwargs}")
+
+debug(1, 2, 3, 4, x=10, y=20)
+
+# Output: a=1, b=2, args=(3, 4), kwargs={'x': 10, 'y': 20}
+
+\end{lstlisting}
+
+Errori comuni includono passare due volte lo stesso argomento (es. \texttt{f(1, a=2)}, che solleva \texttt{TypeError}) o inserire un argomento posizionale dopo uno nominale (es. \texttt{f(a=1, 2)}, errore di sintassi).
+
+\paragraph{Wrapper Generici e Trasparenza}
+Il caso d'uso principale di \texttt{*args} e \texttt{kwargs} è la scrittura di **decoratori** e wrapper generici, che devono inoltrare qualsiasi firma alla funzione originale senza alterarne il comportamento (**trasparenza**).
+
+\begin{lstlisting}[language=Python]
+import time
+
+def timing(func):
+def wrapper(*args, kwargs):
+start = time.time()
+result = func(*args, kwargs)  # Inoltra argomenti e cattura il ritorno
+print(f"{func.**name**} eseguita in {time.time() - start:.4f}s")
+return result                   # Restituisce il risultato originale
+return wrapper
+\end{lstlisting}
+
+Nelle API applicative standard è preferibile usare firme esplicite anziché \texttt{*args}/\texttt{kwargs}, poiché questi ultimi nascondono errori di battitura nei nomi dei parametri e disabilitano l'autocompletamento dell'IDE.
+
+\subsection{Decoratori}
+
+Un decoratore è una funzione di ordine superiore che estende o modifica dinamicamente il comportamento di una funzione, di un metodo o di una classe avvolgendolo in un altro oggetto chiamabile (\emph{wrapper}), senza alterarne il codice sorgente. È usato tipicamente per gestire preoccupazioni trasversali (\emph{cross-cutting concerns}) come logging, misurazione delle prestazioni, caching e autenticazione.
+
+\paragraph{Meccanismo e Closure}
+La sintassi \texttt{@decorator} posta sopra una definizione è zucchero sintattico per una riassegnazione esplicita (\texttt{func = decorator(func)}). Il meccanismo si basa sulle funzioni di prima classe e sulle closure, e opera in due fasi distinte:
+\begin{itemize}
+\item Definizione (import time): il decoratore viene eseguito una sola volta; crea e restituisce il \texttt{wrapper}, che cattura nella propria closure il riferimento alla funzione originale.
+\item Chiamata (runtime): invocando il nome pubblico si esegue il \texttt{wrapper}, che esegue logica aggiuntiva prima e dopo la chiamata alla funzione originale.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+def decorator(func):
+    def wrapper(*args, **kwargs):
+        print("Prima dell'esecuzione")
+        result = func(*args, **kwargs)
+        print("Dopo l'esecuzione")
+        return result
+    return wrapper
+
+@decorator          # Equivale a: greet = decorator(greet)
+def greet(name):
+    print(f"Ciao, {name}!")
+
+greet("Anna")
+\end{lstlisting}
+
+\paragraph{Decoratori di Metodo e di Classe}
+\begin{itemize}
+\item Metodi di istanza: il wrapper deve ricevere esplicitamente \texttt{self} come primo parametro (o inoltrarlo tramite \texttt{*args}) per passarlo al metodo originale.
+\item Classi: un decoratore di classe riceve l'oggetto classe \texttt{cls}, può aggiungergli attributi o metodi o registrarlo in un catalogo, e restituisce la classe modificata. È un'alternativa più semplice e locale rispetto alle metaclassi.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+# Decoratore di classe
+
+def add_class_name(cls):
+    cls.class_name = cls.__name__
+    return cls
+
+@add_class_name
+class Person:
+    pass
+
+print(Person.class_name)  # Output: Person
+\end{lstlisting}
+
+\paragraph{Decoratori Built-in e Protocollo dei Descriptor}
+I decoratori built-in \texttt{@staticmethod}, \texttt{@classmethod} e \texttt{@property} sono implementati tramite il protocollo dei descriptor, ovvero oggetti che controllano l'accesso agli attributi definendo uno o più metodi speciali: \texttt{\_\_get\_\_}, \texttt{\_\_set\_\_} e \texttt{\_\_delete\_\_}.
+
+\begin{itemize}
+\item Data descriptor (definiscono \texttt{\_\_set\_\_} o \texttt{\_\_delete\_\_}, es. \texttt{@property}): hanno la precedenza assoluta nella catena di ricerca (\texttt{obj.attr}), impedendo che un attributo nel \texttt{\_\_dict\_\_} dell'istanza oscuri la proprietà.
+\item Non-data descriptor (definiscono solo \texttt{\_\_get\_\_}, es. funzioni, \texttt{@staticmethod}, \texttt{@classmethod}): vengono cercati dopo il \texttt{\_\_dict\_\_} dell'istanza; \texttt{staticmethod} restituisce la funzione inalterata, mentre \texttt{classmethod} lega automaticamente la classe (\texttt{owner}) come primo argomento.
+\end{itemize}
+
+\paragraph{Concatenamento di Decoratori}
+Applicando più decoratori a una funzione, l'ordine di valutazione è dal basso verso l'alto (dal più vicino alla funzione verso l'esterno):
+
+\begin{lstlisting}[language=Python]
+def square(func):
+    return lambda: func() ** 2
+
+def double(func):
+    return lambda: func() * 2
+
+@square             # Applicato per secondo: 20 ** 2 = 400
+@double             # Applicato per primo: 10 * 2 = 20
+def num():
+    return 10
+
+print(num())        # Output: 400
+\end{lstlisting}
+
+\paragraph{Classi Base Astratte (ABC)}
+Il modulo \texttt{abc} consente di definire interfacce e contratti formali tramite la classe base \texttt{ABC} (basata sulla metaclasse \texttt{ABCMeta}) e il decoratore \texttt{@abstractmethod}. Una classe che contiene almeno un metodo o una proprietà astratta (scrivendo \texttt{@property} sopra \texttt{@abstractmethod}) non può essere istanziata (solleva \texttt{TypeError} a runtime) finché una sottoclasse concreta non ne fornisce l'implementazione.
+
+\begin{lstlisting}[language=Python]
+from abc import ABC, abstractmethod
+
+class Animal(ABC):
+    @property
+    @abstractmethod
+    def species(self) -> str:
+        pass
+
+    @abstractmethod
+    def sound(self) -> str:
+        pass
+
+class Dog(Animal):
+    @property
+    def species(self) -> str:
+        return "Canine"
+
+    def sound(self) -> str:
+        return "Bark"
+
+dog = Dog()         # Valido; Animal() solleverebbe TypeError
+\end{lstlisting}
+
+\paragraph{Metadati e Testing dei Decoratori}
+Poiché il wrapper è una nuova funzione, sostituisce metadati importanti come \texttt{\_\_name\_\_}, docstring e firma originale, rendendo più opachi log, traceback e strumenti IDE (problema mitigabile copiando i metadati, ad esempio con \texttt{functools.wraps}). Nel testare un decoratore occorre verificare sulla funzione decorata che:
+\begin{enumerate}
+\item il comportamento aggiuntivo venga eseguito nel momento atteso (senza effetti collaterali indesiderati all'import);
+\item argomenti e valori di ritorno vengano inoltrati in modo trasparente;
+\item eventuali eccezioni della funzione originale non vengano soppresse dal wrapper;
+\item l'ordine di concatenamento produca l'effetto previsto.
+\end{enumerate}
+
+\subsubsection{La Proprietà \texttt{@property}}
+
+\texttt{@property} è un decoratore built-in che trasforma un metodo in un \textbf{attributo gestito}: l'accesso mantiene la notazione con il punto, ma dietro le quinte viene eseguito del codice. È l'alternativa Pythonica ai classici metodi getter e setter e consente di leggere, validare o calcolare valori senza alterare l'interfaccia pubblica della classe.
+
+\begin{lstlisting}[language=Python]
+class Person:
+    def __init__(self, name):
+        self._name = name  # convenzione per attributo interno
+
+    @property
+    def name(self):
+        return self._name
+
+p = Person("Alice")
+print(p.name)  # esegue il getter senza usare le parentesi
+\end{lstlisting}
+
+I vantaggi principali rispetto all'accesso diretto agli attributi sono:
+\begin{itemize}
+    \item \textbf{Incapsulamento e compatibilità}: permette di trasformare un attributo pubblico in una proprietà (o cambiarne la rappresentazione interna, ad esempio arrotondando un saldo) senza rompere il codice dei chiamanti.
+    \item \textbf{Validazione}: intercetta le modifiche per verificare che i dati rispettino gli invarianti della classe prima di salvarli.
+    \item \textbf{Valori calcolati}: deriva valori da altri attributi evitando di duplicare lo stato interno.
+\end{itemize}
+
+\paragraph{Getter, Setter e Deleter}
+
+Il ciclo di vita di una proprietà si articola su tre operazioni simmetriche:
+\begin{itemize}
+    \item \textbf{Lettura} (\texttt{obj.attr}): invocata tramite il \textbf{getter}, definito con \texttt{@property}. È sempre presente.
+    \item \textbf{Scrittura} (\texttt{obj.attr = val}): gestita dal \textbf{setter} opzionale \texttt{@nome.setter}. Se assente, la proprietà è di sola lettura e la scrittura solleva \texttt{AttributeError}.
+    \item \textbf{Cancellazione} (\texttt{del obj.attr}): gestita dal \textbf{deleter} opzionale \texttt{@nome.deleter}, utile per liberare risorse o aggiornare stati derivati (altrimenti vietata con \texttt{AttributeError}).
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+class Student:
+    def __init__(self):
+        self._age = 0
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, value):
+        if value < 0:
+            raise ValueError("Age cannot be negative")
+        self._age = value
+
+    @age.deleter
+    def age(self):
+        del self._age
+
+s = Student()
+s.age = 20   # passa dal setter: _age diventa 20
+# s.age = -1 # solleva ValueError e lascia _age invariato
+del s.age    # passa dal deleter
+\end{lstlisting}
+
+\paragraph{Proprietà di Sola Lettura e Valori Calcolati}
+
+Definendo esclusivamente il getter si ottiene una \textbf{proprietà di sola lettura}, ideale per calcolare valori derivati in modo dinamico a ogni accesso senza memorizzarli separatamente:
+
+\begin{lstlisting}[language=Python]
+class Rectangle:
+    def __init__(self, w, h):
+        self.w = w
+        self.h = h
+
+    @property
+    def area(self):
+        return self.w * self.h
+
+r = Rectangle(3, 4)
+print(r.area)   # 12 (ricalcolato a ogni lettura)
+# r.area = 10   # solleva AttributeError
+\end{lstlisting}
+
+\paragraph{Buone Pratiche di Progettazione}
+
+\begin{itemize}
+    \item \textbf{Evitare operazioni costose}: chi legge un attributo si aspetta un'operazione rapida e priva di effetti collaterali. Per calcoli pesanti o operazioni di I/O è preferibile usare un metodo esplicito (oppure memorizzare il risultato in cache).
+    \item \textbf{Validazione trasparente}: se un setter rifiuta un valore, deve sollevare un'eccezione chiara (es. \texttt{ValueError}) anziché correggere silenziosamente il dato.
+    \item \textbf{Contratto chiaro}: poiché l'incapsulamento in Python è basato su convenzioni (l'underscore iniziale), la proprietà serve a proteggere gli invarianti della classe e va documentata nelle sue eventuali eccezioni.
+\end{itemize}
+
+\subsubsection{Le Dataclass: un'Introduzione}
+
+Una \textbf{dataclass} (introdotta con il decoratore \texttt{@dataclass} in Python 3.7) è una classe progettata principalmente per memorizzare dati, con l'obiettivo di ridurre il \textbf{boilerplate} (codice ripetitivo di contorno) separando la dichiarazione dei dati dal comportamento.
+
+A differenza di una classe tradizionale, in cui i metodi strutturali vanno scritti manualmente, una dataclass li genera automaticamente a partire dai campi dichiarati (tipicamente annotati con \emph{type hints}):
+
+\begin{itemize}
+    \item \texttt{\_\_init\_\_}: inizializza gli attributi assegnando i valori passati al costruttore.
+    \item \texttt{\_\_repr\_\_}: produce una rappresentazione testuale leggibile dell'istanza, utile in fase di debug.
+    \item \texttt{\_\_eq\_\_}: abilita il confronto per valore tra due istanze, confrontandole campo per campo.
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+from dataclasses import dataclass
+
+@dataclass
+class Point:
+    x: float
+    y: float
+
+    # E' comunque possibile aggiungere metodi o proprieta' personalizzate
+    def distance_from_origin(self) -> float:
+        return (self.x**2 + self.y**2) ** 0.5
+
+p1 = Point(3.0, 4.0)
+p2 = Point(3.0, 4.0)
+print(p1)          # Point(x=3.0, y=4.0) -> __repr__ generato
+print(p1 == p2)    # True -> __eq__ generato
+\end{lstlisting}
+
+\paragraph{Vantaggi e Limiti}
+
+\begin{itemize}
+    \item \textbf{Flessibilità}: l'uso di \texttt{@dataclass} non limita l'aggiunta di metodi, proprietà o logica personalizzata; semplifica solo la parte strutturale della classe.
+    \item \textbf{Nessuna validazione automatica}: le dataclass non impongono vincoli o invarianti sui valori assegnati ai campi (i type hints servono solo per gli strumenti di analisi statica). Se è necessario validare i dati (es. verificare che un numero sia positivo), la responsabilità resta del programmatore tramite proprietà o metodi dedicati.
+\end{itemize}
+
+\subsubsection{Riepilogo: Costrutti e Implicazioni}
+
+I costrutti avanzati di Python non sono tecniche isolate, ma meccanismi coerenti per intervenire sullo stesso modello a oggetti:
+
+\begin{itemize}
+    \item \textbf{Modello a oggetti}: tutto è un oggetto; \texttt{type} e \texttt{object} chiudono il sistema. Classi e istanze si trattano in modo uniforme, distinguendo sempre tra tipo (\texttt{\_\_class\_\_}) e superclasse (\texttt{\_\_base\_\_}).
+    \item \textbf{Metaclassi}: classi che creano classi e ne controllano l'istanziazione. Offrono potere globale, ma vanno riservate a framework e infrastrutture.
+    \item \textbf{Type hints}: annotazioni opzionali verificate staticamente (es. tramite \texttt{mypy}). Fungono da documentazione eseguibile e controllo in CI, senza imporre garanzie a runtime.
+    \item \textbf{Riflessione}: ispezione e modifica di oggetti e classi a runtime. Garantisce flessibilità per plugin e serializzazione, al costo di maggiore opacità e minori controlli statici.
+    \item \textbf{\texttt{*args} e \texttt{**kwargs}}: raccolgono argomenti posizionali e nominali variabili in tuple e dizionari, permettendo wrapper generici a fronte di firme meno esplicite.
+    \item \textbf{Decoratori}: compongono comportamenti attorno a funzioni o classi per gestire preoccupazioni trasversali senza duplicare codice (curando ordine e metadati con \texttt{functools.wraps}).
+    \item \textbf{\texttt{@property}}: trasforma metodi in attributi gestiti (getter, setter, deleter) per validare dati e mantenere stabile l'interfaccia pubblica.
+    \item \textbf{Dataclass}: riducono il codice ripetitivo generando automaticamente \texttt{\_\_init\_\_}, \texttt{\_\_repr\_\_} e \texttt{\_\_eq\_\_} per classi orientate ai dati, lasciando esplicita l'eventuale validazione.
+\end{itemize}
+
+\paragraph{Principi Architetturali}
+
+\begin{itemize}
+    \item \textbf{Uniformità e chiarezza}: usare \texttt{type}, \texttt{\_\_class\_\_} e \texttt{\_\_base\_\_} fornisce un vocabolario unico per ragionare sul sistema. Tuttavia, il codice dinamico non deve diventare opaco: type hints e contratti espliciti rendono chiare le assunzioni.
+    \item \textbf{Compromesso tra potere e manutenibilità}: ogni intervento globale o a runtime riduce la prevedibilità. Il dinamismo è giustificato solo quando il guadagno in flessibilità compensa la perdita di leggibilità e analisi statica.
+    \item \textbf{Stabilità e verifica}: decoratori e proprietà permettono di evolvere l'implementazione interna senza rompere l'API dei chiamanti. Nessun costrutto sostituisce comunque la verifica: l'analisi statica controlla i tipi, mentre i test automatizzati verificano il comportamento a runtime.
+\end{itemize}
+
+\paragraph{Linee Guida Pratiche}
+
+La regola generale è adottare il costrutto più semplice che risolve il problema, salendo di complessità solo quando strettamente necessario:
+
+\begin{itemize}
+    \item \textbf{Creare tipi dinamicamente}: usare \texttt{type(name, bases, dict)} o una funzione factory, evitando metaclassi se basta una semplice funzione.
+    \item \textbf{Garantire una sola istanza}: preferire un'istanza a livello di modulo o la \emph{dependency injection} rispetto a un Singleton globale implicito.
+    \item \textbf{Estendere funzioni o classi}: usare decoratori trasparenti anziché duplicare codice o ricorrere subito alle metaclassi (utile solo se il comportamento deve applicarsi a un'intera gerarchia di classi).
+    \item \textbf{Validare attributi}: usare \texttt{@property} con setter invece di spargere controlli nei chiamanti, ma mantenere i normali attributi pubblici se non servono controlli o calcoli.
+    \item \textbf{Definire contratti tra classi}: usare classi astratte tramite il modulo \texttt{abc} (\texttt{ABC}) evitando catene di \texttt{isinstance} nel codice.
+    \item \textbf{Scrivere wrapper e classi dati}: sfruttare \texttt{*args}/\texttt{**kwargs} per preservare la compatibilità delle firme, annotare le API pubbliche con i type hints e usare \texttt{@dataclass} per DTO e \emph{value object}.
+\end{itemize}
 
 \end{document}
 
