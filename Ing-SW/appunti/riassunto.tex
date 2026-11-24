@@ -306,6 +306,131 @@ Minimum = minor tempo possibile; Viable = esperienza d'uso sufficientemente comp
 
 \noindent YAGNI, tecnica del pomodoro e Pair Programming.
 
+\subsection{Project Management dei progetti software}
+\textbf{Brooks}: aggiungere personale a un progetto in ritardo lo ritarda ancora di più. Causa: canali di comunicazione $n(n-1)/2$ (3, 5, 8, 12 persone $\rightarrow$ 3, 10, 28, 66).
+
+\paragraph{Prodotto, progetto, PM} \textbf{Prodotto}: ciclo di vita lungo (product management). \textbf{Progetto}: impresa temporanea con inizio e fine, risultato unico. \textbf{PM}: consegnare rispettando tempi, costi e qualità.
+
+\paragraph{Triangolo dei vincoli} Scopo, tempo, costo, qualità al centro (non è la variabile di aggiustamento).
+\begin{itemize}
+    \item Guidato dal piano (cascata): si fissa lo scopo, si stimano tempo e costo
+    \item A budget e orizzonte fissi (Scrum, ``triangolo capovolto''): si fissano tempo e costo, si adatta lo scopo
+\end{itemize}
+
+\paragraph{PM in Scrum} Scrum non definisce un Project Manager: le responsabilità sono distribuite.
+\begin{center}
+\small
+\begin{tabular}{p{5.0cm}p{3.2cm}p{5.4cm}}
+    \toprule
+    \textbf{Responsabilità} & \textbf{Tradizionale} & \textbf{Scrum} \\
+    \midrule
+    Cosa fare e priorità & Cliente e PM & Product Owner \\
+    \addlinespace
+    Stimare e pianificare & PM con il team & Sviluppatori (Sprint Planning) \\
+    \addlinespace
+    Controllare l'avanzamento & PM & Scrum Team (Daily, Review) \\
+    \addlinespace
+    Prevedere la data di rilascio & PM & PO + team, su dati \\
+    \addlinespace
+    Facilitare, rimuovere ostacoli & PM & Scrum Master (facilitatore, non capo) \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{PMBOK Guide, 8\textordfeminine{} ed.\ (2025)} 6 principi (olistica, valore, qualità integrata, leadership responsabile, sostenibilità, team responsabilizzati); 7 domini di performance (governance, \textbf{ambito, tempi, finanza} = triangolo dei vincoli, stakeholder, risorse, rischio); 5 aree di focus (avvio, pianificazione, esecuzione, monitoraggio e controllo, chiusura); 40 processi non prescrittivi. Novità: uso responsabile dell'IA.
+
+\paragraph{WBS e Gantt}
+\begin{itemize}
+    \item \textbf{WBS} (Work Breakdown Structure): scomposizione gerarchica per \textbf{risultati}, non per azioni. \textbf{Regola del 100\%}: i figli coprono tutto e solo il lavoro del padre
+    \item \textbf{Gantt}: attività sull'asse del tempo con dipendenze. \textbf{Cammino critico}: sequenza più lunga, determina la durata minima, ogni suo ritardo ritarda il rilascio. \textbf{Slack}: margine di slittamento di un'attività non critica senza ritardare il rilascio. \textbf{Milestone}: punto di controllo senza durata
+    \item Esempio: Requisiti (2 sett.) $\rightarrow$ Backend $\rightarrow$ Test = 8 settimane; Frontend e Notifiche hanno slack
+    \item GitHub Projects: WBS = issue e sub-issue; stima = campo story point; Gantt = vista Roadmap; dipendenze = ``blocked by''; avanzamento = board e Insights
+\end{itemize}
+
+\paragraph{Durata, sforzo, costo}
+\begin{itemize}
+    \item \textbf{Durata}: tempo di calendario. \textbf{Sforzo}: mesi-persona (mp). \textbf{FTE} (team medio equivalente) = sforzo $\div$ durata. \textbf{Costo} $\approx$ mp $\times$ costo mensile
+    \item Esempio: 12 mesi, 4 persone di cui 2 a metà tempo $\rightarrow$ $2\times12+2\times6=36$ mp, 3 FTE
+    \item Raddoppiare il team non dimezza la durata: cambia la durata, non lo sforzo
+\end{itemize}
+
+\paragraph{Cono dell'incertezza} All'inizio la stima può sbagliare di fattori indicativi fino a $\times4$; l'intervallo si restringe con informazioni, verifiche e decisioni fondate (non col tempo). Stimare a intervalli e ristimare a ogni fase.
+
+\paragraph{Tecniche di stima} Per analogia (top-down); bottom-up (si sommano i pacchetti WBS); giudizio di esperti (Delphi, Planning Poker); parametrica (COCOMO); design-to-cost (budget fisso, quanta funzionalità ci sta).
+
+\paragraph{Catena della stima} Backlog $\rightarrow$ dimensione (LOC, FP, story point) $\rightarrow$ sforzo = dimensione $\div$ produttività $\rightarrow$ costo e piano. Produttività = dimensione $\div$ sforzo, da \textbf{calibrare} sui propri progetti.
+
+\paragraph{LOC, FP, story point}
+\begin{center}
+\small
+\begin{tabular}{p{2.4cm}p{4.2cm}p{4.2cm}p{3.4cm}}
+    \toprule
+     & \textbf{LOC} & \textbf{Function point} & \textbf{Story point} \\
+    \midrule
+    Pro & Oggettive, automatiche & Dai requisiti, indipendenti dal linguaggio, confrontabili tra aziende & Rapidi, di team \\
+    \addlinespace
+    Contro & Solo a codice scritto, dipendono dal linguaggio, penalizzano il codice conciso & Serve formazione & Non confrontabili tra team \\
+    \bottomrule
+\end{tabular}
+\end{center}
+LOC \textbf{fisiche} (righe) vs \textbf{logiche} (istruzioni): fissare le regole di conteggio prima di confrontare (\texttt{cloc}, \texttt{scc}). Esempio Pressman: 33.200 LOC $\div$ 620 LOC/mp $\approx$ 54 mp $\times$ 8.000~\texteuro{} $\approx$ 430~k\texteuro.
+
+\paragraph{Function point} Misurano ciò che vede l'utente (Albrecht, IBM 1979; IFPUG, ISO/IEC 20926). Transazioni: EI (input), EO (output), EQ (inquiry). Dati: ILF (file logico interno), EIF (file di interfaccia esterno).
+\begin{center}
+\small
+\begin{tabular}{p{4.0cm}ccc}
+    \toprule
+    \textbf{Tipo} & \textbf{Semplice} & \textbf{Medio} & \textbf{Complesso} \\
+    \midrule
+    EI & 3 & 4 & 6 \\
+    EO & 4 & 5 & 7 \\
+    EQ & 3 & 4 & 6 \\
+    ILF & 7 & 10 & 15 \\
+    EIF & 5 & 7 & 10 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+$\mathrm{UFP}=\sum(\text{n.\ elementi}\times\text{peso})$; $\mathrm{VAF}=0{,}65+0{,}01\sum F_i$ (14 fattori, 0--5; VAF in $[0{,}65;\,1{,}35]$); $\mathrm{FP}=\mathrm{UFP}\times\mathrm{VAF}$. Il VAF è del metodo storico: ISO/IEC 20926 usa gli UFP. Esempio: UFP = 115, VAF = 0,82 $\rightarrow$ 94 FP; a 18 FP/mp $\approx$ 5,2 mp $\approx$ 34~k\texteuro.
+
+\paragraph{COCOMO} Modello parametrico (Boehm 1981), regressione su progetti reali: $\text{Sforzo (mp)}=a\times S^{b}\times\mathrm{EAF}$, con $S$ in KLOC, $a$ e $b$ per tipo di progetto, EAF = prodotto dei cost driver (base 1). $b>1$: lo sforzo cresce più che proporzionalmente con la dimensione. COCOMO II (2000): $b$ da fattori di scala.
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}ccc}
+    \toprule
+    \textbf{Tipo (base)} & $a$ & $b$ & \textbf{200 KLOC} \\
+    \midrule
+    Organic & 2,4 & 1,05 & 626 mp \\
+    Semi-detached & 3,0 & 1,12 & 1.133 mp \\
+    Embedded & 3,6 & 1,20 & 2.077 mp \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Cost driver (intermedio): prodotto, hardware, personale, progetto. Esempio bancomat: embedded, 10 KLOC, $2{,}8\times10^{1{,}20}\approx44$ mp, EAF 1,35 $\rightarrow$ $\approx$ 60 mp. COCOMO quantifica i compromessi del triangolo: con 100 KLOC e RELY (affidabilità) alta, 20 mesi, 6,0~M\texteuro, si può aumentare il budget (6,5~M\texteuro), il tempo (23,4 mesi), rivedere RELY (5,6~M\texteuro) o ridurre lo scopo ($\approx$ 93 KLOC).
+
+\paragraph{Monte Carlo} Si simulano molti futuri campionando la velocity storica (esempio: 200 SP, 10.000 simulazioni): P50 = 11 sprint, P85 = 12, P95 = 13. Dà una data con confidenza esplicita.
+
+\paragraph{Earned Value} PV (lavoro pianificato), EV (lavoro completato, a costo di budget; non è valore per il cliente), AC (costo reale), BAC (budget totale).
+\begin{itemize}
+    \item $\mathrm{SPI}=\mathrm{EV}/\mathrm{PV}$: $<1$ in ritardo. $\mathrm{CPI}=\mathrm{EV}/\mathrm{AC}$: $<1$ sopra budget. $\mathrm{EAC}=\mathrm{BAC}/\mathrm{CPI}$: costo finale se il CPI resta invariato
+    \item Esempio (sett.\ 6/12, BAC 120~k\texteuro): PV 60, EV 48, AC 55 $\rightarrow$ SPI 0,80, CPI 0,87, EAC $\approx$ 138~k\texteuro
+\end{itemize}
+
+\paragraph{Valore, debito tecnico, rischi}
+\begin{itemize}
+    \item Valore $\gg$ costo + \textbf{debito tecnico} (costo futuro delle scorciatoie di oggi, con interessi; Cunningham 1992). Valore $\approx$ utenti $\times$ beneficio medio
+    \item Rischio: esposizione = probabilità $\times$ impatto. Risposte: \textbf{evitare} (cambiare il piano), \textbf{mitigare}, \textbf{trasferire} (contratto, assicurazione), \textbf{accettare} (con riserva)
+\end{itemize}
+
+\paragraph{PM e LLM}
+\begin{itemize}
+    \item Usi: bozze di WBS e user story, verbali, report, rischi, seconda opinione sulle stime. L'LLM scrive la bozza, decisione e responsabilità restano umane
+    \item Stime (Tawosi et al., 2023, GPT-4): zero-shot peggio che stimare sempre la media; few-shot con esempi del team MAE $-59\%$. Gli story point sono relativi al team: serve calibrazione
+    \item Brooks con gli agenti: generare codice costa poco, il collo di bottiglia diventa la \textbf{revisione umana}. METR: $+19\%$ di tempo a inizio 2025, aggiornamento 2026 $-18\%$ e $-4\%$ con intervalli che includono lo zero: nessuna conclusione robusta
+    \item Rischi: costi (token), qualità (allucinazioni), debito tecnico, riservatezza (GDPR), regole (AI Act, licenze), competenze
+\end{itemize}
+
+\paragraph{Quiz svolti} Notifiche slitta di 2 settimane: 0 (slack 2 sett.). 3 EI sempl.\ + 2 EO medi + 2 EQ sempl.\ + 2 ILF sempl.\ + 1 EIF medio = 9+10+6+14+7 = 46 UFP. PV 40, EV 30, AC 36: SPI 0,75, CPI 0,83, in ritardo e sopra budget. SPI 0,9 e CPI 1,1: in ritardo, sotto budget.
+
 \newpage
 
 \subsection{La qualità del software}
@@ -3488,15 +3613,16 @@ auto cnt = [c]() mutable { return ++c; };   // 1 2, c esterna resta 0
 \end{center}
 
 \subsection{Python come linguaggio Object-Oriented}
-Caratteristiche delle classi:
+Percorso: (1) come si scrive una classe, (2) incapsulamento ed ereditarietà, (3) operatori e metodi speciali, (4) cosa succede \emph{sotto} una classe (tipi, metaclassi, creazione di istanze).
+
+\paragraph{1. Classi e tipi di membri}
 \begin{itemize}
-    \item \texttt{self}: riferimento all'oggetto stesso
-    \item \texttt{\_\_init\_\_}: inizializzatore dell'oggetto già allocato. Inizializza solamente i dati, l'allocazione viene fatta con \texttt{\_\_new\_\_}
-    \item \texttt{cls}: riferimento alla classe stessa
-    \item Le \textbf{variabili di classe} sono definite nel corpo della classe
-    \item I \textbf{metodi della classe} ricevono la classe come primo parametro (\texttt{cls}) e si dichiarano con \texttt{@classmethod}. I \textbf{metodi statici} non contengono riferimenti alla classe né all'istanza e sono dichiarati con \texttt{@staticmethod}\\
-    In sintesi:
-    \begin{center}
+    \item \texttt{self}: riferimento all'oggetto, primo parametro esplicito dei metodi di istanza (convenzione, non parola chiave)
+    \item \texttt{\_\_init\_\_}: \textbf{inizializzatore}, non costruttore. Imposta i dati di un oggetto già allocato (l'allocazione è di \texttt{\_\_new\_\_}). Gli attributi di istanza esistono dal momento in cui si assegnano, di solito qui
+    \item \texttt{cls}: riferimento alla classe, primo parametro dei metodi di classe
+    \item \textbf{Variabili di classe}: definite nel corpo della classe, condivise da tutte le istanze
+\end{itemize}
+\begin{center}
 \small
 \begin{tabular}{p{3.6cm}p{4.2cm}p{6.0cm}}
     \toprule
@@ -3510,19 +3636,18 @@ Caratteristiche delle classi:
     \bottomrule
 \end{tabular}
 \end{center}
-\end{itemize}
 
 \begin{lstlisting}[language=Python]
 class Animal:
-    numberOfAnimals = 0
+    numberOfAnimals = 0              # variabile di classe
 
     def __init__(self):
         Animal.numberOfAnimals += 1
-        self.name = ""
-    
-    def setName(self, name):
+        self.name = ""               # variabile di istanza
+
+    def setName(self, name):         # metodo di istanza
         self.name = name
-    
+
     @classmethod
     def getNumberOfAnimals(cls):
         return cls.numberOfAnimals
@@ -3534,45 +3659,46 @@ class Animal:
 if __name__ == "__main__":
     animal = Animal()
     animal.setName("pippo")
-    i = Animal.getNumberOfAnimals()
+    i = Animal.getNumberOfAnimals()  # 1
 \end{lstlisting}
 
-\paragraph{Incapsulamento e name mangling}
+\paragraph{2a. Incapsulamento e name mangling} Python non ha modificatori di accesso: usa convenzioni.
 \begin{itemize}
-    \item \texttt{\_protected} vuole un underscore iniziale
-    \item \texttt{\_\_private} vuole due underscore. Questo attiva il name mangling: il nome viene riscritto dal compilatore come \texttt{\_ClassName\_\_nome}. Utile come meccanismo di protezione accidentale, non per sicurezza.
+    \item \texttt{\_protected}: un underscore iniziale, solo convenzione (nessuna riscrittura)
+    \item \texttt{\_\_private}: due underscore iniziali. Attiva il \textbf{name mangling}: il compilatore riscrive il nome come \texttt{\_ClassName\_\_nome}. Protegge da accessi accidentali, non è sicurezza\\(\texttt{animal.\_Animal\_\_private} funziona)
 \end{itemize}
 
-\paragraph{Ereditarietà e super}
+\paragraph{2b. Ereditarietà e \texttt{super()}}
 \begin{itemize}
-    \item Ogni classe deriva da \texttt{object}, che a sua volta è un'istanza di \texttt{type}
-    \item \texttt{super()} restituisce un oggetto che delega alla classe successiva nell'ordine di risoluzione di Python (MRO)
+    \item Ereditarietà singola e multipla. Ogni classe deriva da \texttt{object}
+    \item \texttt{super()} delega alla classe successiva nell'ordine di risoluzione dei metodi (\textbf{MRO}, Method Resolution Order: l'ordine in cui Python cerca un metodo nella gerarchia)
+    \item \texttt{\_\_init\_\_} della base \textbf{non} è chiamato in automatico: se la sottoclasse ne definisce uno, deve chiamare \texttt{super().\_\_init\_\_()}, altrimenti l'oggetto resta parzialmente inizializzato. Se non lo definisce, si usa quello ereditato (è virtuale)
 \end{itemize}
-
 \begin{lstlisting}[language=Python]
-classe Animal:
-    def _init__(self):
-        print("Animal")
-    
-class Pengiun(Animal):
+class Animal:
     def __init__(self):
-        print("Pengiun")
+        print("Animal")
+
+class Penguin(Animal):
+    def __init__(self):
+        print("Penguin")             # base NON chiamata
 
 class Parrot(Animal):
     def __init__(self):
-        super().__init__()
+        super().__init__()           # base chiamata
         print("Parrot")
 
 class Dove(Animal):
-    pass
+    pass                             # usa __init__ di Animal
 \end{lstlisting}
 \begin{lstlisting}
-a = Animal()        # "Animal"
-pe = Penguin()      # "Pengiun"
-pa = Parrot()       # "Animal" \\ "Parrot"
-d = Dove()          # "Animal"
+a  = Animal()       # "Animal"
+pe = Penguin()      # "Penguin"
+pa = Parrot()       # "Animal", poi "Parrot"
+d  = Dove()         # "Animal"
 \end{lstlisting}
 
+\paragraph{3. Operator overloading e metodi speciali} Ogni operatore è un metodo speciale (\emph{dunder}, con doppio underscore) che si può ridefinire:
 \paragraph{Operator overloading} Possiamo ridefinire operatori secondo le varie tabelle:
 \begin{center}
 \small
@@ -3608,94 +3734,84 @@ d = Dove()          # "Animal"
     \bottomrule
 \end{tabular}
 \end{center}
-facendo:
-\begin{lstlisting}
+
+\noindent Esempio:
+\begin{lstlisting}[language=Python]
 class Animal:
     def __init__(self, name):
         self.name = name
-    def __add__(self, anotherAnimal):
-        return Animal(self.name + anotherAnimal.name)
+    def __add__(self, other):
+        return Animal(self.name + other.name)
 
 if __name__ == "__main__":
-    animal = Animal("Mistery")
-    anotherAnimal = Animal("BigMistery")
-    tirdAnimal = animal + anotherAnimal
+    a = Animal("Mistery")
+    b = Animal("BigMistery")
+    c = a + b                        # c.name == "MisteryBigMistery"
 \end{lstlisting}
+Altri metodi speciali, che integrano l'oggetto nei costrutti del linguaggio:
+\begin{center}
+\small
+\begin{tabular}{p{4.6cm}p{4.0cm}p{5.6cm}}
+    \toprule
+    \textbf{Metodo} & \textbf{Uso} & \textbf{Significato} \\
+    \midrule
+    \texttt{\_\_getitem\_\_}, \texttt{\_\_setitem\_\_} & \texttt{obj[i]}, \texttt{obj[i] = x} & Accesso per indice o chiave. \\
+    \addlinespace
+    \texttt{\_\_contains\_\_} & \texttt{v in obj} & Appartenenza. \\
+    \addlinespace
+    \texttt{\_\_iter\_\_} & \texttt{for x in obj} & Restituisce un iteratore. \\
+    \addlinespace
+    \texttt{\_\_repr\_\_} & \texttt{print(obj)} & Rappresentazione testuale. \\
+    \addlinespace
+    \texttt{\_\_call\_\_} & \texttt{obj(...)} & Oggetto invocabile come funzione. \\
+    \addlinespace
+    \texttt{\_\_enter\_\_}, \texttt{\_\_exit\_\_} & \texttt{with obj:} & Ingresso e uscita da un blocco contestuale. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+Se si definisce \texttt{\_\_eq\_\_} va considerato anche \texttt{\_\_hash\_\_}, altrimenti l'oggetto non è usabile in modo coerente come chiave di dizionario.
 
-\paragraph{Il modello a oggetti}
+\paragraph{4a. Il modello a oggetti: ``tutto è un oggetto''} Ogni valore, funzione, modulo e classe è un oggetto con quattro elementi:
 \begin{center}
 \small
 \begin{tabular}{p{3.0cm}p{5.0cm}p{6.6cm}}
     \toprule
     \textbf{Elemento} & \textbf{Come si osserva} & \textbf{Significato} \\
     \midrule
-    Identità & \texttt{id(obj)} & Riferimento univoco all'oggetto, stabile finché l'oggetto è vivo. \\
+    Identità & \texttt{id(obj)} & Riferimento univoco, stabile finché l'oggetto è vivo. \\
     \addlinespace
-    Stato & attributi, \texttt{obj.\_\_dict\_\_} & Insieme dei valori associati all'oggetto. \\
+    Stato & attributi, \texttt{obj.\_\_dict\_\_} & Valori associati all'oggetto. \\
     \addlinespace
     Tipo & \texttt{type(obj)} & Classe che definisce attributi e metodi disponibili. \\
     \addlinespace
-    Basi & \texttt{obj.\_\_class\_\_.\_\_base\_\_} & Classe (o classi) da cui il tipo deriva. \\
+    Basi & \texttt{obj.\_\_class\_\_.\_\_base\_\_} & Classe da cui il tipo deriva. \\
     \bottomrule
 \end{tabular}
 \end{center}
-Il tipo di valore viene interrogato con \texttt{type()} e il risultato è a sua volta un oggetto di tipo type:
+Due relazioni distinte:
+\begin{itemize}
+    \item \texttt{\_\_class\_\_} (``istanza di''): di che tipo è questo oggetto?
+    \item \texttt{\_\_base\_\_} (``deriva da''): da quale classe deriva questo tipo?
+\end{itemize}
+Una \textbf{classe} è un oggetto il cui tipo è una \textbf{metaclasse} (classe le cui istanze sono classi); una \textbf{istanza} è un oggetto il cui tipo è una classe.
 \begin{lstlisting}[language=Python]
 >>> type(3)
     <class 'int'>
-
->>> type(animal)
+>>> type(animal)             # istanza -> classe
     <class '__main__.Animal'>
-
->>> type(dog)
-    <class '__main__.Dog'>
-
->>> type(int)
+>>> type(Animal)             # classe -> metaclasse
     <class 'type'>
-
->>> type(Animal)
-    <class 'type'>
-    
 >>> type(object)
     <class 'type'>
-
->>> type(type)
+>>> type(type)               # type e' istanza di se' stessa
     <class 'type'>
-\end{lstlisting}
-Ogni valore, funzione, modulo e classe è un oggetto. Una classe è un oggetto il cui tipo è una \textbf{metaclasse}, un'\textbf{istanza} è un oggetto il cui tipo è una classe.\\
-
-\noindent Servono due attributi speciali:
-\begin{itemize}
-    \item \texttt{\_\_class\_\_}: risponde alla domanda ``di che tipo è questo oggetto?''
-    \item \texttt{\_\_base\_\_}: risponde alla domanda ``da quale classe deriva questo tipo?''
-\end{itemize}
-
-\begin{lstlisting}[language=Python]
->>> animal.__class__
-    <class '__main__.Animal'>
-
->>> type(animal.__class__)
-    <class 'type'>
-
->>> animal.__class__.__base__
+>>> Animal.__base__
     <class 'object'>
-
->>> dog.__class__.__base__
+>>> Dog.__base__             # con class Dog(Animal)
     <class '__main__.Animal'>
-
->>> object.__class__
-    <class 'type'>
-
->>> object.__class__.__base__
-    <class 'object'>
-
->>> type.__class__
-    <class 'type'>
-
->>> type.__class__.__base__
+>>> type.__base__
     <class 'object'>
 \end{lstlisting}
-
 \begin{center}
 \small
 \begin{tabular}{p{3.0cm}p{3.0cm}p{3.6cm}p{3.4cm}}
@@ -3718,17 +3834,7 @@ Ogni valore, funzione, modulo e classe è un oggetto. Una classe è un oggetto i
     \bottomrule
 \end{tabular}
 \end{center}
-
-\noindent Emerge quindi il quadro di una \textbf{Abstract Factory} implicita, riassumibile nei seguenti punti fondamentali:
-
-\begin{itemize}
-    \item Ogni entità deriva da \texttt{object};
-    \item Ogni oggetto possiede un proprio tipo;
-    \item Un tipo è, a sua volta, una sottoclasse derivata da \texttt{object};
-    \item L'attributo \texttt{\_\_base\_\_} identifica la classe base;
-    \item L'attributo \texttt{\_\_class\_\_} identifica il tipo dell'oggetto;
-    \item Una metaclasse è una classe le cui istanze sono a loro volta classi.
-\end{itemize}
+In sintesi: ogni entità deriva da \texttt{object}; ogni oggetto ha un tipo; \texttt{type} è la metaclasse predefinita ed è istanza di sé stessa (unica auto-referenza del sistema).
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm and 1.6cm]
@@ -3749,36 +3855,33 @@ Ogni valore, funzione, modulo e classe è un oggetto. Una classe è un oggetto i
 \end{tikzpicture}
 \end{center}
 
-\noindent Ricorda: freccia con triangolo vuoto = generalizzazione, freccia tratteggiata = dipendenza.
+\noindent Freccia con triangolo vuoto = generalizzazione, freccia tratteggiata = dipendenza (``istanza di'').
 
-\paragraph{Processo di creazione} L'espressione \texttt{Dog()} invoca il metodo \texttt{\_\_call\_\_} del tipo di Dog (cioè la sua metaclasse); quel metodo a sua volta chiama new e init rispettiva per l'allocazione dell'oggetto e l'inizializzazione dei dati.
+\paragraph{4b. Creazione di un'istanza} \texttt{Dog()} invoca \texttt{\_\_call\_\_} del tipo di \texttt{Dog} (la metaclasse), che a sua volta chiama \texttt{\_\_new\_\_} (alloca) e poi \texttt{\_\_init\_\_} (inizializza).
 \begin{center}
 \small
 \begin{tabular}{p{3.0cm}p{5.2cm}p{6.2cm}}
     \toprule
     \textbf{Metodo} & \textbf{Ruolo} & \textbf{Chi lo invoca} \\
     \midrule
-    \texttt{\_\_call\_\_} & Orchestra la creazione: chiama \texttt{\_\_new\_\_}, verifica il risultato e chiama \texttt{\_\_init\_\_}. & Il tipo dell'oggetto chiamato, cioè la metaclasse. \\
+    \texttt{\_\_call\_\_} & Orchestra la creazione: chiama \texttt{\_\_new\_\_}, verifica il risultato, chiama \texttt{\_\_init\_\_}. & La metaclasse (tipo dell'oggetto chiamato). \\
     \addlinespace
     \texttt{\_\_new\_\_} & Alloca l'oggetto; è un metodo statico e riceve la classe come primo argomento. & \texttt{\_\_call\_\_} della metaclasse. \\
     \addlinespace
-    \texttt{\_\_init\_\_} & Inizializza un oggetto già allocato; non restituisce nulla. & \texttt{\_\_call\_\_}, se \texttt{\_\_new\_\_} ha restituito un'istanza della classe. \\
+    \texttt{\_\_init\_\_} & Inizializza l'oggetto già allocato; non restituisce nulla. & \texttt{\_\_call\_\_}, se \texttt{\_\_new\_\_} ha restituito un'istanza della classe. \\
     \bottomrule
 \end{tabular}
 \end{center}
-
 \begin{lstlisting}[language=Python]
 class type:
     def __call__(cls, *args, **kw):
         instance = cls.__new__(cls, *args, **kw)
         # se new ritorna un oggetto di un'altra classe
-        # __init__ non viene invocato. E' il caso dei Singleton
-        # classici, in cui new restituisce sempre la stessa istanza
+        # __init__ non viene invocato
         if isinstance(instance, cls):
             instance.__init__(*args, **kw)
         return instance
 \end{lstlisting}
-
 \begin{center}
 \begin{tikzpicture}[node distance=1.0cm]
     \node[ac] (call) {\texttt{Dog()}};
@@ -3798,98 +3901,7 @@ class type:
 \end{tikzpicture}
 \end{center}
 
-\paragraph{Creazione dinamica di tipi} Un tipo può essere creato senza l'istruzione \texttt{class} invocando \texttt{type} con tre argomenti: nome, tupla di base e dizionario che fa da namespace per la classe:
-\begin{center}
-\small
-\begin{tabular}{p{3.0cm}p{4.2cm}p{7.0cm}}
-    \toprule
-    \textbf{Argomento} & \textbf{Tipo atteso} & \textbf{Significato} \\
-    \midrule
-    \texttt{name} & \texttt{str} & Nome della classe, usato in \texttt{\_\_name\_\_} e nelle rappresentazioni. \\
-    \addlinespace
-    \texttt{bases} & \texttt{tuple} & Classi base; una tupla vuota equivale a derivare da \texttt{object}. \\
-    \addlinespace
-    \texttt{dict} & \texttt{dict} & Attributi e metodi della classe, come se fossero scritti nel corpo. \\
-    \bottomrule
-\end{tabular}
-\end{center}
-
-\noindent Creiamo per esempio una sottoclasse di \texttt{Animal}:
-\begin{lstlisting}[language=Python]
-class Animal:
-    def __init__(self, name):
-        self.name = name
-
-Cat = type("Cat", (Animal,), {"nickname": "Prr", "weight": 10})
-c = Cat("Garfield") ...
-\end{lstlisting}
-I tipi possono anche essere restituiti da funzioni:
-\begin{lstlisting}[language=Python]
-def generateCongruent(something):
-    return type(something)
-
-t = generateCongruent(c)
-x = t("Garfield2, the revenge")
-\end{lstlisting}
-
-\paragraph{Singleton tramite new} Implementazione tramite \texttt{\_\_new\_\_}:
-\begin{lstlisting}[language=Python]
-class Singleton:
-    singleObject = None
-    numberOfItems = 0
-
-    def __new__(cls):
-        if cls.singleObject is None:
-            cls.singleObject = super().__new__(cls)
-        return cls.singleObject
-
-    def __init__(self):
-        if Singleton.numberOfItems == 0:
-            Singleton.numerOfItems = 1
-            self.aValue = 1
-    
-    def increment(self):
-        self.aValue += 1
-\end{lstlisting}
-Abbiamo aggiunto un contatore per evitare che \texttt{type.\_\_call\_\_} chiami sempre \texttt{\_\_init\_\_} sull'istanza restituita da \texttt{\_\_new\_\_} anche quando quell'istanza esiste già.\\
-
-\noindent Difetti del singleton con new:
-\begin{itemize}
-    \item init invocata a ogni chiamata
-    \item contatore e istanza sono attributi di classe
-    \item l'uso di \texttt{Singleton.nome} rende la classe non ereditabile
-\end{itemize}
-
-\paragraph{Ciclo di vita di un oggetto} La funzione \texttt{dir()} ritorna l'elenco completo dei nomi accessibili:
-\begin{lstlisting}[language=Python]
->>> dir(animal)
-    ['_Animal__private', '_Animal__privateChangeName', '_Animal_protected', '__class__', '__delattr__', '__dict__', '__dir__', ...]
-
->>> dir(dog)
-    ['_Animal__private', '_Animal__privateChangeName', '__class__', '__delattr__', '__dict__', '__dir__', ..., 'numberOfAnimals', 'public']
-\end{lstlisting}
-I nomi con un underscore evidenziano l'incapsulamento, quelli con doppio underscore sono risultato del name mangling applicato a private.
-
-\begin{center}
-\small
-\begin{tabular}{p{3.4cm}p{7.4cm}p{4.4cm}}
-    \toprule
-    \textbf{Categoria} & \textbf{Esempi} & \textbf{Origine} \\
-    \midrule
-    Metodi speciali & \texttt{\_\_class\_\_}, \texttt{\_\_dict\_\_}, \texttt{\_\_repr\_\_} & Classe \texttt{object} e tipo dell'oggetto. \\
-    \addlinespace
-    Attributi di istanza & \texttt{name}, \texttt{public} & Assegnati in \texttt{\_\_init\_\_} o successivamente. \\
-    \addlinespace
-    Attributi di classe & \texttt{numberOfAnimals} & Corpo della classe, condivisi da tutte le istanze. \\
-    \addlinespace
-    Nomi mangled & \texttt{\_Animal\_\_private} & Attributi con due underscore iniziali. \\
-    \addlinespace
-    Metodi applicativi & \texttt{identifyYourself}, \texttt{increment} & Definiti nella classe o ereditati. \\
-    \bottomrule
-\end{tabular}
-\end{center}
-
-\noindent Il ciclo di vita di un oggetto attraversa cinque fasi:
+\paragraph{Ciclo di vita di un oggetto} Cinque fasi:
 \begin{center}
 \small
 \begin{tabular}{p{3.4cm}p{4.0cm}p{4.2cm}p{3.0cm}}
@@ -3909,15 +3921,69 @@ I nomi con un underscore evidenziano l'incapsulamento, quelli con doppio undersc
 \end{tabular}
 \end{center}
 
-\noindent Come leggere un oggetto sconosciuto:
-\begin{itemize}
-    \item Partire da \texttt{type(obj)} (dice quale classe definisce il comportamento) e \texttt{isinstance(obj, C)} (dice se l'oggetto è compatibili con una gerarchia)
-    \item Elencare i nomi con \texttt{dir(obj)} (interfaccia complessiva) e restringere con \texttt{vars(obj)} (stato effettivo dell'istanza)
-    \item \texttt{hasattr(obj, "nome")} per verificare la presenza di un attributo
-    \item \texttt{callable(obj)} per controllare se è chiamabile
-\end{itemize}
+\paragraph{4c. Creazione dinamica di tipi} Una classe si può creare senza \texttt{class}: \texttt{type(name, bases, dict)}, con \texttt{name} (\texttt{str}: nome), \texttt{bases} (\texttt{tuple}: basi, vuota = \texttt{object}), \texttt{dict} (attributi e metodi, come nel corpo della classe).
+\begin{lstlisting}[language=Python]
+class Animal:
+    def __init__(self, name):
+        self.name = name
 
-\subsection{Metaclassi}
+Cat = type("Cat", (Animal,), {"nickname": "Prr", "weight": 10})
+c = Cat("Garfield")
+
+def generateCongruent(something):    # i tipi si possono restituire
+    return type(something)
+
+t = generateCongruent(c)             # t e' Cat
+x = t("Garfield2, the revenge")
+\end{lstlisting}
+
+\paragraph{4d. Singleton tramite \texttt{\_\_new\_\_}} \texttt{\_\_new\_\_} restituisce sempre la stessa istanza. Problema: \texttt{type.\_\_call\_\_} chiama comunque \texttt{\_\_init\_\_} a ogni \texttt{Singleton()}, quindi serve un contatore per inizializzare una volta sola.
+\begin{lstlisting}[language=Python]
+class Singleton:
+    singleObject = None
+    numberOfItems = 0
+
+    def __new__(cls):
+        if cls.singleObject is None:
+            cls.singleObject = super().__new__(cls)
+        return cls.singleObject
+
+    def __init__(self):
+        if Singleton.numberOfItems == 0:
+            Singleton.numberOfItems = 1
+            self.aValue = 1
+
+    def increment(self):
+        self.aValue += 1
+\end{lstlisting}
+Difetti: \texttt{\_\_init\_\_} invocato a ogni chiamata; istanza e contatore sono attributi di classe; usare \texttt{Singleton.nome} rende la classe non ereditabile.
+
+\paragraph{Ispezionare un oggetto sconosciuto}
+\begin{itemize}
+    \item \texttt{type(obj)}: quale classe definisce il comportamento. \texttt{isinstance(obj, C)}: è compatibile con la gerarchia di \texttt{C}?
+    \item \texttt{dir(obj)}: tutti i nomi accessibili (interfaccia complessiva). \texttt{vars(obj)}: solo lo stato dell'istanza
+    \item \texttt{hasattr(obj, "nome")}: l'attributo esiste? \texttt{callable(obj)}: è invocabile?
+\end{itemize}
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}p{7.4cm}p{4.4cm}}
+    \toprule
+    \textbf{Categoria in \texttt{dir()}} & \textbf{Esempi} & \textbf{Origine} \\
+    \midrule
+    Metodi speciali & \texttt{\_\_class\_\_}, \texttt{\_\_dict\_\_}, \texttt{\_\_repr\_\_} & \texttt{object} e tipo dell'oggetto. \\
+    \addlinespace
+    Attributi di istanza & \texttt{name}, \texttt{public} & Assegnati in \texttt{\_\_init\_\_} o dopo. \\
+    \addlinespace
+    Attributi di classe & \texttt{numberOfAnimals} & Corpo della classe, condivisi. \\
+    \addlinespace
+    Nomi mangled & \texttt{\_Animal\_\_private} & Attributi con due underscore iniziali. \\
+    \addlinespace
+    Metodi applicativi & \texttt{identifyYourself}, \texttt{increment} & Definiti o ereditati. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Metaclassi}
 In Python anche le classi sono oggetti, quindi ognuna ha un proprio tipo. Una \textbf{metaclasse} è una classe le cui istanze sono a loro volta altre classi. Di default, la metaclasse di ogni classe ordinaria è \texttt{type}. Creare una metaclasse personalizzata (ereditando da \texttt{type}) serve quando si vuole controllare come una classe viene costruita o come crea le proprie istanze.
 
 \begin{lstlisting}[language=Python]
@@ -4004,7 +4070,7 @@ print(db1 is db2)  # True
 print(db2.url)     # "https://server1"
 \end{lstlisting}
 
-\subsection{Type Hints e Verifica Statica}
+\subsubsection{Type Hints e Verifica Statica}
 
 Python è un linguaggio a \textbf{tipizzazione dinamica}: i tipi vengono risolti a runtime, garantendo flessibilità ma spostando molti errori al momento dell'esecuzione. I \textbf{type hints} introducono annotazioni opzionali di tipo per abilitare l'analisi statica e migliorare la leggibilità senza alterare il comportamento a runtime.
 
@@ -4020,7 +4086,7 @@ L'interprete Python \textbf{ignora} le annotazioni a runtime: passare un tipo er
 
 \begin{lstlisting}[language=Python]
 def say_hi(name: str) -> str:
-return f"Hi {name}"
+    return f"Hi {name}"
 
 say_hi(123)  # Eseguito senza errori da Python, ma segnalato da mypy
 \end{lstlisting}
@@ -4039,7 +4105,7 @@ from typing import Sequence
 Number = int | float  # Type alias (Python 3.10+)
 
 def scale(values: Sequence[Number], factor: Number) -> list[Number]:
-return [v * factor for v in values]
+    return [v * factor for v in values]
 \end{lstlisting}
 
 \paragraph{Tipizzazione Graduale e Limiti}
@@ -4049,7 +4115,7 @@ return [v * factor for v in values]
 \item \textbf{Complementarietà ai test}: il type checker verifica la compatibilità delle firme e delle assegnazioni, ma non garantisce la correttezza logica né controlla i valori concreti a runtime.
 \end{itemize}
 
-\subsection{Riflessione e Introspezione}
+\subsubsection{Riflessione e Introspezione}
 
 L'\textbf{introspezione} è la capacità di ispezionare un oggetto a runtime (tipo, attributi, metodi); la \textbf{riflessione} estende questa capacità permettendo di modificare oggetti, alterare classi o crearne di nuove dinamicamente.
 
@@ -4077,13 +4143,11 @@ type(obj) is Base      # False (verifica il tipo esatto)
 In Python classi e istanze sono namespace dinamici: è possibile aggiungere o sostituire attributi e metodi dopo la definizione tramite dot-notation o \texttt{setattr()}. Quando si assegna una funzione a una classe, Python la lega automaticamente come metodo alle istanze (passando \texttt{self}). È inoltre possibile creare intere classi a runtime con \texttt{type(name, bases, dict)} o persino sostituire il bytecode di una funzione tramite \texttt{\_\_code\_\_}.
 
 \begin{lstlisting}[language=Python]
-
 # Creazione dinamica di una classe e aggiunta di un metodo a runtime
-
 A = type("A", (), {"x": 1})
 
 def set_y(self, val):
-self.y = val
+    self.y = val
 
 setattr(A, "set_y", set_y)
 a = A()
@@ -4096,47 +4160,55 @@ a.set_y(10)  # a.x == 1, a.y == 10
 \item Evitare la modifica del bytecode (\texttt{\_\_code\_\_}) in produzione e non costruire mai nomi di attributi o classi da input esterni non fidati (rischio di sicurezza).
 \end{itemize}
 
-\subsection{Argomenti a Lunghezza Variabile}
-
-Python consente di definire funzioni che accettano un numero arbitrario di argomenti tramite due costrutti complementari:
+\subsubsection{Argomenti a Lunghezza Variabile}
+Python permette a una funzione di accettare un numero arbitrario di argomenti con due costrutti complementari:
 \begin{itemize}
-\item \texttt{*args}: raccoglie tutti gli argomenti posizionali in eccesso in una \texttt{tuple}.
-\item \texttt{kwargs}: raccoglie tutti gli argomenti nominali (keyword) in eccesso in un \texttt{dict}.
+    \item \texttt{*args}: raccoglie gli argomenti \textbf{posizionali} in eccesso in una \texttt{tuple}
+    \item \texttt{**kwargs}: raccoglie gli argomenti \textbf{nominali} (keyword) in eccesso in un \texttt{dict}
 \end{itemize}
 
-\paragraph{Ordine nella Firma e Spacchettamento}
-L'ordine dei parametri nella definizione di una funzione è vincolato: prima i parametri posizionali ordinari, poi \texttt{*args}, eventuali parametri keyword-only e infine \texttt{kwargs}. Gli operatori \texttt{*} e \texttt{} agiscono anche in senso inverso durante una chiamata, \textbf{spacchettando} rispettivamente una sequenza o un dizionario in singoli argomenti.
+\paragraph{Ordine nella firma} Ordine obbligatorio: parametri ordinari, poi \texttt{*args}, eventuali parametri keyword-only, infine \texttt{**kwargs}.
 
 \begin{lstlisting}[language=Python]
-def debug(a, b, *args, kwargs):
-print(f"a={a}, b={b}, args={args}, kwargs={kwargs}")
+def debug(a, b, *args, **kwargs):
+    print(f"a={a}, b={b}, args={args}, kwargs={kwargs}")
 
 debug(1, 2, 3, 4, x=10, y=20)
-
 # Output: a=1, b=2, args=(3, 4), kwargs={'x': 10, 'y': 20}
-
 \end{lstlisting}
 
-Errori comuni includono passare due volte lo stesso argomento (es. \texttt{f(1, a=2)}, che solleva \texttt{TypeError}) o inserire un argomento posizionale dopo uno nominale (es. \texttt{f(a=1, 2)}, errore di sintassi).
+\paragraph{Spacchettamento} In una \emph{chiamata}, gli stessi operatori fanno l'operazione inversa: \texttt{*} espande una sequenza in argomenti posizionali, \texttt{**} espande un dizionario in argomenti nominali.
+\begin{lstlisting}[language=Python]
+def somma(a, b, c):
+    return a + b + c
 
-\paragraph{Wrapper Generici e Trasparenza}
-Il caso d'uso principale di \texttt{*args} e \texttt{kwargs} è la scrittura di **decoratori** e wrapper generici, che devono inoltrare qualsiasi firma alla funzione originale senza alterarne il comportamento (**trasparenza**).
+somma(*[1, 2, 3])            # equivale a somma(1, 2, 3)
+somma(**{"a": 1, "b": 2, "c": 3})   # equivale a somma(a=1, b=2, c=3)
+\end{lstlisting}
+
+\noindent Errori comuni:
+\begin{itemize}
+    \item stesso argomento passato due volte, es. \texttt{f(1, a=2)}: \texttt{TypeError}
+    \item argomento posizionale dopo uno nominale, es. \texttt{f(a=1, 2)}: errore di sintassi
+\end{itemize}
+
+\paragraph{Wrapper generici e trasparenza} Uso principale: scrivere \textbf{decoratori} e wrapper generici, che devono inoltrare qualsiasi firma alla funzione originale senza alterarla (\textbf{trasparenza}).
 
 \begin{lstlisting}[language=Python]
 import time
 
 def timing(func):
-def wrapper(*args, kwargs):
-start = time.time()
-result = func(*args, kwargs)  # Inoltra argomenti e cattura il ritorno
-print(f"{func.**name**} eseguita in {time.time() - start:.4f}s")
-return result                   # Restituisce il risultato originale
-return wrapper
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)   # inoltra gli argomenti
+        print(f"{func.__name__} eseguita in {time.time() - start:.4f}s")
+        return result                    # restituisce il risultato originale
+    return wrapper
 \end{lstlisting}
 
-Nelle API applicative standard è preferibile usare firme esplicite anziché \texttt{*args}/\texttt{kwargs}, poiché questi ultimi nascondono errori di battitura nei nomi dei parametri e disabilitano l'autocompletamento dell'IDE.
+\noindent Nelle API applicative sono preferibili firme esplicite: \texttt{*args} e \texttt{**kwargs} nascondono gli errori di battitura sui nomi dei parametri e disabilitano l'autocompletamento dell'IDE.
 
-\subsection{Decoratori}
+\subsubsection{Decoratori}
 
 Un decoratore è una funzione di ordine superiore che estende o modifica dinamicamente il comportamento di una funzione, di un metodo o di una classe avvolgendolo in un altro oggetto chiamabile (\emph{wrapper}), senza alterarne il codice sorgente. È usato tipicamente per gestire preoccupazioni trasversali (\emph{cross-cutting concerns}) come logging, misurazione delle prestazioni, caching e autenticazione.
 

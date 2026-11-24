@@ -2664,4 +2664,304 @@ La maggior parte delle applicazioni è la \textbf{combinazione} di un trattament
     \item Encoder e decoder sono ruoli; i sistemi multimodali si ottengono componendo componenti diversi con un meccanismo appreso che li collega.
 \end{itemize}
 
+\subsection{Le convoluzioni nel dettaglio}
+
+\subsubsection{Filtri e operazione di convoluzione}
+
+\noindent Nelle reti convoluzionali (CNN) non colleghiamo ogni pixel a tutti i neuroni dello strato successivo. Usiamo invece una piccola matrice di pesi chiamata \textbf{kernel} (o \textbf{filtro}), che scorre sull'immagine come una lente d'ingrandimento per cercare un pattern locale specifico.
+
+\begin{ideabox}{La convoluzione è una somma pesata locale}
+Per calcolare un nuovo pixel di uscita si appoggia il centro del kernel sopra il pixel sorgente, si moltiplica ogni valore dell'immagine per il peso corrispondente del kernel e si sommano tutti i risultati.
+\end{ideabox}
+
+\noindent Un aspetto fondamentale: lo stesso identico kernel viene riutilizzato su tutta l'immagine. In questo modo la rete cerca lo stesso pattern ovunque, producendo una \textbf{feature map} che indica in quali posizioni quel pattern è stato trovato (valori alti $=$ forte somiglianza).
+
+\begin{esempiobox}{Calcolo passo-passo su una matrice $4\times 5$}
+Applichiamo un filtro $3\times 3$ a un'immagine in ingresso $4\times 5$. Il primo passo posiziona il filtro nell'angolo in alto a sinistra (le 9 celle evidenziate):
+
+\begin{center}
+\begin{tikzpicture}[scale=0.72, every node/.style={font=\small}]
+    % Input 4x5
+    \fill[cyan!25] (0,1) rectangle (3,4);
+    \draw[step=1cm, black] (0,0) grid (5,4);
+    \foreach \x/\v in {0.5/6, 1.5/2, 2.5/3, 3.5/1, 4.5/0} \node at (\x,3.5) {\v};
+    \foreach \x/\v in {0.5/9, 1.5/5, 2.5/1, 3.5/1, 4.5/3} \node at (\x,2.5) {\v};
+    \foreach \x/\v in {0.5/2, 1.5/6, 2.5/5, 3.5/8, 4.5/7} \node at (\x,1.5) {\v};
+    \foreach \x/\v in {0.5/3, 1.5/4, 2.5/4, 3.5/8, 4.5/3} \node at (\x,0.5) {\v};
+    \node[above, font=\bfseries] at (2.5,4.1) {Input ($4\times 5$)};
+
+    % Kernel 3x3
+    \node at (6.0,2.0) {\Large $*$};
+    \draw[step=1cm, orange!80!black, thick, fill=orange!8] (7,0.5) grid (10,3.5);
+    \foreach \x/\v in {7.5/0, 8.5/1, 9.5/0} \node at (\x,3.0) {\v};
+    \foreach \x/\v in {7.5/1, 8.5/-4, 9.5/1} \node at (\x,2.0) {\v};
+    \foreach \x/\v in {7.5/0, 8.5/1, 9.5/0} \node at (\x,1.0) {\v};
+    \node[above, font=\bfseries, orange!80!black] at (8.5,3.6) {Kernel ($3\times 3$)};
+
+    % Output 2x3
+    \node at (11.0,2.0) {\Large $=$};
+    \fill[green!18] (12,2) rectangle (13,3);
+    \draw[step=1cm, black] (12,1) grid (15,3);
+    \node[font=\bfseries] at (12.5,2.5) {$-2$};
+    \node at (13.5,2.5) {$10$};
+    \node at (14.5,2.5) {$9$};
+    \node at (12.5,1.5) {$-8$};
+    \node at (13.5,1.5) {$-1$};
+    \node at (14.5,1.5) {$-11$};
+    \node[above, font=\bfseries] at (13.5,3.1) {Output ($2\times 3$)};
+\end{tikzpicture}
+\end{center}
+
+\noindent Calcoliamo il primo valore in alto a sinistra moltiplicando elemento per elemento e sommando:
+\[
+(6\cdot 0 + 2\cdot 1 + 3\cdot 0) + (9\cdot 1 + 5\cdot (-4) + 1\cdot 1) + (2\cdot 0 + 6\cdot 1 + 5\cdot 0)
+= 2 + (9 - 20 + 1) + 6 = \mathbf{-2}.
+\]
+Facendo scorrere il kernel di un passo a destra si ottiene $10$, poi ancora a destra $9$. Scendendo di una riga e ripetendo da sinistra a destra si completano i valori $-8$, $-1$ e $-11$.
+\end{esempiobox}
+
+\subsubsection{Iperparametri di uno strato convoluzionale}
+
+\noindent Quando progettiamo uno strato convoluzionale scegliamo quattro iperparametri che determinano quanto grande sarà l'uscita e quanti pattern potrà imparare la rete:
+
+\begin{itemize}
+    \item \textbf{Kernel size ($K$)}: la dimensione spaziale del filtro (es.\ $3\times 3$ o $5\times 5$).
+    \item \textbf{Stride ($S$)}: di quanti pixel si sposta il filtro a ogni passo. Con $S=1$ le finestre si sovrappongono molto; con $S>1$ si saltano posizioni, riducendo la dimensione dell'uscita (\emph{downsampling}).
+    \item \textbf{Padding ($P$)}: l'aggiunta di una cornice (solitamente di zeri) attorno all'immagine. Permette di applicare il centro del kernel anche sui pixel ai bordi ed evita che l'immagine si rimpicciolisca troppo dopo molti strati.
+    \item \textbf{Depth / numero di filtri ($N$)}: quanti kernel \emph{diversi} vogliamo imparare in parallelo. Ogni filtro produce una propria feature map, tutte con la stessa altezza e larghezza.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.75, every node/.style={font=\small}]
+    % Padding box
+    \draw[dashed, thick, gray!80!black, fill=gray!6] (-1,-1) rectangle (6,5);
+    \node[above left, font=\small\bfseries, gray!70!black] at (0,5.05) {Padding ($P$)};
+    \draw[<->, thick, gray!70!black] (-1,2.5) -- (0,2.5);
+
+    % Input 4x5
+    \draw[step=1cm, black, fill=white] (0,0) grid (5,4);
+    \foreach \x/\v in {0.5/6, 1.5/2, 2.5/3, 3.5/1, 4.5/0} \node at (\x,3.5) {\v};
+    \foreach \x/\v in {0.5/9, 1.5/5, 2.5/1, 3.5/1, 4.5/3} \node at (\x,2.5) {\v};
+    \foreach \x/\v in {0.5/2, 1.5/6, 2.5/5, 3.5/8, 4.5/7} \node at (\x,1.5) {\v};
+    \foreach \x/\v in {0.5/3, 1.5/4, 2.5/4, 3.5/8, 4.5/3} \node at (\x,0.5) {\v};
+
+    % Kernel window overlapping padding
+    \draw[very thick, red!75!black] (2,2) rectangle (5,5);
+    \draw[->, very thick, red!75!black] (5.1,3.5) -- (7.2,3.5) node[right, font=\bfseries] {Stride ($S$)};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Modalità di padding}
+Nella pratica si usano due convenzioni principali:
+\begin{itemize}
+    \item \textbf{\texttt{valid}}: nessun padding ($P=0$). Il filtro scorre solo dove entra interamente nell'immagine, quindi l'uscita è sempre più piccola dell'ingresso.
+    \item \textbf{\texttt{same}}: si aggiunge il padding minimo necessario affinché il filtro possa essere applicato un numero intero di volte e (con $S=1$) l'uscita mantenga esattamente le stesse dimensioni spaziali dell'ingresso.
+\end{itemize}
+
+\subsubsection{Calcolo delle dimensioni e dei parametri}
+
+\noindent Dato un ingresso di larghezza $W$, un kernel di lato $K$, un padding totale $P$ (somma dei bordi aggiunti sui due lati dell'asse) e uno stride $S$, la dimensione dell'uscita lungo quell'asse è:
+\[
+W' = \frac{W + P - K}{S} + 1.
+\]
+(Se l'immagine è 2D con altezza $H$ e larghezza $W$, la stessa formula si applica separatamente a entrambi gli assi.)
+
+\begin{esempiobox}{Due esempi di calcolo delle dimensioni}
+\textbf{1. Caso 1D:} ingresso lungo $W=7$, kernel $K=3$ con pesi $[1,0,-1]$, nessun padding ($P=0$).
+\begin{itemize}
+    \item Con stride $S=1$: $W' = \frac{7 + 0 - 3}{1} + 1 = \mathbf{5}$ valori in uscita.
+    \item Con stride $S=2$: $W' = \frac{7 + 0 - 3}{2} + 1 = \mathbf{3}$ valori in uscita.
+\end{itemize}
+
+\smallskip\noindent\textbf{2. Caso 2D (immagine a colori):} ingresso $[32\times 32\times 3]$ (32 pixel per lato, 3 canali RGB). Applichiamo $N=12$ filtri di dimensione $6\times 6$, con stride $S=2$ e padding zero ($P=0$).
+\begin{itemize}
+    \item Altezza e larghezza: $\frac{32 + 0 - 6}{2} + 1 = \mathbf{14}$.
+    \item Profondità: pari al numero di filtri, cioè $\mathbf{12}$.
+    \item Dimensione finale del tensore di uscita: $[14\times 14\times 12]$. Aggiungere subito dopo un layer di attivazione ReLU \emph{non} cambia queste dimensioni.
+\end{itemize}
+\end{esempiobox}
+
+\begin{attenzionebox}{I filtri attraversano sempre tutti i canali in ingresso}
+Un errore frequente è pensare che un filtro $3\times 3$ su un'immagine RGB abbia solo $3\times 3 = 9$ pesi. In realtà (salvo architetture speciali come le \emph{separable convolutions}), un filtro lavora simultaneamente su \textbf{tutti i $C$ canali} dell'ingresso: la sua forma reale è un parallelepipedo $K \times K \times C$. In questo modo cattura allo stesso tempo relazioni spaziali (pixel vicini) e relazioni tra canali (combinazioni di colori).
+\end{attenzionebox}
+
+\noindent Possiamo quindi riassumere le specifiche e il numero di parametri apprendibili di uno strato convoluzionale (incluso un bias per ciascuno degli $N$ filtri):
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lccc}
+    \toprule
+    \textbf{Strato} & \textbf{Ingresso} & \textbf{Uscita} & \textbf{Parametri totali} \\
+    \midrule
+    \texttt{Conv1D(N, K, P, S)} & $(W, C)$ & $(W', N)$ & $(C \cdot K) \cdot N + N$ \\
+    \texttt{Conv2D(N, K, P, S)} & $(H, W, C)$ & $(H', W', N)$ & $(C \cdot K \cdot K) \cdot N + N$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Cosa fanno davvero i filtri: immagini come superfici e rilevamento di pattern}
+
+\noindent Per capire perché i filtri funzionano così bene, guardiamo un'immagine per quello che è per un computer: una matrice di numeri (da $0$ a $255$ per il livello di grigio, oppure tre matrici RGB). Se rappresentiamo l'intensità luminosa come un'altezza su un piano, l'immagine diventa una \textbf{superficie 3D}: le zone scure sono valli basse, quelle chiare sono altopiani elevati.
+
+\begin{ideabox}{I bordi sono discontinuità della superficie}
+Un bordo, uno spigolo o un contorno corrispondono a punti in cui l'intensità luminosa cambia bruscamente (un gradino ripido nella superficie). I filtri di convoluzione servono proprio a misurare queste variazioni locali.
+\end{ideabox}
+
+\begin{esempiobox}{Derivate finite e filtro Laplaciano}
+Supponiamo di voler trovare dove si passa bruscamente da una zona scura a una chiara procedendo da sinistra verso destra. Usiamo un filtro di \textbf{derivata finita} orizzontale:
+\[
+K_{\text{orizz}} = \begin{bmatrix} -1 & 0 & 1 \end{bmatrix},
+\qquad\text{oppure verticale:}\qquad
+K_{\text{vert}} = \begin{bmatrix} -1 \\ 0 \\ 1 \end{bmatrix}.
+\]
+\begin{itemize}
+    \item Su una zona uniforme (es.\ pixel $[100, 100, 100]$), il prodotto scalare dà $-100 + 0 + 100 = \mathbf{0}$: nessuna variazione, nessun bordo.
+    \item Passando dal nero al bianco (es.\ $[10, 10, 200]$), otteniamo $-10 + 0 + 200 = \mathbf{+190}$: risposta forte positiva (pattern trovato).
+    \item Passando dal bianco al nero (es.\ $[200, 10, 10]$), otteniamo $-200 + 0 + 10 = \mathbf{-190}$: risposta forte negativa (pattern opposto).
+\end{itemize}
+
+\smallskip\noindent Se invece vogliamo rilevare discontinuità in \emph{tutte} le direzioni contemporaneamente (contorni completi), usiamo il \textbf{Laplaciano discreto}:
+\[
+K_{\text{Lap}} = \begin{bmatrix} 0 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 0 \end{bmatrix}.
+\]
+Questo filtro confronta il pixel centrale con i suoi quattro vicini ortogonali: se l'area è piatta dà $0$, mentre accende tutti i contorni dell'immagine indipendentemente dal loro orientamento.
+\end{esempiobox}
+
+\noindent Nelle CNN moderne non progettiamo questi kernel a mano: li lasciamo \textbf{imparare alla rete} tramite backpropagation. Impilando più strati convoluzionali intercalati da non linearità (ReLU), la rete combina pattern semplici (bordi) in pattern via via più complessi e non lineari (angoli, texture, parti di oggetti).
+
+\subsubsection{Il campo recettivo (\emph{receptive field})}
+
+\noindent Il \textbf{campo recettivo} di un neurone in uno strato nascosto è la dimensione della regione dell'immagine originale che influenza il suo valore. Un neurone non può vedere nulla al di fuori del proprio campo recettivo.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.68, every node/.style={font=\small}]
+    % Layer 0: Input 5x5
+    \fill[blue!12] (0,0) grid (5,5);
+    \draw[step=1cm, black] (0,0) grid (5,5);
+    \draw[very thick, blue!75!black] (0,0) rectangle (5,5);
+    \node[below, font=\bfseries, blue!75!black] at (2.5,-0.2) {Input ($5\times 5$)};
+
+    % Layer 1: Hidden 3x3
+    \fill[orange!15] (7,1) rectangle (10,4);
+    \draw[step=1cm, black] (7,1) grid (10,4);
+    \draw[very thick, orange!80!black] (7,1) rectangle (10,4);
+    \node[below, font=\bfseries, orange!80!black] at (8.5,0.8) {Strato 1 ($3\times 3$)};
+
+    % Layer 2: Output 1x1
+    \fill[green!20] (12,2) rectangle (13,3);
+    \draw[very thick, green!60!black] (12,2) rectangle (13,3);
+    \node[below, font=\bfseries, green!60!black] at (12.5,1.8) {Strato 2 ($1\times 1$)};
+
+    % Projections
+    \draw[dashed, thick, blue!70!black] (0,5) -- (7,4);
+    \draw[dashed, thick, blue!70!black] (0,0) -- (7,1);
+    \draw[dashed, thick, orange!80!black] (7,4) -- (12,3);
+    \draw[dashed, thick, orange!80!black] (7,1) -- (12,2);
+\end{tikzpicture}
+\end{center}
+
+\noindent Come mostra il diagramma, impilando due kernel $3\times 3$ consecutivi (con stride $1$ e senza padding), un singolo neurone dello Strato 2 vede una regione $3\times 3$ dello Strato 1, la quale a sua volta dipende da un'intera regione $\mathbf{5\times 5}$ dell'immagine originale. Quindi:
+\begin{itemize}
+    \item impilare più filtri piccoli ($3\times 3$) allarga progressivamente il campo recettivo usando molti meno parametri rispetto a un unico filtro grande ($5\times 5$ o $7\times 7$) e introducendo più non linearità;
+    \item per allargare ancora più rapidamente il campo recettivo si usano strati di \textbf{downsampling}, come il \emph{pooling} o convoluzioni con stride $S>1$.
+\end{itemize}
+
+\subsubsection{Pooling}
+
+\noindent Nelle CNN è pratica standard alternare strati convoluzionali a strati di \textbf{pooling}, in cui ogni neurone riassume una piccola finestra (tipicamente $2\times 2$) prendendo il valore massimo (\textbf{Max Pooling}) o la media (\textbf{Average Pooling}). Il pooling opera indipendentemente su ciascun canale e non ha parametri da imparare.
+
+\begin{esempiobox}{Max Pooling $2\times 2$ con stride $2$}
+\begin{center}
+\begin{tikzpicture}[scale=0.75, every node/.style={font=\small}]
+    % Color quadrants
+    \fill[red!15] (0,2) rectangle (2,4);
+    \fill[green!15] (2,2) rectangle (4,4);
+    \fill[yellow!25] (0,0) rectangle (2,2);
+    \fill[blue!15] (2,0) rectangle (4,2);
+    \draw[step=1cm, black] (0,0) grid (4,4);
+    \draw[very thick, black] (0,2) -- (4,2);
+    \draw[very thick, black] (2,0) -- (2,4);
+
+    \foreach \x/\v in {0.5/1, 1.5/1, 2.5/2, 3.5/4} \node at (\x,3.5) {\v};
+    \foreach \x/\v in {0.5/5, 1.5/6, 2.5/7, 3.5/8} \node at (\x,2.5) {\v};
+    \foreach \x/\v in {0.5/3, 1.5/2, 2.5/1, 3.5/0} \node at (\x,1.5) {\v};
+    \foreach \x/\v in {0.5/1, 1.5/2, 2.5/4, 3.5/3} \node at (\x,0.5) {\v};
+    \node[above, font=\bfseries] at (2,4.1) {Feature map ($4\times 4$)};
+
+    \draw[->, very thick] (4.5,2) -- (6.3,2) node[midway, above, font=\scriptsize] {max $2\times 2$};
+
+    % Output 2x2
+    \fill[red!15] (7,2) rectangle (8,3);
+    \fill[green!15] (8,2) rectangle (9,3);
+    \fill[yellow!25] (7,1) rectangle (8,2);
+    \fill[blue!15] (8,1) rectangle (9,2);
+    \draw[step=1cm, black] (7,1) grid (9,3);
+    \node[font=\bfseries] at (7.5,2.5) {$6$};
+    \node[font=\bfseries] at (8.5,2.5) {$8$};
+    \node[font=\bfseries] at (7.5,1.5) {$3$};
+    \node[font=\bfseries] at (8.5,1.5) {$4$};
+    \node[above, font=\bfseries] at (8,3.1) {Output ($2\times 2$)};
+\end{tikzpicture}
+\end{center}
+In ogni riquadro $2\times 2$ viene conservato solo il valore più alto ($\max(1,1,5,6)=6$, $\max(2,4,7,8)=8$, ecc.), dimezzando altezza e larghezza della mappa.
+\end{esempiobox}
+
+\noindent Il pooling offre un doppio vantaggio:
+\begin{enumerate}
+    \item \textbf{riduce la dimensione spaziale} dei tensori, abbattendo memoria, calcoli e rischio di overfitting negli strati successivi;
+    \item \textbf{fornisce invarianza alle piccole traslazioni}: se un pattern si sposta di un pixel dentro la finestra $2\times 2$, il valore massimo resta lo stesso.
+\end{enumerate}
+
+\subsubsection{Architetture storiche: AlexNet, VGG e ResNet}
+
+\noindent L'evoluzione delle CNN su ImageNet (immagini RGB $224\times 224\times 3$, 1000 classi) mostra chiaramente come la profondità e l'organizzazione degli strati abbiano trasformato il riconoscimento visivo:
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{2.3cm}L{1.8cm}L{9.5cm}}
+    \toprule
+    \textbf{Modello} & \textbf{Anno} & \textbf{Caratteristiche architetturali chiave} \\
+    \midrule
+    \textbf{AlexNet} & 2012 & 5 strati convoluzionali (filtri grandi all'inizio: $11\times 11$ con stride $4$, poi $5\times 5$ e $3\times 3$) alternati a Max Pooling, seguiti da 3 strati densi ($4096 \to 4096 \to 1000$). \\
+    \textbf{VGG-16} & 2014 & Architettura uniforme e più profonda (16 strati con pesi): sostituisce i filtri grandi usando \emph{solo} piccoli kernel $3\times 3$ impilati (con stride $1$ e padding $1$) e Max Pooling $2\times 2$ che dimezza i lati mentre raddoppia i canali ($64 \to 128 \to 256 \to 512$). \\
+    \textbf{ResNet} & 2015 & Porta la profondità a decine o centinaia di strati (es.\ 34, 50, 152) risolvendo il degrado delle reti troppo profonde grazie alle \textbf{connessioni residue} (\emph{skip connections}). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{ResNet e l'apprendimento residuo}
+Aumentando oltre un certo limite gli strati di una rete tradizionale (\emph{plain}), l'addestramento peggiora anche sul training set a causa della difficoltà del gradiente a risalire molti strati. In un \textbf{blocco residuo} di ResNet, invece di chiedere a due o tre strati di imparare direttamente una trasformazione completa $\mathcal{H}(\mathbf{x})$, si aggiunge una scorciatoia (\emph{skip connection}) che somma l'ingresso $\mathbf{x}$ all'uscita del blocco:
+\[
+\mathbf{y} = \mathcal{F}(\mathbf{x}) + \mathbf{x}.
+\]
+In questo modo gli strati pesati devono imparare solo il \textbf{residuo} $\mathcal{F}(\mathbf{x}) = \mathcal{H}(\mathbf{x}) - \mathbf{x}$, cioè una piccola correzione da applicare al segnale $\mathbf{x}$.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={font=\small}, scale=0.88]
+    \node (in) at (0,3.2) {$\mathbf{x}$};
+    \node[draw, rounded corners, fill=blue!12, minimum width=3.0cm, minimum height=0.6cm] (w1) at (0,2.0) {Conv $3\times 3$};
+    \node[draw, rounded corners, fill=blue!12, minimum width=3.0cm, minimum height=0.6cm] (w2) at (0,0.6) {Conv $3\times 3$};
+    \node[draw, circle, thick, fill=green!15, inner sep=1.5pt] (add) at (0,-0.7) {$+$};
+    \node (out) at (0,-1.8) {ReLU $\to \mathcal{F}(\mathbf{x})+\mathbf{x}$};
+
+    \draw[->, thick] (in) -- (w1);
+    \draw[->, thick] (w1) -- node[right, font=\scriptsize] {ReLU} (w2);
+    \draw[->, thick] (w2) -- node[left, font=\scriptsize] {$\mathcal{F}(\mathbf{x})$} (add);
+    \draw[->, thick] (add) -- (out);
+
+    % Skip connection
+    \draw[->, very thick, orange!80!black, rounded corners=8pt] (0,2.75) -- (2.6,2.75) -- (2.6,-0.7) -- (add);
+    \node[right, font=\scriptsize, orange!80!black, align=left] at (2.7,1.0) {$\mathbf{x}$ (identità)\\\emph{skip connection}};
+\end{tikzpicture}
+\end{center}
+
+\begin{ideabox}{Perché le skip connection funzionano così bene}
+\begin{enumerate}[1.]
+    \item \textbf{Raffinamento progressivo}: se uno strato non serve, basta che i suoi pesi vadano a zero ($\mathcal{F}(\mathbf{x})=0$) e il blocco si comporta come la funzione identità senza danneggiare il segnale.
+    \item \textbf{Autostrada per il gradiente}: durante la backpropagation, la derivata della somma $\mathcal{F}(\mathbf{x})+\mathbf{x}$ contiene un termine $+1$ che permette al gradiente di fluire direttamente all'indietro senza attenuarsi, contrastando efficacemente il \emph{vanishing gradient}.
+\end{enumerate}
+\end{ideabox}
+
 \end{document}

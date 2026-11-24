@@ -6660,6 +6660,311 @@ La tabella finale sintetizza la divisione delle responsabilità:
 
 \noindent La conclusione è la stessa della Guida: l'IA \textbf{amplia le capacità del team ma non sostituisce la responsabilità umana}. Il criterio operativo non è ``quanto codice genera'', ma ``quanto è controllabile e verificabile ciò che genera''.
 
+\subsection{Project Management dei Progetti Software}\label{sec:project-management}
+
+\noindent Le slide \emph{Project management dei progetti software} (Prof.\ Ciancarini) rispondono a una domanda complementare a Scrum: come si \textbf{pianifica, si stima e si controlla} un progetto, e che cosa resta di queste attività quando il processo è agile. Il percorso ha quattro blocchi: (1) progetti e PM, (2) misurare e stimare, (3) modelli, controllo e rischio, (4) PM e LLM.
+
+\subsubsection{Progetti e Project Management}
+
+\paragraph{La legge di Brooks.} \textit{``Aggiungere personale a un progetto software in ritardo lo fa ritardare ancora di più''} (F.\ Brooks, \textit{The Mythical Man-Month}, 1975). La causa è la comunicazione: i canali crescono come $n(n-1)/2$, quindi con 3, 5, 8, 12 persone sono 3, 10, 28, 66.
+
+\paragraph{Prodotto, progetto, project management.}
+\begin{itemize}
+    \item \textbf{Prodotto}: ha un ciclo di vita lungo (nasce, evolve, viene ritirato) ed è guidato dal \emph{product management}.
+    \item \textbf{Progetto}: impresa \textbf{temporanea}, con inizio e fine, per ottenere un risultato unico (per esempio la versione 2.0 del prodotto).
+    \item \textbf{Project management}: consegnare il risultato rispettando tempi, costi e qualità concordati.
+\end{itemize}
+
+\paragraph{Il triangolo dei vincoli.} Tre vincoli (scopo, tempo, costo) con la \textbf{qualità al centro}, che non è la variabile di aggiustamento. Che cosa si fissa distingue due impostazioni:
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{3.4cm}p{3.6cm}p{4.2cm}}
+    \toprule
+    \textbf{Impostazione} & \textbf{Fisso} & \textbf{Stimato / si adatta} & \textbf{Esempio} \\
+    \midrule
+    Guidato dal piano & Scopo (COSA) & Tempo e costo (QUANDO, QUANTO) & Modello a cascata. \\
+    \addlinespace
+    A budget e orizzonte fissi & Tempo e costo & Scopo & Scrum (``triangolo capovolto''). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Chi fa il project management in Scrum.} Scrum \textbf{non definisce un Project Manager}: le responsabilità restano, ma sono distribuite nello Scrum Team.
+\begin{center}
+\small
+\begin{tabular}{p{4.6cm}p{3.2cm}p{5.2cm}}
+    \toprule
+    \textbf{Responsabilità} & \textbf{Tradizionale} & \textbf{Scrum} \\
+    \midrule
+    Decidere cosa fare e le priorità & Cliente e PM & Product Owner (ordina il Product Backlog). \\
+    \addlinespace
+    Stimare e pianificare il lavoro & PM con il team & Sviluppatori, nello Sprint Planning. \\
+    \addlinespace
+    Controllare l'avanzamento & Project manager & Scrum Team (Daily Scrum, Sprint Review). \\
+    \addlinespace
+    Prevedere la data di rilascio & Project manager & PO e team, previsione condivisa basata su dati. \\
+    \addlinespace
+    Facilitare, rimuovere ostacoli & Project manager & Scrum Master (facilitatore, non capo). \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{PMBOK Guide, 8\textordfeminine{} edizione (2025).} Standard del PMI, non prescrittivo:
+\begin{itemize}
+    \item \textbf{6 principi}: visione d'insieme (olistica), focus sul valore, qualità integrata, leadership responsabile, sostenibilità, team responsabilizzati.
+    \item \textbf{7 domini di performance}: governance, ambito, tempi, finanza, stakeholder, risorse, rischio. Ambito, tempi e finanza corrispondono al triangolo dei vincoli.
+    \item \textbf{5 aree di focus} che si sovrappongono e si ripetono: avvio, pianificazione, esecuzione, monitoraggio e controllo, chiusura; in tutto 40 processi non prescrittivi.
+    \item Novità: indicazioni sull'uso responsabile dell'intelligenza artificiale nel PM.
+\end{itemize}
+
+\paragraph{Work Breakdown Structure (WBS).} Scomposizione gerarchica del progetto in \textbf{risultati} (non in azioni), fino a pacchetti di lavoro stimabili. Esempio dell'app biblioteca: 1 Requisiti, 2 Backend, 3 Frontend, 4 Notifiche, 5 Test e rilascio, ciascuno con sottopacchetti (per esempio 2.1 Modello dati, 2.2 API prestiti).
+\begin{cbox}{Regola del 100\%}
+I figli di un nodo coprono \textbf{tutto e solo} il lavoro del padre. Un elenco di pacchetti dimenticati (per esempio gestione del progetto e documentazione) rende la WBS \emph{parziale}.
+\end{cbox}
+
+\paragraph{Diagramma di Gantt e cammino critico.} Il Gantt dispone le attività sull'asse del tempo, con le dipendenze tra loro.
+\begin{itemize}
+    \item \textbf{Cammino critico}: la sequenza di attività dipendenti più lunga; ne determina la durata minima e ogni suo ritardo ritarda il rilascio.
+    \item \textbf{Slack} (margine): quanto un'attività \textbf{non critica} può slittare senza ritardare il rilascio.
+    \item \textbf{Milestone}: punto di controllo senza durata.
+\end{itemize}
+Nell'esempio, Backend, Frontend e Notifiche partono dopo Requisiti (2 settimane) e Test e rilascio parte dopo tutte e tre. Il cammino critico è Requisiti $\rightarrow$ Backend $\rightarrow$ Test = 8 settimane; Frontend e Notifiche hanno slack, perché durano meno di Backend.
+
+\paragraph{Dal Gantt alla board: GitHub Projects.} Ogni elemento della pianificazione ha un corrispettivo operativo:
+\begin{center}
+\small
+\begin{tabular}{p{3.2cm}p{6.0cm}}
+    \toprule
+    \textbf{Concetto} & \textbf{In GitHub Projects} \\
+    \midrule
+    WBS & Issue e sub-issue \\
+    Stima & Campo \emph{story point} e Iteration \\
+    Gantt & Vista Roadmap \\
+    Dipendenze & Relazioni ``blocked by'' \\
+    Avanzamento & Board, workflow, Insights \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Misurare e Stimare}
+
+\paragraph{Durata, sforzo, costo.} Sono tre grandezze diverse.
+\begin{itemize}
+    \item \textbf{Durata}: tempo di calendario.
+    \item \textbf{Sforzo}: lavoro in \textbf{mesi-persona} (mp). Esempio: 12 mesi con 4 persone, di cui 2 a metà tempo, dà $2\times12 + 2\times6 = 36$ mp.
+    \item \textbf{Team medio equivalente} (FTE, \textit{full-time equivalent}): sforzo $\div$ durata, cioè 36/12 = 3 FTE.
+    \item \textbf{Costo} $\approx$ sforzo (mp) $\times$ costo mensile di una persona.
+\end{itemize}
+Analogia delle slide: la laurea triennale dura 3 anni (durata) ma vale 180 CFU = 4.500 ore convenzionali (sforzo); laurearsi in 4 anni cambia la durata, non lo sforzo. Per questo raddoppiare il team non dimezza la durata (legge di Brooks).
+
+\paragraph{Il cono dell'incertezza.} All'inizio del progetto la stima può sbagliare di fattori \textbf{indicativi} anche $\times 4$ (in eccesso) o $\times 0{,}25$ (in difetto); l'intervallo si restringe fino a 1 a software completo, attraversando idea iniziale, definizione del prodotto, requisiti, design UI, design dettagliato. Non si restringe con il passare del tempo, ma con \textbf{informazioni, verifiche e decisioni fondate} che eliminano variabilità. Conseguenza: stimare a \textbf{intervalli} e \textbf{ristimare a ogni fase}.
+
+\paragraph{Tecniche di stima.}
+\begin{center}
+\small
+\begin{tabular}{p{4.2cm}p{9.0cm}}
+    \toprule
+    \textbf{Tecnica} & \textbf{Idea} \\
+    \midrule
+    Per analogia (top-down) & Si parte da un progetto simile già concluso. \\
+    \addlinespace
+    Bottom-up & Si stimano i pacchetti della WBS e si sommano. \\
+    \addlinespace
+    Giudizio di esperti & Delphi, Planning Poker: stime indipendenti, poi discusse. \\
+    \addlinespace
+    Parametrica & Modello matematico calibrato su dati storici (COCOMO). \\
+    \addlinespace
+    Design-to-cost & Budget fisso: quanta funzionalità ci sta dentro? \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{La catena della stima.} Backlog (funzioni da realizzare) $\rightarrow$ \textbf{dimensione} (LOC, FP, story point) $\rightarrow$ \textbf{sforzo} = dimensione $\div$ produttività $\rightarrow$ costo e piano (mp $\times$ costo, durata, team). La \textbf{produttività} = dimensione $\div$ sforzo (per esempio 18 FP per mese-persona) e va \textbf{calibrata} sui propri progetti passati.
+
+\paragraph{Linee di codice (LOC).} Si distinguono LOC \textbf{fisiche} (righe di file) e \textbf{logiche} (istruzioni): \texttt{for (i=0; i<100; ++i) printf("hi");} è 1 LOC fisica ma 2 logiche; lo stesso codice su 4 righe con un commento resta a 2 LOC logiche. Vanno fissate le regole di conteggio prima di confrontare progetti (strumenti: \texttt{cloc}, \texttt{scc}).
+\begin{itemize}
+    \item \textbf{Pro}: oggettive, contabili in automatico, legate al prodotto tangibile.
+    \item \textbf{Contro}: dipendono dal linguaggio, penalizzano il codice conciso, sono difficili da stimare in anticipo, e non è chiaro se contare test e codice generato.
+\end{itemize}
+Ordine di grandezza: il kernel Linux passa da 0,2 milioni di righe (1994, v1.0) a 1,8 (1999), 5,9 (2003), 15 (2012) e circa 40 (2025, stima della stampa che include commenti e righe vuote).
+
+\begin{cbox}{Esempio: stima per LOC (da Pressman)}
+Sette moduli (interfaccia utente 2.300, geometria 2D 5.300, geometria 3D 6.800, database 3.350, grafica 4.950, periferiche 2.100, analisi 8.400) per \textbf{33.200 LOC}. Con produttività storica di 620 LOC/mp: $33.200 \div 620 \approx 54$ mp; a 8.000~\texteuro/mese $\approx$ \textbf{430~k\texteuro}.
+\end{cbox}
+
+\paragraph{Function point (FP).} Misura ciò che \textbf{vede l'utente}, dai requisiti e senza dipendere dal linguaggio (Albrecht, IBM, 1979; oggi IFPUG, ISO/IEC 20926). Si contano processi elementari e gruppi logici di dati entro il confine dell'applicazione:
+\begin{itemize}
+    \item \textbf{Transazioni}: EI (\emph{External Input}, es.\ modulo di prestito), EO (\emph{External Output}, es.\ email di scadenza), EQ (\emph{External Inquiry}, es.\ ricerca nel catalogo).
+    \item \textbf{Dati}: ILF (\emph{Internal Logical File}, es.\ archivio prestiti), EIF (\emph{External Interface File}, es.\ anagrafica di ateneo).
+\end{itemize}
+Ogni elemento ha un peso in base alla complessità:
+\begin{center}
+\small
+\begin{tabular}{p{5.2cm}ccc}
+    \toprule
+    \textbf{Tipo} & \textbf{Semplice} & \textbf{Medio} & \textbf{Complesso} \\
+    \midrule
+    EI & 3 & 4 & 6 \\
+    EO & 4 & 5 & 7 \\
+    EQ & 3 & 4 & 6 \\
+    ILF & 7 & 10 & 15 \\
+    EIF & 5 & 7 & 10 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+    \item $\mathrm{UFP} = \sum(\text{numero elementi} \times \text{peso})$ (\emph{Unadjusted FP}).
+    \item $\mathrm{VAF} = 0{,}65 + 0{,}01 \times \sum F_i$, con 14 fattori $F_i$ valutati da 0 a 5 (VAF tra 0,65 e 1,35).
+    \item $\mathrm{FP} = \mathrm{UFP} \times \mathrm{VAF}$.
+\end{itemize}
+Il VAF appartiene al metodo storico di aggiustamento: \textbf{non} fa parte della misura funzionale standardizzata da ISO/IEC 20926, che usa gli UFP.
+
+\begin{cbox}{Esempio con VAF (metodo storico)}
+6 EI medi ($6\times4=24$), 6 EO complessi ($6\times7=42$), 2 ILF medi ($2\times10=20$), 3 EQ semplici ($3\times3=9$), 2 EIF complessi ($2\times10=20$): \textbf{UFP = 115}. Con $\sum F_i = 17$, $\mathrm{VAF} = 0{,}82$ e $\mathrm{FP} \approx 94$. A 18 FP/mp: $\approx 5{,}2$ mp; a 6.500~\texteuro/mese $\approx$ \textbf{34~k\texteuro}.
+\end{cbox}
+
+\paragraph{LOC, function point, story point a confronto.}
+\begin{center}
+\small
+\begin{tabular}{p{2.6cm}p{4.2cm}p{4.2cm}p{3.6cm}}
+    \toprule
+     & \textbf{LOC} & \textbf{Function point} & \textbf{Story point} \\
+    \midrule
+    Cos'è & \emph{Lines of Code} & IFPUG, ISO/IEC 20926 & Stima relativa agile \\
+    \addlinespace
+    Pro & Oggettive, automatiche & Dai requisiti, confrontabili tra aziende & Rapidi, di team (Planning Poker) \\
+    \addlinespace
+    Contro & Solo a codice scritto, dipendono dal linguaggio & Serve formazione & Non confrontabili tra team \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent \textbf{Calibrazione}: ogni misura va tarata sui dati reali dei propri progetti passati.
+
+\subsubsection{Modelli, Controllo e Rischio}
+
+\paragraph{COCOMO: un modello parametrico.} Boehm (1981) stima lo sforzo con una regressione su progetti reali:
+\[ \text{Sforzo (mp)} = a \times S^{b} \times \mathrm{EAF} \]
+dove $S$ è la dimensione in KLOC consegnate, $a$ e $b$ sono coefficienti per tipo di progetto (COCOMO 81) e EAF è il prodotto dei \textbf{cost driver} (valore base 1). COCOMO II (2000) ricava l'esponente $b$ da fattori di scala. Con $b>1$ lo sforzo cresce \textbf{più che proporzionalmente} con la dimensione.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.4cm}ccc}
+    \toprule
+    \textbf{Tipo (COCOMO 81 base)} & $a$ & $b$ & \textbf{Sforzo a 200 KLOC} \\
+    \midrule
+    Organic & 2,4 & 1,05 & 626 mp \\
+    Semi-detached & 3,0 & 1,12 & 1.133 mp \\
+    Embedded & 3,6 & 1,20 & 2.077 mp \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\noindent A parità di dimensione lo sforzo può più che triplicare: conta il \textbf{tipo di progetto}, non solo le righe.
+
+\paragraph{COCOMO 81 intermedio: i cost driver.} Quattro famiglie di fattori che compongono l'EAF: \textbf{prodotto} (affidabilità, complessità, database), \textbf{hardware} (vincoli di tempo e memoria), \textbf{personale} (capacità ed esperienza), \textbf{progetto} (strumenti, metodi, scadenze).
+\begin{cbox}{Esempio: software per bancomat}
+Embedded, 10 KLOC, $a=2{,}8$ (modello intermedio). Sforzo nominale $2{,}8 \times 10^{1{,}20} \approx 44$ mp; con EAF = 1,35 lo sforzo stimato è $\approx$ \textbf{60 mp}.
+\end{cbox}
+
+\paragraph{Compromessi: costo, durata, affidabilità.} COCOMO rende \textbf{quantitativo} il triangolo dei vincoli. Esempio: 100 KLOC, COCOMO 81 intermedio, il cliente vuole affidabilità (RELY) alta, 20 mesi e 6,0~M\texteuro. Le slide mostrano quattro vie, calcolate dal modello:
+\begin{itemize}
+    \item \textbf{più budget}: 6,5~M\texteuro{} (RELY alto, 20 mesi);
+    \item \textbf{più tempo}: 23,4 mesi (RELY alto, 6,0~M\texteuro);
+    \item \textbf{rivedere RELY}: 5,6~M\texteuro{} con RELY nominale, ma solo se il requisito lo consente;
+    \item \textbf{meno scopo}: $\approx$ 93 KLOC (RELY alto, 20 mesi, 6,0~M\texteuro).
+\end{itemize}
+
+\paragraph{Previsioni probabilistiche: Monte Carlo.} Invece di una data singola si simulano molti futuri campionando la \emph{velocity} storica. Esempio: velocity di 10 sprint (12, 22, 15, 20, 28, 17, 24, 10, 26, 16), 200 story point da completare, 10.000 simulazioni. I percentili:
+\begin{center}
+\small
+\begin{tabular}{p{2.0cm}p{3.0cm}p{6.0cm}}
+    \toprule
+    \textbf{Percentile} & \textbf{Sprint} & \textbf{Significato} \\
+    \midrule
+    P50 & 11 & Metà dei futuri simulati. \\
+    P85 & 12 & Almeno l'85\% dei futuri simulati. \\
+    P95 & 13 & Almeno il 95\% dei futuri simulati. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+La distribuzione dà all'impegno verso il cliente un grado di confidenza esplicito (per esempio ``12 sprint con confidenza 85\%'').
+
+\paragraph{Earned Value: siamo in linea?} Confronta, a una data, tre valori cumulati.
+\begin{center}
+\small
+\begin{tabular}{p{1.8cm}p{4.4cm}p{6.4cm}}
+    \toprule
+    \textbf{Sigla} & \textbf{Nome} & \textbf{Significato} \\
+    \midrule
+    PV & \emph{Planned Value} & Costo a budget del lavoro pianificato. \\
+    EV & \emph{Earned Value} & Costo a budget del lavoro \textbf{completato} (non valore per il cliente). \\
+    AC & \emph{Actual Cost} & Costo effettivamente speso. \\
+    BAC & \emph{Budget at Completion} & Budget totale. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\begin{itemize}
+    \item $\mathrm{SPI} = \mathrm{EV}/\mathrm{PV}$: $<1$ avanzamento sotto il piano (ritardo), $>1$ in anticipo.
+    \item $\mathrm{CPI} = \mathrm{EV}/\mathrm{AC}$: $<1$ il lavoro svolto costa più del budget, $>1$ sotto budget.
+    \item $\mathrm{EAC} = \mathrm{BAC}/\mathrm{CPI}$: costo stimato a fine progetto se il CPI resta invariato.
+\end{itemize}
+Esempio (settimana 6 di 12, BAC = 120~k\texteuro): PV = 60, EV = 48, AC = 55 k\texteuro. Quindi SPI = 0,80, CPI = 0,87 e $\mathrm{EAC} \approx 138$~k\texteuro.
+
+\paragraph{Valore, costo e debito tecnico.} Un progetto ha senso se \textbf{valore} $\gg$ \textbf{costo} + \textbf{debito tecnico}.
+\begin{itemize}
+    \item \textbf{Valore} $\approx$ utenti $\times$ beneficio medio per utente.
+    \item \textbf{Costo}: proporzionale allo sforzo (mp).
+    \item \textbf{Debito tecnico}: costo futuro delle scorciatoie di oggi, con gli interessi (Cunningham, 1992).
+\end{itemize}
+
+\paragraph{Gestire i rischi.} Un rischio si colloca su una matrice \emph{probabilità $\times$ impatto}; l'\textbf{esposizione} = probabilità $\times$ impatto. Esempi: l'API dell'anagrafica di ateneo cambia, uno sviluppatore chiave lascia il team, requisiti instabili, ritardo nel design grafico. Quattro risposte:
+\begin{itemize}
+    \item \textbf{Evitare}: cambiare il piano.
+    \item \textbf{Mitigare}: ridurre probabilità o impatto (per esempio con un adattatore per l'API).
+    \item \textbf{Trasferire}: contratto, assicurazione.
+    \item \textbf{Accettare}: con una riserva.
+\end{itemize}
+
+\subsubsection{Project Management e LLM}
+
+\paragraph{Dove aiutano gli LLM.} Bozze di WBS e user story, verbali e riassunti, report per gli stakeholder, identificazione dei rischi, seconda opinione sulle stime, domande su issue e repository. Principio: \textbf{l'LLM scrive la bozza; decisione e responsabilità restano umane}.
+
+\paragraph{Stimare con gli LLM: che cosa dice la ricerca.} Studio su GPT-4 con 3 dataset open source, risultati preliminari (Tawosi, Alamir, Liu, SSBSE 2023, arXiv:2403.08430):
+\begin{itemize}
+    \item \textbf{Zero-shot} (nessun esempio nel prompt): peggio che stimare sempre la media.
+    \item \textbf{Few-shot} (esempi dello stesso progetto, scelti con ottimizzazione): errore medio (MAE) $-59\%$ rispetto a zero-shot.
+\end{itemize}
+Lezione: gli story point sono \textbf{relativi al team}, servono esempi propri scelti con cura; è ancora calibrazione. Proposta didattica: prima le stime individuali, poi quella dell'LLM.
+
+\paragraph{La legge di Brooks nell'era degli agenti.} Il collo di bottiglia si sposta: generare codice costa poco, ma leggerlo, verificarlo e integrarlo no. Con 5 agenti in parallelo la \textbf{revisione umana} diventa la risorsa scarsa. Evidenza (METR): a inizio 2025 sviluppatori esperti impiegavano il $+19\%$ di tempo con l'IA pur credendosi più veloci; l'aggiornamento di febbraio 2026 (strumenti di fine 2025) riporta $-18\%$ e $-4\%$, ma con intervalli di confidenza che includono lo zero: \textbf{nessuna conclusione robusta}.
+
+\paragraph{Costi e rischi degli LLM nel progetto.}
+\begin{center}
+\small
+\begin{tabular}{p{3.0cm}p{9.0cm}}
+    \toprule
+    \textbf{Area} & \textbf{Rischio} \\
+    \midrule
+    Costi & Abbonamenti e token: vanno a budget. \\
+    Qualità & Allucinazioni, codice plausibile ma errato. \\
+    Debito tecnico & Codice generato e non compreso. \\
+    Riservatezza & Dati personali e codice: GDPR. \\
+    Regole & AI Act europeo, licenze. \\
+    Competenze & Il team deve capire il sistema. \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Quiz svolti e autovalutazione.}
+\begin{enumerate}
+    \item Notifiche slitta di 2 settimane: ritardo del rilascio \textbf{0 settimane}, perché lo slack è di 2 settimane.
+    \item Che cosa restringe il cono: raccogliere informazioni e prendere decisioni che eliminano variabilità.
+    \item 3 EI semplici (9) + 2 EO medi (10) + 2 EQ semplici (6) + 2 ILF semplici (14) + 1 EIF medio (7) = \textbf{46 UFP}.
+    \item $b>1$ in COCOMO: lo sforzo cresce più che proporzionalmente con la dimensione.
+    \item PV = 40, EV = 30, AC = 36: SPI = 0,75 e CPI $\approx$ 0,83, quindi \textbf{in ritardo e sopra budget}.
+    \item Stimare gli story point con un LLM: dare nel prompt storie già stimate dal team (few-shot).
+    \item Autovalutazione, SPI = 0,9 e CPI = 1,1: in ritardo ma sotto budget.
+\end{enumerate}
+
 % =============================================================================
 % MODULO 2: ARCHITETTURE SOFTWARE (SLIDE 1 - 17: PRIMO 25%)
 % =============================================================================
